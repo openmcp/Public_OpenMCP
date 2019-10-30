@@ -8,12 +8,6 @@
 ![Architecture of the openmcp](/openmcp_architecture.png)
 
 
-
-## Intallation
-
-
-## Usage
-
 ## Status
 
 OpenMCP는 아직 초기 개발 중으로 향후 오픈소스화 할 예정임.
