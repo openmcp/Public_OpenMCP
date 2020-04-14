@@ -1,0 +1,13 @@
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: openmcp-apiserver-rolebinding
+  namespace: openmcp
+subjects:
+- kind: ServiceAccount
+  name: openmcp-apiserver-sa
+  namespace: openmcp
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
