@@ -1,0 +1,23 @@
+apiVersion: keti.example.com/v1alpha1
+kind: OpenMCPscheduler
+metadata:
+  name: example-openmcpscheduler
+  namespace: openmcp
+spec:
+  replicas: 8
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      selector:
+        matchLabels:
+          app: nginx
+      template:
+        metadata:
+          labels:
+            app: nginx
+        spec:
+          containers:
+          - image: nginx
+            name: nginx

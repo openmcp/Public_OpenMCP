@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package openmcpgrpc;
+
+//HiRequest라는 구조의 메세지를 입력 파라미터로 받고
+//HiReply라는 구조의 메세지를 리턴해준 다는 함수 
+service PriorityList {
+        rpc GetPriorityList (PriorityRequest) returns (PriorityReply) {}
+}
+
+//HiRequest 메세지는 문자열 name 하나를 가지고 있음
+message PriorityRequest {
+        string policy = 1;
+}
+//HiReply 메세지는 문자열 message 하나를 가지고 있음
+message PriorityReply {
+        map<string, double> list = 1;
+}
+
