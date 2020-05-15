@@ -1,0 +1,9 @@
+apiVersion: multiclusterdns.kubefed.io/v1alpha1
+kind: IngressDNSRecord
+metadata:
+  name: dns-test
+  namespace: openmcp
+spec:
+  hosts:
+  - loadbalancing.openmcp.org
+  recordTTL: 300

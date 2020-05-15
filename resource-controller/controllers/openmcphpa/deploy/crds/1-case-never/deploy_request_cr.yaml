@@ -1,0 +1,22 @@
+apiVersion: keti.example.com/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: openmcp-pod-request
+  namespace: ria
+spec:
+  replicas: 5
+  labels:
+      app: openmcp-pod
+  template:
+    spec:
+      template:
+        spec:
+          containers:
+          - image: k8s.gcr.io/hpa-example
+            ports:
+            - containerPort: 80
+            name: php-apache
+            resources:
+              requests:
+                memory: 500Mi
+                cpu: 100m

@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmcp-scheduler
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openmcp-scheduler
+  template:
+    metadata:
+      labels:
+        name: openmcp-scheduler
+    spec:
+      serviceAccountName: openmcp-scheduler
+      containers:
+        - name: openmcp-scheduler
+          # Replace this with the built image name
+          image: atyx300/openmcp-scheduler:v0.0.2
+          command:
+          - openmcp-scheduler
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              #value: ""
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "openmcp-scheduler"

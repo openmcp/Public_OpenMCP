@@ -1,0 +1,26 @@
+[Unit]
+Description=etcd key-value store
+Documentation=https://github.com/etcd-io/etcd
+After=network.target
+
+[Service]
+User=root
+Type=notify
+Environment=ETCD_DATA_DIR=/var/lib/etcd
+Environment=ETCD_NAME=%m
+ExecStart=/usr/local/bin/etcd \
+  --cert-file=/etc/pki/etcd-ca/certs/etcd0.example.com.crt \
+  --key-file=/etc/pki/etcd-ca/private/etcd0.example.com.key \
+  --trusted-ca-file=/etc/pki/etcd-ca/certs/ca.crt \
+  --listen-client-urls=https://<IPADDRESS>:2379,https://127.0.0.1:2379 \
+  --advertise-client-urls=https://<IPADDRESS>:2379 \
+  --listen-peer-urls=http://localhost:2380 \
+  --initial-advertise-peer-urls=http://localhost:2380 \
+  --initial-cluster=default=http://localhost:2380 \
+  --data-dir=/var/lib/etcd
+Restart=always
+RestartSec=10s
+LimitNOFILE=40000
+
+[Install]
+WantedBy=multi-user.target

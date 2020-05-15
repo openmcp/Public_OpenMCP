@@ -1,0 +1,19 @@
+apiVersion: types.kubefed.io/v1beta1
+kind: FederatedIngress
+metadata:
+  name: test-ingress
+  namespace: kch
+spec:
+  template:
+    spec:
+      rules:
+      - host: ingress.kchtest.org
+        http:
+          paths:
+          - backend:
+              serviceName: kch-test-svc
+              servicePort: 80
+  placement:
+    clusters:
+    - name: cluster2
+    - name: cluster1

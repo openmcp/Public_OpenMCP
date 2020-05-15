@@ -1,0 +1,18 @@
+apiVersion: keti.example.com/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: openmcp-pod-test
+  namespace: test
+spec:
+  replicas: 6
+  labels:
+      app: openmcp-pod-test
+  template:
+    spec:
+      template:
+        spec:
+          containers:
+          - image: k8s.gcr.io/hpa-example
+            ports:
+            - containerPort: 80
+            name: php-apache

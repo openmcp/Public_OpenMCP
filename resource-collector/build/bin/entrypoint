@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+# This is documented here:
+# https://docs.openshift.com/container-platform/3.11/creating_images/guidelines.html#openshift-specific-guidelines
+mkdir -p /root/.kube/
+cp /usr/local/bin/config /root/.kube/config
+
+#export KUBECONFIG=/app/config
+if ! whoami &>/dev/null; then
+  if [ -w /etc/passwd ]; then
+    echo "${USER_NAME:-kch-test}:x:$(id -u):$(id -g):${USER_NAME:-kch-test} user:${HOME}:/sbin/nologin" >> /etc/passwd
+  fi
+fi
+
+exec ${OPERATOR} $@

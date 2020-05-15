@@ -1,0 +1,19 @@
+apiVersion: types.kubefed.io/v1beta1
+kind: FederatedIngress
+metadata:
+  name: dns-test
+  namespace: openmcp
+spec:
+  template:
+    spec:
+      rules:
+      - host: loadbalancing.openmcp.org
+        http:
+          paths:
+          - backend:
+              serviceName: iot-gateway-svc
+              servicePort: 80
+  placement:
+    clusters:
+    - name: cluster2
+    - name: cluster1

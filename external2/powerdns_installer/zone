@@ -1,0 +1,10 @@
+domains:
+- domain: geoip.kchtest.org
+  ttl: 30
+  services:
+    service.geoip.kchtest.org:
+      default: ['10.0.3.4']
+      10.0.3.20/29: 'kch-test-svc.kch.kch-domain.svc.asia.kchtest.org'
+      10.0.3.24/29: 'kch-test-svc.kch.kch-domain.svc.northamerica.kchtest.org'
+      10.0.3.56/29: 'kch-test-svc.kch.kch-domain.svc.europe.kchtest.org'
+      10.0.3.0/29: 'kch-test-svc.kch.kch-domain.svc.europe.kchtest.org'

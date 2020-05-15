@@ -1,0 +1,29 @@
+apiVersion: keti.example.com/v1alpha1
+kind: OpenMCPscheduler
+metadata:
+  name: example-openmcpscheduler3
+  namespace: openmcp
+spec:
+  replicas: 3
+  policy:
+  - rule : "resource"
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      selector:
+        matchLabels:
+          app: nginx
+      template:
+        metadata:
+          labels:
+            app: nginx
+        spec:
+          containers:
+          - image: nginx
+            name: nginx
+            resources:
+              requests:
+                memory: "2Gi"
+                cpu: "1.5"
