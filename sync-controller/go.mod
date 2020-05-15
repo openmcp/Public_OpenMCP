@@ -24,6 +24,7 @@ require (
 	go.uber.org/multierr v1.2.0 // indirect
 	go.uber.org/zap v1.11.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45 // indirect
+	k8s.io/api v0.0.0-20191016225839-816a9b7df678
 	k8s.io/apimachinery v0.0.0-20191020214737-6c8691705fc5
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/cluster-registry v0.0.6 // indirect

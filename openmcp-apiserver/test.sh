@@ -10,6 +10,7 @@ TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
 for ((;;)){
-	curl -XGET -H "Authorization: Bearer $TOKEN" -H "Content-type: application/json" $IP:$PORT/$URL?clustername=$CLUSTER
+	#curl -XGET -H "Authorization: Bearer $TOKEN" -H "Content-type: application/json" $IP:$PORT/$URL?clustername=$CLUSTER
+	curl -XGET -H "Authorization: Bearer $TOKEN" $IP:$PORT/$URL?clustername=$CLUSTER
 	sleep 1
 }
