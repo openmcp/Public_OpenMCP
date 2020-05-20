@@ -2,9 +2,9 @@ apiVersion: keti.example.com/v1alpha1
 kind: OpenMCPDeployment
 metadata:
   name: openmcp-pod-request
-  namespace: ria
+  namespace: test
 spec:
-  replicas: 5
+  replicas: 7
   labels:
       app: openmcp-pod
   template:
