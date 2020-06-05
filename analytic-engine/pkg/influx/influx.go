@@ -6,10 +6,10 @@ import (
 	//"openmcp-analytic-engine/pkg/protobuf"
 )
 
-type Influx struct {
+type Influx struct{
 	inClient client.Client
-}
 
+}
 func NewInflux(INFLUX_IP, INFLUX_PORT, username, password string) *Influx {
 	inf := &Influx{
 		inClient: InfluxDBClient(INFLUX_IP, INFLUX_PORT, username, password),
@@ -18,7 +18,7 @@ func NewInflux(INFLUX_IP, INFLUX_PORT, username, password string) *Influx {
 }
 func InfluxDBClient(INFLUX_IP, INFLUX_PORT, username, password string) client.Client {
 	c, err := client.NewHTTPClient(client.HTTPConfig{
-		Addr:     "http://" + INFLUX_IP + ":" + INFLUX_PORT,
+		Addr:     "http://"+INFLUX_IP+":"+INFLUX_PORT,
 		Username: username,
 		Password: password,
 	})
@@ -28,8 +28,8 @@ func InfluxDBClient(INFLUX_IP, INFLUX_PORT, username, password string) client.Cl
 	return c
 }
 
-func (in *Influx) GetClusterMetricsData(clusterName string) []client.Result {
-	q := client.NewQuery("SELECT * FROM Nodes WHERE cluster = '"+clusterName+"' GROUP BY * ORDER BY DESC LIMIT 2", "Metrics", "")
+func (in *Influx) GetClusterMetricsData(clusterName string) []client.Result{
+	q := client.NewQuery("SELECT * FROM Nodes WHERE cluster = '" + clusterName +"' GROUP BY * ORDER BY DESC LIMIT 2", "Metrics", "")
 
 	response, err := in.inClient.Query(q)
 
@@ -41,7 +41,7 @@ func (in *Influx) GetClusterMetricsData(clusterName string) []client.Result {
 	return nil
 
 }
-func (in *Influx) SelectMetricsData() []client.Result {
+func (in *Influx) SelectMetricsData() []client.Result{
 	q := client.NewQuery("select * from Nodes group by * order by desc limit 1", "Metrics", "")
 
 	response, err := in.inClient.Query(q)

@@ -4,8 +4,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	"resource-controller/apis"
 	"resource-controller/apis/keti/v1alpha1"
+	"resource-controller/apis"
 )
 
 type ExampleV1Alpha1Interface interface {

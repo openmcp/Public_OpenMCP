@@ -129,13 +129,13 @@ type OpenMCPDeploymentStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	Replicas                  int32                 `json:"replicas"`
-	ClusterMaps               map[string]int32      `json:"clusters"`
-	LastSpec                  OpenMCPDeploymentSpec `json:"lastSpec"`
-	SchedulingNeed            bool                  `json:"schedulingNeed"`
-	SchedulingComplete        bool                  `json:"schedulingComplete"`
-	CreateSyncRequestComplete bool                  `json:"createSyncRequestComplete"`
-	SyncRequestName           string                `json:"syncRequestName"`
+	Replicas           int32                 `json:"replicas"`
+	ClusterMaps        map[string]int32      `json:"clusters"`
+	LastSpec           OpenMCPDeploymentSpec `json:"lastSpec"`
+	SchedulingNeed     bool                  `json:"schedulingNeed"`
+	SchedulingComplete bool                  `json:"schedulingComplete"`
+	CreateSyncRequestComplete bool			 `json:"createSyncRequestComplete"`
+	SyncRequestName 	string 				 `json:"syncRequestName"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -272,9 +272,9 @@ type OpenMCPHybridAutoScalerStatus struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	//Nodes []string `json:"nodes"`
-	LastSpec         OpenMCPHybridAutoScalerSpec `json:"lastSpec"`
-	Policies         []OpenMCPPolicies           `json:"policies"`
-	RebalancingCount map[string]int32            `json:"rebalancingCount"`
+	LastSpec OpenMCPHybridAutoScalerSpec `json:"lastSpec"`
+	Policies []OpenMCPPolicies           `json:"policies"`
+	RebalancingCount map[string]int32    `json:"rebalancingCount"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

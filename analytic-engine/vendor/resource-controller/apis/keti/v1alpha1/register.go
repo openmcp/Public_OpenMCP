@@ -13,15 +13,15 @@ import (
 )
 
 var (
-	GroupName    = "keti.example.com"
+	GroupName = "keti.example.com"
 	GroupVersion = "v1alpha1"
 	// SchemeGroupVersion is group version used to register these objects
 	SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: GroupVersion}
 )
 var (
-	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
-	AddToScheme   = SchemeBuilder.AddToScheme
-)
+     SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
+     AddToScheme   = SchemeBuilder.AddToScheme
+     )
 
 func init() {
 	// We only register manually written functions here. The registration of the

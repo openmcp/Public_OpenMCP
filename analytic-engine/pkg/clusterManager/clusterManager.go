@@ -16,7 +16,7 @@ type ClusterManager struct {
 	Fed_namespace       string
 	Host_config         *rest.Config
 	Host_client         genericclient.Client
-	Crd_client          *clientV1alpha1.ExampleV1Alpha1Client
+	Crd_client			*clientV1alpha1.ExampleV1Alpha1Client
 	Cluster_list        *fedv1b1.KubeFedClusterList
 	Cluster_configs     map[string]*rest.Config
 	Cluster_genClients  map[string]genericclient.Client
@@ -87,7 +87,7 @@ func NewClusterManager() *ClusterManager {
 	host_config.APIPath = "/apis"
 	host_config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
 	host_config.UserAgent = rest.DefaultKubernetesUserAgent()
-	*/
+*/
 
 	crd_client, _ := clientV1alpha1.NewForConfig(host_config)
 
@@ -102,7 +102,7 @@ func NewClusterManager() *ClusterManager {
 		Fed_namespace:       fed_namespace,
 		Host_config:         host_config,
 		Host_client:         host_client,
-		Crd_client:          crd_client,
+		Crd_client:			 crd_client,
 		Cluster_list:        cluster_list,
 		Cluster_configs:     cluster_configs,
 		Cluster_genClients:  cluster_gen_clients,

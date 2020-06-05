@@ -19,8 +19,7 @@ package main
 import (
 	//"flag"
 	"log"
-	//"os"
-	//"context"
+
 	//"os"
 
 	"fmt"
@@ -39,7 +38,7 @@ import (
 	//genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 	//fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 	//"sigs.k8s.io/kubefed/pkg/controller/util"
-	//"resource-controller/controllers/openmcphpa/pkg/protobuf"
+
 )
 
 func main() {
@@ -57,6 +56,7 @@ func main() {
 	if gRPCerr != nil {
 		fmt.Printf("could not connect : %v", gRPCerr)
 	}
+	fmt.Println(len(result.TargetCluster))
 	fmt.Println("Anlysis Result:", result.TargetCluster)
 	//--------------------------------------------------------------------------------------------------*/
 

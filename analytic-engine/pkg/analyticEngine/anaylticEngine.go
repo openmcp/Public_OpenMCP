@@ -29,9 +29,11 @@ import (
 	"net"
 	"openmcp-analytic-engine/pkg/clusterManager"
 	"openmcp-analytic-engine/pkg/influx"
+
 	//fedapis "sigs.k8s.io/kubefed/pkg/apis"
 	//ketiapis "resource-controller/apis"
 )
+
 
 type AnalyticEngineStruct struct {
 	Influx        influx.Influx
@@ -39,7 +41,9 @@ type AnalyticEngineStruct struct {
 	ResourceScore map[string]float64
 }
 
-func NewAnalyticEngine(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD string) *AnalyticEngineStruct {
+
+
+func NewAnalyticEngine(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD string) *AnalyticEngineStruct{
 	ae := &AnalyticEngineStruct{}
 	ae.Influx = *influx.NewInflux(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD)
 	ae.ResourceScore = make(map[string]float64)
@@ -55,9 +59,9 @@ func (ae *AnalyticEngineStruct) CalcResourceScore() {
 
 	if target_cluster_policy_err != nil {
 		fmt.Println(target_cluster_policy_err)
-	} else {
+	}else {
 		a := openmcpPolicyInstance.Spec.Template.Spec.Policies
-		for _, b := range a {
+		for _, b := range(a) {
 			value, _ := strconv.ParseFloat(b.Value[0], 64)
 			ae.MetricsWeight[b.Type] = value
 		}
@@ -66,7 +70,7 @@ func (ae *AnalyticEngineStruct) CalcResourceScore() {
 	//-------------------------------------------------------
 	for {
 		fmt.Println("Cluster들의 Metric Score를 갱신합니다.")
-		for _, cluster := range cm.Cluster_list.Items {
+		for _, cluster := range cm.Cluster_list.Items{
 			ae.ResourceScore[cluster.Name] = ae.UpdateScore(cluster.Name)
 		}
 		time.Sleep(5 * time.Second)
@@ -90,6 +94,7 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
 				Strval := fmt.Sprintf("%v", ser.Values[r][c])
 				QuanVal, _ := resource.ParseQuantity(Strval)
 
+
 				if r == 0 {
 					if _, ok := MetricsMap[colName]; ok {
 						MetricsMap[colName] = MetricsMap[colName] + float64(QuanVal.Value())
@@ -108,43 +113,44 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
 		}
 	}
 
-	cpuScore := (float64(totalCpuCore) - MetricsMap["CPUUsageNanoCores"]) / float64(totalCpuCore) * 100 // 확인필요
-	memScore := MetricsMap["MemoryAvailableBytes"] / (MetricsMap["MemoryUsageBytes"] + MetricsMap["MemoryAvailableBytes"]) * 100
+	cpuScore := (float64(totalCpuCore) - MetricsMap["CPUUsageNanoCores"]) / float64(totalCpuCore) * 100// 확인필요
+	memScore :=  MetricsMap["MemoryAvailableBytes"] / (MetricsMap["MemoryUsageBytes"] + MetricsMap["MemoryAvailableBytes"]) * 100
 	//netScore := (MetricsMap["NetworkRxBytes"] - prevMetricsMap["NetworkRxBytes"]) + (MetricsMap["NetworkTxBytes"] - prevMetricsMap["NetworkTxBytes"]) / float64(totalNet) * 100// 확인필요
 	diskScore := MetricsMap["FsAvailableBytes"] / MetricsMap["FsCapacityBytes"] * 100
 
 	score = cpuScore*ae.MetricsWeight["CPU"] + memScore*ae.MetricsWeight["Memory"] + diskScore*ae.MetricsWeight["FS"]
-	/*
-		cpuUsed := resource.NewQuantity(int64(totalCpuCore) - int64(MetricsMap["CPUUsageNanoCores"]),resource.BinarySI).String()
-		cpuTotal := resource.NewQuantity(int64(totalCpuCore), resource.BinarySI).String()
+/*
+	cpuUsed := resource.NewQuantity(int64(totalCpuCore) - int64(MetricsMap["CPUUsageNanoCores"]),resource.BinarySI).String()
+	cpuTotal := resource.NewQuantity(int64(totalCpuCore), resource.BinarySI).String()
 
-		memUsed := resource.NewQuantity(int64(MetricsMap["MemoryAvailableBytes"]),resource.BinarySI).String()
-		memTotal := resource.NewQuantity(int64(MetricsMap["MemoryUsageBytes"] + MetricsMap["MemoryAvailableBytes"]), resource.BinarySI).String()
+	memUsed := resource.NewQuantity(int64(MetricsMap["MemoryAvailableBytes"]),resource.BinarySI).String()
+	memTotal := resource.NewQuantity(int64(MetricsMap["MemoryUsageBytes"] + MetricsMap["MemoryAvailableBytes"]), resource.BinarySI).String()
 
-		//netUsed := resource.NewQuantity(int64(MetricsMap["NetworkRxBytes"]) - int64(prevMetricsMap["NetworkRxBytes"]) +  int64(MetricsMap["NetworkTxBytes"]) - int64(prevMetricsMap["NetworkTxBytes"]) ,resource.BinarySI).String()
-		//netTotal := resource.NewQuantity(int64(totalNet), resource.BinarySI).String()
+	//netUsed := resource.NewQuantity(int64(MetricsMap["NetworkRxBytes"]) - int64(prevMetricsMap["NetworkRxBytes"]) +  int64(MetricsMap["NetworkTxBytes"]) - int64(prevMetricsMap["NetworkTxBytes"]) ,resource.BinarySI).String()
+	//netTotal := resource.NewQuantity(int64(totalNet), resource.BinarySI).String()
 
-		diskUsed := resource.NewQuantity(int64(MetricsMap["FsAvailableBytes"]),resource.BinarySI).String()
-		diskTotal := resource.NewQuantity(int64(MetricsMap["FsCapacityBytes"]), resource.BinarySI).String()
+	diskUsed := resource.NewQuantity(int64(MetricsMap["FsAvailableBytes"]),resource.BinarySI).String()
+	diskTotal := resource.NewQuantity(int64(MetricsMap["FsCapacityBytes"]), resource.BinarySI).String()
 
 
 
-		fmt.Println("--------------------------------------------------------------------------------------------")
-		fmt.Println("Cluster : ", clusterName)
-		fmt.Println("--------------------------------------------------------------------------------------------")
-		fmt.Println("cpuScore : ", cpuScore, "(",cpuUsed, " / ",  cpuTotal, ") , weight : ", ae.MetricsWeight["CPU"])
-		fmt.Println("memScore : ", memScore, "(", memUsed, " / ", memTotal, ") , weight : ", ae.MetricsWeight["Memory"])
-		//fmt.Println("netScore : ", netScore, "(", netUsed, " / ", netTotal, ")")
-		fmt.Println("diskScore : ", diskScore, "(", diskUsed, "/", diskTotal, ") , weight : ", ae.MetricsWeight["FS"])
+	fmt.Println("--------------------------------------------------------------------------------------------")
+	fmt.Println("Cluster : ", clusterName)
+	fmt.Println("--------------------------------------------------------------------------------------------")
+	fmt.Println("cpuScore : ", cpuScore, "(",cpuUsed, " / ",  cpuTotal, ") , weight : ", ae.MetricsWeight["CPU"])
+	fmt.Println("memScore : ", memScore, "(", memUsed, " / ", memTotal, ") , weight : ", ae.MetricsWeight["Memory"])
+	//fmt.Println("netScore : ", netScore, "(", netUsed, " / ", netTotal, ")")
+	fmt.Println("diskScore : ", diskScore, "(", diskUsed, "/", diskTotal, ") , weight : ", ae.MetricsWeight["FS"])
 	*/
 	fmt.Println("--------------------------------------------------------------------------------------------")
 	fmt.Println("totalScore : ", score)
 	fmt.Println("--------------------------------------------------------------------------------------------")
 
+
 	return score
 }
 
-func (ae *AnalyticEngineStruct) SendLBAnalysis(ctx context.Context, in *protobuf.LBInfo) (*protobuf.ResponseLB, error) {
+func (ae *AnalyticEngineStruct) SendLBAnalysis(ctx context.Context, in *protobuf.LBInfo) (*protobuf.ResponseLB, error){
 	fmt.Println("LB Requested")
 	clusterNameList := in.ClusterNameList
 	clusterScoreMap := make(map[string]float64)
@@ -160,29 +166,29 @@ func (ae *AnalyticEngineStruct) SendLBAnalysis(ctx context.Context, in *protobuf
 
 func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) string {
 
-	scoreMap := map[float64]string{}
-	score := []float64{}
+		scoreMap := map[float64]string{}
+		score := []float64{}
 
-	for key, value := range ae.ResourceScore {
-		if key != data.ClusterName && value > 0 {
-			scoreMap[value] = key
-			score = append(score, value)
+		for key, value := range ae.ResourceScore {
+			if key != data.ClusterName && value > 0 {
+				scoreMap[value] = key
+				score = append(score, value)
+			}
 		}
-	}
-	sort.Float64s(score)
-	fmt.Println("scoreMap : ", scoreMap)
+		sort.Float64s(score)
+		fmt.Println("scoreMap : " ,scoreMap)
 
-	filteringCluster := []string{}
+		filteringCluster := []string{}
 
-	if len(score) > 1 {
-		filteringCluster = append(filteringCluster, scoreMap[score[0]])
-		filteringCluster = append(filteringCluster, scoreMap[score[1]])
-	}
+		if len(score) > 1 {
+			filteringCluster = append(filteringCluster, scoreMap[score[0]])
+			filteringCluster = append(filteringCluster, scoreMap[score[1]])
+		}
 
-	fmt.Println("filteringCluster : ", filteringCluster)
+		fmt.Println("filteringCluster : ", filteringCluster)
 
-	result := ae.CompareHPAInfo(filteringCluster, data.HPAName, data.HPANamespace)
-	fmt.Println("result : ", result)
+		result := ae.CompareHPAInfo(filteringCluster, data.HPAName, data.HPANamespace)
+		fmt.Println("result : ",result)
 
 	return result
 }
@@ -190,7 +196,6 @@ func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) string 
 func (ae *AnalyticEngineStruct) CompareHPAInfo(clusterList []string, hpaName string, hpaNamespace string) string {
 	replicasGap := map[string]int32{}
 	rebalancingCount := map[string]int32{}
-	fmt.Println("aa: ", rebalancingCount["aa"])
 
 	cm := clusterManager.NewClusterManager()
 
@@ -198,9 +203,12 @@ func (ae *AnalyticEngineStruct) CompareHPAInfo(clusterList []string, hpaName str
 	for _, cluster := range clusterList {
 		err := cm.Cluster_genClients[cluster].Get(context.TODO(), hpaInstance, hpaNamespace, hpaName)
 		if err == nil {
-			fmt.Println(cluster, " hpa : ", hpaInstance.Spec.MaxReplicas, " / ", hpaInstance.Status.CurrentReplicas)
-			replicasGap[cluster] = hpaInstance.Spec.MaxReplicas - hpaInstance.Status.CurrentReplicas
-		} else {
+			fmt.Println(cluster," hpa : ",hpaInstance.Spec.MaxReplicas, " / ",hpaInstance.Status.CurrentReplicas)
+			calc := hpaInstance.Spec.MaxReplicas - hpaInstance.Status.CurrentReplicas
+			if calc > 0 {
+				replicasGap[cluster] = calc
+			}
+		}else {
 			fmt.Println(err)
 		}
 	}
@@ -208,39 +216,40 @@ func (ae *AnalyticEngineStruct) CompareHPAInfo(clusterList []string, hpaName str
 	openmcphasInstance, err := cm.Crd_client.OpenMCPHybridAutoScaler(hpaNamespace).Get(hpaName, metav1.GetOptions{})
 
 	if err == nil {
-		fmt.Println("success: ", openmcphasInstance)
+		//fmt.Println("success: ",openmcphasInstance)
 		for cluster, _ := range replicasGap {
 			rebalancingCount[cluster] = openmcphasInstance.Status.RebalancingCount[cluster]
 		}
-	} else {
+	}else {
 		fmt.Println(err)
 	}
 
-	fmt.Println("desiredReplicas : ", replicasGap)
-	fmt.Println("countRebalancing : ", rebalancingCount)
+
+	fmt.Println("desiredReplicas : ",replicasGap)
+	fmt.Println("countRebalancing : ",rebalancingCount)
 
 	result := ""
 
 	for cluster, _ := range rebalancingCount {
 		if result == "" {
 			result = cluster
-		} else {
-			if (replicasGap[result] - rebalancingCount[result]) > (replicasGap[cluster] - rebalancingCount[cluster]) {
+		}else {
+			if (replicasGap[result] - rebalancingCount[result]) < (replicasGap[cluster] - rebalancingCount[cluster]) {
 				result = cluster
 			}
 		}
-		fmt.Println(result)
+		//fmt.Println(result)
 	}
 
 	return result
 }
 
 func (ae *AnalyticEngineStruct) SendHASAnalysis(ctx context.Context, data *protobuf.HASInfo) (*protobuf.ResponseHAS, error) {
-	fmt.Println("HAS Requested")
+	fmt.Println("---------HAS Requested Start---------")
 
 	result := ae.SelectHPACluster(data)
 
-	fmt.Println("HAS Response")
+	fmt.Println("---------HAS Response End---------")
 
 	return &protobuf.ResponseHAS{TargetCluster: result}, nil
 }
@@ -348,7 +357,7 @@ func (ae *AnalyticEngineStruct) SendHASAnalysis(ctx context.Context, data *proto
 //	return targetCluster
 //}
 
-func (ae *AnalyticEngineStruct) StartGRPC(GRPC_PORT string) {
+func (ae *AnalyticEngineStruct) StartGRPC(GRPC_PORT string){
 	log.Printf("Grpc Server Start at Port %s\n", GRPC_PORT)
 
 	//manager = NewClusterManager()
@@ -359,7 +368,7 @@ func (ae *AnalyticEngineStruct) StartGRPC(GRPC_PORT string) {
 	grpcServer := grpc.NewServer()
 
 	protobuf.RegisterRequestAnalysisServer(grpcServer, ae)
-	if err := grpcServer.Serve(l); err != nil {
+	if err := grpcServer.Serve(l); err!=nil {
 		log.Fatalf("fail to serve: %v", err)
 	}
 

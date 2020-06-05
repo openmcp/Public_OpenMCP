@@ -10,7 +10,7 @@ spec:
         kind: OpenMCPDeployment
         name: openmcp-pod
       minReplicas: 3
-      maxReplicas: 15
+      maxReplicas: 10
       metrics:
         - type: Resource
           resource:
@@ -25,7 +25,7 @@ spec:
             describedObject:
               apiVersion: v1
               kind: Pod
-              name: openmcp-pod
+              name: openmcp-pods
             target:
               type: Value
               value: 100
