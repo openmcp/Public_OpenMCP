@@ -1,10 +1,10 @@
 apiVersion: keti.example.com/v1alpha1
 kind: OpenMCPDeployment
 metadata:
-  name: openmcp-pod-request
-  namespace: test
+  name: openmcp-pod
+  namespace: keti
 spec:
-  replicas: 7
+  replicas: 8
   labels:
       app: openmcp-pod
   template:
@@ -18,5 +18,5 @@ spec:
             name: php-apache
             resources:
               requests:
-                memory: 500Mi
+                memory: 10Mi
                 cpu: 100m

@@ -20,6 +20,8 @@ import (
 	//"flag"
 	"log"
 	//"os"
+	//"context"
+	//"os"
 
 	"fmt"
 
@@ -37,32 +39,26 @@ import (
 	//genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 	//fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 	//"sigs.k8s.io/kubefed/pkg/controller/util"
+	//"resource-controller/controllers/openmcphpa/pkg/protobuf"
 )
 
 func main() {
 
-	//gRPC Test
+	/*//gRPC Test
 	//--------------------------------------------------------------------------------------------------
-	/*	SERVER_IP := os.Getenv("GRPC_SERVER")
-		SERVER_PORT := os.Getenv("GRPC_PORT")
+	SERVER_IP := os.Getenv("GRPC_SERVER")
+	SERVER_PORT := os.Getenv("GRPC_PORT")
 
-		grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
+	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
-		hi := &protobuf.OpenMCPHPAInfo{DeploymentName: "test-pod", DeploymentNamespace: "test", CL: nil}
-		hi.CL = make([]*protobuf.ClusterList, 0)
-		hi.CL = append(hi.CL, &protobuf.ClusterList{ClusterName: "cluster2"})
-		hi.CL = append(hi.CL, &protobuf.ClusterList{ClusterName: "cluster3"})
+	hi := &protobuf.HASInfo{HPAName: "openmcp-hpa", HPANamespace: "keti", ClusterName: "cluster2"}
 
-		rv := &protobuf.RequestValue{}
-		rv.HpaInfo = make([]*protobuf.OpenMCPHPAInfo, 0)
-		rv.HpaInfo = append(rv.HpaInfo, hi)
-
-		r, err := grpcClient.SendAnalysisResult(context.TODO(), rv)
-		if err != nil {
-			fmt.Printf("could not connect : %v", err)
-		}
-		fmt.Println("Anlysis Result:", r)*/
-	//--------------------------------------------------------------------------------------------------
+	result, gRPCerr := grpcClient.SendHASAnalysis(context.TODO(), hi)
+	if gRPCerr != nil {
+		fmt.Printf("could not connect : %v", gRPCerr)
+	}
+	fmt.Println("Anlysis Result:", result.TargetCluster)
+	//--------------------------------------------------------------------------------------------------*/
 
 	cm := controller.NewClusterManager()
 
@@ -72,7 +68,7 @@ func main() {
 	host_cfg := cm.Host_config
 	//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
 	live := cluster.New(host_ctx, host_cfg, cluster.Options{})
-
+	//fmt.Println(host_cfg)
 	ghosts := []*cluster.Cluster{}
 
 	for _, ghost_cluster := range cm.Cluster_list.Items {
@@ -87,7 +83,7 @@ func main() {
 		fmt.Println(ghost.Name)
 	}
 	co, _ := controller.NewController(live, ghosts, namespace)
-
+	//fmt.Println(live)
 	m := manager.New()
 	m.AddController(co)
 

@@ -19,6 +19,7 @@ import (
 	"fmt"
 	autoscaling "k8s.io/api/autoscaling/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog"
 	"os"
 	"strconv"
 	"time"
@@ -170,10 +171,13 @@ type reconciler struct {
 var i int = 0
 var syncIndex int = 0
 var lastTimeRebalancing time.Time
+var tmpMap = map[string]int32{}
 
 func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	//fmt.Println("Step 7.	r.Reconcile()")
+
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
+
 	i += 1
 	fmt.Println("********* [", i, "] *********")
 	fmt.Println("Request Namespace: ", request.Namespace, " /  Request Name: ", request.Name, " / Request Context: ", request.Context)
@@ -182,7 +186,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 	// Fetch the OpenMCPHybridAutoScaler instance
 	hasInstance := &ketiv1alpha1.OpenMCPHybridAutoScaler{}
-
+	//fmt.Println("live:", r.live)
 	err := r.live.Get(context.TODO(), request.NamespacedName, hasInstance)
 	//OpenMCPHPA Delete
 	if err != nil {
@@ -190,7 +194,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 			r.DeleteOpenMCPHPA(cm, request.Namespace, request.Name, request.Name)
 
-			reqLogger.Info("openmcphybridautoscaler resource not found. Ignoring since object must be deleted")
+			klog.V(2).Info("openmcphybridautoscaler resource not found. Ignoring since object must be deleted")
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
@@ -334,7 +338,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			}
 
 			for _, clustername := range dep_list_for_hpa {
-				// VPA 생성하지 않는 경우
+				// HPA만 생성
 				if hasInstance.Spec.VpaMode == "Never" || (hasInstance.Spec.VpaMode == "Auto" && cluster_dep_request[clustername] == true) {
 					//fmt.Println("[ Only HPA ]")
 					// Check if the HPA already exists, if not create a new one
@@ -364,6 +368,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 						//Status Update
 						hasInstance.Status.LastSpec = hasInstance.Spec
+						tmpMap[clustername] = 0
+						hasInstance.Status.RebalancingCount = tmpMap
 
 						err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 						if err_openmcp != nil {
@@ -401,22 +407,9 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 								grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
-								hi := &protobuf.OpenMCPHPAInfo{DeploymentName: "test-pod", DeploymentNamespace: "test", CL: nil}
-								hi.CL = make([]*protobuf.ClusterList, 0)
+								hi := &protobuf.HASInfo{HPAName: hasInstance.Name, HPANamespace: hasInstance.Namespace, ClusterName: clustername}
 
-								for _, clusterForAnalysis := range dep_list_for_analysis {
-									if clusterForAnalysis != clustername {
-										hi.CL = append(hi.CL, &protobuf.ClusterList{ClusterName: clusterForAnalysis})
-									}
-								}
-								//hi.CL = append(hi.CL, &protobuf.ClusterList{ClusterName:"cluster2"})
-								//hi.CL = append(hi.CL, &protobuf.ClusterList{ClusterName:"cluster3"})
-
-								rv := &protobuf.RequestValue{}
-								rv.HpaInfo = make([]*protobuf.OpenMCPHPAInfo, 0)
-								rv.HpaInfo = append(rv.HpaInfo, hi)
-
-								result, gRPCerr := grpcClient.SendAnalysisResult(context.TODO(), rv)
+								result, gRPCerr := grpcClient.SendHASAnalysis(context.TODO(), hi)
 								if gRPCerr != nil {
 									fmt.Printf("could not connect : %v", gRPCerr)
 								}
@@ -468,6 +461,17 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 								} else if current_err == nil && qos_err == nil {
 									fmt.Println(">>> "+clustername+" Update HPA [ min:", *updateHPA.Spec.MinReplicas, "/ max:", updateHPA.Spec.MaxReplicas, "]")
 									fmt.Println(">>> "+qosCluster+" Update HPA [ min:", *updateQosHPA.Spec.MinReplicas, "/ max:", updateQosHPA.Spec.MaxReplicas, "]")
+
+									//Status Update
+									hasInstance.Status.RebalancingCount[clustername] += 1
+
+									err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
+									if err_openmcp != nil {
+										fmt.Println("Failed to update instance status \"RebalancingCount\"", err)
+										return reconcile.Result{}, err
+									} else {
+										fmt.Println(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
+									}
 
 									lastTimeRebalancing = time.Now()
 									fmt.Println("     => RebalancingTime : ", lastTimeRebalancing)
@@ -547,6 +551,9 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 						//Status Update
 						hasInstance.Status.LastSpec = hasInstance.Spec
+						tmpMap := map[string]int32{}
+						tmpMap[clustername] = 0
+						hasInstance.Status.RebalancingCount = tmpMap
 
 						err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 						if err_openmcp != nil {
@@ -576,28 +583,21 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 									}
 								}
 
-								//분석 엔진을 통해 얻은 결과
+								///////////////수정/////////////////////////
+								if len(dep_list_for_analysis) == 0 {
+									fmt.Println("     => Failed Rebalancing : There is no candidate cluster")
+								}
+
+								//분석 엔진을 통해 얻은 결과 (gRPC 통신)
 								//---------------------------------------------------------------------------------------------------
 								SERVER_IP := os.Getenv("GRPC_SERVER")
 								SERVER_PORT := os.Getenv("GRPC_PORT")
 
 								grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
-								hi := &protobuf.OpenMCPHPAInfo{DeploymentName: "test-pod", DeploymentNamespace: "test", CL: nil}
-								hi.CL = make([]*protobuf.ClusterList, 0)
-								for _, clusterForAnalysis := range dep_list_for_analysis {
-									if clusterForAnalysis != clustername {
-										hi.CL = append(hi.CL, &protobuf.ClusterList{ClusterName: clusterForAnalysis})
-									}
-								}
-								//hi.CL = append(hi.CL, &protobuf.ClusterList{ClusterName:"cluster2"})
-								//hi.CL = append(hi.CL, &protobuf.ClusterList{ClusterName:"cluster3"})
+								hi := &protobuf.HASInfo{HPAName: hasInstance.Name, HPANamespace: hasInstance.Namespace, ClusterName: clustername}
 
-								rv := &protobuf.RequestValue{}
-								rv.HpaInfo = make([]*protobuf.OpenMCPHPAInfo, 0)
-								rv.HpaInfo = append(rv.HpaInfo, hi)
-
-								result, gRPCerr := grpcClient.SendAnalysisResult(context.TODO(), rv)
+								result, gRPCerr := grpcClient.SendHASAnalysis(context.TODO(), hi)
 								if gRPCerr != nil {
 									fmt.Printf("could not connect : %v", gRPCerr)
 								}
@@ -650,6 +650,17 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 								} else if current_err == nil && qos_err == nil {
 									fmt.Println(">>> "+clustername+" Update HPA [ min:", *updateHPA.Spec.MinReplicas, "/ max:", updateHPA.Spec.MaxReplicas, "]")
 									fmt.Println(">>> "+qosCluster+" Update HPA [ min:", *updateQosHPA.Spec.MinReplicas, "/ max:", updateQosHPA.Spec.MaxReplicas, "]")
+
+									//Status Update
+									hasInstance.Status.RebalancingCount[clustername] += 1
+
+									err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
+									if err_openmcp != nil {
+										fmt.Println("Failed to update instance status \"RebalancingCount\"", err)
+										return reconcile.Result{}, err
+									} else {
+										fmt.Println(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
+									}
 
 									lastTimeRebalancing = time.Now()
 									fmt.Println("     => RebalancingTime : ", lastTimeRebalancing)
