@@ -13,6 +13,7 @@
 <code>
 # 실행 프로그램 만들기
 1.build.sh
+
 # 실행 프로그램 경로 지정 및 Config 파일 경로 지정
 2.install.sh
 </code>
@@ -21,14 +22,13 @@
 ## Config 파일 설정
 
 > KetiKubeCli는 다음과 같은 설정값(/var/lib/ketikubecli/config.yaml)이 필요합니다.
-<pre>
-<code>
+```
 # OpenMCP 설치 경로 지정
 openmcpDir: "/root/workspace/openmcp"
+
 # External(nfs) 서버 지정
 nfsServer: "10.0.3.12"
-</code>
-</pre>
+```
 
 ## Governance
 
