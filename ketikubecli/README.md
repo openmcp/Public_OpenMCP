@@ -1,6 +1,6 @@
 # ketikubecli
 
-## Introduction of KetiKubeCli;
+## Introduction of KetiKubeCli
 
 > KETI에서 개발한 OpenMCP 플랫폼의 Cluster 자동 Join/Unjoin 기능을 효과적으로 제어할 수 있는 명령어 인터페이스
 
@@ -9,15 +9,13 @@
 
 
 ## How to Install
-<pre>
-<code>
+```
 # 실행 프로그램 만들기
 1.build.sh
 
 # 실행 프로그램 경로 지정 및 Config 파일 경로 지정
 2.install.sh
-</code>
-</pre>
+```
 
 ## Config 파일 설정
 
