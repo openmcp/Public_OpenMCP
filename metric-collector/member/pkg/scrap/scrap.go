@@ -22,7 +22,7 @@ func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nod
 
 	startTime := clock.MyClock.Now()
 
-	//var wait sync.WaitGroup
+	//var wait serviceDNS.WaitGroup
 	//wait.Add(len(cm.Node_list.Items))
 
 	for _, node := range nodes {
@@ -67,7 +67,7 @@ func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nod
 }
 
 func CollectNode(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, node corev1.Node) (*storage.MetricsBatch, error) {
-	fmt.Println("Func CollectNode Called")
+	//fmt.Println("Func CollectNode Called")
 	host := node.Status.Addresses[0].Address
 	token := config.BearerToken
 	summary, err := kubelet_client.GetSummary(host, token)

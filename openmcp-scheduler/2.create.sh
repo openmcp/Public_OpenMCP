@@ -1,5 +1,9 @@
 #!/bin/bash
-cd deploy
+project_root_dir=/root/workspace/usr/lyn
+resource_name="openmcpscheduler"
+
+org_dir=`pwd`
+cd $project_root_dir/$resource_name/deploy
 
 kubectl create ns openmcp
 kubectl create ns openmcp
@@ -9,6 +13,5 @@ kubectl create -f crds/crd.yaml
 kubectl create -f service_account.yaml
 kubectl create -f role_binding.yaml
 kubectl create -f operator.yaml
-#kubectl create -f crds/cr.yaml
 
-cd ..
+cd $org_dir

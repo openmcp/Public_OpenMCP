@@ -1,3 +1,3 @@
 ./secret_info
 
-kubectl create -f .
+kubectl create -f deploy/.

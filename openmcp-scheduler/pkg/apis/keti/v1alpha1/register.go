@@ -13,7 +13,9 @@ import (
 var (
 	// SchemeGroupVersion is group version used to register these objects
 	SchemeGroupVersion = schema.GroupVersion{Group: "keti.example.com", Version: "v1alpha1"}
+	SchemeGroupVersion2 = schema.GroupVersion{Group: "autoscaling.k8s.io", Version: "v1beta2"}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
+	SchemeBuilder2 = &scheme.Builder{GroupVersion: SchemeGroupVersion2}
 )

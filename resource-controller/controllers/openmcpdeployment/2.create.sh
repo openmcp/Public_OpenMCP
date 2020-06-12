@@ -14,6 +14,6 @@ kubectl create -f crds/crd.yaml
 kubectl create -f service_account.yaml
 kubectl create -f role_binding.yaml
 kubectl create -f operator.yaml
-kubectl create -f crds/cr.yaml
+#kubectl create -f crds/cr.yaml
 
 cd $org_dir

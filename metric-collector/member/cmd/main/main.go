@@ -1,3 +1,4 @@
+
 package main
 
 import (
@@ -25,8 +26,8 @@ import (
 	"time"
 )
 
-func convert(data *storage.Collection) *protobuf.Collection {
-	fmt.Println("Called Convert")
+func convert(data *storage.Collection) *protobuf.Collection{
+	fmt.Println("Convert GRPC Data Structure")
 
 	grpc_data := &protobuf.Collection{}
 
@@ -34,18 +35,22 @@ func convert(data *storage.Collection) *protobuf.Collection {
 
 	for i, _ := range grpc_data.Matricsbatchs {
 
-		s := int64(data.Matricsbatchs[i].Node.Timestamp.Second())     // from 'int'
+		s := int64(data.Matricsbatchs[i].Node.Timestamp.Second()) // from 'int'
 		n := int32(data.Matricsbatchs[i].Node.Timestamp.Nanosecond()) // from 'int'
 
-		ts := &timestamp.Timestamp{Seconds: s, Nanos: n}
+		ts := &timestamp.Timestamp{Seconds:s, Nanos:n}
 
 		mp := &protobuf.MetricsPoint{
-			Timestamp:      ts,
-			CpuUsage:       data.Matricsbatchs[i].Node.CpuUsage.String(),
-			MemoryUsage:    data.Matricsbatchs[i].Node.MemoryUsage.String(),
-			NetworkRxUsage: data.Matricsbatchs[i].Node.NetworkRxUsage.String(),
-			NetworkTxUsage: data.Matricsbatchs[i].Node.NetworkTxUsage.String(),
-			FsUsage:        data.Matricsbatchs[i].Node.FsUsage.String(),
+			Timestamp: ts,
+			CPUUsageNanoCores: data.Matricsbatchs[i].Node.CPUUsageNanoCores.String(),
+			MemoryUsageBytes: data.Matricsbatchs[i].Node.MemoryUsageBytes.String(),
+			MemoryAvailableBytes: data.Matricsbatchs[i].Node.MemoryAvailableBytes.String(),
+			MemoryWorkingSetBytes: data.Matricsbatchs[i].Node.MemoryWorkingSetBytes.String(),
+			NetworkRxBytes: data.Matricsbatchs[i].Node.NetworkRxBytes.String(),
+			NetworkTxBytes: data.Matricsbatchs[i].Node.NetworkTxBytes.String(),
+			FsAvailableBytes: data.Matricsbatchs[i].Node.FsAvailableBytes.String(),
+			FsCapacityBytes: data.Matricsbatchs[i].Node.FsCapacityBytes.String(),
+			FsUsedBytes: data.Matricsbatchs[i].Node.FsUsedBytes.String(),
 		}
 		grpc_data.Matricsbatchs[i].Node.MP = mp
 
@@ -59,18 +64,22 @@ func convert(data *storage.Collection) *protobuf.Collection {
 		podMetricsPoints := []*protobuf.PodMetricsPoint{}
 
 		for j, _ := range data.Matricsbatchs[i].Pods {
-			s := int64(data.Matricsbatchs[i].Pods[j].Timestamp.Second())     // from 'int'
+			s := int64(data.Matricsbatchs[i].Pods[j].Timestamp.Second()) // from 'int'
 			n := int32(data.Matricsbatchs[i].Pods[j].Timestamp.Nanosecond()) // from 'int'
 
-			ts := &timestamp.Timestamp{Seconds: s, Nanos: n}
-
+			ts := &timestamp.Timestamp{Seconds:s, Nanos:n}
+		
 			mp2 := &protobuf.MetricsPoint{
-				Timestamp:      ts,
-				CpuUsage:       data.Matricsbatchs[i].Pods[j].CpuUsage.String(),
-				MemoryUsage:    data.Matricsbatchs[i].Pods[j].MemoryUsage.String(),
-				NetworkRxUsage: data.Matricsbatchs[i].Pods[j].NetworkRxUsage.String(),
-				NetworkTxUsage: data.Matricsbatchs[i].Pods[j].NetworkTxUsage.String(),
-				FsUsage:        data.Matricsbatchs[i].Pods[j].FsUsage.String(),
+				Timestamp: ts,
+				CPUUsageNanoCores: data.Matricsbatchs[i].Pods[j].CPUUsageNanoCores.String(),
+				MemoryUsageBytes: data.Matricsbatchs[i].Pods[j].MemoryUsageBytes.String(),
+				MemoryAvailableBytes: data.Matricsbatchs[i].Pods[j].MemoryAvailableBytes.String(),
+				MemoryWorkingSetBytes: data.Matricsbatchs[i].Pods[j].MemoryWorkingSetBytes.String(),
+				NetworkRxBytes: data.Matricsbatchs[i].Pods[j].NetworkRxBytes.String(),
+				NetworkTxBytes: data.Matricsbatchs[i].Pods[j].NetworkTxBytes.String(),
+				FsAvailableBytes: data.Matricsbatchs[i].Pods[j].FsAvailableBytes.String(),
+				FsCapacityBytes: data.Matricsbatchs[i].Pods[j].FsCapacityBytes.String(),
+				FsUsedBytes: data.Matricsbatchs[i].Pods[j].FsUsedBytes.String(),
 			}
 			pmp := &protobuf.PodMetricsPoint{
 				Name:       data.Matricsbatchs[i].Pods[j].Name,
@@ -92,10 +101,11 @@ func convert(data *storage.Collection) *protobuf.Collection {
 
 	}
 
+
 	return grpc_data
 
 }
-func main() {
+func main(){
 	SERVER_IP := os.Getenv("GRPC_SERVER")
 	SERVER_PORT := os.Getenv("GRPC_PORT")
 
@@ -111,6 +121,7 @@ func main() {
 
 		grpc_data := convert(data)
 
+		fmt.Println("GRPC Data Send")
 		r, err := grpcClient.SendMetrics(context.TODO(), grpc_data)
 		if err != nil {
 			fmt.Printf("could not connect : %v", err)
@@ -118,15 +129,19 @@ func main() {
 		_ = r
 		_ = data
 
+
 		token := cm.Host_config.BearerToken
 		host := cm.Host_config.Host
 		client := cm.Host_client
-		fmt.Println("host: ", host)
-		fmt.Println("token: ", token)
-		fmt.Println("client: ", client)
+		//fmt.Println("host: ", host)
+		//fmt.Println("token: ", token)
+		//fmt.Println("client: ", client)
 
-		customMetrics.AddToCustomMetricServer(data, token, host, client)
+		customMetrics.AddToPodCustomMetricServer(data, token, host)
+		customMetrics.AddToDeployCustomMetricServer(data, token, host, client)
 
 		time.Sleep(5 * time.Second)
 	}
 }
+
+

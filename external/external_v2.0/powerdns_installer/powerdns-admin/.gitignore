@@ -1,0 +1,46 @@
+# gedit
+*~
+
+# eclipse
+.settings
+
+# pycharm
+.idea
+
+# vscode
+.vscode
+
+*.py[cod]
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# tmp files
+.~*
+
+flask
+config.py
+logfile.log
+settings.json
+advanced_settings.json
+idp.crt
+log.txt
+
+db_repository/*
+upload/avatar/*
+tmp/*
+.ropeproject
+.sonarlint/*
+pdns.db
+
+node_modules
+
+.webassets-cache
+app/static/generated
+.venv*
+.pytest_cache

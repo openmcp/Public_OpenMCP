@@ -136,6 +136,26 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		if err != nil {
 			return reconcile.Result{}, err
 		}
+
+		//OpenMCPIngress 확인
+		ingress_list := &ketiv1alpha1.OpenMCPIngressList{}
+		r.live.List(context.TODO(), &client.ListOptions{Namespace: instance.Namespace}, ingress_list)
+
+		for _, ingressInstance := range ingress_list.Items {
+			for _, value := range ingressInstance.Spec.Template.Spec.Rules {
+				for _, v := range value.HTTP.Paths {
+					if v.Backend.ServiceName == instance.Name {
+						ingressInstance.Status.ChangeNeed = true
+						err := r.live.Status().Update(context.TODO(), &ingressInstance)
+						if err != nil {
+							fmt.Println(err)
+						}
+					}
+				}
+			}
+		}
+
+
 		return reconcile.Result{}, nil
 
 	}
@@ -155,6 +175,24 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		r.updateService(req, cm, instance)
 	}
 
+	//OpenMCPIngress 확인
+	ingress_list := &ketiv1alpha1.OpenMCPIngressList{}
+	r.live.List(context.TODO(), &client.ListOptions{Namespace: instance.Namespace}, ingress_list)
+
+	for _, ingressInstance := range ingress_list.Items {
+		for _, value := range ingressInstance.Spec.Template.Spec.Rules {
+			for _, v := range value.HTTP.Paths {
+				if v.Backend.ServiceName == instance.Name {
+					ingressInstance.Status.ChangeNeed = true
+					err := r.live.Status().Update(context.TODO(), &ingressInstance)
+					if err != nil {
+						fmt.Println(err)
+					}
+				}
+			}
+		}
+	}
+
 	//odeploy := &ketiv1alpha1.OpenMCPDeployment{}
 	//cm.Host_client.Get(context.TODO(), odeploy, req.Namespace, req.Name)
 	//
@@ -171,7 +209,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	//
 	//	found := &corev1.Service{}
 	//	cluster_client := cm.Cluster_clients[cluster_name]
-	//	err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name+"-service")
+	//	err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 	//	if err != nil && errors.IsNotFound(err) {
 	//		// Delete Serivce Detected
 	//		fmt.Println("Cluster '" + cluster_name  + "' ReDeployed")
@@ -193,7 +231,7 @@ func (r *reconciler) serviceForOpenMCPService(req reconcile.Request, m *ketiv1al
 
 	svc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      m.Name + "-service",
+			Name:      m.Name,
 			Namespace: m.Namespace,
 		},
 		//Spec: m.Spec.Template.Spec,
@@ -212,7 +250,7 @@ func (cm *ClusterManager) DeleteServices(nsn types.NamespacedName) error {
 	for _, cluster := range cm.Cluster_list.Items {
 		cluster_client := cm.Cluster_clients[cluster.Name]
 		fmt.Println(nsn.Namespace, nsn.Name)
-		err := cluster_client.Get(context.Background(), svc, nsn.Namespace, nsn.Name+"-service")
+		err := cluster_client.Get(context.Background(), svc, nsn.Namespace, nsn.Name)
 		if err != nil && errors.IsNotFound(err) {
 			// all good
 			fmt.Println("Not Found")
@@ -222,7 +260,7 @@ func (cm *ClusterManager) DeleteServices(nsn types.NamespacedName) error {
 			continue
 		}
 		fmt.Println(cluster.Name, " Delete Start")
-		err = cluster_client.Delete(context.Background(), svc, nsn.Namespace, nsn.Name+"-service")
+		err = cluster_client.Delete(context.Background(), svc, nsn.Namespace, nsn.Name)
 		if err != nil {
 			return err
 		}
@@ -348,7 +386,7 @@ func (r *reconciler) createService(req reconcile.Request, cm *ClusterManager, in
 		found := &corev1.Service{}
 		cluster_client := cm.Cluster_clients[cluster_name]
 
-		err := cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name+"-service")
+		err := cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 
 		if err != nil && errors.IsNotFound(err) {
 			err = cluster_client.Create(context.TODO(), svc)
@@ -387,7 +425,7 @@ func (r *reconciler) updateService(req reconcile.Request, cm *ClusterManager, in
 		cluster_client := cm.Cluster_clients[cluster.Name]
 
 		found := &corev1.Service{}
-		err := cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name+"-service")
+		err := cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 
 		if contains(label_include_cluster_list, cluster.Name) {
 			if err != nil && errors.IsNotFound(err) {
@@ -415,7 +453,7 @@ func (r *reconciler) updateService(req reconcile.Request, cm *ClusterManager, in
 			if err != nil && errors.IsNotFound(err) {
 				continue
 			} else if err == nil {
-				err = cluster_client.Delete(context.TODO(), found, instance.Namespace, instance.Name+"-service")
+				err = cluster_client.Delete(context.TODO(), found, instance.Namespace, instance.Name)
 				if err != nil {
 					return err
 				}

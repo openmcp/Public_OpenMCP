@@ -10,9 +10,9 @@ kubectl delete -f role_binding.yaml
 kubectl delete -f operator.yaml
 kubectl delete -f crds/cr.yaml
 
-kubectl delete deploy example-openmcpdeployment-deploy --context cluster1 -n openmcp
-kubectl delete deploy example-openmcpdeployment-deploy --context cluster2 -n openmcp
-kubectl delete deploy example-openmcpdeployment-deploy --context cluster3 -n openmcp
+kubectl delete deploy example-openmcpdeployment --context cluster1 -n openmcp
+kubectl delete deploy example-openmcpdeployment --context cluster2 -n openmcp
+kubectl delete deploy example-openmcpdeployment --context cluster3 -n openmcp
 kubectl delete openmcpdeployments example-openmcpdeployment -n openmcp
 #kubectl delete ns openmcp --context cluster1 &
 #kubectl delete ns openmcp --context cluster2 &
