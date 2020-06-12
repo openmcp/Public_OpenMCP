@@ -50,7 +50,7 @@ ketikubecli regist openmcp
 
 ## 2. 기본 모듈 배포  
 
-먼저, OpenMCP 동작에 필요한 기본 모듈을 배포합니다.
+OpenMCP 동작에 필요한 기본 모듈을 배포합니다.
 
 ```bash
 ./install_openmcp/master/1.create.sh
@@ -67,6 +67,49 @@ ketikubecli regist openmcp
 
 
 ## 3. 클러스터 Join
-join 전에 join하고자 하는 클러스터의 config
+### (1) (선택) kubeconfig 파일 수정 - 하위 클러스터에서 수행
+OpenMCP에 하위 클러스터를 join하기 전에 클러스터의 이름을 사용자가 원하는 이름으로 변경합니다.
+> kubeconfig 기본 경로 : $HOME/.kube/config
+
+```bash
+vi $HOME/.kube/config
+```
+
+```bash
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: ...
+    server: https://10.0.3.30:6443
+  name: cluster1
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+current-context: cluster1
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: ...
+    client-key-data: ...
+```
+
+### (2) 외부 스토리지에 Join 클러스터 서버 등록
+ketikubecli를 사용하여 nfs 서버에 하위 클러스터를 등록합니다.
+```bash
+ketikubecli regist cluster1
+```
+
+### (3) OpenMCP에 하위 클러스터 Join
+ketikubecli를 사용하여 OpenMCP에 하위 클러스터를 join합니다.
+```bash
+ketikubecli join cluster1
+```
+
+## OpenMCP TEST
+
 
 ![Architecture of the openmcp](/openmcp_architecture_2.png)
