@@ -17,6 +17,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/getlantern/deepcopy"
+	"github.com/mittwald/go-powerdns/apis/zones"
+	corev1 "k8s.io/api/core/v1"
+	"openmcp-dns-controller/pkg/mypdns"
 
 	//"reflect"
 	"admiralty.io/multicluster-controller/pkg/reference"
@@ -28,7 +31,6 @@ import (
 	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"resource-controller/apis"
 	ketiv1alpha1 "resource-controller/apis/keti/v1alpha1"
-	//corev1 "k8s.io/api/core/v1"
 	//"k8s.io/apimachinery/pkg/api/errors"
 	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -40,6 +42,8 @@ import (
 	"k8s.io/client-go/rest"
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type ClusterManager struct {
@@ -74,7 +78,9 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPIngress{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
-
+	if err := co.WatchResourceReconcileController(live, &extv1b1.Ingress{}, controller.WatchOptions{}); err != nil {
+		return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
+	}
 	// Note: At the moment, all clusters share the same scheme under the hood
 	// (k8s.io/client-go/kubernetes/scheme.Scheme), yet multicluster-controller gives each cluster a scheme pointer.
 	// Therefore, if we needed a custom resource in multiple clusters, we would redundantly
@@ -110,6 +116,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	fmt.Println("instance Name: ", instance.Name)
 	fmt.Println("instance Namespace : ", instance.Namespace)
 
+
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// ...TODO: multicluster garbage collector
@@ -121,7 +128,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		fmt.Println("Error1")
 		return reconcile.Result{}, err
 	}
-	if instance.Status.ClusterMaps == nil {
+	if instance.Status.ClusterMaps == nil || instance.Status.ChangeNeed == true {
 		fmt.Println("Ingress Create Start")
 		r.createIngress(req, cm, instance)
 
@@ -131,14 +138,46 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		return reconcile.Result{}, nil
 
 	} else {
+		// Check Ingress In Openmcp
+		fmt.Println("check Ingress In Openmcp")
+		foundIngress := &extv1b1.Ingress{}
+		err = cm.Host_client.Get(context.TODO(), foundIngress, instance.Namespace, instance.Name)
+
+		if err == nil {
+			foundService := &corev1.Service{}
+			nsn := types.NamespacedName{
+				Namespace: "openmcp",
+				Name:      "loadbalancing-controller",
+			}
+			err = r.live.Get(context.TODO(), nsn, foundService)
+			if err != nil && errors.IsNotFound(err) {
+				fmt.Println("LoadBalancing-controller Service Not Found")
+				return  reconcile.Result{}, err
+			} else {
+				fmt.Println("Update Ingress Status")
+				foundIngress.Status.LoadBalancer =  foundService.Status.LoadBalancer
+				err = cm.Host_client.UpdateStatus(context.Background(), foundIngress)
+				if err != nil {
+					return reconcile.Result{}, err
+				}
+			}
+		} else if errors.IsNotFound(err) {
+			fmt.Println("Create Ingress")
+			host_ing, _ := r.ingressForOpenMCPIngress(req, instance)
+			err = cm.Host_client.Create(context.Background(), host_ing)
+			if err != nil {
+				return reconcile.Result{}, err
+			}
+		}
+
+
 		// Check Ingress in cluster
 		for k, _ := range instance.Status.ClusterMaps {
 			cluster_name := k
 			//isExist := v
-
 			found := &extv1b1.Ingress{}
 			cluster_client := cm.Cluster_clients[cluster_name]
-			err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name+"-ingress")
+			err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 			if err != nil && errors.IsNotFound(err) {
 				// Delete Ingress Detected
 				fmt.Println("Cluster '" + cluster_name + "' ReDeployed")
@@ -149,38 +188,166 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				}
 
 			}
-
 		}
-
 	}
+
+
 
 	return reconcile.Result{}, nil // err
 }
+
+func (r *reconciler) registerPdnsServer(ingress *extv1b1.Ingress) error {
+	pdnsClient, err := mypdns.PdnsNewClient()
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	found := &corev1.Service{}
+	nsn := types.NamespacedName{
+		Namespace: "openmcp",
+		Name:      "loadbalancing-controller",
+	}
+	err = r.live.Get(context.TODO(), nsn, found)
+	if err != nil && errors.IsNotFound(err) {
+		fmt.Println("LoadBalancing-controller Service Not Found")
+		return err
+	} else {
+		ip := found.Status.LoadBalancer.Ingress[0].IP
+
+
+		for _, rule := range ingress.Spec.Rules{
+			resourceRecordSet := zones.ResourceRecordSet{
+				Name:       ".",
+				Type:       "A",
+				TTL:        300,
+				ChangeType: 0,
+				Records: []zones.Record{{Content: ip, Disabled: false, SetPTR: false}},
+				Comments:   nil,
+			}
+			pdnsClient.Zones().AddRecordSetToZone(context.TODO(), "localhost" , rule.Host+".", resourceRecordSet)
+
+		}
+
+
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+	}
+
+
+	return nil
+
+
+}
+//
+//func insertDB(cm *ClusterManager, ingress *extv1b1.Ingress) {
+//	fmt.Println("insertDB")
+//	db, err := sql.Open("mysql", "root:ketilinux@tcp(10.0.3.12:3306)/powerdns")
+//	if err != nil {
+//		fmt.Println(err)
+//	}
+//	var domainID string
+//	err = db.QueryRow("SELECT id FROM domain WHERE name=\"openmcp.org\"").Scan(&domainID)
+//	if err != nil {
+//		fmt.Println(err)
+//	}
+//	s := rand.NewSource(time.Now().UnixNano())
+//	r := rand.New(s)
+//
+//	for _, rule := range ingress.Spec.Rules {
+//		host := rule.Host
+//		var exists int
+//		err := db.QueryRow("SELECT id FROM records WHERE name='" + host + "'").Scan(&exists)
+//
+//		if err == nil && exists !=0{
+//			fmt.Println("Host Exist")
+//		} else if err != nil && exists == 0{
+//			idCheck := false
+//			//var domainID string
+//			var id string
+//			for idCheck == false {
+//				randNum := r.Intn(9999999)
+//				fmt.Println("*****Create Records Table ID*****")
+//				id = strconv.Itoa(randNum)
+//				err = db.QueryRow("SELECT id FROM records WHERE id=" + id).Scan(&exists)
+//				if err == nil && exists != 0 {
+//					fmt.Println("ID Exist")
+//				} else if err != nil && exists == 0  {
+//					idCheck = true
+//				}
+//			}
+//			found := &corev1.Service{}
+//			openmcp := cm.Host_client
+//			err = openmcp.Get(context.TODO(), found, "openmcp", "loadbalancing-controller")
+//			if err != nil && errors.IsNotFound(err) {
+//				fmt.Println("LoadBalancing-controller Service Not Found")
+//			} else {
+//				ip := found.Status.LoadBalancer.Ingress[0].IP
+//				queryValue := "(" + id + "," + domainID + ",'" + host + "','A','" + ip + "',300,0 ,NULL ,0,NULL,1)"
+//				_, err := db.Exec("INSERT INTO records VALUES " + queryValue)
+//				if err != nil {
+//					fmt.Println(err)
+//				}
+//			}
+//		}
+//	}
+//	defer db.Close()
+//}
+
 
 func (r *reconciler) createIngress(req reconcile.Request, cm *ClusterManager, instance *ketiv1alpha1.OpenMCPIngress) error {
 	host_ing, ing := r.ingressForOpenMCPIngress(req, instance)
 
 	found := &extv1b1.Ingress{}
-	err := cm.Host_client.Get(context.TODO(), found, instance.Namespace, instance.Name+"-ingress")
+	err := cm.Host_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 	if err != nil && errors.IsNotFound(err) {
+		//insertDB(cm, host_ing)
+		//r.registerPdnsServer(host_ing)
 		err = cm.Host_client.Create(context.Background(), host_ing)
 		if err != nil {
 			return err
 		}
 	}
 
+	serviceFound := &corev1.Service{}
 	cluster_map := make(map[string]int32)
 	for _, cluster := range cm.Cluster_list.Items {
+		cluster_ing := &extv1b1.Ingress{}
+		deepcopy.Copy(cluster_ing, &ing)
 
+		isService := true
 		found := &extv1b1.Ingress{}
 		cluster_client := cm.Cluster_clients[cluster.Name]
+		err := cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 
-		err := cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name+"-ingress")
+		fmt.Println("**********************")
+		fmt.Println(err)
+
 		if err != nil && errors.IsNotFound(err) {
-			err = cluster_client.Create(context.Background(), ing)
-			cluster_map[cluster.Name] = 1
-			if err != nil {
-				return err
+			for i, rule := range cluster_ing.Spec.Rules {
+				for _, paths := range rule.HTTP.Paths {
+					serviceName := paths.Backend.ServiceName
+					fmt.Println("service name")
+					fmt.Println(serviceName)
+					serviceErr := cluster_client.Get(context.TODO(), serviceFound, instance.Namespace, serviceName)
+					if serviceErr != nil && errors.IsNotFound(serviceErr) {
+						fmt.Println("service not found")
+						isService = false
+					}
+				}
+
+				cluster_ing.Spec.Rules[i].Host = cluster.Name + "." + rule.Host
+
+			}
+			if isService == true {
+				fmt.Println("Create Ingress Resource - ", cluster.Name)
+				err = cluster_client.Create(context.Background(), cluster_ing)
+				cluster_map[cluster.Name] = 1
+				if err != nil {
+					fmt.Println(cluster.Name, " - ", err)
+				}
 			}
 		}
 	}
@@ -193,16 +360,19 @@ func (r *reconciler) createIngress(req reconcile.Request, cm *ClusterManager, in
 func (r *reconciler) ingressForOpenMCPIngress(req reconcile.Request, m *ketiv1alpha1.OpenMCPIngress) (*extv1b1.Ingress, *extv1b1.Ingress) {
 	host_ing := &extv1b1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      m.Name + "-ingress",
+			Name:      m.Name,
 			Namespace: m.Namespace,
 		},
 		// Spec: m.Spec.Template.Spec,
 	}
 	deepcopy.Copy(&host_ing.Spec, &m.Spec.Template.Spec)
 
+	host_ing.Namespace = "openmcp"
+
 	for i, _ := range host_ing.Spec.Rules {
 		for j, _ := range host_ing.Spec.Rules[i].HTTP.Paths {
-			host_ing.Spec.Rules[i].HTTP.Paths[j].Backend.ServiceName = "hjs-openmcp-lb"
+			host_ing.Spec.Rules[i].HTTP.Paths[j].Backend.ServiceName = "loadbalancing-controller"
+			host_ing.Spec.Rules[i].HTTP.Paths[j].Backend.ServicePort.IntVal = 80
 		}
 	}
 
@@ -210,7 +380,7 @@ func (r *reconciler) ingressForOpenMCPIngress(req reconcile.Request, m *ketiv1al
 
 	ing := &extv1b1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      m.Name + "-ingress",
+			Name:      m.Name,
 			Namespace: m.Namespace,
 		},
 		// Spec: m.Spec.Template.Spec,
@@ -223,7 +393,7 @@ func (r *reconciler) ingressForOpenMCPIngress(req reconcile.Request, m *ketiv1al
 }
 func (cm *ClusterManager) DeleteIngress(nsn types.NamespacedName) error {
 	ing := &extv1b1.Ingress{}
-	err := cm.Host_client.Get(context.Background(), ing, nsn.Namespace, nsn.Name+"-ingress")
+	err := cm.Host_client.Get(context.Background(), ing, nsn.Namespace, nsn.Name)
 	if err != nil && errors.IsNotFound(err) {
 		// all good
 		fmt.Println("Not Found")
@@ -231,7 +401,7 @@ func (cm *ClusterManager) DeleteIngress(nsn types.NamespacedName) error {
 		return err
 	}
 	fmt.Println("OpenMCP Delete Start")
-	err = cm.Host_client.Delete(context.Background(), ing, nsn.Namespace, nsn.Name+"-ingress")
+	err = cm.Host_client.Delete(context.Background(), ing, nsn.Namespace, nsn.Name)
 	if err != nil {
 		return err
 	}
@@ -240,14 +410,14 @@ func (cm *ClusterManager) DeleteIngress(nsn types.NamespacedName) error {
 	for _, cluster := range cm.Cluster_list.Items {
 		cluster_client := cm.Cluster_clients[cluster.Name]
 		fmt.Println(nsn.Namespace, nsn.Name)
-		err := cluster_client.Get(context.Background(), ing, nsn.Namespace, nsn.Name+"-ingress")
+		err := cluster_client.Get(context.Background(), ing, nsn.Namespace, nsn.Name)
 		if err != nil && errors.IsNotFound(err) {
 			// all good
 			fmt.Println("Not Found")
 			continue
 		}
 		fmt.Println(cluster.Name, " Delete Start")
-		err = cluster_client.Delete(context.Background(), ing, nsn.Namespace, nsn.Name+"-ingress")
+		err = cluster_client.Delete(context.Background(), ing, nsn.Namespace, nsn.Name)
 		if err != nil {
 			return err
 		}

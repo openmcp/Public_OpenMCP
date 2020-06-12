@@ -13,26 +13,23 @@ import (
 )
 
 var (
+	GroupName = "keti.example.com"
+	GroupVersion = "v1alpha1"
 	// SchemeGroupVersion is group version used to register these objects
-	SchemeGroupVersion = schema.GroupVersion{Group: "keti.example.com", Version: "v1alpha1"}
+	SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: GroupVersion}
 )
-// Resource takes an unqualified resource and returns a Group qualified GroupResource
-func Resource(resource string) schema.GroupResource {
-	return SchemeGroupVersion.WithResource(resource).GroupResource()
-}
 var (
-	// SchemeBuilder points to a list of functions added to Scheme.
-	SchemeBuilder   runtime.SchemeBuilder
-	localSchemeBuilder = &SchemeBuilder
-	// AddToScheme applies all the stored functions to the scheme.
-	AddToScheme = localSchemeBuilder.AddToScheme
-)
+     SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
+     AddToScheme   = SchemeBuilder.AddToScheme
+     )
+
 func init() {
 	// We only register manually written functions here. The registration of the
 	// generated functions takes place in the generated files. The separation
 	// makes the code compile even when the generated files are missing.
-	localSchemeBuilder.Register(addKnownTypes)
+	SchemeBuilder.Register(addKnownTypes)
 }
+
 // Adds the list of known types to api.Scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,

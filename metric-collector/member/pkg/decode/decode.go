@@ -28,12 +28,14 @@ import (
 )
 
 func DecodeBatch(summary *stats.Summary) (*storage.MetricsBatch, error) {
-	fmt.Println("Func DecodeBatch Called")
+	//fmt.Println("Func DecodeBatch Called")
+	fmt.Println("Data Decoding Summary to MetricsBatch Structure")
 	res := &storage.MetricsBatch{
 		IP:   summary.IP,
 		Node: storage.NodeMetricsPoint{},
 		Pods: make([]storage.PodMetricsPoint, len(summary.Pods)),
 	}
+
 
 	var errs []error
 	errs = append(errs, decodeNodeStats(&summary.Node, &res.Node)...)
@@ -41,6 +43,7 @@ func DecodeBatch(summary *stats.Summary) (*storage.MetricsBatch, error) {
 		// if we had errors providing node metrics, discard the data point
 		// so that we don't incorrectly report metric values as zero.
 	}
+	fmt.Println("Node Decoding Completed")
 
 	num := 0
 	for _, pod := range summary.Pods {
@@ -58,6 +61,7 @@ func DecodeBatch(summary *stats.Summary) (*storage.MetricsBatch, error) {
 		num++
 	}
 	res.Pods = res.Pods[:num]
+	fmt.Println("Pod Decoding Completed")
 	return res, utilerrors.NewAggregate(errs)
 }
 
@@ -68,6 +72,7 @@ func decodeNodeStats(nodeStats *stats.NodeStats, target *storage.NodeMetricsPoin
 		// if we can't get a timestamp, assume bad data in general
 		return []error{fmt.Errorf("unable to get valid timestamp for metric point for node %q, discarding data: %v", nodeStats.NodeName, err)}
 	}
+
 	*target = storage.NodeMetricsPoint{
 		Name: nodeStats.NodeName,
 		MetricsPoint: storage.MetricsPoint{
@@ -75,21 +80,20 @@ func decodeNodeStats(nodeStats *stats.NodeStats, target *storage.NodeMetricsPoin
 		},
 	}
 	var errs []error
-	if err := decodeCPU(&target.CpuUsage, nodeStats.CPU); err != nil {
+	if err := decodeCPU(&target.MetricsPoint, nodeStats.CPU); err != nil {
 		errs = append(errs, fmt.Errorf("unable to get CPU for node %q, discarding data: %v", nodeStats.NodeName, err))
 	}
-	if err := decodeMemory(&target.MemoryUsage, nodeStats.Memory); err != nil {
+	if err := decodeMemory(&target.MetricsPoint, nodeStats.Memory); err != nil {
 		errs = append(errs, fmt.Errorf("unable to get memory for node %q, discarding data: %v", nodeStats.NodeName, err))
 	}
-	if err := decodeNetworkRX(&target.NetworkRxUsage, nodeStats.Network); err != nil {
+	if err := decodeNetwork(&target.MetricsPoint, nodeStats.Network); err != nil {
 		errs = append(errs, fmt.Errorf("unable to get Network for node %q, discarding data: %v", nodeStats.NodeName, err))
 	}
-	if err := decodeNetworkTX(&target.NetworkTxUsage, nodeStats.Network); err != nil {
-		errs = append(errs, fmt.Errorf("unable to get Network for node %q, discarding data: %v", nodeStats.NodeName, err))
-	}
-	if err := decodeFs(&target.FsUsage, nodeStats.Fs); err != nil {
+	if err := decodeFs(&target.MetricsPoint, nodeStats.Fs); err != nil {
 		errs = append(errs, fmt.Errorf("unable to get FS for node %q, discarding data: %v", nodeStats.NodeName, err))
 	}
+
+
 	return errs
 }
 
@@ -113,79 +117,83 @@ func decodePodStats(podStats *stats.PodStats, target *storage.PodMetricsPoint) [
 	}
 
 	var errs []error
-	if err := decodeCPU(&target.CpuUsage, podStats.CPU); err != nil {
+	if err := decodeCPU(&target.MetricsPoint, podStats.CPU); err != nil {
 		errs = append(errs, fmt.Errorf("unable to get CPU for pod %q, discarding data: %v", podStats.PodRef.Name, err))
 	}
-	if err := decodeMemory(&target.MemoryUsage, podStats.Memory); err != nil {
+	if err := decodeMemory(&target.MetricsPoint, podStats.Memory); err != nil {
 		errs = append(errs, fmt.Errorf("unable to get memory for pod %q, discarding data: %v", podStats.PodRef.Name, err))
 	}
-	if err := decodeNetworkRX(&target.NetworkRxUsage, podStats.Network); err != nil {
+	if err := decodeNetwork(&target.MetricsPoint, podStats.Network); err != nil {
 		errs = append(errs, fmt.Errorf("unable to get network RX for pod %q, discarding data: %v", podStats.PodRef.Name, err))
 	}
-	if err := decodeNetworkTX(&target.NetworkTxUsage, podStats.Network); err != nil {
-		errs = append(errs, fmt.Errorf("unable to get network TX for pod %q, discarding data: %v", podStats.PodRef.Name, err))
-	}
-	if err := decodeFs(&target.FsUsage, podStats.EphemeralStorage); err != nil {
+	if err := decodeFs(&target.MetricsPoint, podStats.EphemeralStorage); err != nil {
 		errs = append(errs, fmt.Errorf("unable to get Fs for pod %q, discarding data: %v", podStats.PodRef.Name, err))
 	}
 
 	return errs
 }
 
-func decodeCPU(target *resource.Quantity, cpuStats *stats.CPUStats) error {
+func decodeCPU(target *storage.MetricsPoint, cpuStats *stats.CPUStats) error {
 	if cpuStats == nil || cpuStats.UsageNanoCores == nil {
 		return fmt.Errorf("missing cpu usage metric")
 	}
 
-	*target = *uint64Quantity(*cpuStats.UsageNanoCores, -9)
+
+	target.CPUUsageNanoCores = *uint64Quantity(*cpuStats.UsageNanoCores, -9)
 	return nil
 }
 
-func decodeMemory(target *resource.Quantity, memStats *stats.MemoryStats) error {
+func decodeMemory(target *storage.MetricsPoint, memStats *stats.MemoryStats) error {
 	if memStats == nil || memStats.WorkingSetBytes == nil {
 		return fmt.Errorf("missing memory usage metric")
 	}
 
-	*target = *uint64Quantity(*memStats.WorkingSetBytes, 0)
-	target.Format = resource.BinarySI
+	if memStats.AvailableBytes != nil {
+		target.MemoryAvailableBytes = *uint64Quantity(*memStats.AvailableBytes, 0)
+		target.MemoryAvailableBytes.Format = resource.BinarySI
+	}
+	target.MemoryUsageBytes = *uint64Quantity(*memStats.UsageBytes, 0)
+	target.MemoryUsageBytes.Format = resource.BinarySI
+
+	target.MemoryWorkingSetBytes = *uint64Quantity(*memStats.WorkingSetBytes, 0)
+	target.MemoryWorkingSetBytes.Format = resource.BinarySI
 
 	return nil
 }
-func decodeNetworkRX(target *resource.Quantity, netStats *stats.NetworkStats) error {
-	if netStats == nil || netStats.Interfaces[0].RxBytes == nil {
+func decodeNetwork(target *storage.MetricsPoint, netStats *stats.NetworkStats) error {
+	if netStats == nil || len(netStats.Interfaces) != 0 && netStats.Interfaces[0].RxBytes == nil {
 		return fmt.Errorf("missing network RX usage metric")
 	}
 	var RX_Usage uint64 = 0
-	for _, Interface := range netStats.Interfaces {
-		RX_Usage = RX_Usage + *Interface.RxBytes
-	}
-
-	*target = *uint64Quantity(RX_Usage, 0)
-	target.Format = resource.BinarySI
-
-	return nil
-}
-func decodeNetworkTX(target *resource.Quantity, netStats *stats.NetworkStats) error {
-	if netStats == nil || netStats.Interfaces[0].TxBytes == nil {
-		return fmt.Errorf("missing network RX usage metric")
-	}
 	var TX_Usage uint64 = 0
 	for _, Interface := range netStats.Interfaces {
+		RX_Usage = RX_Usage + *Interface.RxBytes
 		TX_Usage = TX_Usage + *Interface.TxBytes
 	}
 
-	*target = *uint64Quantity(TX_Usage, 0)
-	target.Format = resource.BinarySI
+
+	target.NetworkRxBytes = *uint64Quantity(RX_Usage, 0)
+	target.NetworkRxBytes.Format = resource.BinarySI
+
+	target.NetworkTxBytes = *uint64Quantity(TX_Usage, 0)
+	target.NetworkTxBytes.Format = resource.BinarySI
 
 	return nil
 }
-func decodeFs(target *resource.Quantity, FsStats *stats.FsStats) error {
+
+func decodeFs(target *storage.MetricsPoint, FsStats *stats.FsStats) error {
 	if FsStats == nil || FsStats.UsedBytes == nil {
 		return fmt.Errorf("missing memory usage metric")
 	}
 
-	*target = *uint64Quantity(*FsStats.UsedBytes, 0)
-	target.Format = resource.BinarySI
+	target.FsAvailableBytes = *uint64Quantity(*FsStats.AvailableBytes, 0)
+	target.FsAvailableBytes.Format = resource.BinarySI
+
+	target.FsCapacityBytes = *uint64Quantity(*FsStats.CapacityBytes, 0)
+	target.FsCapacityBytes.Format = resource.BinarySI
+
+	target.FsUsedBytes = *uint64Quantity(*FsStats.UsedBytes, 0)
+	target.FsUsedBytes.Format = resource.BinarySI
 
 	return nil
 }

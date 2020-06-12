@@ -115,7 +115,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	fmt.Println("********* [", i, "] *********")
 	fmt.Println(req.Context, " / ", req.Namespace, " / ", req.Name)
 	cm := NewClusterManager()
-	fmt.Println("cm check!!!", cm)
+
 
 	// Fetch the OpenMCPDeployment instance
 	instance := &ketiv1alpha1.OpenMCPDeployment{}
@@ -131,7 +131,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			// Until then...
 			fmt.Println("Delete Deployments ..Cluster")
 			//err := cm.DeleteDeployments(req.NamespacedName)
-			err := r.DeleteDeploys(cm, instance.Name, instance.Namespace)
+			err := r.DeleteDeploys(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
 
 			r.ServiceNotifyAll(req.Namespace)
 
@@ -140,9 +140,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		fmt.Println("check2", err)
 		return reconcile.Result{}, err
 	}
-	if instance.Status.ClusterMaps == nil {
+
+	if instance.Status.CreateSyncRequestComplete == false {
 		fmt.Println("2. Create Detection")
+		fmt.Println("SchedulingNeed : ",instance.Status.SchedulingNeed, "SchedulingComplete : ",instance.Status.SchedulingComplete)
 		if instance.Status.SchedulingNeed == false && instance.Status.SchedulingComplete == false {
+			fmt.Println("2. Create Detection - (1/3) Scheduling 요청")
 			instance.Status.SchedulingNeed = true
 
 			err := r.live.Status().Update(context.TODO(), instance)
@@ -156,7 +159,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			//} else if instance.Status.SchedulingNeed == true && instance.Status.SchedulingComplete == false {
 		} else if instance.Status.SchedulingNeed == true && instance.Status.SchedulingComplete == false && strings.Compare(instance.Spec.Labels["test"], "yes") != 0 {
 			//temp
-			fmt.Println("Scheduling Start")
+			fmt.Println("2. Create Detection - (2/3) Scheduling 시작")
 			replicas := instance.Spec.Replicas
 
 			instance.Status.ClusterMaps = cm.Scheduling(replicas)
@@ -174,17 +177,21 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			return reconcile.Result{}, err
 
 		} else if instance.Status.SchedulingNeed == false && instance.Status.SchedulingComplete == true {
-			fmt.Println("Create Deployments")
+			fmt.Println("2. Create Detection - (3/3) Deployment Sync 요청")
+
+			sync_req_name := instance.Status.SyncRequestName
 
 			for _, cluster := range cm.Cluster_list.Items {
 
 				if instance.Status.ClusterMaps[cluster.Name] == 0 {
+					fmt.Println("continue")
 					continue
 				}
 				found := &appsv1.Deployment{}
 				cluster_client := cm.Cluster_clients[cluster.Name]
 
 				err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+
 				if err != nil && errors.IsNotFound(err) {
 					// TODO: Today
 
@@ -192,7 +199,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					fmt.Println("Cluster '"+cluster.Name+"' Deployed (", replica, " / ", instance.Status.Replicas, ")")
 					dep := r.deploymentForOpenMCPDeployment(req, instance, replica)
 					command := "create"
-					err = r.sendSync(cm, dep, command, cluster.Name)
+					sync_req_name, err = r.sendSync(cm, dep, command, cluster.Name)
 					//err = cluster_client.Create(context.Background(), dep)
 					if err != nil {
 						fmt.Println("check3", err)
@@ -200,26 +207,33 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					}
 				}
 			}
+
+			r.ServiceNotify(instance.Spec.Labels, instance.Namespace)
+
+			instance.Status.LastSpec = instance.Spec
+			instance.Status.CreateSyncRequestComplete = true
+			instance.Status.SyncRequestName = sync_req_name
+			fmt.Println("sync_req_name : ",sync_req_name)
+
+			//instance.Status.LastUpdateTime = time.Now().Format(time.RFC3339)
+
+			err := r.live.Status().Update(context.TODO(), instance)
+			if err != nil {
+				fmt.Println("Failed to update instance status", err)
+				fmt.Println("check4", err)
+				return reconcile.Result{}, err
+			}
+
+			fmt.Println("check5", err)
+			return reconcile.Result{}, nil
 		}
-		r.ServiceNotify(instance.Spec.Labels, instance.Namespace)
-
-		instance.Status.LastSpec = instance.Spec
-		//instance.Status.LastUpdateTime = time.Now().Format(time.RFC3339)
-
-		err := r.live.Status().Update(context.TODO(), instance)
-		if err != nil {
-			fmt.Println("Failed to update instance status", err)
-			fmt.Println("check4", err)
-			return reconcile.Result{}, err
-		}
-
-		fmt.Println("check5", err)
-		return reconcile.Result{}, nil
 
 	}
+
 	if !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec) {
 
 		fmt.Println("3. Update Detection")
+		sync_req_name := instance.Status.SyncRequestName
 		if instance.Status.Replicas != instance.Spec.Replicas {
 			fmt.Println("Change Spec Replicas ! ReScheduling Start & Update Deployment")
 			cluster_replicas_map := cm.ReScheduling(instance.Spec.Replicas, instance.Status.Replicas, instance.Status.ClusterMaps)
@@ -237,7 +251,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					if update_replica != 0 {
 						// Create !
 						command := "create"
-						err = r.sendSync(cm, dep, command, cluster.Name)
+						sync_req_name, err = r.sendSync(cm, dep, command, cluster.Name)
 						//err = cluster_client.Create(context.Background(), dep)
 						if err != nil {
 							fmt.Println("check6", err)
@@ -254,7 +268,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 						// Delete !
 						//dep := &appsv1.Deployment{}
 						command := "delete"
-						err = r.sendSync(cm, dep, command, cluster.Name)
+						sync_req_name, err = r.sendSync(cm, dep, command, cluster.Name)
 						//err = cluster_client.Delete(context.Background(), dep, req.Namespace, req.Name)
 
 						if err != nil {
@@ -264,7 +278,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					} else {
 						// Update !
 						command := "update"
-						err = r.sendSync(cm, dep, command, cluster.Name)
+						sync_req_name, err = r.sendSync(cm, dep, command, cluster.Name)
 						//err = cluster_client.Update(context.TODO(), dep)
 						if err != nil {
 							fmt.Println("check9", err)
@@ -281,12 +295,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			instance.Status.ClusterMaps = cluster_replicas_map
 			instance.Status.Replicas = instance.Spec.Replicas
 			instance.Status.LastSpec = instance.Spec
-			err := r.live.Status().Update(context.TODO(), instance)
-			if err != nil {
-				fmt.Println("Failed to update instance status", err)
-				fmt.Println("check10", err)
-				return reconcile.Result{}, err
-			}
+
+			//err := r.live.Status().Update(context.TODO(), instance)
+			//if err != nil {
+			//	fmt.Println("Failed to update instance status", err)
+			//	fmt.Println("check10", err)
+			//	return reconcile.Result{}, err
+			//}
 
 		}
 		if !reflect.DeepEqual(instance.Status.LastSpec.Labels, instance.Spec.Labels) {
@@ -298,6 +313,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 
 		instance.Status.LastSpec = instance.Spec
+		instance.Status.SyncRequestName = sync_req_name
+		fmt.Println("sync_req_name : ",sync_req_name)
+
 		err := r.live.Status().Update(context.TODO(), instance)
 		if err != nil {
 			fmt.Println("Failed to update instance status", err)
@@ -307,9 +325,21 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		return reconcile.Result{}, err
 	}
 
+	sync_instance := &sync.Sync{}
+	nsn := types.NamespacedName{
+		"openmcp",
+		instance.Status.SyncRequestName,
+	}
+	err = r.live.Get(context.TODO(), nsn, sync_instance)
+	if err == nil {
+		// 아직 Sync에서 처리되지 않음
+		return reconcile.Result{}, nil
+	}
+
 	// Check Deployment in cluster
+	fmt.Println("4. Check Clusters")
+	sync_req_name := instance.Status.SyncRequestName
 	for k, v := range instance.Status.ClusterMaps {
-		fmt.Println("4. Check Clusters")
 		cluster_name := k
 		replica := v
 
@@ -325,7 +355,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			fmt.Println("Cluster '"+cluster_name+"' ReDeployed => ", replica)
 			dep := r.deploymentForOpenMCPDeployment(req, instance, replica)
 			command := "create"
-			err = r.sendSync(cm, dep, command, cluster_name)
+			sync_req_name, err = r.sendSync(cm, dep, command, cluster_name)
 			//err = cluster_client.Create(context.Background(), dep)
 			if err != nil {
 				fmt.Println("check11", err)
@@ -335,20 +365,36 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 
 	}
+	instance.Status.SyncRequestName = sync_req_name
+	fmt.Println("sync_req_name : ",sync_req_name)
+
+	err = r.live.Status().Update(context.TODO(), instance)
+	if err != nil {
+		fmt.Println("Failed to update instance status", err)
+		fmt.Println("check10", err)
+		return reconcile.Result{}, err
+	}
 
 	fmt.Println("check12", err)
 	return reconcile.Result{}, nil // err
 }
-func (r *reconciler) DeleteDeploys(cm *ClusterManager, name string, namespace string) error {
+func (r *reconciler) DeleteDeploys(cm *ClusterManager, name string, namespace string)  error {
+
 	dep := &appsv1.Deployment{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Deployment",
+			APIVersion: "apps/v1",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
+		Spec: appsv1.DeploymentSpec{},
 	}
+	fmt.Println("Delete Check ", dep.Name, dep.Namespace)
 	for _, cluster := range cm.Cluster_list.Items {
 		command := "delete"
-		err := r.sendSync(cm, dep, command, cluster.Name)
+		_, err := r.sendSync(cm, dep, command, cluster.Name)
 		if err != nil {
 			return err
 		}
@@ -357,7 +403,7 @@ func (r *reconciler) DeleteDeploys(cm *ClusterManager, name string, namespace st
 	return nil
 
 }
-func (r *reconciler) sendSync(cm *ClusterManager, dep *appsv1.Deployment, command string, clusterName string) error {
+func (r *reconciler) sendSync(cm *ClusterManager, dep *appsv1.Deployment, command string, clusterName string) (string, error) {
 	syncIndex += 1
 
 	s := &sync.Sync{
@@ -371,10 +417,11 @@ func (r *reconciler) sendSync(cm *ClusterManager, dep *appsv1.Deployment, comman
 			Template:    *dep,
 		},
 	}
+	fmt.Println("Delete Check2 ", s.Spec.Template.(appsv1.Deployment).Name, s.Spec.Template.(appsv1.Deployment).Namespace)
 
 	err := r.live.Create(context.TODO(), s)
-
-	return err
+	fmt.Println(s.Name)
+	return s.Name, err
 
 }
 func (r *reconciler) ServiceNotify(label_map map[string]string, namespace string) error {
@@ -609,7 +656,8 @@ func (cm *ClusterManager) ReScheduling(spec_replicas int32, status_replicas int3
 
 	for remain_replica != 0 {
 		cluster_len := len(result_cluster_replicas_map)
-		selected_cluster_target_index := rand.Intn(int(cluster_len))
+		fmt.Println("cluster_len : ", cluster_len)
+		selected_cluster_target_index := rand.Intn(cluster_len)
 
 		target_key := keyOf(result_cluster_replicas_map, selected_cluster_target_index)
 		if action == "inc" {

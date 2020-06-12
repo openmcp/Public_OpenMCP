@@ -76,6 +76,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	//fmt.Println(req.Context, " / ", req.Namespace, " / ", req.Name)
 	//cm := clusterManager.NewClusterManager()
 
+
 	// OpenMCPServiceDNSRecord 삭제 요청인 경우 종료
 	instanceServiceRecord := &ketiv1alpha1.OpenMCPServiceDNSRecord{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instanceServiceRecord)
@@ -83,6 +84,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		// Delete
 		return reconcile.Result{}, nil
 	}
+
 
 	// 도메인이 있는지 체크
 	instanceDomain := &ketiv1alpha1.OpenMCPDomain{}
@@ -109,6 +111,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		return reconcile.Result{}, nil
 	}
 
+
 	return reconcile.Result{}, nil
 }
 func ClearStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord) {
@@ -116,9 +119,9 @@ func ClearStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord) {
 }
 
 func FillStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord, instanceDomain *ketiv1alpha1.OpenMCPDomain) error {
-
+	
 	instanceServiceRecord.Status = ketiv1alpha1.OpenMCPServiceDNSRecordStatus{}
-
+	
 	for _, cluster := range cm.Cluster_list.Items {
 		cluster_client := cm.Cluster_genClients[cluster.Name]
 
@@ -126,9 +129,10 @@ func FillStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord, ins
 		instanceNodeList := &corev1.NodeList{}
 		err := cluster_client.List(context.TODO(), instanceNodeList, "default")
 		if err != nil {
-			fmt.Println("[OpenMCP Service DNS Record Controller] : ", err)
+			fmt.Println("[OpenMCP Service DNS Record Controller] : ",err)
 			return nil
 		}
+
 
 		region := ""
 		if val, ok := instanceNodeList.Items[0].Labels["topology.kubernetes.io/region"]; ok {
@@ -136,6 +140,7 @@ func FillStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord, ins
 		} else if val, ok := instanceNodeList.Items[0].Labels["failure-domain.beta.kubernetes.io/region"]; ok {
 			region = val
 		}
+
 
 		zones := []string{}
 		zones_dup_map := make(map[string]string) // 중복제거를위한 딕셔너리
@@ -159,9 +164,9 @@ func FillStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord, ins
 		}
 
 		// 클러스터의 노드정보 (Zone, Region)
-		lb := corev1.LoadBalancerStatus{}
+		lb :=  corev1.LoadBalancerStatus{}
 		instanceService := &corev1.Service{}
-		err = cluster_client.Get(context.TODO(), instanceService, instanceServiceRecord.Namespace, instanceServiceRecord.Name)
+		err = cluster_client.Get(context.TODO(), instanceService,  instanceServiceRecord.Namespace,  instanceServiceRecord.Name)
 		if err == nil {
 			// 서비스가 존재하면 lb 정보 가져옴
 			lb = instanceService.Status.LoadBalancer

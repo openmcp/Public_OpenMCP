@@ -14,6 +14,9 @@ ExecStart=/usr/local/bin/etcd \
   --trusted-ca-file=/etc/pki/etcd-ca/certs/ca.crt \
   --listen-client-urls=https://<IPADDRESS>:2379,https://127.0.0.1:2379 \
   --advertise-client-urls=https://<IPADDRESS>:2379 \
+  --listen-peer-urls=http://<IPADDRESS>:2380 \
+  --initial-advertise-peer-urls=http://<IPADDRESS>:2380 \
+  --initial-cluster=default=http://<IPADDRESS>:2380 \
   --data-dir=/var/lib/etcd
 Restart=always
 RestartSec=10s

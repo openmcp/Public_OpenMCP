@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kchtest
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: kchtest
+  template:
+    metadata:
+      labels:
+        name: kchtest
+    spec:
+      serviceAccountName: kchtest
+      containers:
+        - name: kchtest
+          # Replace this with the built image name
+          image: atyx300/kchtest:v0.0.5
+          command:
+          - kchtest
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              #value: ""
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "kchtest"

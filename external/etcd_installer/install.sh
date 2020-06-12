@@ -111,6 +111,11 @@ sed -i "s/<IPADDRESS>/${MY_ADDRESS}/" /etc/systemd/system/etcd.service
 systemctl daemon-reload
 systemctl start etcd.service
 
+cp etcd_clone.service /etc/systemd/system/etcd_clone.service
+sed -i "s/<IPADDRESS>/${MY_ADDRESS}/" /etc/systemd/system/etcd_clone.service
+systemctl daemon-reload
+systemctl start etcd_clone.service
+
 # bashrc update
 echo "export ETCDCTL_API=3" >> ~/.bashrc
 echo "alias e='etcdctl --endpoints 127.0.0.1:2379   --cert /etc/pki/etcd-ca/certs/etcd-client.crt   --key /etc/pki/etcd-ca/private/etcd-client.key   --cacert /etc/pki/etcd-ca/certs/ca.crt'" >> ~/.bashrc

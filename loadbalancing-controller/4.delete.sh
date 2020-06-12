@@ -16,5 +16,5 @@ kubectl delete openmcploadbalancings example-openmcploadbalancing -n openmcp
 #kubectl delete ns openmcp --context cluster3 &
 #kubectl delete ns openmcp &
 
-kubectl delete -f crds/crd.yaml
+#kubectl delete -f crds/crd.yaml
 cd ..

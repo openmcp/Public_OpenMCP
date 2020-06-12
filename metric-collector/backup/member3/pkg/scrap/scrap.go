@@ -22,7 +22,7 @@ func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nod
 
 	startTime := clock.MyClock.Now()
 
-	//var wait sync.WaitGroup
+	//var wait serviceDNS.WaitGroup
 	//wait.Add(len(cm.Node_list.Items))
 
 	for _, node := range nodes {

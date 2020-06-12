@@ -4,7 +4,7 @@ metadata:
   name: openmcp-pod-test
   namespace: test
 spec:
-  replicas: 6
+  replicas: 5
   labels:
       app: openmcp-pod-test
   template:

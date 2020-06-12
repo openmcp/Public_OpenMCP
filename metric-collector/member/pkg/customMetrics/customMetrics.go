@@ -2,19 +2,21 @@ package customMetrics
 
 import (
 	"bytes"
+	//"bytes"
 	"cluster-metric-collector/pkg/storage"
-	"context"
 	"crypto/tls"
 	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"net/http"
+	//url1 "net/url"
 	"os"
+	"context"
 	"strconv"
 	"strings"
 )
 
-func AddToCustomMetricServer(data *storage.Collection, token string, host string, cluster_client *kubernetes.Clientset) {
+func AddToDeployCustomMetricServer(data *storage.Collection, token string, host string, cluster_client *kubernetes.Clientset) {
 
 	podList := make([]storage.PodMetricsPoint, 0)
 	for i := 0; i < len(data.Matricsbatchs); i++ {
@@ -38,27 +40,27 @@ func AddToCustomMetricServer(data *storage.Collection, token string, host string
 							//fmt.Println(value.Name, "  ", replicaset.Name)
 							check_exist += 1
 
-							tmp_cpu, _ := strconv.Atoi(value.CpuUsage.String()[:len(value.CpuUsage.String())-1])
+							tmp_cpu, _ := strconv.Atoi(value.CPUUsageNanoCores.String()[:len(value.CPUUsageNanoCores.String())-1])
 							sum_cpuusage += tmp_cpu
 
-							tmp_mem, _ := strconv.Atoi(value.MemoryUsage.String()[:len(value.MemoryUsage.String())-2])
+							tmp_mem, _ := strconv.Atoi(value.MemoryUsageBytes.String()[:len(value.MemoryUsageBytes.String())-2])
 							sum_memoryusage += tmp_mem
 
-							tmp_rx, _ := strconv.Atoi(value.NetworkRxUsage.String())
+							tmp_rx, _ := strconv.Atoi(value.NetworkRxBytes.String())
 							sum_networkrxusage += tmp_rx
 
-							tmp_tx, _ := strconv.Atoi(value.NetworkTxUsage.String())
+							tmp_tx, _ := strconv.Atoi(value.NetworkTxBytes.String())
 							sum_networktxusage += tmp_tx
 
-							tmp_fs, _ := strconv.Atoi(value.FsUsage.String()[:len(value.FsUsage.String())-2])
+							tmp_fs, _ := strconv.Atoi(value.FsUsedBytes.String()[:len(value.FsUsedBytes.String())-2])
 							sum_fsusage += tmp_fs
 						}
 
-					} else {
+					}else {
 						fmt.Println("err : value.Name nil")
 					}
 				}
-			} else {
+			}else {
 				fmt.Println("Fail : Cannot load podList")
 			}
 
@@ -70,7 +72,7 @@ func AddToCustomMetricServer(data *storage.Collection, token string, host string
 			if check_exist > 0 {
 				namespace := replicaset.Namespace
 				name := replicaset.Name[:strings.LastIndexAny(replicaset.Name, "-")]
-				fmt.Println(name, " ", sum_cpuusage, " ", sum_cpuusage/check_exist, " ", strconv.Itoa(sum_cpuusage/check_exist))
+				//fmt.Println(name, " ",sum_cpuusage," ",sum_cpuusage/check_exist, " ", strconv.Itoa(sum_cpuusage/check_exist))
 
 				PostData(host, token, client, namespace, name, "CpuUsage", strconv.Itoa(sum_cpuusage/check_exist)+"n")
 				PostData(host, token, client, namespace, name, "MemoryUsage", strconv.Itoa(sum_memoryusage/check_exist)+"Ki")
@@ -80,12 +82,13 @@ func AddToCustomMetricServer(data *storage.Collection, token string, host string
 			}
 
 		}
-	} else {
+	}else {
 		fmt.Println("Fail : Cannot load RS ", err)
 	}
 }
 
-/*func AddToCustomMetricServer(data *storage.Collection, token string, host string, cluster_client *kubernetes.Clientset){
+
+func AddToPodCustomMetricServer(data *storage.Collection, token string, host string){
 	for i := 0; i < len(data.Matricsbatchs); i++ {
 		podList := data.Matricsbatchs[i].Pods
 		if podList != nil {
@@ -98,11 +101,11 @@ func AddToCustomMetricServer(data *storage.Collection, token string, host string
 					namespace := value.Namespace
 					name := value.Name
 
-					PostData(host, token, client, namespace, name,"CpuUsage", value.CpuUsage.String())
-					PostData(host, token, client, namespace, name,"MemoryUsage", value.MemoryUsage.String())
-					PostData(host, token, client, namespace, name,"NetworkRxUsage", value.NetworkRxUsage.String())
-					PostData(host, token, client, namespace, name,"NetworkTxUsage", value.NetworkTxUsage.String())
-					PostData(host, token, client, namespace, name,"FsUsage", value.FsUsage.String())
+					PostData(host, token, client, namespace, name,"CpuUsage", value.CPUUsageNanoCores.String())
+					PostData(host, token, client, namespace, name,"MemoryUsage", value.MemoryUsageBytes.String())
+					PostData(host, token, client, namespace, name,"NetworkRxUsage", value.NetworkRxBytes.String())
+					PostData(host, token, client, namespace, name,"NetworkTxUsage", value.NetworkTxBytes.String())
+					PostData(host, token, client, namespace, name,"FsUsage", value.FsUsedBytes.String())
 
 				}else {
 					fmt.Println("Fail : Cannot load resources")
@@ -113,7 +116,7 @@ func AddToCustomMetricServer(data *storage.Collection, token string, host string
 		}
 	}
 }
-*/
+
 func PostData(host string, token string, client *http.Client, resourceNamespace string, resourceName string, resourceMetricName string, resourceMetricValue string) {
 	apiserver := host
 	baselink := "/api/v1/namespaces/custom-metrics/services/custom-metrics-apiserver:http/proxy/"
@@ -125,16 +128,21 @@ func PostData(host string, token string, client *http.Client, resourceNamespace 
 	url := "" + apiserver + baselink + basepath + "/namespaces/" + resourceNamespace + "/" + resourceKind + "/" + resourceName + "/" + resourceMetricName
 	buff := bytes.NewBufferString(resourceMetricValue)
 
-	fmt.Println("value : ", buff)
+	//fmt.Println("value : ",buff)
+
+	/*data := url1.Values{}
+	data.Set("metrics", "111111")
+	fmt.Println("value : ",strings.NewReader(data.Encode()))*/
 
 	req, err := http.NewRequest("POST", os.ExpandEnv(url), buff)
+
 	if err != nil {
 		// handle err
 		fmt.Println("Fail NewRequest")
 	}
 
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", os.ExpandEnv("Bearer "+token))
+	req.Header.Add("Authorization", os.ExpandEnv("Bearer "+ token))
 
 	//fmt.Println("req", req)
 

@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sync // import "admiralty.io/multicluster-controller/examples/sync/pkg/controller/sync"
+package sync // import "admiralty.io/multicluster-controller/examples/serviceDNS/pkg/controller/serviceDNS"
 
 import (
 	"context"
@@ -196,15 +196,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 func (r *reconciler) resourceForSync(instance *ketiv1alpha1.Sync) (*unstructured.Unstructured, string, string) {
 
-	//kind := instance.Spec.Kind
 	clusterName := instance.Spec.ClusterName
 	command := instance.Spec.Command
 
 	u := &unstructured.Unstructured{}
-	// u.Object = structToMap(instance.Spec.Template)
-	// u.Object = structs.Map(instance.Spec.Template)
 
-	//fmt.Println(instance.Spec.Template.(appsv1.Deployment).Spec.Template.Name)
 	fmt.Println(instance.Spec.ClusterName)
 	var err error
 	u.Object, err = runtime.DefaultUnstructuredConverter.ToUnstructured(&instance.Spec.Template)
@@ -212,64 +208,6 @@ func (r *reconciler) resourceForSync(instance *ketiv1alpha1.Sync) (*unstructured
 		fmt.Println(err)
 	}
 	fmt.Println(u.GetName(), u.GetNamespace())
-	//u.Object = map[string]interface{}{
-	//	"apiVersion": "apps/v1",
-	//	"kind":       "Deployment",
-	//	"metadata": map[string]interface{}{
-	//		"name": "nginx-deployment",
-	//		"namespace": "openmcp",
-	//		"annotations": map[string]interface{}{
-	//			"multicluster.admiralty.io/controller-reference": "{'apiVersion':'keti.example.com/v1alpha1','kind':'OpenMCPDeployment','name':'openmcp-pod-test','uid':'740f7d83-0da2-432d-93bf-2cc620b5b56d','controller':true,'blockOwnerDeletion':true,'clusterName':'openmcp','namespace':'test'}",
-	//		},
-	//	},
-	//	"spec": map[string]interface{}{
-	//
-	//		"selector": map[string]interface{}{
-	//			"matchLabels": map[string]interface{}{
-	//				"app": "nginx",
-	//			},
-	//		},
-	//		"replicas": 2,
-	//		"template": map[string]interface{}{
-	//			"metadata": map[string]interface{}{
-	//				"labels": map[string]interface{}{
-	//					"app": "nginx",
-	//				},
-	//			},
-	//			"spec": map[string]interface{}{
-	//				"containers": []map[string]interface{}{
-	//					{
-	//						"name":  "nginx",
-	//						"image": "nginx:1.7.9",
-	//						"ports": []map[string]interface{}{
-	//							{
-	//								"containerPort": 80,
-	//							},
-	//						},
-	//					},
-	//				},
-	//			},
-	//		},
-	//	},
-	//}
-	//var node *corev1.Node
-	//if err = runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, node); err != nil {
-	//	return err
-	//}
-
-	//if kind == "Deployment" {
-	//	u.SetGroupVersionKind(schema.GroupVersionKind{
-	//		Group:   "apps",
-	//		Kind:    "Deployment",
-	//		Version: "v1",
-	//	})
-	//} else if kind == "Service" {
-	//	u.SetGroupVersionKind(schema.GroupVersionKind{
-	//		Group:   "core",
-	//		Kind:    "Service",
-	//		Version: "v1",
-	//	})
-	//}
 
 	return u, clusterName, command
 }
@@ -306,6 +244,9 @@ func DeleteObj(cm *ClusterManager, obj *unstructured.Unstructured, clusterName s
 
 	gvk := obj.GroupVersionKind()
 	gk := schema.GroupKind{Group: gvk.Group, Kind: gvk.Kind}
+
+	fmt.Println(gvk.Kind, gvk.Group, gvk.Version)
+	fmt.Println(obj.GetName(), obj.GetNamespace())
 	clientset := cm.Cluster_kubeClients[clusterName]
 	groupResources, err := restmapper.GetAPIGroupResources(clientset.Discovery())
 	rm := restmapper.NewDiscoveryRESTMapper(groupResources)

@@ -67,13 +67,13 @@ apt install pdns-server pdns-backend-mysql pdns-backend-geoip -y
 cp pdns.local.gmysql.conf /etc/powerdns/pdns.d/pdns.local.gmysql.conf
 
 # Pdns Conf Setting
-if [$OS=="Ubuntu18.04"]
-then
-	## For Ubuntu 18.04
-	cp pdns.conf.16 /etc/powerdns/pdns.conf
-elif [$OS=="Ubuntu16.04"]
+if [$OS=="Ubuntu16.04"]
 then
 	## For Ubuntu 16.04
+	cp pdns.conf.16 /etc/powerdns/pdns.conf
+elif [$OS=="Ubuntu18.04"]
+then
+	## For Ubuntu 18.04
 	cp pdns.conf.18 /etc/powerdns/pdns.conf
 fi
 
@@ -118,6 +118,7 @@ cp -r powerdns-admin /opt/web/
 cd /opt/web/powerdns-admin
 virtualenv -p python3 flask
 source flask/bin/activate
+apt-get install -y libxml2-dev libxmlsec1-dev libxmlsec1-openssl
 pip install -r requirements.txt
 
 if [$OS == "Ubuntu16.04"]
@@ -169,3 +170,11 @@ nginx -t
 systemctl reload nginx
 
 
+# powerdns-recursor (외부도메인도 사용할수 있게 해줌)
+apt-get install -y pdns-recursor
+cp recursor.conf /etc/powerdns/recursor.conf
+echo "recursor=127.0.0.1:5678" > /etc/powerdns/pdns.d/pdns.local.gmysql.conf
+
+systemctl daemon-reload
+systemctl restart pdns
+systemctl restart pdns-recursor.service

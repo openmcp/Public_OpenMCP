@@ -13,7 +13,7 @@ require (
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a // indirect
 	github.com/joeig/go-powerdns/v2 v2.3.3 // indirect
 	github.com/kubernetes-sigs/federation-v2 v0.0.10 // indirect
-	github.com/mittwald/go-powerdns v0.4.0
+	github.com/mittwald/go-powerdns v0.4.0 // indirect
 	github.com/operator-framework/operator-sdk v0.0.0-00010101000000-000000000000 // indirect
 	k8s.io/api v0.18.2
 	k8s.io/apimachinery v0.18.2

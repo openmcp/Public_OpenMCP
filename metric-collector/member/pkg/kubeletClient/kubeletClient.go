@@ -48,7 +48,7 @@ func NewKubeletClient() (*KubeletClient, error) {
 }
 
 func (kc *KubeletClient) GetSummary(host, token string) (*stats.Summary, error) {
-	fmt.Println("Func GetSummary Called")
+	//fmt.Println("Func GetSummary Called")
 	scheme := "https"
 	port := kc.port
 	url := url.URL{
@@ -99,26 +99,27 @@ func (kc *KubeletClient) GetSummary(host, token string) (*stats.Summary, error) 
 }
 
 func (kc *KubeletClient) makeRequestAndGetValue(client *http.Client, req *http.Request, token string, value interface{}) error {
-	fmt.Println("Func makeRequestAndGetValue Called")
+	fmt.Println("Get Metric Using Kubelet API")
+	//fmt.Println("Func makeRequestAndGetValue Called")
 	// TODO(directxman12): support validating certs by hostname
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
-	fmt.Println("makeRequestAndGetValue1")
+	//fmt.Println("makeRequestAndGetValue1")
 
 	response, err := client.Do(req)
 	if err != nil {
 		fmt.Println("check3")
 		return err
 	}
-	fmt.Println("makeRequestAndGetValue2")
+	//fmt.Println("makeRequestAndGetValue2")
 	defer response.Body.Close()
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		fmt.Println("check4")
 		return fmt.Errorf("failed to read response body - %v", err)
 	}
-	fmt.Println("makeRequestAndGetValue3")
+	//fmt.Println("makeRequestAndGetValue3")
 	if response.StatusCode == http.StatusNotFound {
 		fmt.Println("check55")
 		return &ErrNotFound{req.URL.String()}
@@ -126,12 +127,12 @@ func (kc *KubeletClient) makeRequestAndGetValue(client *http.Client, req *http.R
 		fmt.Println("check5")
 		return fmt.Errorf("request failed - %q, response: %q", response.Status, string(body))
 	}
-	fmt.Println("makeRequestAndGetValue4")
+	//fmt.Println("makeRequestAndGetValue4")
 	kubeletAddr := "[unknown]"
 	if req.URL != nil {
 		kubeletAddr = req.URL.Host
 	}
-	fmt.Println("makeRequestAndGetValue5")
+	//fmt.Println("makeRequestAndGetValue5")
 	klog.V(10).Infof("Raw response from Kubelet at %s: %s", kubeletAddr, string(body))
 
 	//////////////////////////////////////////
@@ -143,13 +144,13 @@ func (kc *KubeletClient) makeRequestAndGetValue(client *http.Client, req *http.R
 	}
 	fmt.Printf("%s\n", prettyJSON.Bytes())
 	//////////////////////////////////////////
-	fmt.Println("makeRequestAndGetValue6")
+	//fmt.Println("makeRequestAndGetValue6")
 
 	err = json.Unmarshal(body, value)
 	if err != nil {
 		fmt.Println("check6")
 		return fmt.Errorf("failed to parse output. Response: %q. Error: %v", string(body), err)
 	}
-	fmt.Println("makeRequestAndGetValue7")
+	//fmt.Println("makeRequestAndGetValue7")
 	return nil
 }
