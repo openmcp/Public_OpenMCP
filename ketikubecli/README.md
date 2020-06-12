@@ -21,7 +21,7 @@
 
 > KetiKubeCli는 다음과 같은 설정값(/var/lib/ketikubecli/config.yaml)이 필요합니다.
 ```
-# OpenMCP 설치 경로 지정
+# OpenMCP 설치 경로 지정(OpenMCP Master인 경우만)
 openmcpDir: "/root/workspace/openmcp"
 
 # External(nfs) 서버 지정
