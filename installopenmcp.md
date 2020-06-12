@@ -5,8 +5,8 @@
 OpenMCP 설치를 위해서는 `federation`, `ketikubecli` 그리고 nfs를 위한 `외부 서버`가 구축되어 있어야 합니다.
 
 1. [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) 설치
-1. [ketikubecli](https://github.com/openmcp/openmcp/tree/master/ketikubecli) 설치
-1. nfs 서버
+1. [ketikubecli](https://github.com/openmcp/openmcp-cli) 설치
+1. [nfs 서버](https://github.com/openmcp/external) 설치
 
 ## 1. ketikubecli 사용을 위한 환경 설정 
 
