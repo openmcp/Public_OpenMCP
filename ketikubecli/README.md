@@ -5,7 +5,8 @@
 > KETI에서 개발한 OpenMCP 플랫폼의 Cluster 자동 Join/Unjoin 기능을 효과적으로 제어할 수 있는 명령어 인터페이스
 
 ## Requirement
-
+OpenMCP Master Node에서 ketikubecli를 사용한다면, openmcp 설치가 완료되어야 함.
+OpenMCP 하위 Cluster Node들에서 ketikubecli를 사용한다면, 별도의 openmcp 설치가 필요하지 않음. 
 
 
 ## How to Install

@@ -1,5 +1,5 @@
 #!/bin/bash
-project_root_dir=$GOPATH/src/resource-controller
+project_root_dir=/root/workspace/openmcp/resource-controller
 docker_id="atyx300"
 controller_name="openmcp-ingress-controller"
 resource_name="openmcpingress"

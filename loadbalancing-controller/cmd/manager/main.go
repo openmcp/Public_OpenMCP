@@ -42,6 +42,7 @@ import (
 	"k8s.io/sample-controller/pkg/signals"
 
 	"loadbalancing-controller/pkg/controller/openmcploadbalancing"
+	"loadbalancing-controller/pkg/controller/service"
 	//"k8s.io/client-go/rest"
 	//genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 	//fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
@@ -444,9 +445,11 @@ func main() {
 		fmt.Println(ghost.Name)
 	}
 	co, _ := openmcploadbalancing.NewController(live, ghosts, namespace)
+	serviceWatch,_ := service.NewController(live, ghosts, namespace)
 
 	m := manager.New()
 	m.AddController(co)
+	m.AddController(serviceWatch)
 	go openmcploadbalancing.Loadbalancer()
 
 	if err := m.Start(signals.SetupSignalHandler()); err != nil {

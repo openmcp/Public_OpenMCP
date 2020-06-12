@@ -21,7 +21,7 @@ spec:
         - type: Object
           object:
             metric:
-              name: network_receive_packets_total
+              name: test-metrics
             describedObject:
               apiVersion: v1
               kind: Pod

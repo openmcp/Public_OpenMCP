@@ -5,7 +5,7 @@
 > 지역적(Region/Zone)으로 격리된 컨테이너 간 상호협업하여 유연한 서비스 이동(Migration) 및 컴퓨팅 자원의 끊김없이 자동 확장(Seamless Auto Scaling) 기능을 제공하는 컨테이너 제어·관리 플랫폼
 
 
-![Architecture of the openmcp](/openmcp_architecture.png)
+![Architecture of the openmcp](/images/openmcp_architecture.png)
 
 
 ## Status

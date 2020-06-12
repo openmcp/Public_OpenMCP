@@ -10,6 +10,9 @@ spec:
       - host: loadbalancing.openmcp.org
         http:
           paths:
-          - backend:
+          - path: /validation
+            backend:
               serviceName: iot-gateway-svc
               servicePort: 80
+
+

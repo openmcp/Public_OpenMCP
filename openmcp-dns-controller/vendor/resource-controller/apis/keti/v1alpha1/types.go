@@ -184,6 +184,7 @@ type OpenMCPIngressStatus struct {
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	// Replicas int32 `json:"replicas"`
 	ClusterMaps map[string]int32 `json:"clusters"`
+	ChangeNeed  bool               `json:"changeNeed"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

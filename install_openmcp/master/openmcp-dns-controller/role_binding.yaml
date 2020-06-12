@@ -1,0 +1,13 @@
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: openmcp-dns-controller-rolebinding
+  namespace: openmcp
+subjects:
+- kind: ServiceAccount
+  name: openmcp-dns-controller-sa
+  namespace: openmcp
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io

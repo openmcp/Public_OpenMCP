@@ -107,16 +107,18 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	instance := &ketiv1alpha1.OpenMCPDNSEndpoint{}
 	err = r.live.Get(context.TODO(), req.NamespacedName, instance)
 
-	if err != nil && errors.IsNotFound(err) {
+
+	if err != nil && errors.IsNotFound(err){
 		err = mypdns.DeleteZone(pdnsClient, r.live)
 		if err != nil {
-			fmt.Println("[OpenMCP External DNS Controller] : Delete?  ", err)
+			fmt.Println("[OpenMCP External DNS Controller] : Delete?  ",err)
 		}
 		return reconcile.Result{}, nil
 	}
 
-	for _, domain := range instance.Spec.Domains {
-		if domain == "" {
+
+	for _, domain := range instance.Spec.Domains{
+		if domain == ""{
 			continue
 		}
 		err = mypdns.SyncZone(pdnsClient, domain, instance.Spec.Endpoints)
@@ -141,6 +143,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		//	}
 		//}
 	}
+
+
+
 
 	return reconcile.Result{}, nil // err
 }

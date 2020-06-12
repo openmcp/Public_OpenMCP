@@ -35,11 +35,16 @@ message ContainerMetricsPoint {
 }
 message MetricsPoint {
     google.protobuf.Timestamp Timestamp = 1;
-    string CpuUsage = 2;
-    string MemoryUsage = 3;
-    string NetworkRxUsage = 4;
-    string NetworkTxUsage = 5;
-    string FsUsage = 6;
+    string CPUUsageNanoCores = 2;
+    string MemoryUsageBytes = 3;
+    string MemoryAvailableBytes = 4;
+    string MemoryWorkingSetBytes = 5;
+    string NetworkRxBytes = 6;
+    string NetworkTxBytes = 7;
+    string FsAvailableBytes = 8;
+    string FsCapacityBytes = 9;
+    string FsUsedBytes = 10;
+
 }
 message ReturnValue {
 	int64 Tick = 1;
