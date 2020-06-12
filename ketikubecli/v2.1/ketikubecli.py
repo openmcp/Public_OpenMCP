@@ -8,7 +8,7 @@ import pprint
 from termcolor import colored
 import errno
 
-NfsServer="10.0.3.11"
+NfsServer="10.0.3.12"
 
 policy_dict = {
     "resource_priority": 1,

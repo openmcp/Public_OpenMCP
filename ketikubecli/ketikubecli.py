@@ -8,13 +8,24 @@ import pprint
 from termcolor import colored
 import errno
 
-NfsServer="10.0.3.12"
+with open("/var/lib/ketikubecli/config.yaml", 'r') as stream:
+    try:
+        config_dict = yaml.safe_load(stream)
+
+        openmcpDir = config_dict["openmcpDir"]
+        nfsServer = config_dict["nfsServer"]
+
+    except yaml.YAMLError as exc:
+        print(exc)
+
+
+
 
 policy_dict = {
     "resource_priority": 1,
     "affinity_analysis": 0,
     "service_failover": 0,
-    "servuce_location_pinning": 1,
+    "service_location_pinning": 1,
     "cluster_regist": 1,
     "cluster_delete": 0,
     "monitoring_resource_select": 1,
@@ -36,9 +47,13 @@ def ketimkdir(path):
             raise
         pass
 
-def registmkdir(args):
+def initMount():
+    try:
+        mntInfo = subprocess.check_output(["cat /proc/mounts | grep /mnt"], shell=True).decode('utf-8').split()
+        os.system("umount -l /mnt")
+    except Exception as e:
+        pass
 
-    return True
 
 
 
@@ -64,11 +79,28 @@ def policy(args):
     elif args.command == "delete":
         pass
 
+def installInitCluster(clusterName):
+    install_dir = os.path.join(openmcpDir,"install_openmcp/member")
+    initYamls = ["custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller"]
+    for initYaml in initYamls:
+        os.system("kubectl create -f " + install_dir + "/" + initYaml + " --context " + clusterName)
+
+    os.system(install_dir + "/vertical-pod-autoscaler/hack/vpa-up.sh " + clusterName)
+
+def removeInitCluster(clusterName):
+    install_dir = os.path.join(openmcpDir, "install_openmcp/member")
+    initYamls = ["custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller"]
+    for initYaml in initYamls:
+        os.system("kubectl delete -f " + install_dir + "/" + initYaml + " --context " + clusterName)
+
+    os.system(install_dir + "/vertical-pod-autoscaler/hack/vpa-down.sh " + clusterName)
+
+
 def cluster_unjoin(args):
     openmcpIP = subprocess.check_output(['hostname -I'], shell=True).decode('utf-8').split()[0]
 
     if args.command == "list":
-        os.system("mount -t nfs " + NfsServer + ":/home/nfs /mnt")
+        os.system("mount -t nfs " + nfsServer + ":/home/nfs /mnt")
 
         try:
             member_list = subprocess.check_output(['ls /mnt/openmcp/' + openmcpIP + '/members/unjoin'], shell=True).split()
@@ -106,7 +138,7 @@ def cluster_unjoin(args):
             return
 
         memberIP = args.ip
-        os.system("mount -t nfs "+NfsServer+":/home/nfs /mnt")
+        os.system("mount -t nfs "+nfsServer+":/home/nfs /mnt")
 
         if not os.path.exists("/mnt/openmcp/" + openmcpIP):
             print(colored("Failed", "red") + colored(" UnJoin Cluster '"+memberIP+"'", "yellow") + "' in " + colored("OpenMCP Master: " + openmcpIP, "blue"))
@@ -163,6 +195,7 @@ def cluster_unjoin(args):
                     if target_user == user['name']:
                         break
 
+                removeInitCluster(target_name)
                 os.system("kubefedctl unjoin "+target_name+" --cluster-context "+target_name+" --host-cluster-context openmcp --v=2")
                 del openmcp_data_dict['clusters'][i]
                 del openmcp_data_dict['contexts'][j]
@@ -177,13 +210,19 @@ def cluster_unjoin(args):
             os.system("mv /mnt/openmcp/"+openmcpIP+"/members/join/"+memberIP+" /mnt/openmcp/"+openmcpIP+"/members/unjoin/"+memberIP)
 
         os.system("umount -l /mnt")
+
+
+
         result = subprocess.check_output(["kubectl -n kube-federation-system get kubefedclusters"], shell=True)
         print(result)
+
+
+
 
 def cluster_join(args):
     openmcpIP = subprocess.check_output(['hostname -I'], shell=True).decode('utf-8').split()[0]
     if args.command == "list":
-        os.system("mount -t nfs "+NfsServer+":/home/nfs /mnt")
+        os.system("mount -t nfs "+nfsServer+":/home/nfs /mnt")
 
         try:
             member_list = subprocess.check_output(['ls /mnt/openmcp/'+openmcpIP+'/members/join'], shell=True).split()
@@ -219,7 +258,7 @@ def cluster_join(args):
             return
 
         memberIP = args.ip
-        os.system("mount -t nfs " + NfsServer + ":/home/nfs /mnt")
+        os.system("mount -t nfs " + nfsServer + ":/home/nfs /mnt")
 
         if not os.path.exists("/mnt/openmcp/"+openmcpIP):
             print(colored("Failed", "red") + colored(" Join List '", "yellow") + "' in " + colored("OpenMCP Master: " + openmcpIP, "blue"))
@@ -278,10 +317,14 @@ def cluster_join(args):
         result = subprocess.check_output(["kubectl -n kube-federation-system get kubefedclusters"], shell=True)
         print(result)
 
+        installInitCluster(cluster["name"])
+
+
 def cluster_regist(args):
-    os.system("mount -t nfs " + NfsServer + ":/home/nfs/ /mnt")
+
 
     if args.command == "openmcp":
+        os.system("mount -t nfs " + nfsServer + ":/home/nfs/ /mnt")
         openmcpIP = subprocess.check_output(['hostname -I'], shell=True).decode('utf-8').split()[0]
 
         if os.path.exists("/mnt/openmcp/"+openmcpIP):
@@ -306,17 +349,23 @@ def cluster_regist(args):
         os.system("cp /etc/kubernetes/pki/etcd/server.crt /mnt/openmcp/" + openmcpIP + "/master/pki/server.crt")
         os.system("cp /etc/kubernetes/pki/etcd/server.key /mnt/openmcp/" + openmcpIP + "/master/pki/server.key")
 
+        # SSH Public Key Copy
+        os.system("cat /mnt/ssh/id_rsa.pub >> /root/.ssh/authorized_keys")
+
         print(colored("Success", "green") + colored(" OpenMCP Master Regist '" + openmcpIP, "yellow"))
+
         os.system("umount -l /mnt")
         return
 
 
 
     elif args.command == "member":
+        os.system("mount -t nfs " + nfsServer + ":/home/nfs/ /mnt")
         if not args.ip:
             print("Must have cluster ip")
             os.system("umount -l /mnt")
             return
+
 
         openmcpIP = args.ip
         memberIP = subprocess.check_output(['hostname -I'], shell=True).decode('utf-8').split()[0]
@@ -357,6 +406,9 @@ def cluster_regist(args):
             os.system("cp /etc/kubernetes/pki/etcd/server.crt /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP + "/pki/server.crt")
             os.system("cp /etc/kubernetes/pki/etcd/server.key /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP + "/pki/server.key")
 
+            # SSH Public Key Copy
+            os.system("cat /mnt/ssh/id_rsa.pub >> /root/.ssh/authorized_keys")
+
             print(colored("Success","green")+ colored(" Regist '"+memberIP,"yellow")+"' in "+colored("OpenMCP Master: "+openmcpIP, "blue"))
             os.system("umount -l /mnt")
             return
@@ -365,6 +417,8 @@ def cluster_regist(args):
 
 
 def main():
+    initMount()
+
     parser = argparse.ArgumentParser(prog='ketikubecli')
     #parser.add_argument('command', help='foo help')
 
