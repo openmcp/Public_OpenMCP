@@ -68,6 +68,7 @@ OpenMCP 동작에 필요한 기본 모듈을 배포합니다.
 ### OpenMCP Architecture
 ![Architecture of the openmcp](/openmcp_architecture_2.png)
 
+**OpenMCP 설치 완료**
 ---
 
 ## 3. 클러스터 Join
@@ -112,9 +113,12 @@ ketikubecli를 사용하여 OpenMCP에 하위 클러스터를 join합니다.
 ```bash
 ketikubecli join cluster1
 ```
+
+**클러스터 Join 완료**
 ---
 
 ## OpenMCP TEST
+
 
 
 
