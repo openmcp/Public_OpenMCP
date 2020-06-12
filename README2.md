@@ -24,7 +24,7 @@ apiVersion: v1
 clusters:
 - cluster:
     certificate-authority-data: ...
-    server: https://10.0.3.40:6443
+    server: https://10.0.3.20:6443
   name: openmcp
 contexts:
 - context:
@@ -65,6 +65,10 @@ OpenMCP 동작에 필요한 기본 모듈을 배포합니다.
 > - DNS Controller
 > - InfluxDB
 
+### OpenMCP Architecture
+![Architecture of the openmcp](/openmcp_architecture_2.png)
+
+---
 
 ## 3. 클러스터 Join
 ### (1) (선택) kubeconfig 파일 수정 - 하위 클러스터에서 수행
@@ -108,8 +112,9 @@ ketikubecli를 사용하여 OpenMCP에 하위 클러스터를 join합니다.
 ```bash
 ketikubecli join cluster1
 ```
+---
 
 ## OpenMCP TEST
 
 
-![Architecture of the openmcp](/openmcp_architecture_2.png)
+
