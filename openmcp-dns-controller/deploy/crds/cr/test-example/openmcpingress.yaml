@@ -1,0 +1,15 @@
+apiVersion:  keti.example.com/v1alpha1
+kind: OpenMCPIngress
+metadata:
+  name: openmcp-ingress-example
+  namespace: keti
+spec:
+  template:
+    spec:
+      rules:
+      - host: openmcp.ingress.test.org
+        http:
+          paths:
+          - backend:
+              serviceName: openmcp-service-example
+              servicePort: 80
