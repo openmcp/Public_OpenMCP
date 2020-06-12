@@ -18,7 +18,7 @@ kubeconfig 파일에서 클러스터 이름을 `opemncp`로 수정합니다.
 ```bash
 vi $HOME/.kube/config
 ```
-
+EX)
 ```bash
 apiVersion: v1
 clusters:
@@ -78,7 +78,7 @@ OpenMCP에 하위 클러스터를 join하기 전에 클러스터의 이름을 �
 ```bash
 vi $HOME/.kube/config
 ```
-
+EX)
 ```bash
 apiVersion: v1
 clusters:
