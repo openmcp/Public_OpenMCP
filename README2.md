@@ -7,11 +7,20 @@ OpenMCP 설치를 위해서는 federation, ketikubecli 그리고 nfs를 위한 �
 1. [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) 설치
 1. ketikubecli 설치
 1. nfs 서버
-  
+
 ## 1. 기본 모듈 배포  
 
 먼저, OpenMCP 동작에 필요한 기본 모듈을 배포합니다.
 
 ```
-kubectl create ./install_openmcp/master/1.create.sh
+./install_openmcp/master/1.create.sh
 ```
+> 설치 항목
+> - Sync Controller
+> - Resource Controller (Deployment, HybridAutoScaler, Ingress, Service)
+> - LoadBalancing Controller
+> - Scheduler
+> - Resource Manager (Analytic Engine, Metric Collector)
+> - 
+
+![Architecture of the openmcp](/openmcp_architecture_2.png)
