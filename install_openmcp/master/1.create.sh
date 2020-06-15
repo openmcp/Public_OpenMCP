@@ -1,10 +1,14 @@
+kubectl create ns openmcp
+
 echo "--- analytic-engine ---"
 kubectl create -f analytic-engine/.
 echo "--- metric-collector ---"
 kubectl create -f metric-collector/.
 echo "--- influxdb ---"
 kubectl create -f influxdb/.
-./influxdb/secret_info/secret_info
+cd ./influxdb/secret_info
+./secret_info
+cd ../..
 echo "--- openmcp-deployment-controller ---"
 kubectl create -f openmcp-deployment-controller/.
 echo "--- openmcp-has-controller ---"

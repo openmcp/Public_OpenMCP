@@ -10,7 +10,13 @@ OpenMCP 설치를 위해서는 `federation`, `ketikubecli` 그리고 nfs를 위�
 
 ## 1. ketikubecli 사용을 위한 환경 설정 
 
-### (1) kubeconfig 파일 수정
+### (1) `openmcp` namespaces 리소스 생성
+
+```bash
+kubectl create ns openmcp
+```
+
+### (2) kubeconfig 파일 수정
 
 kubeconfig 파일에서 클러스터 이름을 `opemncp`로 수정합니다.
 > kubeconfig 기본 경로 : $HOME/.kube/config
@@ -41,19 +47,19 @@ users:
     client-key-data: ...
 ```
 
-### (2) 외부 스토리지에 OpenMCP 서버 등록
-ketikubecli를 사용하여 nfs 서버에 OpenMCP를 등록합니다.
+### (3) 외부 스토리지에 OpenMCP 서버 등록
+ketikubecli를 사용하여 nfs 서버에 OpenMCP 서버를 등록합니다.
 ```bash
 ketikubecli regist openmcp
 ```
-
 
 ## 2. 기본 모듈 배포  
 
 OpenMCP 동작에 필요한 기본 모듈을 배포합니다.
 
 ```bash
-./install_openmcp/master/1.create.sh
+cd ./install_openmcp/master
+./1.create.sh
 ```
 > 설치 항목
 > - Sync Controller
@@ -101,16 +107,18 @@ users:
     client-key-data: ...
 ```
 
-## 2. 외부 스토리지에 Join 클러스터 서버 등록
+## 2. 외부 스토리지에 Join 클러스터 서버 등록 - 하위 클러스터에서 수행
 ketikubecli를 사용하여 nfs 서버에 하위 클러스터를 등록합니다.
 ```bash
-ketikubecli regist cluster1
+OPENMCP_IP = "10.0.3.30"
+ketikubecli regist member --ip ${OPENMCP_IP}
 ```
 
-## 3. OpenMCP에 하위 클러스터 Join
-ketikubecli를 사용하여 OpenMCP에 하위 클러스터를 join합니다.
+## 3. OpenMCP에 하위 클러스터 Join - OpenMCP에서 수행
+OpenMCP 서버에서 ketikubecli를 사용하여 특정 클러스터를 join합니다.
 ```bash
-ketikubecli join cluster1
+CLUSTER_IP = "10.0.3.40"
+ketikubecli join cluster --ip ${CLUSTER_IP}
 ```
 
 ---
