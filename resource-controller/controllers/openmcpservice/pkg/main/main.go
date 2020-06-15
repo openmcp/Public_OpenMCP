@@ -86,7 +86,7 @@ func main() {
 
 	host_cfg := cm.Host_config
 	//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
-	live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
+	live := cluster.New(host_ctx, host_cfg, cluster.Options{})
 
 	ghosts := []*cluster.Cluster{}
 
@@ -95,7 +95,7 @@ func main() {
 		ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
 		//ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
-		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
+		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
 
 		ghosts = append(ghosts, ghost)
 	}
