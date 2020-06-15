@@ -16,7 +16,7 @@ OpenMCP 설치를 위해서는 `federation`, `ketikubecli` 그리고 nfs를 위�
 kubectl create ns openmcp
 ```
 
-### (2) kubeconfig 파일 수정
+### (2) cluster 이름 변경
 
 kubeconfig 파일에서 클러스터 이름을 `opemncp`로 수정합니다.
 > kubeconfig 기본 경로 : $HOME/.kube/config
@@ -77,7 +77,7 @@ cd ./install_openmcp/master
 ---
 
 # 클러스터 Join
-## 1. (선택) kubeconfig 파일 수정 - 하위 클러스터에서 수행
+## 1. (선택) cluster 이름 변경 - 하위 클러스터에서 수행
 OpenMCP에 하위 클러스터를 join하기 전에 클러스터의 이름을 사용자가 원하는 이름으로 변경합니다.
 > kubeconfig 기본 경로 : $HOME/.kube/config
 
