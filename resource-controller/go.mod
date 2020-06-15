@@ -11,7 +11,7 @@ require (
 	github.com/golang/protobuf v1.4.0
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
-	github.com/hth0919/resourcecollector v0.0.0-20200410074403-e831e209e52f
+	github.com/hth0919/resourcecollector v0.0.0-20200410074403-e831e209e52f // indirect
 	github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/kr/pty v1.1.5 // indirect

@@ -1,5 +1,5 @@
 #!/bin/bash
-project_root_dir=/root/workspace/openmcp/resource-controller
+project_root_dir=/root/workspace/openmcp/openmcp/resource-controller
 docker_id="atyx300"
 controller_name="openmcp-deployment-controller"
 resource_name="openmcpdeployment"
