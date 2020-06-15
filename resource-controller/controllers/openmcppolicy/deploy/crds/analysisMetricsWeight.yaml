@@ -18,5 +18,7 @@ spec:
         - type: FS
           value:
             - "0.2"
-  rangeOfApplication: All
+        - type: GeoRate
+          value:
+            - "0.2"
   policyStatus: Enabled
