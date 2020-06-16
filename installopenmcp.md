@@ -1,11 +1,12 @@
 **Table of Contents**
-- [OpenMCP 설치](#openmcp-설치)
+- [Introduction of OpenMCP&reg;](#introduction-of-openmcp)
+- [How To Install](#how-to-install)
   - [1. ketikubecli를 이용한 OpenMCP 서버 등록](#1-ketikubecli를-이용한-openmcp-서버-등록)
     - [(1) `openmcp` namespaces 리소스 생성](#1-openmcp-namespaces-리소스-생성)
     - [(2) cluster 이름 변경](#2-cluster-이름-변경)
     - [(3) 외부 스토리지에 OpenMCP 서버 등록](#3-외부-스토리지에-openmcp-서버-등록)
   - [2. OpenMCP 기본 모듈 배포](#2-openmcp-기본-모듈-배포)
-- [OpenMCP 서버에 클러스터 Join](#openmcp-서버에-클러스터-Join)
+- [How To Join Cluster](#how-to-join-cluster)
   - [1. (선택) cluster 이름 변경 [하위 클러스터에서 수행]](#1-선택-cluster-이름-변경-하위-클러스터에서-수행)
   - [2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]](#2-외부-스토리지에-join하고자-하는-클러스터-서버-등록-하위-클러스터에서-수행)
   - [3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]](#3-외부-스토리지에-등록된-하위-클러스터를-openmcp에-join-openmcp에서-수행)
@@ -16,9 +17,15 @@
   - [OpenMCPDomain,OpenMCPServiceDNSRecord,OpenMCPIngressDNSRecord 배포](#openmcpdomainopenmcpservicednsrecordopenmcpingressdnsrecord-배포)
   - [OpenMCPHybridAutoScaler 배포](#openmcphybridautoscaler-배포)
 
-# OpenMCP 설치
+# Introduction of OpenMCP&reg;
 
-## 사전준비  
+> 지역적(Region/Zone)으로 격리된 컨테이너 간 상호협업하여 유연한 서비스 이동(Migration) 및 컴퓨팅 자원의 끊김없이 자동 확장(Seamless Auto Scaling) 기능을 제공하는 컨테이너 제어·관리 플랫폼
+
+![Architecture of the openmcp](/images/openmcp_architecture.png)
+
+# How To Install
+
+## Requirement
 
 OpenMCP 설치를 위해서는 먼저 `federation`, `ketikubecli` 그리고 nfs를 위한 `외부 서버`가 구축되어 있어야 합니다.
 
@@ -116,7 +123,7 @@ hpa-target-cluster             2m6s
 
 ---
 
-# OpenMCP 서버에 클러스터 Join
+# How To Join Cluster
 ## 1. (선택) cluster 이름 변경 [하위 클러스터에서 수행]
 OpenMCP에 하위 클러스터를 join하기 전에 클러스터의 이름을 사용자가 원하는 이름으로 변경합니다.
 > kubeconfig 기본 경로 : $HOME/.kube/config
