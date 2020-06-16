@@ -17,9 +17,9 @@ limitations under the License.
 package main
 
 import (
+	"k8s.io/sample-controller/pkg/signals"
 	//"flag"
 	"log"
-	reshape "reshape-controller"
 
 	//"strings"
 	//"context"
@@ -65,13 +65,11 @@ func main() {
 		fmt.Println(ghost.Name)
 	}
 	co, _ := sync.NewController(live, ghosts, namespace)
-	reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
 
 	m := manager.New()
 	m.AddController(co)
-	m.AddController(reshape_cont)
 
-	stop := reshape.SetupSignalHandler()
+	stop := signals.SetupSignalHandler()
 
 	if err := m.Start(stop); err != nil {
 		log.Fatal(err)
