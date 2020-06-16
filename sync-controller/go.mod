@@ -36,7 +36,7 @@ require (
 	k8s.io/apimachinery v0.0.0-20191020214737-6c8691705fc5
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/kube-openapi v0.0.0-20190918143330-0270cf2f1c1d
-	k8s.io/sample-controller v0.0.0-20191017070449-ab9e95689d58
+	k8s.io/sample-controller v0.0.0-20191017070449-ab9e95689d58 // indirect
 	sigs.k8s.io/controller-runtime v0.3.0
 	sigs.k8s.io/kubefed v0.1.0-rc6
 	sigs.k8s.io/testing_frameworks v0.1.1 // indirect

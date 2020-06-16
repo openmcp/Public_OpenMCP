@@ -17,8 +17,10 @@ limitations under the License.
 package main
 
 import (
+	"k8s.io/sample-controller/pkg/signals"
 	//"flag"
 	"log"
+
 	//"strings"
 	//"context"
 	"fmt"
@@ -30,7 +32,7 @@ import (
 	//"admiralty.io/multicluster-service-account/pkg/config"
 	//"k8s.io/api/core/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"k8s.io/sample-controller/pkg/signals"
+	//"k8s.io/sample-controller/pkg/signals"
 
 	"sync-controller/pkg/controller/sync"
 	//"k8s.io/client-go/rest"
@@ -67,7 +69,9 @@ func main() {
 	m := manager.New()
 	m.AddController(co)
 
-	if err := m.Start(signals.SetupSignalHandler()); err != nil {
+	stop := signals.SetupSignalHandler()
+
+	if err := m.Start(stop); err != nil {
 		log.Fatal(err)
 	}
 

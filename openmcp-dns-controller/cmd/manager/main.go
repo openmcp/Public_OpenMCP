@@ -19,8 +19,8 @@ package main
 import (
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
+	"fmt"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"k8s.io/sample-controller/pkg/signals"
 	"log"
 	"openmcp-dns-controller/pkg/clusterManager"
 	"openmcp-dns-controller/pkg/controller/dnsEndpoint"
@@ -28,44 +28,72 @@ import (
 	"openmcp-dns-controller/pkg/controller/externalDNS"
 	"openmcp-dns-controller/pkg/controller/ingressDNS"
 	"openmcp-dns-controller/pkg/controller/serviceDNS"
+	"openmcp-dns-controller/pkg/reshape"
 )
 
 func main() {
-	cm := clusterManager.NewClusterManager()
+	for {
+		cm := clusterManager.NewClusterManager()
 
-	host_ctx := "openmcp"
-	namespace := "openmcp"
+		host_ctx := "openmcp"
+		namespace := "openmcp"
 
-	host_cfg := cm.Host_config
-	live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
-	//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+		host_cfg := cm.Host_config
+		live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
+		//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
 
-	ghosts := []*cluster.Cluster{}
+		ghosts := []*cluster.Cluster{}
 
-	for _, ghost_cluster := range cm.Cluster_list.Items {
-		ghost_ctx := ghost_cluster.Name
-		ghost_cfg := cm.Cluster_configs[ghost_ctx]
+		for _, ghost_cluster := range cm.Cluster_list.Items {
+			ghost_ctx := ghost_cluster.Name
+			ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
-		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
-		//ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
-		ghosts = append(ghosts, ghost)
+			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
+			//ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+			ghosts = append(ghosts, ghost)
+		}
+
+		cont_serviceDNS, err := serviceDNS.NewController(live, ghosts, namespace)
+		if err != nil {
+			fmt.Println("err New Controller - ServiceDNS", err)
+		}
+		cont_domain, err := domain.NewController(live, ghosts, namespace)
+		if err != nil {
+			fmt.Println("err New Controller - Domain", err)
+		}
+		cont_ingressDNS, err := ingressDNS.NewController(live, ghosts, namespace)
+		if err != nil {
+			fmt.Println("err New Controller - IngressDNS", err)
+		}
+		cont_dnsEndpoint, err := dnsEndpoint.NewController(live, ghosts, namespace)
+		if err != nil {
+			fmt.Println("err New Controller - DNSEndpoint", err)
+		}
+		cont_externalDNS, err := externalDNS.NewController(live, ghosts, namespace)
+		if err != nil {
+			fmt.Println("err New Controller - ExternalDNS", err)
+		}
+		cont_reshape, err := reshape.NewController(live, ghosts, namespace)
+		if err != nil {
+			fmt.Println("err New Controller - Reshape", err)
+		}
+
+		m := manager.New()
+		m.AddController(cont_serviceDNS)
+		m.AddController(cont_domain)
+		m.AddController(cont_ingressDNS)
+		m.AddController(cont_dnsEndpoint)
+		m.AddController(cont_externalDNS)
+		m.AddController(cont_reshape)
+
+		stop := reshape.SetupSignalHandler()
+		//stop := signals.SetupSignalHandler()
+
+		if err := m.Start(stop); err != nil {
+			log.Fatal(err)
+		}
+
 	}
 
-	cont_serviceDNS, _ := serviceDNS.NewController(live, ghosts, namespace)
-	cont_domain, _ := domain.NewController(live, ghosts, namespace)
-	cont_ingressDNS, _ := ingressDNS.NewController(live, ghosts, namespace)
-	cont_dnsEndpoint, _ := dnsEndpoint.NewController(live, ghosts, namespace)
-	cont_externalDNS, _ := externalDNS.NewController(live, ghosts, namespace)
-
-	m := manager.New()
-	m.AddController(cont_serviceDNS)
-	m.AddController(cont_domain)
-	m.AddController(cont_ingressDNS)
-	m.AddController(cont_dnsEndpoint)
-	m.AddController(cont_externalDNS)
-
-	if err := m.Start(signals.SetupSignalHandler()); err != nil {
-		log.Fatal(err)
-	}
 
 }

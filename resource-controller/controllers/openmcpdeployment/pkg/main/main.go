@@ -19,6 +19,8 @@ package main
 import (
 	//"flag"
 	"log"
+
+
 	//"strings"
 	//"context"
 	"fmt"
@@ -30,8 +32,8 @@ import (
 	//"admiralty.io/multicluster-service-account/pkg/config"
 	//"k8s.io/api/core/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"k8s.io/sample-controller/pkg/signals"
 	"resource-controller/controllers/openmcpdeployment/pkg/controller"
+	"resource-controller/controllers/openmcpdeployment/pkg/reshape"
 	//"k8s.io/client-go/rest"
 	//genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 	//fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
@@ -39,35 +41,42 @@ import (
 )
 
 func main() {
-	cm := openmcpdeployment.NewClusterManager()
+	for{
 
-	host_ctx := "openmcp"
-	namespace := "kch"
+		cm := openmcpdeployment.NewClusterManager()
 
-	host_cfg := cm.Host_config
-	//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
-	live := cluster.New(host_ctx, host_cfg, cluster.Options{})
+		host_ctx := "openmcp"
+		namespace := "kch"
 
-	ghosts := []*cluster.Cluster{}
+		host_cfg := cm.Host_config
+		//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+		live := cluster.New(host_ctx, host_cfg, cluster.Options{})
 
-	for _, ghost_cluster := range cm.Cluster_list.Items {
-		ghost_ctx := ghost_cluster.Name
-		ghost_cfg := cm.Cluster_configs[ghost_ctx]
+		ghosts := []*cluster.Cluster{}
 
-		//ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
-		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
-		ghosts = append(ghosts, ghost)
-	}
-	for _, ghost := range ghosts {
-		fmt.Println(ghost.Name)
-	}
-	co, _ := openmcpdeployment.NewController(live, ghosts, namespace)
+		for _, ghost_cluster := range cm.Cluster_list.Items {
+			ghost_ctx := ghost_cluster.Name
+			ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
-	m := manager.New()
-	m.AddController(co)
+			//ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
+			ghosts = append(ghosts, ghost)
+		}
+		for _, ghost := range ghosts {
+			fmt.Println(ghost.Name)
+		}
+		co, _ := openmcpdeployment.NewController(live, ghosts, namespace)
+		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
 
-	if err := m.Start(signals.SetupSignalHandler()); err != nil {
-		log.Fatal(err)
+		m := manager.New()
+		m.AddController(co)
+		m.AddController(reshape_cont)
+
+		stop := reshape.SetupSignalHandler()
+
+		if err := m.Start(stop); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 }

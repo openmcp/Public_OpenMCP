@@ -15,4 +15,3 @@ kubectl delete -f deploy/operator.yaml
 #kubectl delete ns openmcp &
 
 #kubectl delete -f deploy/crds/crd.yaml
-cd $org_dir
