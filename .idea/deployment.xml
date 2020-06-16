@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="OpenMCP">
+  <component name="PublishConfigData" serverName="OpenMCP" uploadOnCheckin="065cd6d5-9899-4f93-8a7b-50a61b832226">
     <serverData>
       <paths name="OpenMCP">
         <serverdata>
@@ -10,5 +10,6 @@
         </serverdata>
       </paths>
     </serverData>
+    <option name="myUploadOnCheckinName" value="OpenMCP" />
   </component>
 </project>
