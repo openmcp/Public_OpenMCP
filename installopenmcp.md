@@ -3,8 +3,9 @@
     - [(1) `openmcp` namespaces 리소스 생성](#1-openmcp-namespaces-리소스-생성)
     - [(2) cluster 이름 변경](#2-cluster-이름-변경)
     - [(3) 외부 스토리지에 OpenMCP 서버 등록](#3-외부-스토리지에-openmcp-서버-등록)
-  - [OpenMCP 기본 모듈 배포](#openmcp-기본-모듈-배포)
+  - [2. OpenMCP 기본 모듈 배포](#2-openmcp-기본-모듈-배포)
 - [OpenMCP 서버에 클러스터 Join](#openmcp-서버에-클러스터-Join)
+  - [1. (선택) cluster 이름 변경 - 하위 클러스터에서 수행](#1-선택-cluster-이름-변경-하위 클러스터에서 수행)
 
 # OpenMCP 설치
 
