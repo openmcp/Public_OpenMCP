@@ -165,7 +165,7 @@ $ kubectl create -f sample/openmcpingress/.
 ```bash
 $ kubectl get openmcpingress -n openmcp
 ```
-## OpenMCPDomain, OpenMCPServiceDNSRecord, OpenMCPIngressDNSRecord 생성
+## OpenMCPDomain,OpenMCPServiceDNSRecord,OpenMCPIngressDNSRecord 배포
 ```bash
 $ kubectl create -f sample/openmcpdns/.
 ```
