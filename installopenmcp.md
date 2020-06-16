@@ -5,7 +5,7 @@
     - [(3) 외부 스토리지에 OpenMCP 서버 등록](#3-외부-스토리지에-openmcp-서버-등록)
   - [2. OpenMCP 기본 모듈 배포](#2-openmcp-기본-모듈-배포)
 - [OpenMCP 서버에 클러스터 Join](#openmcp-서버에-클러스터-Join)
-  - [1. (선택) cluster 이름 변경 - 하위 클러스터에서 수행](#1-선택-cluster-이름-변경--하위-클러스터에서-수행)
+  - [1. (선택) cluster 이름 변경 [하위 클러스터에서 수행]](#1-선택-cluster-이름-변경-하위-클러스터에서-수행)
 
 # OpenMCP 설치
 
@@ -108,7 +108,7 @@ hpa-target-cluster             2m6s
 ---
 
 # OpenMCP 서버에 클러스터 Join
-## 1. (선택) cluster 이름 변경 ### 하위 클러스터에서 수행
+## 1. (선택) cluster 이름 변경 [하위 클러스터에서 수행]
 OpenMCP에 하위 클러스터를 join하기 전에 클러스터의 이름을 사용자가 원하는 이름으로 변경합니다.
 > kubeconfig 기본 경로 : $HOME/.kube/config
 
@@ -135,7 +135,7 @@ users:
     client-key-data: ...
 ```
 
-## 2. 외부 스토리지에 Join하려고 하는 클러스터 서버 등록 - 하위 클러스터에서 수행
+## 2. 외부 스토리지에 Join하려고 하는 클러스터 서버 등록 [하위 클러스터에서 수행]
 ketikubecli를 사용하여 nfs 서버에 join 하고자 하는 클러스터를 등록합니다.
 ```bash
 $ OPENMCP_IP = "10.0.3.30"
@@ -143,7 +143,7 @@ $ ketikubecli regist member --ip ${OPENMCP_IP}
 Success Regist '10.0.3.40' in OpenMCP Master: 10.0.3.30
 ```
 
-## 3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join - OpenMCP에서 수행
+## 3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]
 OpenMCP 서버에서 ketikubecli를 사용하여 특정 클러스터를 join합니다.
 ```bash
 $ CLUSTER_IP = "10.0.3.40"
