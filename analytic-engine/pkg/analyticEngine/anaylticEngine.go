@@ -3,6 +3,7 @@ package analyticEngine
 import (
 	"github.com/oschwald/geoip2-golang"
 	hpav2beta1 "k8s.io/api/autoscaling/v2beta2"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strconv"
 
@@ -101,10 +102,25 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
 
 	MetricsMap := make(map[string]float64)
 	prevMetricsMap := make(map[string]float64)
-	totalCpuCore := 0
+	var totalCpuCore int64 = 0
+
+	cm := clusterManager.NewClusterManager()
 
 	for _, ser := range result[0].Series {
-		totalCpuCore = totalCpuCore + 32
+
+		nodeCapacity := &corev1.Node{}
+		//err := cm.Cluster_genClients["cluster4"].List(context.TODO(), nodeCapacity, "")
+		err := cm.Cluster_genClients[ser.Tags["cluster"]].Get(context.TODO(), nodeCapacity, "", ser.Tags["node"])
+		if err!=nil {
+			fmt.Println("nodelist err : ",err)
+		}else {
+		//	fmt.Println(nodeCapacity)
+		//	fmt.Println(nodeCapacity.Items[0].Status.Capacity.Cpu().MilliValue())
+			fmt.Println("[CPU Capacity] ",ser.Tags["cluster"],"/",ser.Tags["node"],"/",nodeCapacity.Status.Capacity.Cpu().Value())
+			//fmt.Println(ser.Tags["node"])
+		}
+
+		totalCpuCore = totalCpuCore + nodeCapacity.Status.Capacity.Cpu().Value()
 
 		for c, colName := range ser.Columns {
 			for r, _ := range ser.Values {

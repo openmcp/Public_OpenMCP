@@ -3,7 +3,7 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="1ceb0b80-f139-472d-8991-938ec1c02881" name="OpenMCP" url="http://10.0.3.20">
-        <fileTransfer host="10.0.3.20" port="22" rootFolder="/root/workspace/openmcp" accessType="SFTP">
+        <fileTransfer host="10.0.3.20" port="22" rootFolder="/root/workspace/openmcp/openmcp" accessType="SFTP">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
