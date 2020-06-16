@@ -1,4 +1,6 @@
 - [OpenMCP 설치](#openmcp-설치)
+  - [ketikubecli를 이용한 OpenMCP 서버 등록](#ketikubecli를-이용한-openmcp-서버-등록)
+    - [`openmcp` namespaces 리소스 생성](#`openmcp`-namespaces-리소스-생성)
 
 # OpenMCP 설치
 
