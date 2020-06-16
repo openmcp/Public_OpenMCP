@@ -1,6 +1,8 @@
+- [OpenMCP 설치](#openmcp-설치)
+
 # OpenMCP 설치
 
-+ ## 사전준비  
+## 사전준비  
 
 OpenMCP 설치를 위해서는 먼저 `federation`, `ketikubecli` 그리고 nfs를 위한 `외부 서버`가 구축되어 있어야 합니다.
 
