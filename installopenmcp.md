@@ -127,7 +127,7 @@ users:
 ```
 
 ## 2. 외부 스토리지에 Join하려고 하는 클러스터 서버 등록 - 하위 클러스터에서 수행
-하위 클러스터에서 ketikubecli를 사용하여 nfs 서버에 자기 자신을 등록합니다.
+ketikubecli를 사용하여 nfs 서버에 join 하고자 하는 클러스터를 등록합니다.
 ```bash
 $ OPENMCP_IP = "10.0.3.30"
 $ ketikubecli regist member --ip ${OPENMCP_IP}
@@ -172,6 +172,7 @@ openmcp-deployment-test    2/2     2            2           80s
 ```
 
 ## OpenMCPService 배포
+OpenMCPService를 배포하면 Service 리소스가 cluster1, cluster2에 배포됩니다.
 ```bash
 $ kubectl create -f sample/openmcpservice/.
 ```
@@ -190,6 +191,7 @@ openmcp-service-test       NodePort       10.108.62.216   <none>        80:31850
 ```
 
 ## OpenMCPIngress 배포
+OpenMCPIngress를 배포하면 Target Service가 있는 클러스터를 탐색하여 해당 클러스터에 Ingress 리소스를 배포합니다.
 ```bash
 $ kubectl create -f sample/openmcpingress/.
 ```
@@ -224,6 +226,7 @@ $ kubectl get openmcpingressdnsrecord -n openmcp
 $ kubectl get openmcpdnsendpoint -n openmcp
 ```
 ## OpenMCPHybridAutoScaler 배포
+OpenMCPHybridAutoScaler를 배포하면 Target Deployment가 있는 클러스터를 탐색하여 해당 클러스터에 HorizontalPodAutoscaler, VerticalPodAutoscaler 리소스를 배포합니다.
 ```bash
 $ kubectl create -f sample/openmcphybridautoscaler/.
 ```
