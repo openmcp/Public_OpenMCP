@@ -70,22 +70,26 @@ $ ./1.create.sh
 
 설치 확인
 ```bash
-$ kubectl get pods --all-namespaces
-NAMESPACE                NAME                                            READY   STATUS    RESTARTS   AGE
-openmcp                  influxdb-68bff77cbd-kdcs4                       1/1     Running   0          21h
-openmcp                  loadbalancing-controller-bb7547df8-fpbbj        1/1     Running   0          21h
-openmcp                  openmcp-analytic-engine-67dc4b7d9d-kxpb8        1/1     Running   0          21h
-openmcp                  openmcp-deployment-controller-747cf6d76-tvm64   1/1     Running   0          21h
-openmcp                  openmcp-dns-controller-78ff9bcdd5-lkcx8         1/1     Running   0          21h
-openmcp                  openmcp-hpa-controller-8688867566-bklhw         1/1     Running   0          21h
-openmcp                  openmcp-ingress-controller-7fc4489594-jmccz     1/1     Running   0          21h
-openmcp                  openmcp-metric-collector-79dc4b466b-5h9wp       1/1     Running   0          21h
-openmcp                  openmcp-policy-engine-7c7b5fb7d5-4m4tl          1/1     Running   0          21h
-openmcp                  openmcp-scheduler-65794548ff-92fql              1/1     Running   0          21h
-openmcp                  openmcp-service-controller-776cc6574-xfd8c      1/1     Running   0          21h
-openmcp                  sync-controller-67b4d858d9-4zwnk                1/1     Running   0          21h
+$ kubectl get pods -n openmcp
+NAME                                            READY   STATUS    RESTARTS   AGE
+influxdb-68bff77cbd-kdcs4                       1/1     Running   0          21h
+loadbalancing-controller-bb7547df8-fpbbj        1/1     Running   0          21h
+openmcp-analytic-engine-67dc4b7d9d-kxpb8        1/1     Running   0          21h
+openmcp-deployment-controller-747cf6d76-tvm64   1/1     Running   0          21h
+openmcp-dns-controller-78ff9bcdd5-lkcx8         1/1     Running   0          21h
+openmcp-hpa-controller-8688867566-bklhw         1/1     Running   0          21h
+openmcp-ingress-controller-7fc4489594-jmccz     1/1     Running   0          21h
+openmcp-metric-collector-79dc4b466b-5h9wp       1/1     Running   0          21h
+openmcp-policy-engine-7c7b5fb7d5-4m4tl          1/1     Running   0          21h
+openmcp-scheduler-65794548ff-92fql              1/1     Running   0          21h
+openmcp-service-controller-776cc6574-xfd8c      1/1     Running   0          21h
+sync-controller-67b4d858d9-4zwnk                1/1     Running   0          21h
 
 $ kubectl get openmcppolicyengine -n openmcp
+NAME                           AGE
+analytic-metrics-weight        2m1s
+hpa-minmax-distribution-mode   2m10s
+hpa-target-cluster             2m6s
 ```
 
 ### OpenMCP Architecture
@@ -126,6 +130,7 @@ ketikubecli를 사용하여 nfs 서버에 하위 클러스터를 등록합니다
 ```bash
 $ OPENMCP_IP = "10.0.3.30"
 $ ketikubecli regist member --ip ${OPENMCP_IP}
+Success Regist '10.0.3.40' in OpenMCP Master: 10.0.3.30
 ```
 
 ## 3. OpenMCP에 하위 클러스터 Join - OpenMCP에서 수행
@@ -140,7 +145,46 @@ $ ketikubecli join cluster --ip ${CLUSTER_IP}
 # OpenMCP TEST
 
 ## OpenMCPDeployment 배포
+```bash
+$ kubectl create -f sample/openmcpdeployment/.
+```
+```bash
+$ kubectl get openmcpdeploy -n openmcp
+```
 ## OpenMCPService 배포
-## DNSRecord 생성
+```bash
+$ kubectl create -f sample/openmcpservice/.
+```
+```bash
+$ kubectl get openmcpservice -n openmcp
+```
 ## OpenMCPIngress 배포
+```bash
+$ kubectl create -f sample/openmcpingress/.
+```
+```bash
+$ kubectl get openmcpingress -n openmcp
+```
+## OpenMCPDomain, OpenMCPServiceDNSRecord, OpenMCPIngressDNSRecord 생성
+```bash
+$ kubectl create -f sample/openmcpdns/.
+```
+```bash
+$ kubectl get openmcpdomain -n openmcp
+```
+```bash
+$ kubectl get openmcpservicednsrecord -n openmcp
+```
+```bash
+$ kubectl get openmcpingressdnsrecord -n openmcp
+```
+```bash
+$ kubectl get openmcpdnsendpoint -n openmcp
+```
 ## OpenMCPHybridAutoScaler 배포
+```bash
+$ kubectl create -f sample/openmcphybridautoscaler/.
+```
+```bash
+$ kubectl get openmcphybridautoscaler -n openmcp
+```
