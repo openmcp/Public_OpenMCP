@@ -13,7 +13,7 @@ OpenMCP 설치를 위해서는 `federation`, `ketikubecli` 그리고 nfs를 위�
 ### (1) `openmcp` namespaces 리소스 생성
 
 ```bash
-kubectl create ns openmcp
+$ kubectl create ns openmcp
 ```
 
 ### (2) cluster 이름 변경
@@ -22,10 +22,7 @@ kubeconfig 파일에서 클러스터 이름을 `opemncp`로 수정합니다.
 > kubeconfig 기본 경로 : $HOME/.kube/config
 
 ```bash
-vi $HOME/.kube/config
-```
-EX)
-```bash
+$ vi $HOME/.kube/config
 apiVersion: v1
 clusters:
 - cluster:
@@ -50,7 +47,7 @@ users:
 ### (3) 외부 스토리지에 OpenMCP 서버 등록
 ketikubecli를 사용하여 nfs 서버에 OpenMCP 서버를 등록합니다.
 ```bash
-ketikubecli regist openmcp
+$ ketikubecli regist openmcp
 ```
 
 ## 2. 기본 모듈 배포  
@@ -58,8 +55,8 @@ ketikubecli regist openmcp
 OpenMCP 동작에 필요한 기본 모듈을 배포합니다.
 
 ```bash
-cd ./install_openmcp/master
-./1.create.sh
+$ cd ./install_openmcp/master
+$ ./1.create.sh
 ```
 > 설치 항목
 > - Sync Controller
@@ -70,6 +67,26 @@ cd ./install_openmcp/master
 > - Policy Engine
 > - DNS Controller
 > - InfluxDB
+
+설치 확인
+```bash
+$ kubectl get pods --all-namespaces
+NAMESPACE                NAME                                            READY   STATUS    RESTARTS   AGE
+openmcp                  influxdb-68bff77cbd-kdcs4                       1/1     Running   0          21h
+openmcp                  loadbalancing-controller-bb7547df8-fpbbj        1/1     Running   0          21h
+openmcp                  openmcp-analytic-engine-67dc4b7d9d-kxpb8        1/1     Running   0          21h
+openmcp                  openmcp-deployment-controller-747cf6d76-tvm64   1/1     Running   0          21h
+openmcp                  openmcp-dns-controller-78ff9bcdd5-lkcx8         1/1     Running   0          21h
+openmcp                  openmcp-hpa-controller-8688867566-bklhw         1/1     Running   0          21h
+openmcp                  openmcp-ingress-controller-7fc4489594-jmccz     1/1     Running   0          21h
+openmcp                  openmcp-metric-collector-79dc4b466b-5h9wp       1/1     Running   0          21h
+openmcp                  openmcp-policy-engine-7c7b5fb7d5-4m4tl          1/1     Running   0          21h
+openmcp                  openmcp-scheduler-65794548ff-92fql              1/1     Running   0          21h
+openmcp                  openmcp-service-controller-776cc6574-xfd8c      1/1     Running   0          21h
+openmcp                  sync-controller-67b4d858d9-4zwnk                1/1     Running   0          21h
+
+$ kubectl get openmcppolicyengine -n openmcp
+```
 
 ### OpenMCP Architecture
 ![Architecture of the openmcp](/images/openmcp_architecture_2.png)
@@ -82,10 +99,7 @@ OpenMCP에 하위 클러스터를 join하기 전에 클러스터의 이름을 �
 > kubeconfig 기본 경로 : $HOME/.kube/config
 
 ```bash
-vi $HOME/.kube/config
-```
-EX)
-```bash
+$ vi $HOME/.kube/config
 apiVersion: v1
 clusters:
 - cluster:
@@ -110,18 +124,23 @@ users:
 ## 2. 외부 스토리지에 Join 클러스터 서버 등록 - 하위 클러스터에서 수행
 ketikubecli를 사용하여 nfs 서버에 하위 클러스터를 등록합니다.
 ```bash
-OPENMCP_IP = "10.0.3.30"
-ketikubecli regist member --ip ${OPENMCP_IP}
+$ OPENMCP_IP = "10.0.3.30"
+$ ketikubecli regist member --ip ${OPENMCP_IP}
 ```
 
 ## 3. OpenMCP에 하위 클러스터 Join - OpenMCP에서 수행
 OpenMCP 서버에서 ketikubecli를 사용하여 특정 클러스터를 join합니다.
 ```bash
-CLUSTER_IP = "10.0.3.40"
-ketikubecli join cluster --ip ${CLUSTER_IP}
+$ CLUSTER_IP = "10.0.3.40"
+$ ketikubecli join cluster --ip ${CLUSTER_IP}
 ```
 
 ---
 
 # OpenMCP TEST
 
+## OpenMCPDeployment 배포
+## OpenMCPService 배포
+## DNSRecord 생성
+## OpenMCPIngress 배포
+## OpenMCPHybridAutoScaler 배포
