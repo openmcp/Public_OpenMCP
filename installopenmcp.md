@@ -143,14 +143,33 @@ $ ketikubecli join cluster --ip ${CLUSTER_IP}
 ---
 
 # OpenMCP TEST
+OpenMCP에 cluster1, cluster2가 조인된 상태에서 TEST를 진행합니다.
+```bash
+$ kubectl get kubefedcluster -n kube-federation-system
+NAME       READY   AGE
+cluster1   True    23h
+cluster2   True    23h
+```
 
 ## OpenMCPDeployment 배포
+OpenMCPDeployment를 배포하면 Pod는 스케줄링 되어 Deployment 리소스로 cluster1, cluster2에 배포됩니다.
 ```bash
 $ kubectl create -f sample/openmcpdeployment/.
 ```
 ```bash
-$ kubectl get openmcpdeploy -n openmcp
+$ kubectl get openmcpdeployment -n openmcp
+NAME                  AGE
+openmcp-deploy-test   27s
+
+$ kubectl get deploy -n openmcp --context cluster1
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+openmcp-deploy-test        4/4     4            4           62s
+
+$ kubectl get deploy -n openmcp --context cluster2
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+openmcp-deploy-test        1/1     1            1           61s
 ```
+
 ## OpenMCPService 배포
 ```bash
 $ kubectl create -f sample/openmcpservice/.
