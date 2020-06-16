@@ -1,6 +1,6 @@
-+ # OpenMCP 설치
+# OpenMCP 설치
 
-## 사전준비  
++ ## 사전준비  
 
 OpenMCP 설치를 위해서는 먼저 `federation`, `ketikubecli` 그리고 nfs를 위한 `외부 서버`가 구축되어 있어야 합니다.
 
@@ -98,7 +98,7 @@ hpa-target-cluster             2m6s
 
 ---
 
-+ # OpenMCP 서버에 클러스터 Join
+# OpenMCP 서버에 클러스터 Join
 ## 1. (선택) cluster 이름 변경 - 하위 클러스터에서 수행
 OpenMCP에 하위 클러스터를 join하기 전에 클러스터의 이름을 사용자가 원하는 이름으로 변경합니다.
 > kubeconfig 기본 경로 : $HOME/.kube/config
@@ -143,7 +143,7 @@ $ ketikubecli join cluster --ip ${CLUSTER_IP}
 
 ---
 
-+ # OpenMCP TEST
+# OpenMCP TEST
 OpenMCP에 cluster1, cluster2가 조인된 상태에서 TEST를 진행합니다.
 ```bash
 $ kubectl get kubefedcluster -n kube-federation-system
