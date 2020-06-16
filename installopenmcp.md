@@ -1,5 +1,5 @@
 - [OpenMCP 설치](#openmcp-설치)
-  - [ketikubecli를 이용한 OpenMCP 서버 등록](#ketikubecli를-이용한-openmcp-서버-등록)
+  - [1. ketikubecli를 이용한 OpenMCP 서버 등록](#ketikubecli를-이용한-openmcp-서버-등록)
     - [`openmcp` namespaces 리소스 생성](#`openmcp`-namespaces-리소스-생성)
     - [cluster 이름 변경](#cluster-이름-변경)
     - [외부 스토리지에 OpenMCP 서버 등록](#외부-스토리지에-openmcp-서버-등록)
@@ -16,7 +16,7 @@ OpenMCP 설치를 위해서는 먼저 `federation`, `ketikubecli` 그리고 nfs�
 1. [ketikubecli](https://github.com/openmcp/openmcp-cli) 설치
 1. [nfs 서버](https://github.com/openmcp/external) 설치
 
-## ketikubecli를 이용한 OpenMCP 서버 등록
+## 1. ketikubecli를 이용한 OpenMCP 서버 등록
 
 ### (1) `openmcp` namespaces 리소스 생성
 
