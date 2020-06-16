@@ -1,3 +1,4 @@
+**Table of Contents**
 - [OpenMCP 설치](#openmcp-설치)
   - [1. ketikubecli를 이용한 OpenMCP 서버 등록](#1-ketikubecli를-이용한-openmcp-서버-등록)
     - [(1) `openmcp` namespaces 리소스 생성](#1-openmcp-namespaces-리소스-생성)
