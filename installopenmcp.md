@@ -228,4 +228,20 @@ $ kubectl create -f sample/openmcphybridautoscaler/.
 ```
 ```bash
 $ kubectl get openmcphybridautoscaler -n openmcp
+NAME               AGE
+openmcp-has-test   6m51s
+
+$ kubectl get hpa,vpa -n openmcp --context cluster1
+NAME                                                   REFERENCE                            TARGETS          MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/openmcp-has-test   Deployment/openmcp-deployment-test   56/100, 0%/50%   2         4         2          12m
+
+NAME                                                        AGE
+verticalpodautoscaler.autoscaling.k8s.io/openmcp-has-test   11m
+
+$ kubectl get hpa,vpa -n openmcp --context cluster2
+NAME                                                   REFERENCE                            TARGETS          MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/openmcp-has-test   Deployment/openmcp-deployment-test   42/100, 0%/50%   2         4         2          11m
+
+NAME                                                        AGE
+verticalpodautoscaler.autoscaling.k8s.io/openmcp-has-test   11m
 ```
