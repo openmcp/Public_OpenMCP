@@ -6,13 +6,13 @@
   - [2. OpenMCP 기본 모듈 배포](#2-openmcp-기본-모듈-배포)
 - [OpenMCP 서버에 클러스터 Join](#openmcp-서버에-클러스터-Join)
   - [1. (선택) cluster 이름 변경 [하위 클러스터에서 수행]](#1-선택-cluster-이름-변경-하위-클러스터에서-수행)
-  - [2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]](#2-외부-스토리지에-Join하고자-하는-클러스터-서버-등록-하위-클러스터에서-수행)
-  - [3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]](#3-외부-스토리지에-등록된-하위-클러스터를-OpenMCP에-Join-OpenMCP에서-수행)
+  - [2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]](#2-외부-스토리지에-join하고자-하는-클러스터-서버-등록-하위-클러스터에서-수행)
+  - [3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]](#3-외부-스토리지에-등록된-하위-클러스터를-openmcp에-join-openmcp에서-수행)
 - [OpenMCP TEST](#openmcp-test)
   - [OpenMCPDeployment 배포](#openmcpdeployment-배포)
   - [OpenMCPService 배포](#openmcpservice-배포)
   - [OpenMCPIngress 배포](#openmcpingress-배포)
-  - [OpenMCPDomain,OpenMCPServiceDNSRecord,OpenMCPIngressDNSRecord 배포](#openmcpdomain,openmcpservicednsrecord,openmcpingressdnsrecord-배포)
+  - [OpenMCPDomain,OpenMCPServiceDNSRecord,OpenMCPIngressDNSRecord 배포](#openmcpdomainopenmcpservicednsrecordopenmcpingressdnsrecord-배포)
   - [OpenMCPHybridAutoScaler 배포](#openmcphybridautoscaler-배포)
 
 # OpenMCP 설치
