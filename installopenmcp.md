@@ -1,6 +1,10 @@
 - [OpenMCP 설치](#openmcp-설치)
   - [ketikubecli를 이용한 OpenMCP 서버 등록](#ketikubecli를-이용한-openmcp-서버-등록)
     - [`openmcp` namespaces 리소스 생성](#`openmcp`-namespaces-리소스-생성)
+    - [cluster 이름 변경](#cluster-이름-변경)
+    - [외부 스토리지에 OpenMCP 서버 등록](#외부-스토리지에-openmcp-서버-등록)
+  - [OpenMCP 기본 모듈 배포](#openmcp-기본-모듈-배포)
+- [OpenMCP 서버에 클러스터 Join](#openmcp-서버에-클러스터-Join)
 
 # OpenMCP 설치
 
@@ -55,7 +59,7 @@ $ ketikubecli regist openmcp
 Success OpenMCP Master Regist '10.0.3.30'
 ```
 
-## 2. OpenMCP 서버에 기본 모듈 배포  
+## 2. OpenMCP 기본 모듈 배포  
 
 OpenMCP 동작에 필요한 기본 모듈을 배포합니다.
 
