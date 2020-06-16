@@ -48,6 +48,7 @@ users:
 ketikubecli를 사용하여 nfs 서버에 OpenMCP 서버를 등록합니다.
 ```bash
 $ ketikubecli regist openmcp
+Success OpenMCP Master Regist '10.0.3.30'
 ```
 
 ## 2. 기본 모듈 배포  
