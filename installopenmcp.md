@@ -158,16 +158,16 @@ $ kubectl create -f sample/openmcpdeployment/.
 ```
 ```bash
 $ kubectl get openmcpdeployment -n openmcp
-NAME                  AGE
-openmcp-deploy-test   27s
+NAME                      AGE
+openmcp-deployment-test   72s
 
 $ kubectl get deploy -n openmcp --context cluster1
 NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
-openmcp-deploy-test        4/4     4            4           62s
+openmcp-deployment-test    2/2     2            2           79s
 
 $ kubectl get deploy -n openmcp --context cluster2
 NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
-openmcp-deploy-test        1/1     1            1           61s
+openmcp-deployment-test    2/2     2            2           80s
 ```
 
 ## OpenMCPService 배포
@@ -176,14 +176,36 @@ $ kubectl create -f sample/openmcpservice/.
 ```
 ```bash
 $ kubectl get openmcpservice -n openmcp
+NAME                   AGE
+openmcp-service-test   18s
+
+$ kubectl get service -n openmcp --context cluster1
+NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+openmcp-service-test       NodePort       10.108.79.184   <none>        80:30519/TCP     36s
+
+$ kubectl get service -n openmcp --context cluster2
+NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+openmcp-service-test       NodePort       10.108.62.216   <none>        80:31850/TCP     34s
 ```
+
 ## OpenMCPIngress 배포
 ```bash
 $ kubectl create -f sample/openmcpingress/.
 ```
 ```bash
 $ kubectl get openmcpingress -n openmcp
+NAME                   AGE
+openmcp-ingress-test   4s
+
+$ kubectl get ingress -n openmcp --context cluster1
+NAME                   HOSTS                                ADDRESS   PORTS   AGE
+openmcp-ingress-test   cluster1.loadbalancing.openmcp.org             80      18s
+
+$ kubectl get ingress -n openmcp --context cluster2
+NAME                   HOSTS                                ADDRESS   PORTS   AGE
+openmcp-ingress-test   cluster2.loadbalancing.openmcp.org             80      18s
 ```
+
 ## OpenMCPDomain,OpenMCPServiceDNSRecord,OpenMCPIngressDNSRecord 배포
 ```bash
 $ kubectl create -f sample/openmcpdns/.
