@@ -38,7 +38,6 @@ type RouteBuilder struct {
 	defaultResponse         *ResponseError
 	metadata                map[string]interface{}
 	deprecated              bool
-	contentEncodingEnabled  *bool
 }
 
 // Do evaluates each argument with the RouteBuilder itself.
@@ -176,15 +175,6 @@ func (b *RouteBuilder) Returns(code int, message string, model interface{}) *Rou
 	return b
 }
 
-// ReturnsWithHeaders is similar to Returns, but can specify response headers
-func (b *RouteBuilder) ReturnsWithHeaders(code int, message string, model interface{}, headers map[string]Header) *RouteBuilder {
-	b.Returns(code, message, model)
-	err := b.errorMap[code]
-	err.Headers = headers
-	b.errorMap[code] = err
-	return b
-}
-
 // DefaultReturns is a special Returns call that sets the default of the response.
 func (b *RouteBuilder) DefaultReturns(message string, model interface{}) *RouteBuilder {
 	b.defaultResponse = &ResponseError{
@@ -214,25 +204,7 @@ type ResponseError struct {
 	Code      int
 	Message   string
 	Model     interface{}
-	Headers   map[string]Header
 	IsDefault bool
-}
-
-// Header describes a header for a response of the API
-//
-// For more information: http://goo.gl/8us55a#headerObject
-type Header struct {
-	*Items
-	Description string
-}
-
-// Items describe swagger simple schemas for headers
-type Items struct {
-	Type             string
-	Format           string
-	Items            *Items
-	CollectionFormat string
-	Default          interface{}
 }
 
 func (b *RouteBuilder) servicePath(path string) *RouteBuilder {
@@ -258,12 +230,6 @@ func (b *RouteBuilder) Filter(filter FilterFunction) *RouteBuilder {
 // or route filters.
 func (b *RouteBuilder) If(condition RouteSelectionConditionFunction) *RouteBuilder {
 	b.conditions = append(b.conditions, condition)
-	return b
-}
-
-// ContentEncodingEnabled allows you to override the Containers value for auto-compressing this route response.
-func (b *RouteBuilder) ContentEncodingEnabled(enabled bool) *RouteBuilder {
-	b.contentEncodingEnabled = &enabled
 	return b
 }
 
@@ -303,27 +269,25 @@ func (b *RouteBuilder) Build() Route {
 		operationName = nameOfFunction(b.function)
 	}
 	route := Route{
-		Method:                 b.httpMethod,
-		Path:                   concatPath(b.rootPath, b.currentPath),
-		Produces:               b.produces,
-		Consumes:               b.consumes,
-		Function:               b.function,
-		Filters:                b.filters,
-		If:                     b.conditions,
-		relativePath:           b.currentPath,
-		pathExpr:               pathExpr,
-		Doc:                    b.doc,
-		Notes:                  b.notes,
-		Operation:              operationName,
-		ParameterDocs:          b.parameters,
-		ResponseErrors:         b.errorMap,
-		DefaultResponse:        b.defaultResponse,
-		ReadSample:             b.readSample,
-		WriteSample:            b.writeSample,
-		Metadata:               b.metadata,
-		Deprecated:             b.deprecated,
-		contentEncodingEnabled: b.contentEncodingEnabled,
-	}
+		Method:          b.httpMethod,
+		Path:            concatPath(b.rootPath, b.currentPath),
+		Produces:        b.produces,
+		Consumes:        b.consumes,
+		Function:        b.function,
+		Filters:         b.filters,
+		If:              b.conditions,
+		relativePath:    b.currentPath,
+		pathExpr:        pathExpr,
+		Doc:             b.doc,
+		Notes:           b.notes,
+		Operation:       operationName,
+		ParameterDocs:   b.parameters,
+		ResponseErrors:  b.errorMap,
+		DefaultResponse: b.defaultResponse,
+		ReadSample:      b.readSample,
+		WriteSample:     b.writeSample,
+		Metadata:        b.metadata,
+		Deprecated:      b.deprecated}
 	route.postBuild()
 	return route
 }

@@ -8,7 +8,7 @@ require (
 	github.com/getlantern/deepcopy v0.0.0-20160317154340-7f45deb8130a
 	github.com/go-openapi/spec v0.19.8
 	github.com/go-sql-driver/mysql v1.5.0
-	github.com/golang/protobuf v1.4.0
+	github.com/golang/protobuf v1.4.2
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hth0919/resourcecollector v0.0.0-20200410074403-e831e209e52f // indirect
@@ -19,17 +19,18 @@ require (
 	github.com/mittwald/go-powerdns v0.4.0
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
-	go.uber.org/zap v1.15.0 // indirect
 	golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8 // indirect
+	golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3 // indirect
 	golang.org/x/sys v0.0.0-20190616124812-15dcb6c0061f // indirect
+	golang.org/x/tools v0.0.0-20190524140312-2c0ae7006135 // indirect
 	google.golang.org/grpc v1.28.0
-	google.golang.org/protobuf v1.22.0
+	google.golang.org/protobuf v1.23.0
+	honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc // indirect
 	k8s.io/api v0.18.2
 	k8s.io/apimachinery v0.18.2
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/klog v1.0.0
 	k8s.io/kube-openapi v0.0.0-20200121204235-bf4fb3bd569c
-	k8s.io/sample-controller v0.0.0-20191017070449-ab9e95689d58
 	openmcp-dns-controller v0.0.0-00010101000000-000000000000
 	sigs.k8s.io/controller-runtime v0.3.0
 	sigs.k8s.io/kubefed v0.1.0-rc6

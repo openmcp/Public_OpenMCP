@@ -19,6 +19,8 @@ package main
 import (
 	//"flag"
 	"log"
+
+
 	//"strings"
 	//"context"
 	"fmt"
@@ -30,9 +32,8 @@ import (
 	//"admiralty.io/multicluster-service-account/pkg/config"
 	//"k8s.io/api/core/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"k8s.io/sample-controller/pkg/signals"
-
 	"resource-controller/controllers/openmcpingress/pkg/controller"
+	"resource-controller/controllers/openmcpingress/pkg/reshape"
 	//"k8s.io/client-go/rest"
 	//genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 	//fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
@@ -40,75 +41,44 @@ import (
 )
 
 func main() {
-	//var f = flag.String("contexts", "", "a comma-separated list of contexts to watch, e.g., cluster1,cluster2")
-	//flag.Parse()
-	//ctxs := strings.Split(*f, ",")
-	/*
-	   	ghosts := []cluster.Cluster{}
-	   	ghostNamespaces := []string{}
+	for {
+		cm := openmcpingress.NewClusterManager()
 
-	   	host_ctx := "openmcp"
-	   	ghost_ctxs := []string{"cluster1, cluster2"}
+		host_ctx := "openmcp"
+		namespace := "openmcp"
 
-	   	host_cfg, _, err := config.NamedConfigAndNamespace(host_ctx)
+		host_cfg := cm.Host_config
+		//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+		live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
 
-	   	if err != nil {
-	                   log.Fatal(err)
-	           }
+		ghosts := []*cluster.Cluster{}
 
+		for _, ghost_cluster := range cm.Cluster_list.Items {
+			ghost_ctx := ghost_cluster.Name
+			ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
+			//ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
 
-	   	for _, ghost_ctx := range ghost_ctxs {
-	   		ghost_cfg, _, err := config.NamedConfigAndNamespace(ghost_ctx)
-	   		if err != nil {
-	   			log.Fatal(err)
-	   		}
-	   		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
-	   		ghostNamespace := "default"
+			ghosts = append(ghosts, ghost)
+		}
+		for _, ghost := range ghosts {
+			fmt.Println(ghost.Name)
+		}
 
-	   		ghosts = append(ghosts, *ghost)
-	   		ghostNamespaces = append(ghostNamespaces, ghostNamespace)
-	   	}
-	   	co, _ := openmcpingress.NewController(live, ghosts, ghostNamespaces)
+		co, _ := openmcpingress.NewController(live, ghosts, namespace)
+		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
 
-	   	m := manager.New()
-	   	m.AddController(co)
+		m := manager.New()
+		m.AddController(co)
+		m.AddController(reshape_cont)
 
-	   	if err := m.Start(signals.SetupSignalHandler()); err != nil {
-	   		log.Fatal(err)
-	   	}
-	*/
+		stop := reshape.SetupSignalHandler()
 
-	cm := openmcpingress.NewClusterManager()
-
-	host_ctx := "openmcp"
-	namespace := "openmcp"
-
-	host_cfg := cm.Host_config
-	//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
-	live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
-
-	ghosts := []*cluster.Cluster{}
-
-	for _, ghost_cluster := range cm.Cluster_list.Items {
-		ghost_ctx := ghost_cluster.Name
-		ghost_cfg := cm.Cluster_configs[ghost_ctx]
-
-		//ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
-		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
-
-		ghosts = append(ghosts, ghost)
+		if err := m.Start(stop); err != nil {
+			log.Fatal(err)
+		}
 	}
-	for _, ghost := range ghosts {
-		fmt.Println(ghost.Name)
-	}
-	co, _ := openmcpingress.NewController(live, ghosts, namespace)
 
-	m := manager.New()
-	m.AddController(co)
-
-	if err := m.Start(signals.SetupSignalHandler()); err != nil {
-		log.Fatal(err)
-	}
 
 }

@@ -19,6 +19,8 @@ package main
 import (
 	//"flag"
 	"log"
+	reshape "reshape-controller"
+
 	//"strings"
 	//"context"
 	"fmt"
@@ -30,7 +32,7 @@ import (
 	//"admiralty.io/multicluster-service-account/pkg/config"
 	//"k8s.io/api/core/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"k8s.io/sample-controller/pkg/signals"
+	//"k8s.io/sample-controller/pkg/signals"
 
 	"sync-controller/pkg/controller/sync"
 	//"k8s.io/client-go/rest"
@@ -63,11 +65,15 @@ func main() {
 		fmt.Println(ghost.Name)
 	}
 	co, _ := sync.NewController(live, ghosts, namespace)
+	reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
 
 	m := manager.New()
 	m.AddController(co)
+	m.AddController(reshape_cont)
 
-	if err := m.Start(signals.SetupSignalHandler()); err != nil {
+	stop := reshape.SetupSignalHandler()
+
+	if err := m.Start(stop); err != nil {
 		log.Fatal(err)
 	}
 
