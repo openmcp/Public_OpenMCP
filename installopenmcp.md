@@ -18,7 +18,7 @@ OpenMCP 설치를 위해서는 먼저 `federation`, `ketikubecli` 그리고 nfs�
 
 ## ketikubecli를 이용한 OpenMCP 서버 등록
 
-### openmcp namespaces 리소스 생성
+### `openmcp` namespaces 리소스 생성
 
 ```bash
 $ kubectl create ns openmcp
