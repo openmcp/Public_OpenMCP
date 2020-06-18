@@ -1,0 +1,32 @@
+apiVersion: keti.example.com/v1alpha1
+kind: OpenMCPHybridAutoScaler
+metadata:
+  name: openmcp-hpa
+  namespace: keti
+spec:
+  hpaTemplate:
+    spec:
+      scaleTargetRef:
+        kind: OpenMCPDeployment
+        name: openmcp-pod
+      minReplicas: 3
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 50
+        - type: Object
+          object:
+            metric:
+              name: NetworkTxUsage
+            describedObject:
+              apiVersion: v1
+              kind: Pod
+              name: openmcp-pods
+            target:
+              type: Value
+              value: 100
+  vpaMode: Never

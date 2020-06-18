@@ -1,0 +1,14 @@
+apiVersion: keti.example.com/v1alpha1
+kind: OpenMCPService
+metadata:
+  name: openmcp-service
+  namespace: openmcp
+spec:
+  template:
+    spec:
+      type: NodePort
+      ports:
+      - name: http
+        port: 80
+  labelselector:
+    app: openmcp-nginx
