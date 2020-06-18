@@ -1,0 +1,17 @@
+apiVersion:  keti.example.com/v1alpha1
+kind: OpenMCPIngress
+metadata:
+  name: openmcp-ingress
+  namespace: openmcp
+spec:
+  template:
+    spec:
+      rules:
+      - host: loadbalancing.openmcp.org
+        http:
+          paths:
+          - backend:
+              serviceName: openmcp-serivce
+              servicePort: 80
+
+
