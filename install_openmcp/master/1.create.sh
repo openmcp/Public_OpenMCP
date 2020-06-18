@@ -7,7 +7,7 @@ kubectl create -f metric-collector/.
 echo "--- influxdb"
 kubectl create -f influxdb/.
 cd ./influxdb/secret_info
-./secret_info
+sh secret_info.sh
 cd ../..
 echo "--- openmcp-deployment-controller"
 kubectl create -f openmcp-deployment-controller/.
