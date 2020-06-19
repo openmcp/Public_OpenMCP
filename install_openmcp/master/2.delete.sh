@@ -19,8 +19,8 @@ echo "--- openmcp-service-controller"
 kubectl delete -f openmcp-service-controller/.
 echo "--- openmcp-policy-engine"
 kubectl delete -f openmcp-policy-engine/.
-echo "   ==> CREATE Policy"
-echo "--- create policy"
+echo "   ==> Delete Policy"
+echo "--- delete policy"
 kubectl delete -f openmcp-policy-engine/policy/.
 echo "--- openmcp-dns-controller"
 kubectl delete -f openmcp-dns-controller/.
