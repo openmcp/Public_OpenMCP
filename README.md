@@ -264,7 +264,7 @@ $ curl http://openmcp.service.org/health
 map[openmcp.service.org:map[/:openmcp-service]]
 map[openmcp-ingress:[openmcp.service.org openmcp.service.org]]
 map[openmcp-service:[cluster1 cluster2]]
-map[cluster2:map[Continent:AS Country:CN] cluster3:map[Continent:AS Country:JP]]
+map[cluster1:map[Continent:AS Country:CN] cluster2:map[Continent:AS Country:JP]]
 
 ```
 ## OpenMCPHybridAutoScaler 배포
