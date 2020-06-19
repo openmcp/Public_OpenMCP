@@ -239,16 +239,33 @@ openmcp-ingress-test   cluster2.loadbalancing.openmcp.org             80      18
 $ kubectl create -f sample/openmcpdns/.
 ```
 ```bash
-$ kubectl get openmcpdomain -n openmcp
+$ kubectl get openmcpdomain -n kube-federation-system
+NAMESPACE                NAME                     AGE
+kube-federation-system   openmcp-service-domain   16h
 ```
 ```bash
 $ kubectl get openmcpservicednsrecord -n openmcp
+NAME              AGE
+openmcp-service   16h
 ```
 ```bash
 $ kubectl get openmcpingressdnsrecord -n openmcp
+NAME              AGE
+openmcp-ingress   16h
 ```
 ```bash
 $ kubectl get openmcpdnsendpoint -n openmcp
+NAME                      AGE
+ingress-openmcp-ingress   16h
+service-openmcp-service   16h
+```
+```bash
+$ curl http://openmcp.service.org/health
+map[openmcp.service.org:map[/:openmcp-service]]
+map[openmcp-ingress:[openmcp.service.org openmcp.service.org]]
+map[openmcp-service:[cluster1 cluster2]]
+map[cluster2:map[Continent:AS Country:CN] cluster3:map[Continent:AS Country:JP]]
+
 ```
 ## OpenMCPHybridAutoScaler 배포
 OpenMCPHybridAutoScaler를 배포하면 Target Deployment가 있는 클러스터를 탐색하여 해당 클러스터에 HorizontalPodAutoscaler, VerticalPodAutoscaler 리소스를 배포합니다.
