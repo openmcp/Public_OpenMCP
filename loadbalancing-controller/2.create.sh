@@ -13,7 +13,7 @@ kubectl create -f operator.yaml
 
 
 #kubectl create -f crds/cr.yaml
-#kubectl expose deployment/loadbalancing-controller -n openmcp --port 80 --type=LoadBalancer
+kubectl expose deployment/loadbalancing-controller -n openmcp --port 80 --type=LoadBalancer
 #kubectl edit svc loadbalancing-controller -n openmcp
 
 cd ..

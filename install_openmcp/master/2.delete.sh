@@ -1,25 +1,35 @@
-echo "--- analytic-engine ---"
+echo "--- analytic-engine"
 kubectl delete -f analytic-engine/.
-echo "--- metric-collector ---"
+echo "--- metric-collector"
 kubectl delete -f metric-collector/.
-echo "--- influxdb ---"
+echo "--- influxdb"
 kubectl delete -f influxdb/.
-./influxdb/secret_info/secret_info
-echo "--- openmcp-deployment-controller ---"
+cd influxdb/secret_info
+sh secret_info_delete.sh
+cd ../..
+echo "--- openmcp-deployment-controller"
 kubectl delete -f openmcp-deployment-controller/.
-echo "--- openmcp-has-controller ---"
+echo "--- openmcp-has-controller"
 kubectl delete -f openmcp-has-controller/.
-echo "--- openmcp-scheduler ---"
+echo "--- openmcp-scheduler"
 kubectl delete -f openmcp-scheduler/.
-echo "--- openmcp-ingress-controller ---"
+echo "--- openmcp-ingress-controller"
 kubectl delete -f openmcp-ingress-controller/.
-echo "--- openmcp-service-controller ---"
+echo "--- openmcp-service-controller"
 kubectl delete -f openmcp-service-controller/.
-echo "--- openmcp-policy-engine ---"
+echo "--- openmcp-policy-engine"
 kubectl delete -f openmcp-policy-engine/.
-echo "--- openmcp-dns-controller ---"
+echo "   ==> CREATE Policy"
+echo "--- create policy"
+kubectl delete -f openmcp-policy-engine/policy/.
+echo "--- openmcp-dns-controller"
 kubectl delete -f openmcp-dns-controller/.
-echo "--- loadbalancing-controller ---"
+echo "--- loadbalancing-controller"
 kubectl delete -f loadbalancing-controller/.
-echo "--- sync-controller ---"
+kubectl delete service loadbalancing-controller -n openmcp
+echo "--- sync-controller"
 kubectl delete -f sync-controller/.
+echo "--- metallb"
+kubectl delete -f metallb/.
+
+kubectl delete ns openmcp

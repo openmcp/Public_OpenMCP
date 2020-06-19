@@ -141,7 +141,7 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
 			}
 		}
 	}
-
+	fmt.Println("totalcpu:",totalCpuCore)
 	cpuScore := (float64(totalCpuCore) - MetricsMap["CPUUsageNanoCores"]) / float64(totalCpuCore) * 100 // 확인필요
 	memScore := MetricsMap["MemoryAvailableBytes"] / (MetricsMap["MemoryUsageBytes"] + MetricsMap["MemoryAvailableBytes"]) * 100
 	//netScore := (MetricsMap["NetworkRxBytes"] - prevMetricsMap["NetworkRxBytes"]) + (MetricsMap["NetworkTxBytes"] - prevMetricsMap["NetworkTxBytes"]) / float64(totalNet) * 100// 확인필요

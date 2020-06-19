@@ -7,11 +7,11 @@ spec:
   template:
     spec:
       rules:
-      - host: loadbalancing.openmcp.org
+      - host: openmcp.service.org
         http:
           paths:
           - backend:
-              serviceName: openmcp-serivce
+              serviceName: openmcp-service
               servicePort: 80
 
 
