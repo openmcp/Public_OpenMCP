@@ -6,7 +6,7 @@ metadata:
 spec:
   template:
     spec:
-      type: NodePort
+      type: LoadBalancer
       ports:
       - name: http
         port: 80

@@ -7,14 +7,14 @@
     - [(3) 외부 스토리지에 OpenMCP 서버 등록](#3-외부-스토리지에-openmcp-서버-등록)
   - [2. OpenMCP 기본 모듈 배포](#2-openmcp-기본-모듈-배포)
 - [How To Join Cluster](#how-to-join-cluster)
-  - [1. (선택) cluster 이름 변경](#1-선택-cluster-이름-변경-하위-클러스터에서-수행)
-  - [2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록](#2-외부-스토리지에-join하고자-하는-클러스터-서버-등록-하위-클러스터에서-수행)
-  - [3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join](#3-외부-스토리지에-등록된-하위-클러스터를-openmcp에-join-openmcp에서-수행)
+  - [1. (선택) cluster 이름 변경 [하위 클러스터에서 수행]](#1-선택-cluster-이름-변경-하위-클러스터에서-수행)
+  - [2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]](#2-외부-스토리지에-join하고자-하는-클러스터-서버-등록-하위-클러스터에서-수행)
+  - [3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]](#3-외부-스토리지에-등록된-하위-클러스터를-openmcp에-join-openmcp에서-수행)
 - [OpenMCP TEST](#openmcp-test)
   - [OpenMCPDeployment 배포](#openmcpdeployment-배포)
   - [OpenMCPService 배포](#openmcpservice-배포)
   - [OpenMCPIngress 배포](#openmcpingress-배포)
-  - [OpenMCPDomain, OpenMCPServiceDNSRecord, OpenMCPIngressDNSRecord 배포](#openmcpdomainopenmcpservicednsrecordopenmcpingressdnsrecord-배포)
+  - [OpenMCPDomain,OpenMCPServiceDNSRecord,OpenMCPIngressDNSRecord 배포](#openmcpdomainopenmcpservicednsrecordopenmcpingressdnsrecord-배포)
   - [OpenMCPHybridAutoScaler 배포](#openmcphybridautoscaler-배포)
 
 # Introduction of OpenMCP&reg;
@@ -184,16 +184,16 @@ $ kubectl create -f sample/openmcpdeployment/.
 ```
 ```bash
 $ kubectl get openmcpdeployment -n openmcp
-NAME                      AGE
-openmcp-deployment-test   72s
+NAME                 AGE
+openmcp-deployment   72s
 
 $ kubectl get deploy -n openmcp --context cluster1
-NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
-openmcp-deployment-test    2/2     2            2           79s
+NAME                  READY   UP-TO-DATE   AVAILABLE   AGE
+openmcp-deployment    2/2     2            2           79s
 
 $ kubectl get deploy -n openmcp --context cluster2
-NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
-openmcp-deployment-test    2/2     2            2           80s
+NAME                  READY   UP-TO-DATE   AVAILABLE   AGE
+openmcp-deployment    2/2     2            2           80s
 ```
 
 ## OpenMCPService 배포
@@ -203,16 +203,16 @@ $ kubectl create -f sample/openmcpservice/.
 ```
 ```bash
 $ kubectl get openmcpservice -n openmcp
-NAME                   AGE
-openmcp-service-test   18s
+NAME              AGE
+openmcp-service   18s
 
 $ kubectl get service -n openmcp --context cluster1
-NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
-openmcp-service-test       NodePort       10.108.79.184   <none>        80:30519/TCP     36s
+NAME                    TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+openmcp-service         LoadBalancer   10.99.182.34     10.0.3.233    80:30558/TCP     36s
 
 $ kubectl get service -n openmcp --context cluster2
-NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
-openmcp-service-test       NodePort       10.108.62.216   <none>        80:31850/TCP     34s
+NAME                    TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+openmcp-service         LoadBalancer   10.104.244.26    10.0.3.233    80:31492/TCP     34s
 ```
 
 ## OpenMCPIngress 배포
@@ -222,16 +222,16 @@ $ kubectl create -f sample/openmcpingress/.
 ```
 ```bash
 $ kubectl get openmcpingress -n openmcp
-NAME                   AGE
-openmcp-ingress-test   4s
+NAME              AGE
+openmcp-ingress   4s
 
 $ kubectl get ingress -n openmcp --context cluster1
-NAME                   HOSTS                                ADDRESS   PORTS   AGE
-openmcp-ingress-test   cluster1.loadbalancing.openmcp.org             80      18s
+NAME              HOSTS                                ADDRESS   PORTS   AGE
+openmcp-ingress   cluster1.loadbalancing.openmcp.org             80      18s
 
 $ kubectl get ingress -n openmcp --context cluster2
-NAME                   HOSTS                                ADDRESS   PORTS   AGE
-openmcp-ingress-test   cluster2.loadbalancing.openmcp.org             80      18s
+NAME              HOSTS                                ADDRESS   PORTS   AGE
+openmcp-ingress   cluster2.loadbalancing.openmcp.org             80      18s
 ```
 
 ## OpenMCPDomain,OpenMCPServiceDNSRecord,OpenMCPIngressDNSRecord 배포
@@ -239,16 +239,33 @@ openmcp-ingress-test   cluster2.loadbalancing.openmcp.org             80      18
 $ kubectl create -f sample/openmcpdns/.
 ```
 ```bash
-$ kubectl get openmcpdomain -n openmcp
+$ kubectl get openmcpdomain -n kube-federation-system
+NAME                     AGE
+openmcp-service-domain   16h
 ```
 ```bash
 $ kubectl get openmcpservicednsrecord -n openmcp
+NAME              AGE
+openmcp-service   16h
 ```
 ```bash
 $ kubectl get openmcpingressdnsrecord -n openmcp
+NAME              AGE
+openmcp-ingress   16h
 ```
 ```bash
 $ kubectl get openmcpdnsendpoint -n openmcp
+NAME                      AGE
+ingress-openmcp-ingress   16h
+service-openmcp-service   16h
+```
+```bash
+$ curl http://openmcp.service.org/health
+map[openmcp.service.org:map[/:openmcp-service]]
+map[openmcp-ingress:[openmcp.service.org openmcp.service.org]]
+map[openmcp-service:[cluster1 cluster2]]
+map[cluster1:map[Continent:AS Country:CN] cluster2:map[Continent:AS Country:JP]]
+
 ```
 ## OpenMCPHybridAutoScaler 배포
 OpenMCPHybridAutoScaler를 배포하면 Target Deployment가 있는 클러스터를 탐색하여 해당 클러스터에 HorizontalPodAutoscaler, VerticalPodAutoscaler 리소스를 배포합니다.
@@ -257,25 +274,26 @@ $ kubectl create -f sample/openmcphybridautoscaler/.
 ```
 ```bash
 $ kubectl get openmcphybridautoscaler -n openmcp
-NAME               AGE
-openmcp-has-test   6m51s
+NAME          AGE
+openmcp-has   6m51s
 
 $ kubectl get hpa,vpa -n openmcp --context cluster1
-NAME                                                   REFERENCE                            TARGETS          MINPODS   MAXPODS   REPLICAS   AGE
-horizontalpodautoscaler.autoscaling/openmcp-has-test   Deployment/openmcp-deployment-test   56/100, 0%/50%   2         4         2          12m
+NAME                                              REFERENCE                       TARGETS          MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/openmcp-has   Deployment/openmcp-deployment   56/100, 0%/50%   2         4         2          12m
 
-NAME                                                        AGE
-verticalpodautoscaler.autoscaling.k8s.io/openmcp-has-test   11m
+NAME                                                   AGE
+verticalpodautoscaler.autoscaling.k8s.io/openmcp-has   11m
 
 $ kubectl get hpa,vpa -n openmcp --context cluster2
-NAME                                                   REFERENCE                            TARGETS          MINPODS   MAXPODS   REPLICAS   AGE
-horizontalpodautoscaler.autoscaling/openmcp-has-test   Deployment/openmcp-deployment-test   42/100, 0%/50%   2         4         2          11m
+NAME                                              REFERENCE                       TARGETS          MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/openmcp-has   Deployment/openmcp-deployment   42/100, 0%/50%   2         4         2          11m
 
-NAME                                                        AGE
-verticalpodautoscaler.autoscaling.k8s.io/openmcp-has-test   11m
+NAME                                                   AGE
+verticalpodautoscaler.autoscaling.k8s.io/openmcp-has   11m
 ```
 
 # Governance
 
 본 프로젝트는 정보통신기술진흥센터(IITP)에서 지원하는 '19년 정보통신방송연구개발사업으로, "컴퓨팅 자원의 유연한 확장 및 서비스 이동을 제공하는 분산·협업형 컨테이너 플랫폼 기술 개발 과제" 임.
+
 
