@@ -240,8 +240,8 @@ $ kubectl create -f sample/openmcpdns/.
 ```
 ```bash
 $ kubectl get openmcpdomain -n kube-federation-system
-NAMESPACE                NAME                     AGE
-kube-federation-system   openmcp-service-domain   16h
+NAME                     AGE
+openmcp-service-domain   16h
 ```
 ```bash
 $ kubectl get openmcpservicednsrecord -n openmcp
