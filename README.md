@@ -5,6 +5,7 @@
     - [(1) `openmcp` namespaces 리소스 생성](#1-openmcp-namespaces-리소스-생성)
     - [(2) cluster 이름 변경](#2-cluster-이름-변경)
     - [(3) 외부 스토리지에 OpenMCP 서버 등록](#3-외부-스토리지에-openmcp-서버-등록)
+    - [(4) 하위 클러스터 Master Node에 Region, Zone 등록
   - [2. OpenMCP 기본 모듈 배포](#2-openmcp-기본-모듈-배포)
 - [How To Join Cluster](#how-to-join-cluster)
   - [1. (선택) cluster 이름 변경 [하위 클러스터에서 수행]](#1-선택-cluster-이름-변경-하위-클러스터에서-수행)
@@ -166,6 +167,16 @@ $ CLUSTER_IP="10.0.3.40"
 $ ketikubecli join cluster --ip ${CLUSTER_IP}
 ```
 
+## 4. 하위 클러스터 Master Node에 Region, Zone 등록
+하위 클러스터의 Label에 Region과 Zone을 등록합니다.
+'''bash
+$ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/region=<region> --context=<cluster-name>
+$ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> --context=<cluster-name>
+'''
+> Region (두 자리의 문자로 구성)
+> Asia => AS, Afica => AF, Antarctica => AN, Europe => EU, North America => NA, South America => SA
+> Zone (ISO 3166 alpha-2)
+> KR, JP, US, ....
 ---
 
 # OpenMCP TEST
