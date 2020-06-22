@@ -11,7 +11,7 @@
   - [2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]](#2-외부-스토리지에-join하고자-하는-클러스터-서버-등록-하위-클러스터에서-수행)
   - [3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]](#3-외부-스토리지에-등록된-하위-클러스터를-openmcp에-join-openmcp에서-수행)
   - [4. 하위 클러스터 Master Node에 Region, Zone 등록](#4-하위-클러스터-master-node에-region-zone-등록)
-- [OpenMCP TEST](#openmcp-test)
+- [OpenMCP EXAMPLE](#openmcp-example)
   - [OpenMCPDeployment 배포](#openmcpdeployment-배포)
   - [OpenMCPService 배포](#openmcpservice-배포)
   - [OpenMCPIngress 배포](#openmcpingress-배포)
@@ -203,8 +203,8 @@ $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> 
 > - https://ko.wikipedia.org/wiki/ISO_3166-1
 ---
 
-# OpenMCP TEST
-OpenMCP에 cluster1, cluster2가 조인된 상태에서 TEST를 진행합니다.
+# OpenMCP EXAMPLE
+OpenMCP에 cluster1, cluster2가 조인된 상태에서 EXAMPLE TEST를 진행합니다.
 ```bash
 $ kubectl get kubefedcluster -n kube-federation-system
 NAME       READY   AGE
@@ -242,7 +242,7 @@ NAME              AGE
 openmcp-service   18s
 
 $ kubectl get service -n openmcp --context cluster1
-NAME                    TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+NAME                    TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
 openmcp-service         LoadBalancer   10.99.182.34     10.0.3.233    80:30558/TCP     36s
 
 $ kubectl get service -n openmcp --context cluster2
