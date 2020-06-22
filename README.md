@@ -79,6 +79,24 @@ Success OpenMCP Master Regist '10.0.3.30'
 
 ## 2. OpenMCP 기본 모듈 배포  
 
+모듈을 배포하기 전 환경변수 설정을 해줍니다.
+```bash
+$ cd ./install_openmcp
+$ ./SETTING.sh
+GRPC Server IP -> 10.0.3.30
+GRPC Server Port -> 32050
+InfluxDB Server IP -> 10.0.3.30
+InfluxDB Server Port -> 31051
+InfluxDB User Name -> root
+InfluxDB User Password -> root
+NFS Server IP -> 10.0.3.12
+PowerDNS Server IP -> 10.0.3.12
+PowerDNS Server Port -> 8081
+PowerDNS Server API Key -> 1234
+OpenMCP MetalLB Address IP Range (FROM) -> 10.0.3.241
+OpenMCP MetalLB Address IP Range (TO) -> 10.0.3.250
+```
+
 OpenMCP 동작에 필요한 기본 모듈을 배포합니다.
 
 ```bash
