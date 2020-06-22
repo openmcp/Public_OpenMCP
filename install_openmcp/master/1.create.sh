@@ -1,4 +1,5 @@
 kubectl create ns openmcp
+kubectl create ns metallb-system
 
 echo "--- analytic-engine"
 kubectl create -f analytic-engine/.
