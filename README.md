@@ -125,7 +125,7 @@ hpa-target-cluster             2m6s
 
 # How To Join Cluster
 ## 1. (선택) cluster 이름 변경 [하위 클러스터에서 수행]
-OpenMCP에 하위 클러스터를 join하기 전에 클러스터의 이름을 사용자가 원하는 이름으로 변경합니다.
+OpenMCP에 하위 클러스터를 join하기 전에 다른 클러스터와 이름이 겹치지 않도록 하위 클러스터의 이름을 변경합니다.
 > kubeconfig 기본 경로 : $HOME/.kube/config
 
 ```bash
@@ -154,7 +154,7 @@ users:
 ## 2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]
 ketikubecli를 사용하여 nfs 서버에 join 하고자 하는 클러스터를 등록합니다.
 ```bash
-$ OPENMCP_IP = "10.0.3.30"
+$ OPENMCP_IP="10.0.3.30"
 $ ketikubecli regist member --ip ${OPENMCP_IP}
 Success Regist '10.0.3.40' in OpenMCP Master: 10.0.3.30
 ```
@@ -162,7 +162,7 @@ Success Regist '10.0.3.40' in OpenMCP Master: 10.0.3.30
 ## 3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]
 OpenMCP 서버에서 ketikubecli를 사용하여 특정 클러스터를 join합니다.
 ```bash
-$ CLUSTER_IP = "10.0.3.40"
+$ CLUSTER_IP="10.0.3.40"
 $ ketikubecli join cluster --ip ${CLUSTER_IP}
 ```
 
@@ -260,12 +260,7 @@ ingress-openmcp-ingress   16h
 service-openmcp-service   16h
 ```
 ```bash
-$ curl http://openmcp.service.org/health
-map[openmcp.service.org:map[/:openmcp-service]]
-map[openmcp-ingress:[openmcp.service.org openmcp.service.org]]
-map[openmcp-service:[cluster1 cluster2]]
-map[cluster1:map[Continent:AS Country:CN] cluster2:map[Continent:AS Country:JP]]
-
+$ curl -L http://openmcp.service.org
 ```
 ## OpenMCPHybridAutoScaler 배포
 OpenMCPHybridAutoScaler를 배포하면 Target Deployment가 있는 클러스터를 탐색하여 해당 클러스터에 HorizontalPodAutoscaler, VerticalPodAutoscaler 리소스를 배포합니다.
