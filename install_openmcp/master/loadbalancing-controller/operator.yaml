@@ -19,11 +19,13 @@ spec:
           # Replace this with the built image name
           image: atyx300/loadbalancing-controller:v0.0.1
           command:
-          - loadbalancing-controller
+            - loadbalancing-controller
           imagePullPolicy: Always
           env:
+            - name: GRPC_SERVER
+              value: REPLACE_GRPCIP
             - name: GRPC_PORT
-              value: "32050"
+              value: REPLACE_GRPCPORT
             - name: WATCH_NAMESPACE
               #value: ""
               valueFrom:
