@@ -174,7 +174,13 @@ $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/region=<regi
 $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> --context=<cluster-name>
 ```
 > Region (두 자리의 문자로 구성)
-> Asia => AS, Afica => AF, Antarctica => AN, Europe => EU, North America => NA, South America => SA
+> Asia => AS
+> Afica => AF
+> Antarctica => AN
+> Europe => EU
+> North America => NA
+> South America => SA
+
 > Zone (ISO 3166 alpha-2)
 > KR, JP, US, ....
 ---
