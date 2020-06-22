@@ -1,7 +1,5 @@
-#!/bin/bash
+#!/bin/sh
 cd deploy
-
-
 kubectl delete -f service_account.yaml
 kubectl delete -f role_binding.yaml
 kubectl delete -f operator.yaml
@@ -15,6 +13,5 @@ kubectl delete openmcploadbalancings example-openmcploadbalancing -n openmcp
 #kubectl delete ns openmcp --context cluster2 &
 #kubectl delete ns openmcp --context cluster3 &
 #kubectl delete ns openmcp &
-
 #kubectl delete -f crds/crd.yaml
 cd ..
