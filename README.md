@@ -4,8 +4,8 @@
   - [1. ketikubecli를 이용한 OpenMCP 서버 등록](#1-ketikubecli를-이용한-openmcp-서버-등록)
     - [(1) `openmcp` namespaces 리소스 생성](#1-openmcp-namespaces-리소스-생성)
     - [(2) cluster 이름 변경](#2-cluster-이름-변경)
-    - [(3) 외부 스토리지에 OpenMCP 서버 등록](#3-외부-스토리지에-openmcp-서버-등록)
-    - [(4) 하위 클러스터 Master Node에 Region, Zone 등록]
+    - [(3) 외부 스토리지에 OpenMCP 서버 등록](#3-외부-스토리지에-openmcp-서버-등록)   
+    - [(4) 하위 클러스터 Master Node에 Region, Zone 등록](#4-하위-클러스터-master-node에-region,-Zone-등록)
   - [2. OpenMCP 기본 모듈 배포](#2-openmcp-기본-모듈-배포)
 - [How To Join Cluster](#how-to-join-cluster)
   - [1. (선택) cluster 이름 변경 [하위 클러스터에서 수행]](#1-선택-cluster-이름-변경-하위-클러스터에서-수행)
@@ -173,7 +173,7 @@ $ ketikubecli join cluster --ip ${CLUSTER_IP}
 $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/region=<region> --context=<cluster-name>
 $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> --context=<cluster-name>
 ```
-> Region (두 자리의 문자로 구성)  
+> Region    
 > - AS (Asia)  
 > - AF (Africa)  
 > - AN (Antarctica)    
