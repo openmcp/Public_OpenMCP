@@ -182,7 +182,7 @@ $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> 
 > South America => SA
 
 > Zone (ISO 3166 alpha-2)
-> KR, JP, US, ....
+> https://ko.wikipedia.org/wiki/ISO_3166-1
 ---
 
 # OpenMCP TEST
