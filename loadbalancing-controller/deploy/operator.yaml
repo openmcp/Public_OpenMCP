@@ -22,6 +22,8 @@ spec:
           - loadbalancing-controller
           imagePullPolicy: Always
           env:
+            - name: GRPC_SERVER
+              value: "10.0.3.20"
             - name: GRPC_PORT
               value: "32050"
             - name: WATCH_NAMESPACE

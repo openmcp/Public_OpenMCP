@@ -141,7 +141,7 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
 			}
 		}
 	}
-	fmt.Println("totalcpu:",totalCpuCore)
+
 	cpuScore := (float64(totalCpuCore) - MetricsMap["CPUUsageNanoCores"]) / float64(totalCpuCore) * 100 // 확인필요
 	memScore := MetricsMap["MemoryAvailableBytes"] / (MetricsMap["MemoryUsageBytes"] + MetricsMap["MemoryAvailableBytes"]) * 100
 	//netScore := (MetricsMap["NetworkRxBytes"] - prevMetricsMap["NetworkRxBytes"]) + (MetricsMap["NetworkTxBytes"] - prevMetricsMap["NetworkTxBytes"]) / float64(totalNet) * 100// 확인필요
@@ -197,8 +197,8 @@ func (ae *AnalyticEngineStruct) SendLBAnalysis(ctx context.Context, in *protobuf
 	country := ae.getCountry(clientIP)
 	continent := ae.getContinent(country)
 
-	clusters := []string{"cluster4", "cluster5", "cluster6"}
-	score := ae.geoScore(clusters, country, continent)
+	//clusters := []string{"cluster4", "cluster5", "cluster6"}
+	score := ae.geoScore(clusterNameList, country, continent)
 
 	for _, clusterName := range clusterNameList {
 		fmt.Println(clusterScoreMap[clusterName])
@@ -427,8 +427,8 @@ func (ae *AnalyticEngineStruct) geoScore(clusters []string, clientCountry, clien
 	fmt.Println("*****Geo Score*****")
 
 	midScore := 100.0
-	policy := 70.0
-
+	policy := ae.MetricsWeight["GeoRate"] * 100.0
+	//policy := 70.0
 	fmt.Println(ae.ClusterGeo)
 
 	score := map[string]float64{}

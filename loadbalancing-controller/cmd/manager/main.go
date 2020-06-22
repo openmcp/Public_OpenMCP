@@ -17,7 +17,8 @@ limitations under the License.
 package main
 
 import (
-	"context"
+	"os"
+	//"context"
 	//"flag"
 	////"k8s.io/apimachinery/pkg/api/errors"
 	//"net"
@@ -37,8 +38,8 @@ import (
 	"admiralty.io/multicluster-controller/pkg/manager"
 	//"admiralty.io/multicluster-controller/pkg/reconcile"
 	//"admiralty.io/multicluster-service-account/pkg/config"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	//corev1 "k8s.io/api/core/v1"
+	//"k8s.io/apimachinery/pkg/api/errors"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/sample-controller/pkg/signals"
 
@@ -416,24 +417,25 @@ func main() {
 
 	ghosts := []*cluster.Cluster{}
 
-	nodeList := &corev1.NodeList{}
-	err := cm.Host_client.List(context.TODO(), nodeList, "")
+	//nodeList := &corev1.NodeList{}
+	//err := cm.Host_client.List(context.TODO(), nodeList, "")
 
-	var openmcpIP string
-	if err != nil && errors.IsNotFound(err) {
-		fmt.Println("Node Not Found")
-	} else {
-		for _, node := range nodeList.Items {
-			fmt.Println(node.Name)
-			_, ok := node.Labels["node-role.kubernetes.io/master"]
-
-			if ok {
-				openmcpIP = node.Status.Addresses[0].Address
-			}
-		}
-		fmt.Println("OpenMCP IP")
-		fmt.Println(openmcpIP)
-	}
+	SERVER_IP := os.Getenv("GRPC_SERVER")
+	//var openmcpIP string
+	//if err != nil && errors.IsNotFound(err) {
+	//	fmt.Println("Node Not Found")
+	//} else {
+	//	for _,node := range nodeList.Items {
+	//		fmt.Println(node.Name)
+	//		 _,ok := node.Labels["node-role.kubernetes.io/master"]
+	//
+	//		 if ok {
+	//		 	openmcpIP = node.Status.Addresses[0].Address
+	//		 }
+	//	}
+	//	fmt.Println("OpenMCP IP")
+	//	fmt.Println(openmcpIP)
+	//}
 
 	for _, ghost_cluster := range cm.Cluster_list.Items {
 		ghost_ctx := ghost_cluster.Name
@@ -452,7 +454,7 @@ func main() {
 	m := manager.New()
 	m.AddController(co)
 	m.AddController(serviceWatch)
-	go openmcploadbalancing.Loadbalancer(openmcpIP)
+	go openmcploadbalancing.Loadbalancer(SERVER_IP)
 
 	if err := m.Start(signals.SetupSignalHandler()); err != nil {
 		log.Fatal(err)
