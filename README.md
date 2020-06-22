@@ -169,10 +169,10 @@ $ ketikubecli join cluster --ip ${CLUSTER_IP}
 
 ## 4. 하위 클러스터 Master Node에 Region, Zone 등록
 하위 클러스터의 Label에 Region과 Zone을 등록합니다.
-'''bash
+```bash
 $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/region=<region> --context=<cluster-name>
 $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> --context=<cluster-name>
-'''
+```
 > Region (두 자리의 문자로 구성)
 > Asia => AS, Afica => AF, Antarctica => AN, Europe => EU, North America => NA, South America => SA
 > Zone (ISO 3166 alpha-2)
