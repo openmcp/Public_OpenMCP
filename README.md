@@ -10,7 +10,7 @@
   - [1. (선택) cluster 이름 변경 [하위 클러스터에서 수행]](#1-선택-cluster-이름-변경-하위-클러스터에서-수행)
   - [2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]](#2-외부-스토리지에-join하고자-하는-클러스터-서버-등록-하위-클러스터에서-수행)
   - [3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]](#3-외부-스토리지에-등록된-하위-클러스터를-openmcp에-join-openmcp에서-수행)
-  - [(4) 하위 클러스터 Master Node에 Region, Zone 등록](#4-하위-클러스터-master-node에-region-zone-등록)
+  - [4. 하위 클러스터 Master Node에 Region, Zone 등록](#4-하위-클러스터-master-node에-region-zone-등록)
 - [OpenMCP TEST](#openmcp-test)
   - [OpenMCPDeployment 배포](#openmcpdeployment-배포)
   - [OpenMCPService 배포](#openmcpservice-배포)
