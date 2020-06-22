@@ -17,17 +17,15 @@ limitations under the License.
 package main
 
 import (
-	//"context"
+	"context"
 	//"flag"
 	////"k8s.io/apimachinery/pkg/api/errors"
 	//"net"
 	////"resource-controller/apis/keti/v1alpha1"
 	//"time"
 
-	"loadbalancing-controller/pkg/reshape"
 	//"flag"
 	"log"
-
 	//"strings"
 	//"context"
 	"fmt"
@@ -39,28 +37,13 @@ import (
 	"admiralty.io/multicluster-controller/pkg/manager"
 	//"admiralty.io/multicluster-controller/pkg/reconcile"
 	//"admiralty.io/multicluster-service-account/pkg/config"
-	//"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"k8s.io/sample-controller/pkg/signals"
+
 	"loadbalancing-controller/pkg/controller/openmcploadbalancing"
 	"loadbalancing-controller/pkg/controller/service"
-	//"k8s.io/client-go/rest"
-	//genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
-	//fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
-	//"sigs.k8s.io/kubefed/pkg/controller/util"
-	//"github.com/HanJaeseung/LoadBalancing"
-	//"github.com/HanJaeseung/LoadBalancing/ingressregistry"
-	//"github.com/HanJaeseung/LoadBalancing/clusterregistry"
-	////"github.com/HanJaeseung/LoadBalancing/countryregistry"
-	//"net/http"
-	//
-	//
-	//"k8s.io/client-go/rest"
-	//genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
-	//fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
-	//"sigs.k8s.io/kubefed/pkg/controller/util"
-	//"k8s.io/client-go/kubernetes"
-	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	//corev1 "k8s.io/api/core/v1"
 	//v1beta1 "k8s.io/api/extensions/v1beta1"
 	//
 	//"github.com/aeden/traceroute"
@@ -386,45 +369,93 @@ import (
 //
 
 func main() {
-	for {
-		cm := openmcploadbalancing.NewClusterManager()
+	//var f = flag.String("contexts", "", "a comma-separated list of contexts to watch, e.g., cluster1,cluster2")
+	//flag.Parse()
+	//ctxs := strings.Split(*f, ",")
+	/*
+	   	ghosts := []cluster.Cluster{}
+	   	ghostNamespaces := []string{}
 
-		host_ctx := "openmcp"
-		namespace := "openmcp"
+	   	host_ctx := "openmcp"
+	   	ghost_ctxs := []string{"cluster1, cluster2"}
 
-		host_cfg := cm.Host_config
-		//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
-		live := cluster.New(host_ctx, host_cfg, cluster.Options{})
+	   	host_cfg, _, err := config.NamedConfigAndNamespace(host_ctx)
 
-		ghosts := []*cluster.Cluster{}
+	   	if err != nil {
+	                   log.Fatal(err)
+	           }
 
-		for _, ghost_cluster := range cm.Cluster_list.Items {
-			ghost_ctx := ghost_cluster.Name
-			ghost_cfg := cm.Cluster_configs[ghost_ctx]
+	   	for _, ghost_ctx := range ghost_ctxs {
+	   		ghost_cfg, _, err := config.NamedConfigAndNamespace(ghost_ctx)
+	   		if err != nil {
+	   			log.Fatal(err)
+	   		}
+	   		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
+	   		ghostNamespace := "default"
 
-			//ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
-			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
+	   		ghosts = append(ghosts, *ghost)
+	   		ghostNamespaces = append(ghostNamespaces, ghostNamespace)
+	   	}
+	   	co, _ := openmcploadbalancing.NewController(live, ghosts, ghostNamespaces)
 
-			ghosts = append(ghosts, ghost)
+	   	m := manager.New()
+	   	m.AddController(co)
+
+	   	if err := m.Start(signals.SetupSignalHandler()); err != nil {
+	   		log.Fatal(err)
+	   	}
+	*/
+
+	cm := openmcploadbalancing.NewClusterManager()
+
+	host_ctx := "openmcp"
+	namespace := "openmcp"
+
+	host_cfg := cm.Host_config
+	live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+
+	ghosts := []*cluster.Cluster{}
+
+	nodeList := &corev1.NodeList{}
+	err := cm.Host_client.List(context.TODO(), nodeList, "")
+
+	var openmcpIP string
+	if err != nil && errors.IsNotFound(err) {
+		fmt.Println("Node Not Found")
+	} else {
+		for _, node := range nodeList.Items {
+			fmt.Println(node.Name)
+			_, ok := node.Labels["node-role.kubernetes.io/master"]
+
+			if ok {
+				openmcpIP = node.Status.Addresses[0].Address
+			}
 		}
-		for _, ghost := range ghosts {
-			fmt.Println(ghost.Name)
-		}
-		co, _ := openmcploadbalancing.NewController(live, ghosts, namespace)
-		serviceWatch, _ := service.NewController(live, ghosts, namespace)
-		cont_reshape, _ := reshape.NewController(live, ghosts, namespace)
+		fmt.Println("OpenMCP IP")
+		fmt.Println(openmcpIP)
+	}
 
-		m := manager.New()
-		m.AddController(co)
-		m.AddController(serviceWatch)
-		m.AddController(cont_reshape)
-		go openmcploadbalancing.Loadbalancer()
+	for _, ghost_cluster := range cm.Cluster_list.Items {
+		ghost_ctx := ghost_cluster.Name
+		ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
-		stop := reshape.SetupSignalHandler()
+		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
 
-		if err := m.Start(stop); err != nil {
-			log.Fatal(err)
-		}
+		ghosts = append(ghosts, ghost)
+	}
+	for _, ghost := range ghosts {
+		fmt.Println(ghost.Name)
+	}
+	co, _ := openmcploadbalancing.NewController(live, ghosts, namespace)
+	serviceWatch, _ := service.NewController(live, ghosts, namespace)
+
+	m := manager.New()
+	m.AddController(co)
+	m.AddController(serviceWatch)
+	go openmcploadbalancing.Loadbalancer(openmcpIP)
+
+	if err := m.Start(signals.SetupSignalHandler()); err != nil {
+		log.Fatal(err)
 	}
 
 }

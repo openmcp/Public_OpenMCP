@@ -13,10 +13,10 @@ import (
 	//"net"
 	"net/http"
 	//"net/http/httputil"
-	"loadbalancing-controller/pkg/loadbalancing/countryregistry"
 	"loadbalancing-controller/pkg/loadbalancing/clusterregistry"
-	"loadbalancing-controller/pkg/loadbalancing/loadbalancingregistry"
+	"loadbalancing-controller/pkg/loadbalancing/countryregistry"
 	"loadbalancing-controller/pkg/loadbalancing/ingressregistry"
+	"loadbalancing-controller/pkg/loadbalancing/loadbalancingregistry"
 	"loadbalancing-controller/pkg/loadbalancing/serviceregistry"
 	"loadbalancing-controller/pkg/protobuf"
 	//"github.com/oschwald/geoip2-golang"
@@ -88,15 +88,17 @@ func extractIP(target string) (string, error) {
 //	return country, continent
 //}
 
-func Score(clusters []string, tip string) map[string]float64 {
+func Score(clusters []string, tip string, openmcpIP string) map[string]float64 {
 	fmt.Println("*****Resource Score*****")
-	SERVER_IP := "10.0.3.20"
-	SERVER_PORT:= os.Getenv("GRPC_PORT")
+	SERVER_IP := openmcpIP
+	//fmt.Println(SERVER_IP2)
+	//SERVER_IP :="10.0.3.30"
+	SERVER_PORT := os.Getenv("GRPC_PORT")
 	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
 	lbInfo := &protobuf.LBInfo{
 		ClusterNameList: clusters,
-		ClientIP: tip,
+		ClientIP:        tip,
 	}
 
 	response, err := grpcClient.SendLBAnalysis(context.TODO(), lbInfo)
@@ -109,8 +111,8 @@ func Score(clusters []string, tip string) map[string]float64 {
 	//score := map[string]float64{}
 	//for _, cluster := range clusters {
 	//	cScore, _ := creg.ResourceScore(cluster)
-//		score[cluster] = cScore
-//	}
+	//		score[cluster] = cScore
+	//	}
 	//fmt.Println(score)
 	return response.ScoreMap
 }
@@ -134,13 +136,13 @@ func Score(clusters []string, tip string) map[string]float64 {
 //	return score
 //}
 
-func scoring(clusters []string, tip string) string {
+func scoring(clusters []string, tip string, openmcpIP string) string {
 	fmt.Println("*****Scoring*****")
 	if len(clusters) == 1 {
 		return clusters[0]
 	}
 	//gscore := geoScore(clusters, tcountry, tcontinent, creg)
-	score := Score(clusters, tip)
+	score := Score(clusters, tip, openmcpIP)
 	cluster := endpointCluster(score)
 	return cluster
 }
@@ -163,7 +165,12 @@ func endpointCluster(score map[string]float64) string {
 	rand.Seed(time.Now().UnixNano())
 	n := rand.Float64()
 	checkScore := 0.0
+	flag := true
 	for cluster, _ := range sumScore {
+		if flag == true {
+			endpoint = cluster
+			flag = false
+		}
 		checkScore = checkScore + (sumScore[cluster] / totalScore)
 		if n <= checkScore {
 			endpoint = cluster
@@ -173,7 +180,7 @@ func endpointCluster(score map[string]float64) string {
 	return endpoint
 }
 
-func loadbalancing(host, tip, path string, reg loadbalancingregistry.Registry, creg clusterregistry.Registry, countryreg countryregistry.Registry, sreg serviceregistry.Registry) (string, error) {
+func loadbalancing(host, tip, path string, reg loadbalancingregistry.Registry, creg clusterregistry.Registry, countryreg countryregistry.Registry, sreg serviceregistry.Registry, openmcpIP string) (string, error) {
 	fmt.Println("*****Loadbalancing*****")
 
 	serviceName, err := reg.Lookup(host, path)
@@ -183,13 +190,13 @@ func loadbalancing(host, tip, path string, reg loadbalancingregistry.Registry, c
 		return "", err
 	}
 	//tcountry, tcontinent := extractGeo(tip, countryreg)
-	endpoint := scoring(endpoints, tip)
+	endpoint := scoring(endpoints, tip, openmcpIP)
 	fmt.Println("*****End Point*****")
 	fmt.Println(endpoint)
 	return endpoint, err
 }
 
-func NewMultipleHostReverseProxy(reg loadbalancingregistry.Registry, creg clusterregistry.Registry, countryreg countryregistry.Registry, sreg serviceregistry.Registry) http.HandlerFunc {
+func NewMultipleHostReverseProxy(reg loadbalancingregistry.Registry, creg clusterregistry.Registry, countryreg countryregistry.Registry, sreg serviceregistry.Registry, openmcpIP string) http.HandlerFunc {
 	fmt.Println("*****NewMultipleHostReversProxy*****")
 
 	return func(w http.ResponseWriter, req *http.Request) {
@@ -201,7 +208,7 @@ func NewMultipleHostReverseProxy(reg loadbalancingregistry.Registry, creg cluste
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		endpoint, _ := loadbalancing(host, ip, path, reg, creg, countryreg, sreg)
+		endpoint, _ := loadbalancing(host, ip, path, reg, creg, countryreg, sreg, openmcpIP)
 
 		if path == "/" {
 			path = ""
