@@ -173,16 +173,16 @@ $ ketikubecli join cluster --ip ${CLUSTER_IP}
 $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/region=<region> --context=<cluster-name>
 $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> --context=<cluster-name>
 ```
-> Region (두 자리의 문자로 구성)
-> Asia => AS
-> Afica => AF
-> Antarctica => AN
-> Europe => EU
-> North America => NA
-> South America => SA
+> Region (두 자리의 문자로 구성)  
+> - AS (Asia)  
+> - AF (Africa)  
+> - AN (Antarctica)    
+> - EU (Europe)    
+> - NA (North America)    
+> - SA (South America)    
 
-> Zone (ISO 3166 alpha-2)
-> https://ko.wikipedia.org/wiki/ISO_3166-1
+> Zone (ISO 3166 alpha-2)  
+> - https://ko.wikipedia.org/wiki/ISO_3166-1
 ---
 
 # OpenMCP TEST
