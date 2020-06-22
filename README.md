@@ -181,7 +181,7 @@ $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> 
 > - NA (North America)    
 > - SA (South America)    
 
-> Zone (ISO 3166 alpha-2)  
+> Zone (ISO 3166-1 alpha-2)  
 > - https://ko.wikipedia.org/wiki/ISO_3166-1
 ---
 
