@@ -243,11 +243,11 @@ openmcp-service   18s
 
 $ kubectl get service -n openmcp --context cluster1
 NAME                    TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
-openmcp-service         LoadBalancer   10.99.182.34     10.0.3.233    80:30558/TCP     36s
+openmcp-service         LoadBalancer   10.110.248.190   10.0.3.200    80:31890/TCP     36s
 
 $ kubectl get service -n openmcp --context cluster2
 NAME                    TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
-openmcp-service         LoadBalancer   10.104.244.26    10.0.3.233    80:31492/TCP     34s
+openmcp-service         LoadBalancer   10.103.151.112   10.0.3.180    80:30569/TCP     34s
 ```
 
 ## OpenMCPIngress 배포
