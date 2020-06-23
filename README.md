@@ -203,6 +203,8 @@ $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> 
 > - https://ko.wikipedia.org/wiki/ISO_3166-1
 ---
 
+## 5. 하위 클러스터 MetalLB Config 생성 (LoadBalancer IP 할당)
+
 # OpenMCP EXAMPLE
 OpenMCP에 cluster1, cluster2가 조인된 상태에서 EXAMPLE TEST를 진행합니다.
 ```bash
