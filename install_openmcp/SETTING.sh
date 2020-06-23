@@ -7,10 +7,12 @@ read GRPC_PORT
 sed -i 's|REPLACE_GRPCIP|'"$GRPC_IP"'|g' master/openmcp-has-controller/operator.yaml
 sed -i 's|REPLACE_GRPCIP|'"$GRPC_IP"'|g' master/openmcp-scheduler/operator.yaml
 sed -i 's|REPLACE_GRPCIP|'"$GRPC_IP"'|g' master/loadbalancing-controller/operator.yaml
+sed -i 's|REPLACE_GRPCIP|'"$GRPC_IP"'|g' member/metric-collector/operator.yaml
 
 sed -i 's|REPLACE_GRPCPORT|'"$GRPC_PORT"'|g' master/openmcp-has-controller/operator.yaml
 sed -i 's|REPLACE_GRPCPORT|'"$GRPC_PORT"'|g' master/openmcp-scheduler/operator.yaml
 sed -i 's|REPLACE_GRPCPORT|'"$GRPC_PORT"'|g' master/loadbalancing-controller/operator.yaml
+sed -i 's|REPLACE_GRPCPORT|'"$GRPC_PORT"'|g' member/metric-collector/operator.yaml
 
 echo -n "InfluxDB Server IP -> "
 read INFLUXDB_IP
