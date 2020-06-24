@@ -1,4 +1,4 @@
-module resource-controller
+module github.com/openmcp/openmcp/resource-controller
 
 go 1.12
 
