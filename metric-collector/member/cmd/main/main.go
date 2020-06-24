@@ -10,7 +10,6 @@ import (
 	"context"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/jinzhu/copier"
-
 	//"github.com/jinzhu/copier"
 
 	//"github.com/golang/protobuf/ptypes"
@@ -126,7 +125,7 @@ func main(){
 		if err != nil {
 			fmt.Printf("could not connect : %v", err)
 		}
-		_ = r
+		//period_int64 := r.Tick
 		_ = data
 
 
@@ -140,8 +139,15 @@ func main(){
 		customMetrics.AddToPodCustomMetricServer(data, token, host)
 		customMetrics.AddToDeployCustomMetricServer(data, token, host, client)
 
-		time.Sleep(5 * time.Second)
+		period_int64 := r.Tick
+
+		if period_int64 > 0 && err == nil {
+
+			fmt.Println("period : ",time.Duration(period_int64))
+			time.Sleep(time.Duration(period_int64) * time.Second)
+		}else {
+			fmt.Println("--- Fail to get period")
+			time.Sleep(5 * time.Second)
+		}
 	}
 }
-
-

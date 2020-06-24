@@ -6,12 +6,16 @@ import (
 	"k8s.io/client-go/rest"
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
+
+	clientV1alpha1 "resource-controller/clientset/v1alpha1"
 )
 
 type ClusterManager struct {
 	HostConfig  *rest.Config
 	HostClient  genericclient.Client
 	ClusterList *fedv1b1.KubeFedClusterList
+
+	Crd_client			*clientV1alpha1.ExampleV1Alpha1Client
 }
 
 func NewClusterManager() *ClusterManager {
@@ -26,10 +30,13 @@ func NewClusterManager() *ClusterManager {
 	}
 	clusterList := ListKubeFedClusters(hostClient, fedNamespace)
 
+	crd_client, _ := clientV1alpha1.NewForConfig(config)
+
 	cm := &ClusterManager{
 		HostConfig:  config,
 		HostClient:  hostClient,
 		ClusterList: clusterList,
+		Crd_client:	 crd_client,
 	}
 	return cm
 }
