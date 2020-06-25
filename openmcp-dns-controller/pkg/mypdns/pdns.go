@@ -11,7 +11,7 @@ import (
 	//"fmt"
 	"github.com/mittwald/go-powerdns"
 	"github.com/mittwald/go-powerdns/apis/zones"
-	ketiv1alpha1 "openmcp-dns-controller/pkg/apis/keti/v1alpha1"
+	ketiv1alpha1 "openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
 	//"github.com/joeig/go-powerdns/v2"
 	//"sigs.k8s.io/controller-runtime/pkg/client"
 )

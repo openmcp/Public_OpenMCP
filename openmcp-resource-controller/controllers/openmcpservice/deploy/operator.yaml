@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmcp-service-controller
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openmcp-service-controller
+  template:
+    metadata:
+      labels:
+        name: openmcp-service-controller
+    spec:
+      serviceAccountName: openmcp-service-controller
+      containers:
+        - name: openmcp-service-controller
+          # Replace this with the built image name
+          image: atyx300/openmcp-service-controller:v0.0.1
+          command:
+          - openmcp-service-controller
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              #value: ""
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "openmcp-service-controller"

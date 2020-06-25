@@ -1,0 +1,18 @@
+apiVersion: keti.example.com/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: openmcp-pod-norequest
+  namespace: ria
+spec:
+  replicas: 6
+  labels:
+      app: openmcp-pod
+  template:
+    spec:
+      template:
+        spec:
+          containers:
+          - image: k8s.gcr.io/hpa-example
+            name: php-apache
+            ports:
+            - containerPort: 80

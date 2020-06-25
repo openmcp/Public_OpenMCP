@@ -14,29 +14,16 @@ limitations under the License.
 package externalDNS
 
 import (
-	"context"
-	"fmt"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"openmcp-dns-controller/pkg/clusterManager"
-	"openmcp-dns-controller/pkg/mypdns"
-	/*"openmcp-dns-controller/pkg/clusterManager"
-	"encoding/json"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
-	"strings"
-	"reflect"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/restmapper"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"*/
-
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
-	"openmcp-dns-controller/pkg/apis"
-	ketiv1alpha1 "openmcp-dns-controller/pkg/apis/keti/v1alpha1"
-
+	"context"
+	"fmt"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"openmcp/openmcp/openmcp-dns-controller/pkg/apis"
+	ketiv1alpha1 "openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
+	"openmcp/openmcp/openmcp-dns-controller/pkg/mypdns"
+	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
