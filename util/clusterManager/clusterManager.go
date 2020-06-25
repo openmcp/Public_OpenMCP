@@ -20,10 +20,10 @@ type ClusterManager struct {
 	Fed_namespace       string
 	Host_config         *rest.Config
 	Host_client         genericclient.Client
-	Host_kubeClient		*kubernetes.Clientset
-	Crd_client			*clientV1alpha1.ExampleV1Alpha1Client
+	Host_kubeClient     *kubernetes.Clientset
+	Crd_client          *clientV1alpha1.ExampleV1Alpha1Client
 	Cluster_list        *fedv1b1.KubeFedClusterList
-	Node_list			*corev1.NodeList
+	Node_list           *corev1.NodeList
 	Cluster_configs     map[string]*rest.Config
 	Cluster_genClients  map[string]genericclient.Client
 	Cluster_kubeClients map[string]*kubernetes.Clientset
@@ -90,8 +90,6 @@ func NewClusterManager() *ClusterManager {
 	host_kubeClient := kubernetes.NewForConfigOrDie(host_config)
 	crd_client, _ := clientV1alpha1.NewForConfig(host_config)
 
-
-
 	cluster_list := ListKubeFedClusters(host_client, fed_namespace)
 	node_list, _ := GetNodeList(host_kubeClient)
 
@@ -104,10 +102,10 @@ func NewClusterManager() *ClusterManager {
 		Fed_namespace:       fed_namespace,
 		Host_config:         host_config,
 		Host_client:         host_client,
-		Host_kubeClient:	 host_kubeClient,
-		Crd_client:			 crd_client,
+		Host_kubeClient:     host_kubeClient,
+		Crd_client:          crd_client,
 		Cluster_list:        cluster_list,
-		Node_list:		     node_list,
+		Node_list:           node_list,
 		Cluster_configs:     cluster_configs,
 		Cluster_genClients:  cluster_gen_clients,
 		Cluster_kubeClients: cluster_kube_clients,
@@ -119,7 +117,7 @@ func GetNodeList(clientSet *kubernetes.Clientset) (*corev1.NodeList, error) {
 
 	nodeList := &corev1.NodeList{}
 	//err := clientSet.List(context.TODO(), nodeList, "default")
-	nodeList, err := clientSet.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+	nodeList, err := clientSet.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		fmt.Println("Error retrieving list of federated clusters: %+v", err)
 	}
@@ -134,4 +132,3 @@ func GetNodeList(clientSet *kubernetes.Clientset) (*corev1.NodeList, error) {
 	}
 	return nodeList, nil
 }
-

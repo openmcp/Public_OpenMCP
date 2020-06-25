@@ -18,15 +18,16 @@ import (
 	"sigs.k8s.io/kubefed/pkg/controller/util"
 	"time"
 )
+
 const (
 	APP_KEY = "openmcp-apiserver"
 )
 
 type ClusterManager struct {
-	Fed_namespace string
-	Host_config *rest.Config
-	Host_client genericclient.Client
-	Cluster_list *fedv1b1.KubeFedClusterList
+	Fed_namespace   string
+	Host_config     *rest.Config
+	Host_client     genericclient.Client
+	Cluster_list    *fedv1b1.KubeFedClusterList
 	Cluster_configs map[string]*rest.Config
 	Cluster_clients map[string]genericclient.Client
 }
@@ -72,17 +73,17 @@ func NewClusterManager() *ClusterManager {
 	cluster_clients := KubeFedClusterClients(cluster_list, cluster_configs)
 
 	cm := &ClusterManager{
-		Fed_namespace: fed_namespace,
-		Host_config: host_config,
-		Host_client: host_client,
-		Cluster_list: cluster_list,
+		Fed_namespace:   fed_namespace,
+		Host_config:     host_config,
+		Host_client:     host_client,
+		Cluster_list:    cluster_list,
 		Cluster_configs: cluster_configs,
 		Cluster_clients: cluster_clients,
 	}
 	return cm
 }
 
-func (h *HttpManager) ExampleHandler(w http.ResponseWriter, r *http.Request){
+func (h *HttpManager) ExampleHandler(w http.ResponseWriter, r *http.Request) {
 	//fmt.Println("Connect Etcd Main")
 	//fmt.Println("-----------------------------")
 	//fmt.Println("Host : ", r.Host)
@@ -111,18 +112,16 @@ func (h *HttpManager) ExampleHandler(w http.ResponseWriter, r *http.Request){
 	}
 	fmt.Println()
 
-
-
 	APISERVER := ""
 	TOKEN := ""
 	clusterName := clusterNames[0]
 
-	if clusterName == "openmcp"{
+	if clusterName == "openmcp" {
 		APISERVER = h.ClusterManager.Host_config.Host
 		TOKEN = h.ClusterManager.Host_config.BearerToken
 	} else {
-		for _, cluster := range h.ClusterManager.Cluster_list.Items{
-			if cluster.Name == clusterName{
+		for _, cluster := range h.ClusterManager.Cluster_list.Items {
+			if cluster.Name == clusterName {
 				APISERVER = cluster.Spec.APIEndpoint
 				TOKEN = h.ClusterManager.Cluster_configs[cluster.Name].BearerToken
 			}
@@ -138,14 +137,13 @@ func (h *HttpManager) ExampleHandler(w http.ResponseWriter, r *http.Request){
 	}
 	client := &http.Client{Transport: tr}
 
-
 	req, err := http.NewRequest("GET", APISERVER+r.URL.Path, nil)
 	if err != nil {
 		fmt.Println("Check1", err)
 		// handle err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+ TOKEN)
+	req.Header.Set("Authorization", "Bearer "+TOKEN)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -171,6 +169,7 @@ func (h *HttpManager) ExampleHandler(w http.ResponseWriter, r *http.Request){
 	w.Write(prettyJSON.Bytes())
 
 }
+
 // TokenHandler is our handler to take a username and password and,
 // if it's valid, return a token used for future requests.
 func TokenHandler(w http.ResponseWriter, r *http.Request) {
@@ -224,11 +223,12 @@ func AuthMiddleware(next http.Handler) http.Handler {
 //	w.Header().Add("Content-Type", "application/json")
 //	io.WriteString(w, `{"status":"ok"}`)
 //}
-type HttpManager struct{
-	HTTPServer_IP string
+type HttpManager struct {
+	HTTPServer_IP   string
 	HTTPServer_PORT string
-	ClusterManager *ClusterManager
+	ClusterManager  *ClusterManager
 }
+
 func main() {
 	//HTTPServer_IP := "10.0.3.20"
 	HTTPServer_PORT := "8080"
@@ -238,7 +238,7 @@ func main() {
 	httpManager := &HttpManager{
 		//HTTPServer_IP: HTTPServer_IP,
 		HTTPServer_PORT: HTTPServer_PORT,
-		ClusterManager: cm,
+		ClusterManager:  cm,
 	}
 
 	handler := http.NewServeMux()
@@ -247,7 +247,7 @@ func main() {
 	handler.Handle("/", AuthMiddleware(http.HandlerFunc(httpManager.ExampleHandler)))
 	//handler.HandleFunc("/", httpManager.test)
 
-	server := &http.Server{Addr: ":"+HTTPServer_PORT, Handler: handler}
+	server := &http.Server{Addr: ":" + HTTPServer_PORT, Handler: handler}
 
 	fmt.Println("Run OpenMCP API Server")
 	err := server.ListenAndServe()

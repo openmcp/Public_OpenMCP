@@ -21,7 +21,7 @@ type Registry interface {
 	Add(host, path, endpoint string)                // Add an endpoint to our registry
 	Delete(host, path, endpoint string)             // Remove an endpoint to our registry
 	Failure(host, path, endpoint string, err error) // Mark an endpoint as failed.
-	Lookup(host, path string) (string, error)     // Return the endpoint list for the given service name/version
+	Lookup(host, path string) (string, error)       // Return the endpoint list for the given service name/version
 	IngressDelete(host, path string)
 	//IngressLookup(host string, path string, endpoint string) (bool)
 }
@@ -61,7 +61,6 @@ func (r DefaultRegistry) Lookup(host string, path string) (string, error) {
 	return target, nil
 }
 
-
 //func (r DefaultRegistry) IngressLookup(host string, path string, endpoint string) (bool) {
 //	fmt.Println("*****Ingress Lookup*****")
 //	lock.RLock()
@@ -79,7 +78,6 @@ func (r DefaultRegistry) Lookup(host string, path string) (string, error) {
 //	}
 //	return true
 //}
-
 
 func (r DefaultRegistry) Failure(host, path, endpoint string, err error) {
 	// Would be used to remove an endpoint from the rotation, log the failure, etc.
@@ -111,18 +109,17 @@ func (r DefaultRegistry) Delete(host, path, endpoint string) {
 	if !ok {
 		return
 	}
-fmt.Println(service)
-//begin:
-//	for i, svc := range service[path] {
-//		if svc == endpoint {
-//			copy(service[path][i:], service[path][i+1:])
-//			service[path] = service[path][:len(service[path])-1]
-//			goto begin
-//		}
-//	}
+	fmt.Println(service)
+	//begin:
+	//	for i, svc := range service[path] {
+	//		if svc == endpoint {
+	//			copy(service[path][i:], service[path][i+1:])
+	//			service[path] = service[path][:len(service[path])-1]
+	//			goto begin
+	//		}
+	//	}
 	fmt.Println("Delete test")
 }
-
 
 //// Delete removes the given endpoit for the service name/version.
 //func (r DefaultRegistry) Delete(host, path, endpoint string) {
@@ -146,8 +143,6 @@ fmt.Println(service)
 //	fmt.Println("Delete test")
 //}
 
-
-
 func (r DefaultRegistry) IngressDelete(host, path string) {
 	fmt.Println("*****Ingres  Delete*****")
 	lock.Lock()
@@ -163,5 +158,3 @@ func (r DefaultRegistry) IngressDelete(host, path string) {
 		delete(r, host)
 	}
 }
-
-
