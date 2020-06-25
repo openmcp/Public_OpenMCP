@@ -1,7 +1,6 @@
 package v1alpha1
 
 import (
-	"context"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -29,7 +28,7 @@ func (c *OpenMCPHybridAutoScalerClient) List(opts metav1.ListOptions) (*v1alpha1
 		Namespace(c.ns).
 		Resource("openmcphybridautoscalers").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do(context.TODO()).
+		Do().
 		Into(&result)
 
 	return &result, err
@@ -43,7 +42,7 @@ func (c *OpenMCPHybridAutoScalerClient) Get(name string, opts metav1.GetOptions)
 		Resource("openmcphybridautoscalers").
 		Name(name).
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do(context.TODO()).
+		Do().
 		Into(&result)
 
 	return &result, err
@@ -56,7 +55,7 @@ func (c *OpenMCPHybridAutoScalerClient) Create(deployment *v1alpha1.OpenMCPHybri
 		Namespace(c.ns).
 		Resource("openmcphybridautoscalers").
 		Body(deployment).
-		Do(context.TODO()).
+		Do().
 		Into(&result)
 
 	return &result, err
@@ -69,5 +68,5 @@ func (c *OpenMCPHybridAutoScalerClient) Watch(opts metav1.ListOptions) (watch.In
 		Namespace(c.ns).
 		Resource("openmcphybridautoscalers").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch(context.TODO())
+		Watch()
 }

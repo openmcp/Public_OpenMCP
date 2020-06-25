@@ -2,16 +2,15 @@ package customMetrics
 
 import (
 	"bytes"
-	//"bytes"
-	"openmcp/openmcp/openmcp-metric-collector/member/pkg/storage"
 	"crypto/tls"
 	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"net/http"
+	//"bytes"
+	"openmcp/openmcp/openmcp-metric-collector/member/pkg/storage"
 	//url1 "net/url"
 	"os"
-	"context"
 	"strconv"
 	"strings"
 )
@@ -23,7 +22,7 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 		podList = append(podList, data.Matricsbatchs[i].Pods...)
 	}
 
-	rs, err := cluster_client.AppsV1().ReplicaSets(metav1.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
+	rs, err := cluster_client.AppsV1().ReplicaSets(metav1.NamespaceAll).List(metav1.ListOptions{})
 	if err == nil {
 		for _, replicaset := range rs.Items {
 			check_exist := 0
@@ -56,11 +55,11 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 							sum_fsusage += tmp_fs
 						}
 
-					}else {
+					} else {
 						fmt.Println("err : value.Name nil")
 					}
 				}
-			}else {
+			} else {
 				fmt.Println("Fail : Cannot load podList")
 			}
 
@@ -82,13 +81,12 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 			}
 
 		}
-	}else {
+	} else {
 		fmt.Println("Fail : Cannot load RS ", err)
 	}
 }
 
-
-func AddToPodCustomMetricServer(data *storage.Collection, token string, host string){
+func AddToPodCustomMetricServer(data *storage.Collection, token string, host string) {
 	for i := 0; i < len(data.Matricsbatchs); i++ {
 		podList := data.Matricsbatchs[i].Pods
 		if podList != nil {
@@ -101,17 +99,17 @@ func AddToPodCustomMetricServer(data *storage.Collection, token string, host str
 					namespace := value.Namespace
 					name := value.Name
 
-					PostData(host, token, client, namespace, name,"CpuUsage", value.CPUUsageNanoCores.String())
-					PostData(host, token, client, namespace, name,"MemoryUsage", value.MemoryUsageBytes.String())
-					PostData(host, token, client, namespace, name,"NetworkRxUsage", value.NetworkRxBytes.String())
-					PostData(host, token, client, namespace, name,"NetworkTxUsage", value.NetworkTxBytes.String())
-					PostData(host, token, client, namespace, name,"FsUsage", value.FsUsedBytes.String())
+					PostData(host, token, client, namespace, name, "CpuUsage", value.CPUUsageNanoCores.String())
+					PostData(host, token, client, namespace, name, "MemoryUsage", value.MemoryUsageBytes.String())
+					PostData(host, token, client, namespace, name, "NetworkRxUsage", value.NetworkRxBytes.String())
+					PostData(host, token, client, namespace, name, "NetworkTxUsage", value.NetworkTxBytes.String())
+					PostData(host, token, client, namespace, name, "FsUsage", value.FsUsedBytes.String())
 
-				}else {
+				} else {
 					fmt.Println("Fail : Cannot load resources")
 				}
 			}
-		}else {
+		} else {
 			fmt.Println("Fail : Cannot load Pod list")
 		}
 	}
@@ -142,7 +140,7 @@ func PostData(host string, token string, client *http.Client, resourceNamespace 
 	}
 
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", os.ExpandEnv("Bearer "+ token))
+	req.Header.Add("Authorization", os.ExpandEnv("Bearer "+token))
 
 	//fmt.Println("req", req)
 

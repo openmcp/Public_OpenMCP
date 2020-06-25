@@ -25,7 +25,6 @@ type Registry interface {
 	CheckURL(url string) (bool, error)
 }
 
-
 // DefaultRegistry is a basic registry using the following format:
 // {
 //   "IngressName": [
@@ -60,7 +59,6 @@ func (r DefaultRegistry) Add(ingressName, url string) {
 	fmt.Println(r)
 }
 
-
 func (r DefaultRegistry) Lookup(ingressName string) ([]string, error) {
 	fmt.Println("----Lookup----")
 	lock.RLock()
@@ -89,8 +87,6 @@ func (r DefaultRegistry) CheckURL(url string) (bool, error) {
 	}
 	return false, ErrServiceNotFound
 }
-
-
 
 func (r DefaultRegistry) Failure(host, path, endpoint string, err error) {
 	// Would be used to remove an endpoint from the rotation, log the failure, etc.

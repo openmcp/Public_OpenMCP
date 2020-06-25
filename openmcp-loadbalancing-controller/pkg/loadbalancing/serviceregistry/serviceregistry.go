@@ -22,9 +22,8 @@ type Registry interface {
 	//Delete(host, path, endpoint string)             // Remove an endpoint to our registry
 	Failure(host, path, endpoint string, err error) // Mark an endpoint as failed.
 	Lookup(serviceName string) ([]string, error)
-	EndpointCheck(serviceName string, endpoint string) (bool)
+	EndpointCheck(serviceName string, endpoint string) bool
 }
-
 
 // DefaultRegistry is a basic registry using the following format:
 // {
@@ -39,8 +38,7 @@ type DefaultRegistry map[string][]string
 
 // Lookup return the endpoint list for the given service name/version.
 
-
-func (r DefaultRegistry) EndpointCheck(serviceName string, endpoint string) (bool) {
+func (r DefaultRegistry) EndpointCheck(serviceName string, endpoint string) bool {
 	fmt.Println("*****Ingress Lookup*****")
 	lock.RLock()
 	targets, ok := r[serviceName]
@@ -57,7 +55,6 @@ func (r DefaultRegistry) EndpointCheck(serviceName string, endpoint string) (boo
 	}
 	return true
 }
-
 
 func (r DefaultRegistry) Add(serviceName, endpoint string) {
 	fmt.Println("*****Service Name Add*****")
@@ -79,7 +76,6 @@ func (r DefaultRegistry) Add(serviceName, endpoint string) {
 	fmt.Println(service)
 	fmt.Println(r)
 }
-
 
 func (r DefaultRegistry) Lookup(serviceName string) ([]string, error) {
 	fmt.Println("----Lookup----")
@@ -110,5 +106,3 @@ func (r DefaultRegistry) Delete(serviceName string) {
 
 	delete(r, serviceName)
 }
-
-

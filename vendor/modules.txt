@@ -7,12 +7,14 @@ admiralty.io/multicluster-controller/pkg/reference
 admiralty.io/multicluster-controller/pkg/handler
 # cloud.google.com/go v0.51.0
 cloud.google.com/go/compute/metadata
-# github.com/NYTimes/gziphandler v1.1.1
+# github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 github.com/NYTimes/gziphandler
 # github.com/PuerkitoBio/purell v1.1.1
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
+# github.com/auth0/go-jwt-middleware v0.0.0-20200507191422-d30d7b9ece63
+github.com/auth0/go-jwt-middleware
 # github.com/beorn7/perks v1.0.0
 github.com/beorn7/perks/quantile
 # github.com/blang/semver v3.5.0+incompatible
@@ -20,11 +22,13 @@ github.com/blang/semver
 # github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
 github.com/coreos/go-systemd/daemon
 github.com/coreos/go-systemd/journal
-# github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f
+# github.com/coreos/pkg v0.0.0-20180108230652-97fdf19511ea
 github.com/coreos/pkg/capnslog
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
-# github.com/emicklei/go-restful v2.12.0+incompatible
+# github.com/dgrijalva/jwt-go v3.2.0+incompatible
+github.com/dgrijalva/jwt-go
+# github.com/emicklei/go-restful v2.9.5+incompatible
 github.com/emicklei/go-restful
 github.com/emicklei/go-restful/log
 # github.com/emicklei/go-restful-swagger12 v0.0.0-20170926063155-7524189396c6
@@ -742,9 +746,9 @@ sigs.k8s.io/controller-runtime/pkg/client
 sigs.k8s.io/controller-runtime/pkg/runtime/scheme
 sigs.k8s.io/controller-runtime/pkg/runtime/log
 sigs.k8s.io/controller-runtime/pkg/client/apiutil
+sigs.k8s.io/controller-runtime/pkg/scheme
 sigs.k8s.io/controller-runtime/pkg/cache
 sigs.k8s.io/controller-runtime/pkg/reconcile
-sigs.k8s.io/controller-runtime/pkg/scheme
 sigs.k8s.io/controller-runtime/pkg/log
 sigs.k8s.io/controller-runtime/pkg/log/zap
 sigs.k8s.io/controller-runtime/pkg/metrics

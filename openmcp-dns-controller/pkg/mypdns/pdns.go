@@ -15,12 +15,13 @@ import (
 	//"github.com/joeig/go-powerdns/v2"
 	//"sigs.k8s.io/controller-runtime/pkg/client"
 )
-var (
 
-	PDNS_IP = os.Getenv("PDNS_IP") //"10.0.3.12"
-	PDNS_PORT = os.Getenv("PDNS_PORT") //"8081"
+var (
+	PDNS_IP      = os.Getenv("PDNS_IP")      //"10.0.3.12"
+	PDNS_PORT    = os.Getenv("PDNS_PORT")    //"8081"
 	PDNS_API_KEY = os.Getenv("PDNS_API_KEY") // "1234"
 )
+
 func PdnsNewClient() (pdns.Client, error) {
 	client, err := pdns.New(
 		pdns.WithBaseURL("http://"+PDNS_IP+":"+PDNS_PORT),
@@ -29,13 +30,13 @@ func PdnsNewClient() (pdns.Client, error) {
 	return client, err
 }
 
-func GetZone(client pdns.Client, domain string) (*zones.Zone, error){
+func GetZone(client pdns.Client, domain string) (*zones.Zone, error) {
 
 	zone, err := client.Zones().GetZone(context.TODO(), "localhost", domain+".")
 	return zone, err
 
 }
-func GetZoneList(client pdns.Client) ([]zones.Zone, error){
+func GetZoneList(client pdns.Client) ([]zones.Zone, error) {
 
 	zoneList, err := client.Zones().ListZones(context.TODO(), "localhost")
 	return zoneList, err
@@ -43,7 +44,7 @@ func GetZoneList(client pdns.Client) ([]zones.Zone, error){
 }
 func DeleteZone(client pdns.Client, liveClient client.Client) error {
 	instanceDNSEndpointList := &ketiv1alpha1.OpenMCPDNSEndpointList{}
-	err := liveClient.List(context.TODO(), nil, instanceDNSEndpointList)
+	err := liveClient.List(context.TODO(), instanceDNSEndpointList, nil)
 	if err != nil {
 		return err
 	}
@@ -53,7 +54,7 @@ func DeleteZone(client pdns.Client, liveClient client.Client) error {
 	}
 
 	var deleteZone zones.Zone
-	for _, zone := range zoneList{
+	for _, zone := range zoneList {
 		find := false
 		for _, instanceDNSEndpoint := range instanceDNSEndpointList.Items {
 			for _, domain := range instanceDNSEndpoint.Spec.Domains {
@@ -86,39 +87,37 @@ func DeleteZone(client pdns.Client, liveClient client.Client) error {
 	return nil
 }
 
-
-func GetResourceRecordSets(domainName string, Endpoints []*ketiv1alpha1.Endpoint) []zones.ResourceRecordSet{
+func GetResourceRecordSets(domainName string, Endpoints []*ketiv1alpha1.Endpoint) []zones.ResourceRecordSet {
 	ResourceRecordSets := []zones.ResourceRecordSet{}
-	for _, endpoint := range Endpoints{
+	for _, endpoint := range Endpoints {
 
 		startIndex := len(endpoint.DNSName) - len(domainName)
 		if startIndex < 0 {
 			continue
 		}
-		if domainName != endpoint.DNSName[startIndex:]{
+		if domainName != endpoint.DNSName[startIndex:] {
 			continue
 		}
 		records := []zones.Record{}
 
-		for _, target := range endpoint.Targets{
+		for _, target := range endpoint.Targets {
 			record := zones.Record{
-				Content: target,
+				Content:  target,
 				Disabled: false,
 				SetPTR:   false,
 			}
 			records = append(records, record)
 		}
-		if len(records) == 0{
+		if len(records) == 0 {
 			continue
 		}
 
-
 		ResourceRecordSet := zones.ResourceRecordSet{
-			Name:       endpoint.DNSName+".",
+			Name:       endpoint.DNSName + ".",
 			Type:       endpoint.RecordType,
 			TTL:        int(endpoint.RecordTTL),
 			ChangeType: zones.ChangeTypeReplace,
-			Records: 	records,
+			Records:    records,
 			Comments:   nil,
 		}
 
@@ -126,13 +125,12 @@ func GetResourceRecordSets(domainName string, Endpoints []*ketiv1alpha1.Endpoint
 
 	}
 
-
 	fmt.Println("[Get RecordSets] ", ResourceRecordSets)
 	return ResourceRecordSets
 }
-func UpdateZoneWithRecords(client pdns.Client, domainName string,  resourceRecordSets []zones.ResourceRecordSet) error{
+func UpdateZoneWithRecords(client pdns.Client, domainName string, resourceRecordSets []zones.ResourceRecordSet) error {
 	for _, resourceRecordSet := range resourceRecordSets {
-		err := client.Zones().AddRecordSetToZone(context.TODO(), "localhost" , domainName+".", resourceRecordSet)
+		err := client.Zones().AddRecordSetToZone(context.TODO(), "localhost", domainName+".", resourceRecordSet)
 		if err != nil {
 			return err
 		}
@@ -140,6 +138,7 @@ func UpdateZoneWithRecords(client pdns.Client, domainName string,  resourceRecor
 
 	return nil
 }
+
 //func UpdateZoneWithRecords(domainName string, endpoints []*ketiv1alpha1.Endpoint) error{
 //	pdnsClient, err := powerdns.NewClient("http://"+PDNS_IP+":"+PDNS_PORT+"/api/v1", PDNS_API_KEY)
 //	if err != nil {
@@ -223,9 +222,9 @@ func UpdateZoneWithRecords(client pdns.Client, domainName string,  resourceRecor
 //
 //	return nil
 //}
-func CreateZoneWithRecords(client pdns.Client, domainName string, resourceRecordSets []zones.ResourceRecordSet) error{
+func CreateZoneWithRecords(client pdns.Client, domainName string, resourceRecordSets []zones.ResourceRecordSet) error {
 	_, err := client.Zones().CreateZone(context.Background(), "localhost", zones.Zone{
-		Name: domainName+".",
+		Name: domainName + ".",
 		Type: zones.ZoneTypeZone,
 		Kind: zones.ZoneKindNative,
 		Nameservers: []string{
@@ -233,7 +232,6 @@ func CreateZoneWithRecords(client pdns.Client, domainName string, resourceRecord
 			"ns2.example.com.",
 		},
 		ResourceRecordSets: resourceRecordSets,
-
 	})
 	if err != nil {
 		return err
@@ -251,7 +249,7 @@ func SyncZone(pdnsClient pdns.Client, domainName string, Endpoints []*ketiv1alph
 		fmt.Println("Update Zone ", domainName)
 		err = UpdateZoneWithRecords(pdnsClient, domainName, resourceRecordSets)
 		if err != nil {
-			fmt.Println("[OpenMCP External DNS Controller] : UpdateZone?  ",err)
+			fmt.Println("[OpenMCP External DNS Controller] : UpdateZone?  ", err)
 		}
 	} else {
 		fmt.Println("Create Zone ", domainName)

@@ -7,11 +7,11 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"openmcp/openmcp/openmcp-resource-controller/apis"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog"
+	"openmcp/openmcp/openmcp-resource-controller/apis"
+	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
 	"regexp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

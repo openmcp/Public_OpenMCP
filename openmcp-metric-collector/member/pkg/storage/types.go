@@ -59,8 +59,8 @@ type MetricsPoint struct {
 	CPUUsageNanoCores resource.Quantity
 
 	// Memory
-	MemoryUsageBytes resource.Quantity
-	MemoryAvailableBytes resource.Quantity
+	MemoryUsageBytes      resource.Quantity
+	MemoryAvailableBytes  resource.Quantity
 	MemoryWorkingSetBytes resource.Quantity
 
 	// Network
@@ -69,6 +69,6 @@ type MetricsPoint struct {
 
 	// Fs
 	FsAvailableBytes resource.Quantity
-	FsCapacityBytes resource.Quantity
-	FsUsedBytes resource.Quantity
+	FsCapacityBytes  resource.Quantity
+	FsUsedBytes      resource.Quantity
 }

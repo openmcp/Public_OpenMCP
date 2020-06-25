@@ -17,7 +17,7 @@ spec:
       containers:
         - name: cluster-metric-collector
           # Replace this with the built image name
-          image: atyx300/cluster-metric-collector:v0.0.6
+          image: atyx300/cluster-metric-collector:v0.0.1
           command:
           - cluster-metric-collector
           imagePullPolicy: Always
