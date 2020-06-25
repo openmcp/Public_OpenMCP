@@ -1,18 +1,26 @@
-echo -n "GRPC Server IP -> "
-read GRPC_IP
+echo -n "OpenmMCP Analytic Engine GRPC Server IP -> "
+read OAE_GRPC_IP
 
-echo -n "GRPC Server Port -> "
-read GRPC_PORT
+echo -n "OpenmMCP Analytic Engine GRPC Server Port -> "
+read OAE_GRPC_PORT
 
-sed -i 's|REPLACE_GRPCIP|'"$GRPC_IP"'|g' master/openmcp-has-controller/operator.yaml
-sed -i 's|REPLACE_GRPCIP|'"$GRPC_IP"'|g' master/openmcp-scheduler/operator.yaml
-sed -i 's|REPLACE_GRPCIP|'"$GRPC_IP"'|g' master/loadbalancing-controller/operator.yaml
-sed -i 's|REPLACE_GRPCIP|'"$GRPC_IP"'|g' member/metric-collector/operator.yaml
+sed -i 's|REPLACE_GRPCIP|'"$OAE_GRPC_IP"'|g' master/openmcp-has-controller/operator.yaml
+sed -i 's|REPLACE_GRPCIP|'"$OAE_GRPC_IP"'|g' master/openmcp-scheduler/operator.yaml
+sed -i 's|REPLACE_GRPCIP|'"$OAE_GRPC_IP"'|g' master/openmcp-loadbalancing-controller/operator.yaml
 
-sed -i 's|REPLACE_GRPCPORT|'"$GRPC_PORT"'|g' master/openmcp-has-controller/operator.yaml
-sed -i 's|REPLACE_GRPCPORT|'"$GRPC_PORT"'|g' master/openmcp-scheduler/operator.yaml
-sed -i 's|REPLACE_GRPCPORT|'"$GRPC_PORT"'|g' master/loadbalancing-controller/operator.yaml
-sed -i 's|REPLACE_GRPCPORT|'"$GRPC_PORT"'|g' member/metric-collector/operator.yaml
+sed -i 's|REPLACE_GRPCPORT|'"$OAE_GRPC_PORT"'|g' master/openmcp-has-controller/operator.yaml
+sed -i 's|REPLACE_GRPCPORT|'"$OAE_GRPC_PORT"'|g' master/openmcp-scheduler/operator.yaml
+sed -i 's|REPLACE_GRPCPORT|'"$OAE_GRPC_PORT"'|g' master/openmcp-loadbalancing-controller/operator.yaml
+
+
+echo -n "OpenmMCP Metric Collector GRPC Server IP -> "
+read OME_GRPC_IP
+
+echo -n "OpenmMCP Metric Collector GRPC Server Port -> "
+read OME_GRPC_PORT
+
+sed -i 's|REPLACE_GRPCIP|'"$OME_GRPC_IP"'|g' member/metric-collector/operator.yaml
+sed -i 's|REPLACE_GRPCPORT|'"$OME_GRPC_PORT"'|g' member/metric-collector/operator.yaml
 
 echo -n "InfluxDB Server IP -> "
 read INFLUXDB_IP
@@ -26,17 +34,17 @@ read INFLUXDB_USERNAME
 echo -n "InfluxDB User Password -> "
 read INFLUXDB_USERPWD
 
-sed -i 's|REPLACE_INFLUXDBIP|'"$INFLUXDB_IP"'|g' master/analytic-engine/operator.yaml
-sed -i 's|REPLACE_INFLUXDBIP|'"$INFLUXDB_IP"'|g' master/metric-collector/operator.yaml
+sed -i 's|REPLACE_INFLUXDBIP|'"$INFLUXDB_IP"'|g' master/openmcp-analytic-engine/operator.yaml
+sed -i 's|REPLACE_INFLUXDBIP|'"$INFLUXDB_IP"'|g' master/openmcp-metric-collector/operator.yaml
 
-sed -i 's|REPLACE_INFLUXDBPORT|'"$INFLUXDB_PORT"'|g' master/analytic-engine/operator.yaml
-sed -i 's|REPLACE_INFLUXDBPORT|'"$INFLUXDB_PORT"'|g' master/metric-collector/operator.yaml
+sed -i 's|REPLACE_INFLUXDBPORT|'"$INFLUXDB_PORT"'|g' master/openmcp-analytic-engine/operator.yaml
+sed -i 's|REPLACE_INFLUXDBPORT|'"$INFLUXDB_PORT"'|g' master/openmcp-metric-collector/operator.yaml
 
-sed -i 's|REPLACE_INFLUXDBUSERNAME|'"$INFLUXDB_USERNAME"'|g' master/analytic-engine/operator.yaml
-sed -i 's|REPLACE_INFLUXDBUSERNAME|'"$INFLUXDB_USERNAME"'|g' master/metric-collector/operator.yaml
+sed -i 's|REPLACE_INFLUXDBUSERNAME|'"$INFLUXDB_USERNAME"'|g' master/openmcp-analytic-engine/operator.yaml
+sed -i 's|REPLACE_INFLUXDBUSERNAME|'"$INFLUXDB_USERNAME"'|g' master/openmcp-metric-collector/operator.yaml
 
-sed -i 's|REPLACE_INFLUXDBUSERPWD|'"$INFLUXDB_USERPWD"'|g' master/analytic-engine/operator.yaml
-sed -i 's|REPLACE_INFLUXDBUSERPWD|'"$INFLUXDB_USERPWD"'|g' master/metric-collector/operator.yaml
+sed -i 's|REPLACE_INFLUXDBUSERPWD|'"$INFLUXDB_USERPWD"'|g' master/openmcp-analytic-engine/operator.yaml
+sed -i 's|REPLACE_INFLUXDBUSERPWD|'"$INFLUXDB_USERPWD"'|g' master/openmcp-metric-collector/operator.yaml
 
 echo -n "NFS Server IP -> "
 read NFS_IP

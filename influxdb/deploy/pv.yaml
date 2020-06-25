@@ -10,5 +10,5 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   nfs:
     path: /home/nfs/pv/influxdb
-    server: 10.0.3.12
+    server: REPLACE_NFSIP
     readOnly: false
