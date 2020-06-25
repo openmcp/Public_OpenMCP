@@ -21,11 +21,9 @@ import (
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	extv1b1 "k8s.io/api/extensions/v1beta1"
-	"openmcp-dns-controller/pkg/apis"
-	ketiv1alpha1 "openmcp-dns-controller/pkg/apis/keti/v1alpha1"
-	"openmcp-dns-controller/pkg/clusterManager"
-
-
+	"openmcp/openmcp/openmcp-dns-controller/pkg/apis"
+	ketiv1alpha1 "openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
+	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

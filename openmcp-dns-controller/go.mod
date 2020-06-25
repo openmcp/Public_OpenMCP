@@ -23,7 +23,6 @@ require (
 	k8s.io/sample-controller v0.0.0-20191017070449-ab9e95689d58 // indirect
 
 	sync-controller v0.0.0-00010101000000-000000000000
-	resource-controller v0.0.0-00010101000000-000000000000
 	sigs.k8s.io/controller-runtime v0.3.0
 	sigs.k8s.io/kubefed v0.1.0-rc6
 )

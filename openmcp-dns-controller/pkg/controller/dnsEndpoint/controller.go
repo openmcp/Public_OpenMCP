@@ -22,12 +22,11 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"openmcp-dns-controller/pkg/apis"
-	resapis "resource-controller/apis"
-	ketiv1alpha1 "openmcp-dns-controller/pkg/apis/keti/v1alpha1"
-	resketiv1alpha1 "resource-controller/apis/keti/v1alpha1"
-	"openmcp-dns-controller/pkg/clusterManager"
-
+	"openmcp/openmcp/openmcp-dns-controller/pkg/apis"
+	ketiv1alpha1 "openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
+	resapis "openmcp/openmcp/openmcp-resource-controller/apis"
+	resketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
+	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

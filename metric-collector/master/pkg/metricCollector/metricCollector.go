@@ -2,12 +2,17 @@ package metricCollector
 
 import (
 	"context"
+	"fmt"
 	"google.golang.org/grpc"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"log"
 	"net"
 	"openmcp-metric-collector/pkg/clusterManager"
 	"openmcp-metric-collector/pkg/influx"
 	"openmcp-metric-collector/pkg/protobuf"
+	"strconv"
+
+	//"strconv"
 	"strings"
 )
 
@@ -52,11 +57,23 @@ func (mc *MetricCollector) SendMetrics(ctx context.Context, data *protobuf.Colle
 	//startTime := time.Now()
 	clusterName := mc.FindClusterName(data)
 	mc.Influx.SaveMetrics(clusterName, data)
+	var period_int64 int64
 
-	timetick := 3600
+	openmcpPolicyInstance, target_cluster_policy_err := mc.ClusterManager.Crd_client.OpenMCPPolicyEngine("openmcp").Get("metric-collector-period", metav1.GetOptions{})
+
+	if target_cluster_policy_err != nil {
+		fmt.Println(target_cluster_policy_err)
+	} else {
+		a := openmcpPolicyInstance.Spec.Template.Spec.Policies
+		period := a[0].Value[0]
+		fmt.Println("period : ",period)
+		period_int64,_ = strconv.ParseInt(period, 10, 64)
+	}
+
+	//timetick := 3600
 	clustername := "c1"
 	return &protobuf.ReturnValue{
-		Tick:        int64(timetick),
+		Tick:        period_int64,
 		ClusterName: clustername,
 	}, nil
 	//return nil, nil
