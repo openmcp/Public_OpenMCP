@@ -1,7 +1,7 @@
 package apis
 
 import (
-	"openmcp-dns-controller/pkg/apis/keti/v1alpha1"
+	"openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
 )
 
 func init() {

@@ -1,5 +1,5 @@
 #!/bin/bash
-project_root_dir=/root/workspace/openmcp/openmcp/resource-controller
+project_root_dir=/root/20.06.23_test/openmcp/resource-controller
 docker_id="atyx300"
 controller_name="openmcp-hpa-controller"
 resource_name="openmcphpa"

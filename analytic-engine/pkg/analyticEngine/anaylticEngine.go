@@ -211,7 +211,7 @@ func (ae *AnalyticEngineStruct) SendLBAnalysis(ctx context.Context, in *protobuf
 	return &protobuf.ResponseLB{ScoreMap: clusterScoreMap}, nil
 }
 
-func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) string {
+func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) []string {
 
 	scoreMap := map[float64]string{}
 	score := []float64{}
@@ -234,13 +234,13 @@ func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) string 
 
 	fmt.Println("filteringCluster : ", filteringCluster)
 
-	result := ae.CompareHPAInfo(filteringCluster, data.HPAName, data.HPANamespace)
-	fmt.Println("result : ", result)
+	//result := ae.CompareHPAInfo(filteringCluster, data.HPAName, data.HPANamespace)
+	//fmt.Println("result : ", result)
 
-	return result
+	return filteringCluster
 }
 
-func (ae *AnalyticEngineStruct) CompareHPAInfo(clusterList []string, hpaName string, hpaNamespace string) string {
+func (ae *AnalyticEngineStruct) CompareHPAMaxInfo(clusterList []string, hpaName string, hpaNamespace string) string {
 	replicasGap := map[string]int32{}
 	rebalancingCount := map[string]int32{}
 
@@ -290,10 +290,74 @@ func (ae *AnalyticEngineStruct) CompareHPAInfo(clusterList []string, hpaName str
 	return result
 }
 
-func (ae *AnalyticEngineStruct) SendHASAnalysis(ctx context.Context, data *protobuf.HASInfo) (*protobuf.ResponseHAS, error) {
-	fmt.Println("---------HAS Requested Start---------")
+func (ae *AnalyticEngineStruct) CompareHPAMinInfo(clusterList []string, hpaName string, hpaNamespace string) string {
+	replicasGap := map[string]int32{}
+	rebalancingCount := map[string]int32{}
 
-	result := ae.SelectHPACluster(data)
+	cm := clusterManager.NewClusterManager()
+
+	hpaInstance := &hpav2beta1.HorizontalPodAutoscaler{}
+	for _, cluster := range clusterList {
+		err := cm.Cluster_genClients[cluster].Get(context.TODO(), hpaInstance, hpaNamespace, hpaName)
+		if err == nil {
+			fmt.Println(cluster, " hpa : ", *hpaInstance.Spec.MinReplicas, " / ", hpaInstance.Status.CurrentReplicas)
+			calc := hpaInstance.Status.CurrentReplicas - *hpaInstance.Spec.MinReplicas
+			if calc > 0 {
+				replicasGap[cluster] = calc
+			}
+		} else {
+			fmt.Println(err)
+		}
+	}
+
+	openmcphasInstance, err := cm.Crd_client.OpenMCPHybridAutoScaler(hpaNamespace).Get(hpaName, metav1.GetOptions{})
+
+	if err == nil {
+		//fmt.Println("success: ",openmcphasInstance)
+		for cluster, _ := range replicasGap {
+			rebalancingCount[cluster] = openmcphasInstance.Status.RebalancingCount[cluster]
+		}
+	} else {
+		fmt.Println(err)
+	}
+
+	fmt.Println("desiredReplicas : ", replicasGap)
+	fmt.Println("countRebalancing : ", rebalancingCount)
+
+	result := ""
+
+	for cluster, _ := range rebalancingCount {
+		if result == "" {
+			result = cluster
+		} else {
+			if (replicasGap[result] - rebalancingCount[result]) < (replicasGap[cluster] - rebalancingCount[cluster]) {
+				result = cluster
+			}
+		}
+		//fmt.Println(result)
+	}
+
+	return result
+}
+
+func (ae *AnalyticEngineStruct) SendHASMaxAnalysis(ctx context.Context, data *protobuf.HASInfo) (*protobuf.ResponseHAS, error) {
+	fmt.Println("---------HAS Request Start---------")
+
+	filteringCluster := ae.SelectHPACluster(data)
+	fmt.Println("(Max)filteringCluster : " ,filteringCluster)
+	result := ae.CompareHPAMaxInfo(filteringCluster, data.HPAName, data.HPANamespace)
+
+	fmt.Println("---------HAS Response End---------")
+
+	return &protobuf.ResponseHAS{TargetCluster: result}, nil
+}
+
+func (ae *AnalyticEngineStruct) SendHASMinAnalysis(ctx context.Context, data *protobuf.HASInfo) (*protobuf.ResponseHAS, error) {
+	fmt.Println("---------HAS Request Start---------")
+
+	filteringCluster := ae.SelectHPACluster(data)
+	fmt.Println("(Min)filteringCluster : " ,filteringCluster)
+	result := ae.CompareHPAMinInfo(filteringCluster, data.HPAName, data.HPANamespace)
 
 	fmt.Println("---------HAS Response End---------")
 

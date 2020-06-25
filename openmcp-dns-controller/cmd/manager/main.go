@@ -22,13 +22,13 @@ import (
 	"fmt"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"log"
-	"openmcp-dns-controller/pkg/clusterManager"
-	"openmcp-dns-controller/pkg/controller/dnsEndpoint"
-	"openmcp-dns-controller/pkg/controller/domain"
-	"openmcp-dns-controller/pkg/controller/externalDNS"
-	"openmcp-dns-controller/pkg/controller/ingressDNS"
-	"openmcp-dns-controller/pkg/controller/serviceDNS"
-	"openmcp-dns-controller/pkg/reshape"
+	"openmcp/openmcp/openmcp-dns-controller/pkg/controller/dnsEndpoint"
+	"openmcp/openmcp/openmcp-dns-controller/pkg/controller/domain"
+	"openmcp/openmcp/openmcp-dns-controller/pkg/controller/externalDNS"
+	"openmcp/openmcp/openmcp-dns-controller/pkg/controller/ingressDNS"
+	"openmcp/openmcp/openmcp-dns-controller/pkg/controller/serviceDNS"
+	"openmcp/openmcp/util/clusterManager"
+	"openmcp/openmcp/util/controller/reshape"
 )
 
 func main() {

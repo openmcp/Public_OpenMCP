@@ -6,10 +6,10 @@ import (
 	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"context"
 	"fmt"
-	"openmcp-dns-controller/pkg/apis"
-	ketiv1alpha1 "openmcp-dns-controller/pkg/apis/keti/v1alpha1"
-	"openmcp-dns-controller/pkg/clusterManager"
-	"openmcp-dns-controller/pkg/controller/serviceDNS"
+	"openmcp/openmcp/openmcp-dns-controller/pkg/apis"
+	ketiv1alpha1 "openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
+	"openmcp/openmcp/openmcp-dns-controller/pkg/controller/serviceDNS"
+	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 var cm *clusterManager.ClusterManager
