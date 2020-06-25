@@ -1,10 +1,10 @@
 kubectl create ns openmcp
 kubectl create ns metallb-system
 
-echo "--- analytic-engine"
-kubectl create -f analytic-engine/.
-echo "--- metric-collector"
-kubectl create -f metric-collector/.
+echo "--- openmcp-analytic-engine"
+kubectl create -f openmcp-analytic-engine/.
+echo "--- openmcp-metric-collector"
+kubectl create -f openmcp-metric-collector/.
 echo "--- influxdb"
 kubectl create -f influxdb/.
 cd influxdb/secret_info
@@ -27,10 +27,10 @@ echo "--- create policy"
 kubectl create -f openmcp-policy-engine/policy/.
 echo "--- openmcp-dns-controller"
 kubectl create -f openmcp-dns-controller/.
-echo "--- loadbalancing-controller"
-kubectl create -f loadbalancing-controller/.
+echo "--- openmcp-loadbalancing-controller"
+kubectl create -f openmcp-loadbalancing-controller/.
 kubectl expose deployment/loadbalancing-controller -n openmcp --port 80 --type=LoadBalancer
-echo "--- sync-controller"
-kubectl create -f sync-controller/.
+echo "--- openmcp-sync-controller"
+kubectl create -f openmcp-sync-controller/.
 echo "--- metallb"
 kubectl create -f metallb/.

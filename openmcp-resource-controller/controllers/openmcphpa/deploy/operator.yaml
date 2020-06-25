@@ -32,8 +32,8 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: GRPC_SERVER
-              value: REPLACE_SERVERIP
+              value: REPLACE_GRPCIP
             - name: GRPC_PORT
-              value: "32050"
+              value: REPLACE_GRPCPORT
             - name: OPERATOR_NAME
               value: "openmcp-hpa-controller"
