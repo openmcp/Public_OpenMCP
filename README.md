@@ -11,7 +11,7 @@
   - [2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]](#2-외부-스토리지에-join하고자-하는-클러스터-서버-등록-하위-클러스터에서-수행)
   - [3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]](#3-외부-스토리지에-등록된-하위-클러스터를-openmcp에-join-openmcp에서-수행)
   - [4. 하위 클러스터 Master Node에 Region, Zone 등록](#4-하위-클러스터-master-node에-region-zone-등록)
-  - [5. 하위 클러스터 MetalLB Config 생성 (LoadBalancer IP 할당)](#5.-하위-클러스터-metallb-config-생성-loadbalancer-ip-할당)
+  - [5. 하위 클러스터 MetalLB Config 생성 (LoadBalancer IP 할당)](#5-하위-클러스터-metallb-config-생성-loadbalancer-ip-할당)
 - [OpenMCP EXAMPLE](#openmcp-example)
   - [OpenMCPDeployment 배포](#openmcpdeployment-배포)
   - [OpenMCPService 배포](#openmcpservice-배포)
