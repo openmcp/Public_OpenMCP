@@ -6,6 +6,7 @@ import (
 	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"context"
 	"fmt"
+	"k8s.io/klog"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/apis"
 	ketiv1alpha1 "openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/controller/serviceDNS"
@@ -55,14 +56,14 @@ func (r *reconciler) UpdateStatusServiceDNSRecordFromDelete() error {
 	// OpenMCPDomain Delete시 Service DNS Record 정보 삭제 하도록 빈 Status 업데이트
 
 	instanceServiceRecordList := &ketiv1alpha1.OpenMCPServiceDNSRecordList{}
-	err := r.live.List(context.TODO(), instanceServiceRecordList, nil)
+	err := r.live.List(context.TODO(), instanceServiceRecordList, &client.ListOptions{})
 	if err != nil {
 		return err
 	}
 	instanceDomainList := &ketiv1alpha1.OpenMCPDomainList{}
-	err = r.live.List(context.TODO(), instanceDomainList, nil)
+	err = r.live.List(context.TODO(), instanceDomainList, &client.ListOptions{})
 	if err != nil {
-		fmt.Println("[OpenMCP Domain Controller] : ", err)
+		klog.V(0).Info("[OpenMCP Domain Controller] : ", err)
 		return err
 	}
 
@@ -78,7 +79,7 @@ func (r *reconciler) UpdateStatusServiceDNSRecordFromDelete() error {
 		}
 
 		if !find {
-			fmt.Println("[OpenMCP Domain Controller] Service DNS Record Delete :", instanceServiceRecordList.Items[deleted_index].Name)
+			klog.V(0).Info("[OpenMCP Domain Controller] Service DNS Record Delete :", instanceServiceRecordList.Items[deleted_index].Name)
 
 			serviceDNS.ClearStatus(&instanceServiceRecordList.Items[deleted_index])
 			err = r.live.Status().Update(context.TODO(), &instanceServiceRecordList.Items[deleted_index])
@@ -93,7 +94,7 @@ func (r *reconciler) UpdateStatusServiceDNSRecordFromDelete() error {
 func (r *reconciler) UpdateStatusServiceDNSRecordFromCreate(instanceDomain *ketiv1alpha1.OpenMCPDomain) error {
 	// OpenMCPDomain Create시 OpenMCPServiceDNSRecord 업데이트
 	instanceServiceRecordList := &ketiv1alpha1.OpenMCPServiceDNSRecordList{}
-	err := r.live.List(context.TODO(), instanceServiceRecordList, nil)
+	err := r.live.List(context.TODO(), instanceServiceRecordList, &client.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -114,8 +115,8 @@ func (r *reconciler) UpdateStatusServiceDNSRecordFromCreate(instanceDomain *keti
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	i += 1
-	//fmt.Println("********* [ OpenMCP Domain", i, "] *********")
-	//fmt.Println(req.Context, " / ", req.Namespace, " / ", req.Name)
+	//klog.V(0).Info("********* [ OpenMCP Domain", i, "] *********")
+	//klog.V(0).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
 	//cm := clusterManager.NewClusterManager()
 
 	instanceDomain := &ketiv1alpha1.OpenMCPDomain{}
@@ -123,7 +124,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	if err != nil {
 		err = r.UpdateStatusServiceDNSRecordFromDelete()
 		if err != nil {
-			fmt.Println("[OpenMCP Domain Controller] : ", err)
+			klog.V(0).Info("[OpenMCP Domain Controller] : ", err)
 		}
 
 		return reconcile.Result{}, nil
@@ -131,7 +132,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	err = r.UpdateStatusServiceDNSRecordFromCreate(instanceDomain)
 	if err != nil {
-		fmt.Println("[OpenMCP Domain Controller] : ", err)
+		klog.V(0).Info("[OpenMCP Domain Controller] : ", err)
 	}
 
 	return reconcile.Result{}, nil

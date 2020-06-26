@@ -2,8 +2,9 @@ package mypdns
 
 import (
 	"context"
+	"k8s.io/klog"
+
 	//"database/sql"
-	"fmt"
 	//"github.com/dmportella/powerdns"
 	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -23,32 +24,32 @@ var (
 )
 
 func PdnsNewClient() (pdns.Client, error) {
-	client, err := pdns.New(
+	pdnsClient, err := pdns.New(
 		pdns.WithBaseURL("http://"+PDNS_IP+":"+PDNS_PORT),
 		pdns.WithAPIKeyAuthentication(PDNS_API_KEY),
 	)
-	return client, err
+	return pdnsClient, err
 }
 
-func GetZone(client pdns.Client, domain string) (*zones.Zone, error) {
+func GetZone(pdnsClient pdns.Client, domain string) (*zones.Zone, error) {
 
-	zone, err := client.Zones().GetZone(context.TODO(), "localhost", domain+".")
+	zone, err := pdnsClient.Zones().GetZone(context.TODO(), "localhost", domain+".")
 	return zone, err
 
 }
-func GetZoneList(client pdns.Client) ([]zones.Zone, error) {
+func GetZoneList(pdnsClient pdns.Client) ([]zones.Zone, error) {
 
-	zoneList, err := client.Zones().ListZones(context.TODO(), "localhost")
+	zoneList, err := pdnsClient.Zones().ListZones(context.TODO(), "localhost")
 	return zoneList, err
 
 }
-func DeleteZone(client pdns.Client, liveClient client.Client) error {
+func DeleteZone(pdnsClient pdns.Client, liveClient client.Client) error {
 	instanceDNSEndpointList := &ketiv1alpha1.OpenMCPDNSEndpointList{}
-	err := liveClient.List(context.TODO(), instanceDNSEndpointList, nil)
+	err := liveClient.List(context.TODO(), instanceDNSEndpointList, &client.ListOptions{})
 	if err != nil {
 		return err
 	}
-	zoneList, err := GetZoneList(client)
+	zoneList, err := GetZoneList(pdnsClient)
 	if err != nil {
 		return err
 	}
@@ -69,11 +70,11 @@ func DeleteZone(client pdns.Client, liveClient client.Client) error {
 		}
 		if !find {
 			deleteZone = zone
-			err := client.Zones().DeleteZone(context.TODO(), "localhost", zone.Name)
+			err := pdnsClient.Zones().DeleteZone(context.TODO(), "localhost", zone.Name)
 			if err != nil {
 				for {
-					fmt.Println("[ERROR Retry Delete] ", err)
-					err = client.Zones().DeleteZone(context.TODO(), "localhost", zone.Name)
+					klog.V(0).Info("[ERROR Retry Delete] ", err)
+					err = pdnsClient.Zones().DeleteZone(context.TODO(), "localhost", zone.Name)
 					if err == nil {
 						break
 					}
@@ -83,7 +84,7 @@ func DeleteZone(client pdns.Client, liveClient client.Client) error {
 		}
 
 	}
-	fmt.Println("[Deleted Pdns Zone] ", deleteZone.Name)
+	klog.V(0).Info("[Deleted Pdns Zone] ", deleteZone.Name)
 	return nil
 }
 
@@ -125,7 +126,7 @@ func GetResourceRecordSets(domainName string, Endpoints []*ketiv1alpha1.Endpoint
 
 	}
 
-	fmt.Println("[Get RecordSets] ", ResourceRecordSets)
+	klog.V(0).Info("[Get RecordSets] ", ResourceRecordSets)
 	return ResourceRecordSets
 }
 func UpdateZoneWithRecords(client pdns.Client, domainName string, resourceRecordSets []zones.ResourceRecordSet) error {
@@ -142,15 +143,15 @@ func UpdateZoneWithRecords(client pdns.Client, domainName string, resourceRecord
 //func UpdateZoneWithRecords(domainName string, endpoints []*ketiv1alpha1.Endpoint) error{
 //	pdnsClient, err := powerdns.NewClient("http://"+PDNS_IP+":"+PDNS_PORT+"/api/v1", PDNS_API_KEY)
 //	if err != nil {
-//		fmt.Println(err)
+//		klog.V(0).Info(err)
 //	}
 //	zoneInfos, err := pdnsClient.ListZones()
 //	if err != nil {
-//		fmt.Println(err)
+//		klog.V(0).Info(err)
 //	}
-//	fmt.Println("check")
+//	klog.V(0).Info("check")
 //	for _, zoneInfo := range zoneInfos {
-//		fmt.Println(zoneInfo.Name)
+//		klog.V(0).Info(zoneInfo.Name)
 //		if zoneInfo.Name == domainName + "." {
 //			for _, record := range zoneInfo.Records {
 //				if record.Type != "A" {
@@ -158,7 +159,7 @@ func UpdateZoneWithRecords(client pdns.Client, domainName string, resourceRecord
 //				}
 //				err = pdnsClient.DeleteRecordSet(zoneInfo.Name, record.Name, record.Type)
 //				if err != nil {
-//					fmt.Println(err)
+//					klog.V(0).Info(err)
 //				}
 //			}
 //
@@ -172,7 +173,7 @@ func UpdateZoneWithRecords(client pdns.Client, domainName string, resourceRecord
 //						Disabled: false,
 //					}
 //					p, err := pdnsClient.CreateRecord(zoneInfo.Name, record)
-//					fmt.Println(p, err)
+//					klog.V(0).Info(p, err)
 //				}
 //
 //
@@ -183,7 +184,7 @@ func UpdateZoneWithRecords(client pdns.Client, domainName string, resourceRecord
 //			break
 //		}
 //	}
-//	fmt.Println("check2")
+//	klog.V(0).Info("check2")
 //	return nil
 //
 //}
@@ -192,7 +193,7 @@ func UpdateZoneWithRecords(client pdns.Client, domainName string, resourceRecord
 //
 //	db, err := sql.Open("mysql", "root:ketilinux@tcp(10.0.3.12:3306)/powerdns")
 //	if err != nil {
-//		fmt.Println(err)
+//		klog.V(0).Info(err)
 //	}
 //	defer db.Close()
 //	tx, err := db.Begin() // 트랜잭션 Begin
@@ -206,13 +207,13 @@ func UpdateZoneWithRecords(client pdns.Client, domainName string, resourceRecord
 //	for _, resourceRecordSet := range resourceRecordSets{
 //		for _, record := range resourceRecordSet.Records{
 //			_, err = tx.Exec("INSERT INTO records (domain_id, name, type, content, ttl, prio) VALUES (?, ?, ?, ?, ?, ?)", domain_id, resourceRecordSet.Name, resourceRecordSet.Type, record.Content, resourceRecordSet.TTL, 0)
-//			fmt.Println(err)
+//			klog.V(0).Info(err)
 //		}
 //
 //
 //		//err := client.Zones().AddRecordSetToZone(context.TODO(), "localhost", domainName+".", resourceRecordSet)
 //		//if err != nil{
-//		//	fmt.Println("[Update Err] " ,err, resourceRecordSet)
+//		//	klog.V(0).Info("[Update Err] " ,err, resourceRecordSet)
 //		//	continue
 //		//	// return err
 //		//}
@@ -246,16 +247,16 @@ func SyncZone(pdnsClient pdns.Client, domainName string, Endpoints []*ketiv1alph
 
 	if err == nil {
 		// Already Exist
-		fmt.Println("Update Zone ", domainName)
+		klog.V(0).Info("Update Zone ", domainName)
 		err = UpdateZoneWithRecords(pdnsClient, domainName, resourceRecordSets)
 		if err != nil {
-			fmt.Println("[OpenMCP External DNS Controller] : UpdateZone?  ", err)
+			klog.V(0).Info("[OpenMCP External DNS Controller] : UpdateZone?  ", err)
 		}
 	} else {
-		fmt.Println("Create Zone ", domainName)
+		klog.V(0).Info("Create Zone ", domainName)
 		err = CreateZoneWithRecords(pdnsClient, domainName, resourceRecordSets)
 		if err != nil {
-			fmt.Println("[OpenMCP External DNS Controller] : CreateZone? ", err)
+			klog.V(0).Info("[OpenMCP External DNS Controller] : CreateZone? ", err)
 		}
 	}
 	return err
