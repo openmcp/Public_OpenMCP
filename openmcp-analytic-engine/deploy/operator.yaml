@@ -33,13 +33,13 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: INFLUX_IP
-              value: REPLACE_INFLUXDBIP
+              value: "10.0.3.30"
             - name: INFLUX_PORT
-              value: REPLACE_INFLUXDBPORT
+              value: "31051"
             - name: INFLUX_USERNAME
-              value: REPLACE_INFLUXDBUSERNAME
+              value: "root"
             - name: INFLUX_PASSWORD
-              value: REPLACE_INFLUXDBUSERPWD
+              value: "root"
             - name: OPERATOR_NAME
               value: "openmcp-analytic-engine"
 

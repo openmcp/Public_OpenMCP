@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmcp-has-controller
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openmcp-has-controller
+  template:
+    metadata:
+      labels:
+        name: openmcp-has-controller
+    spec:
+      serviceAccountName: openmcp-has-controller
+      containers:
+        - name: openmcp-has-controller
+          # Replace this with the built image name
+          image: atyx300/openmcp-has-controller:v0.0.1
+          command:
+          - openmcp-has-controller
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              #value: ""
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: GRPC_SERVER
+              value: "10.0.3.30"
+            - name: GRPC_PORT
+              value: "32050"
+            - name: OPERATOR_NAME
+              value: "openmcp-has-controller"
