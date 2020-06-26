@@ -10,4 +10,3 @@ func init() {
 	//AddToSchemes = append(AddToSchemes, vpav1beta2.SchemeBuilder.AddToScheme)
 	//AddToSchemes = append(AddToSchemes, v1alpha1.SchemeBuilder2.AddToScheme)
 }
-d

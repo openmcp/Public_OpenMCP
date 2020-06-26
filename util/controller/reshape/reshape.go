@@ -62,7 +62,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	// Fetch the Sync instance
 	kubeFedClusterList := &v1beta1.KubeFedClusterList{}
-	err := r.live.List(context.TODO(), &client.ListOptions{}, kubeFedClusterList)
+	err := r.live.List(context.TODO(), kubeFedClusterList, &client.ListOptions{})
 	if err != nil {
 		klog.V(0).Info(err)
 	}

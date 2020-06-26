@@ -1,7 +1,6 @@
 package v1alpha1
 
 import (
-	"context"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -29,7 +28,7 @@ func (c *OpenMCPPolicyEngineClient) List(opts metav1.ListOptions) (*v1alpha1.Ope
 		Namespace(c.ns).
 		Resource("openmcppolicyengines").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do(context.TODO()).
+		Do().
 		Into(&result)
 
 	return &result, err
@@ -43,7 +42,7 @@ func (c *OpenMCPPolicyEngineClient) Get(name string, opts metav1.GetOptions) (*v
 		Resource("openmcppolicyengines").
 		Name(name).
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do(context.TODO()).
+		Do().
 		Into(&result)
 
 	return &result, err
@@ -56,7 +55,7 @@ func (c *OpenMCPPolicyEngineClient) Create(deployment *v1alpha1.OpenMCPPolicyEng
 		Namespace(c.ns).
 		Resource("openmcppolicyengines").
 		Body(deployment).
-		Do(context.TODO()).
+		Do().
 		Into(&result)
 
 	return &result, err
@@ -69,5 +68,5 @@ func (c *OpenMCPPolicyEngineClient) Watch(opts metav1.ListOptions) (watch.Interf
 		Namespace(c.ns).
 		Resource("openmcppolicyengines").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch(context.TODO())
+		Watch()
 }

@@ -204,6 +204,27 @@ $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> 
 ---
 
 ## 5. 하위 클러스터 MetalLB Config 생성 (LoadBalancer IP 할당)
+하위 클러스터 LoadBalancer의 할당 IP 범위를 설정합니다.
+
+> vim metallb_config.yaml 
+```
+apiVersion: v1
+kind: ConfigMap
+metadata:
+ namespace: metallb-system
+ name: config
+data:
+ config: |
+   address-pools:
+   - name: default
+     protocol: layer2
+     addresses:
+     - <<REPLACE_ADDRESS_FROM>>-<<REPLACE_ADDRESS_TO>>
+```
+> 위에서 만든 Metallb의 Loadbalancer IP 할당범위를 등록합니다.
+```  
+kubectl create -f metallb_config.yaml
+```
 
 # OpenMCP EXAMPLE
 OpenMCP에 cluster1, cluster2가 조인된 상태에서 EXAMPLE TEST를 진행합니다.

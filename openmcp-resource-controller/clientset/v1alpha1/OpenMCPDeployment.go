@@ -1,7 +1,6 @@
 package v1alpha1
 
 import (
-	"context"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -29,7 +28,7 @@ func (c *OpenMCPDeploymentClient) List(opts metav1.ListOptions) (*v1alpha1.OpenM
 		Namespace(c.ns).
 		Resource("openmcpdeployments").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do(context.TODO()).
+		Do().
 		Into(&result)
 
 	return &result, err
@@ -43,7 +42,7 @@ func (c *OpenMCPDeploymentClient) Get(name string, opts metav1.GetOptions) (*v1a
 		Resource("openmcpdeployments").
 		Name(name).
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do(context.TODO()).
+		Do().
 		Into(&result)
 
 	return &result, err
@@ -56,7 +55,7 @@ func (c *OpenMCPDeploymentClient) Create(deployment *v1alpha1.OpenMCPDeployment)
 		Namespace(c.ns).
 		Resource("openmcpdeployments").
 		Body(deployment).
-		Do(context.TODO()).
+		Do().
 		Into(&result)
 
 	return &result, err
@@ -69,5 +68,5 @@ func (c *OpenMCPDeploymentClient) Watch(opts metav1.ListOptions) (watch.Interfac
 		Namespace(c.ns).
 		Resource("openmcpdeployment").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch(context.TODO())
+		Watch()
 }

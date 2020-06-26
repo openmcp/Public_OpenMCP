@@ -34,7 +34,6 @@ import (
 	"strings"
 )
 
-
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
@@ -181,7 +180,7 @@ func CreateObj(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured
 	mapping, err := rm.RESTMapping(gk, gvk.Version)
 
 	//fmt.Println(mapping.Resource.Group, mapping.Resource.Version, mapping.Resource.Resource)
-	_, err = cm.Cluster_dynClients[clusterName].Resource(mapping.Resource).Namespace(obj.GetNamespace()).Create(context.TODO(), obj, metav1.CreateOptions{})
+	_, err = cm.Cluster_dynClients[clusterName].Resource(mapping.Resource).Namespace(obj.GetNamespace()).Create(obj, metav1.CreateOptions{})
 	return err
 
 }
@@ -195,7 +194,7 @@ func UpdateObj(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured
 	mapping, err := rm.RESTMapping(gk, gvk.Version)
 
 	// fmt.Println(mapping.Resource.Group, mapping.Resource.Version, mapping.Resource.Resource)
-	_, err = cm.Cluster_dynClients[clusterName].Resource(mapping.Resource).Namespace(obj.GetNamespace()).Update(context.TODO(), obj, metav1.UpdateOptions{})
+	_, err = cm.Cluster_dynClients[clusterName].Resource(mapping.Resource).Namespace(obj.GetNamespace()).Update(obj, metav1.UpdateOptions{})
 	return err
 
 }
@@ -211,7 +210,7 @@ func DeleteObj(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured
 	groupResources, err := restmapper.GetAPIGroupResources(clientset.Discovery())
 	rm := restmapper.NewDiscoveryRESTMapper(groupResources)
 	mapping, err := rm.RESTMapping(gk, gvk.Version)
-	found, err := cm.Cluster_dynClients[clusterName].Resource(mapping.Resource).Namespace(obj.GetNamespace()).Get(context.TODO(), obj.GetName(), metav1.GetOptions{})
+	found, err := cm.Cluster_dynClients[clusterName].Resource(mapping.Resource).Namespace(obj.GetNamespace()).Get(obj.GetName(), metav1.GetOptions{})
 	if err != nil && errors.IsNotFound(err) {
 		// all good
 		fmt.Println("Not Found")
@@ -222,7 +221,7 @@ func DeleteObj(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured
 	}
 
 	// fmt.Println(mapping.Resource.Group, mapping.Resource.Version, mapping.Resource.Resource)
-	err = cm.Cluster_dynClients[clusterName].Resource(mapping.Resource).Namespace(obj.GetNamespace()).Delete(context.TODO(), obj.GetName(), metav1.DeleteOptions{})
+	err = cm.Cluster_dynClients[clusterName].Resource(mapping.Resource).Namespace(obj.GetNamespace()).Delete(obj.GetName(), &metav1.DeleteOptions{})
 	return err
 
 }
@@ -238,7 +237,6 @@ func isInObject(obj *unstructured.Unstructured, subString string) bool {
 	}
 	return false
 }
-
 
 func structToMap(item interface{}) map[string]interface{} {
 

@@ -12,6 +12,7 @@ import (
 	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
 var cm *clusterManager.ClusterManager
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
@@ -39,7 +40,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
-
 	return co, nil
 }
 
@@ -55,14 +55,14 @@ func (r *reconciler) UpdateStatusServiceDNSRecordFromDelete() error {
 	// OpenMCPDomain Delete시 Service DNS Record 정보 삭제 하도록 빈 Status 업데이트
 
 	instanceServiceRecordList := &ketiv1alpha1.OpenMCPServiceDNSRecordList{}
-	err := r.live.List(context.TODO(), nil, instanceServiceRecordList)
+	err := r.live.List(context.TODO(), instanceServiceRecordList, nil)
 	if err != nil {
 		return err
 	}
 	instanceDomainList := &ketiv1alpha1.OpenMCPDomainList{}
-	err = r.live.List(context.TODO(), nil, instanceDomainList)
+	err = r.live.List(context.TODO(), instanceDomainList, nil)
 	if err != nil {
-		fmt.Println("[OpenMCP Domain Controller] : ",err)
+		fmt.Println("[OpenMCP Domain Controller] : ", err)
 		return err
 	}
 
@@ -71,7 +71,7 @@ func (r *reconciler) UpdateStatusServiceDNSRecordFromDelete() error {
 		find := false
 		deleted_index = i
 		for _, inDomain := range instanceDomainList.Items {
-			if instanceServiceRecord.Status.Domain == inDomain.Domain{
+			if instanceServiceRecord.Status.Domain == inDomain.Domain {
 				find = true
 				break
 			}
@@ -90,10 +90,10 @@ func (r *reconciler) UpdateStatusServiceDNSRecordFromDelete() error {
 	}
 	return nil
 }
-func  (r *reconciler) UpdateStatusServiceDNSRecordFromCreate(instanceDomain *ketiv1alpha1.OpenMCPDomain) error{
+func (r *reconciler) UpdateStatusServiceDNSRecordFromCreate(instanceDomain *ketiv1alpha1.OpenMCPDomain) error {
 	// OpenMCPDomain Create시 OpenMCPServiceDNSRecord 업데이트
 	instanceServiceRecordList := &ketiv1alpha1.OpenMCPServiceDNSRecordList{}
-	err := r.live.List(context.TODO(), nil, instanceServiceRecordList)
+	err := r.live.List(context.TODO(), instanceServiceRecordList, nil)
 	if err != nil {
 		return err
 	}
@@ -123,18 +123,16 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	if err != nil {
 		err = r.UpdateStatusServiceDNSRecordFromDelete()
 		if err != nil {
-			fmt.Println("[OpenMCP Domain Controller] : ",err)
+			fmt.Println("[OpenMCP Domain Controller] : ", err)
 		}
 
 		return reconcile.Result{}, nil
 	}
 
-
 	err = r.UpdateStatusServiceDNSRecordFromCreate(instanceDomain)
 	if err != nil {
-		fmt.Println("[OpenMCP Domain Controller] : ",err)
+		fmt.Println("[OpenMCP Domain Controller] : ", err)
 	}
-
 
 	return reconcile.Result{}, nil
 }
