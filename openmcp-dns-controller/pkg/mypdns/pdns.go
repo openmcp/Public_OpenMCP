@@ -126,7 +126,7 @@ func GetResourceRecordSets(domainName string, Endpoints []*ketiv1alpha1.Endpoint
 
 	}
 
-	klog.V(0).Info("[Get RecordSets] ", ResourceRecordSets)
+	klog.V(1).Info("[Get RecordSets] ", ResourceRecordSets)
 	return ResourceRecordSets
 }
 func UpdateZoneWithRecords(client pdns.Client, domainName string, resourceRecordSets []zones.ResourceRecordSet) error {
