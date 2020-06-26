@@ -227,10 +227,14 @@ func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) []strin
 
 	filteringCluster := []string{}
 
+	for i := 0 ; i < len(score) ; i++ {
+		filteringCluster = append(filteringCluster, scoreMap[score[i]])
+	}
+/*
 	if len(score) > 1 {
 		filteringCluster = append(filteringCluster, scoreMap[score[0]])
 		filteringCluster = append(filteringCluster, scoreMap[score[1]])
-	}
+	}*/
 
 	fmt.Println("filteringCluster : ", filteringCluster)
 
@@ -345,8 +349,13 @@ func (ae *AnalyticEngineStruct) SendHASMaxAnalysis(ctx context.Context, data *pr
 
 	filteringCluster := ae.SelectHPACluster(data)
 	fmt.Println("(Max)filteringCluster : " ,filteringCluster)
-	result := ae.CompareHPAMaxInfo(filteringCluster, data.HPAName, data.HPANamespace)
 
+	var result string
+	if len(filteringCluster) == 1 {
+		result = filteringCluster[0]
+	}else {
+		result = ae.CompareHPAMaxInfo(filteringCluster, data.HPAName, data.HPANamespace)
+	}
 	fmt.Println("---------HAS Response End---------")
 
 	return &protobuf.ResponseHAS{TargetCluster: result}, nil
@@ -357,7 +366,15 @@ func (ae *AnalyticEngineStruct) SendHASMinAnalysis(ctx context.Context, data *pr
 
 	filteringCluster := ae.SelectHPACluster(data)
 	fmt.Println("(Min)filteringCluster : " ,filteringCluster)
-	result := ae.CompareHPAMinInfo(filteringCluster, data.HPAName, data.HPANamespace)
+
+	//result := ae.CompareHPAMinInfo(filteringCluster, data.HPAName, data.HPANamespace)
+
+	var result string
+	if len(filteringCluster) == 1 {
+		result = filteringCluster[0]
+	}else {
+		result = ae.CompareHPAMinInfo(filteringCluster, data.HPAName, data.HPANamespace)
+	}
 
 	fmt.Println("---------HAS Response End---------")
 

@@ -19,7 +19,6 @@ limitations under the License.
 package cluster // import "admiralty.io/multicluster-controller/pkg/cluster"
 
 import (
-	"context"
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -161,13 +160,13 @@ func (c *Cluster) GetDelegatingClient() (*client.DelegatingClient, error) {
 
 // AddEventHandler instructs the Cluster's cache to watch objectType's resource,
 // if it doesn't already, and to add handler as an event handler.
-func (c *Cluster) AddEventHandler(ctx context.Context, objectType runtime.Object, handler clientgocache.ResourceEventHandler) error {
+func (c *Cluster) AddEventHandler(objectType runtime.Object, handler clientgocache.ResourceEventHandler) error {
 	ca, err := c.GetCache()
 	if err != nil {
 		return err
 	}
 
-	i, err := ca.GetInformer(ctx, objectType)
+	i, err := ca.GetInformer(objectType)
 	if err != nil {
 		return err
 	}
@@ -194,19 +193,4 @@ func (c *Cluster) WaitForCacheSync(stop <-chan struct{}) bool {
 		return false
 	}
 	return ca.WaitForCacheSync(stop)
-}
-
-// CloneWithName creates a new Cluster with the same Kubernetes client, cache, and other cluster-scoped dependencies,
-// but with a different name. This is useful in situations where one cluster is known to other clusters by different
-// names. In particular, this avoids duplicating caches and reduces the load on the Kubernetes API server.
-func (c *Cluster) CloneWithName(name string) *Cluster {
-	return &Cluster{
-		name,
-		c.Config,
-		c.scheme,
-		c.mapper,
-		c.cache,
-		c.client,
-		c.Options,
-	}
 }

@@ -122,7 +122,7 @@ loadbalancing-controller-bb7547df8-fpbbj        1/1     Running   0          21h
 openmcp-analytic-engine-67dc4b7d9d-kxpb8        1/1     Running   0          21h
 openmcp-deployment-controller-747cf6d76-tvm64   1/1     Running   0          21h
 openmcp-dns-controller-78ff9bcdd5-lkcx8         1/1     Running   0          21h
-openmcp-hpa-controller-8688867566-bklhw         1/1     Running   0          21h
+openmcp-has-controller-8688867566-bklhw         1/1     Running   0          21h
 openmcp-ingress-controller-7fc4489594-jmccz     1/1     Running   0          21h
 openmcp-metric-collector-79dc4b466b-5h9wp       1/1     Running   0          21h
 openmcp-policy-engine-7c7b5fb7d5-4m4tl          1/1     Running   0          21h
@@ -134,7 +134,7 @@ $ kubectl get openmcppolicyengine -n openmcp
 NAME                           AGE
 analytic-metrics-weight        2m1s
 hpa-minmax-distribution-mode   2m10s
-hpa-target-cluster             2m6s
+has-target-cluster             2m6s
 ```
 
 ### OpenMCP Architecture
