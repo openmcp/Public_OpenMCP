@@ -29,7 +29,7 @@ echo "--- openmcp-dns-controller"
 kubectl create -f openmcp-dns-controller/.
 echo "--- openmcp-loadbalancing-controller"
 kubectl create -f openmcp-loadbalancing-controller/.
-kubectl expose deployment/loadbalancing-controller -n openmcp --port 80 --type=LoadBalancer
+kubectl expose deployment/openmcp-loadbalancing-controller -n openmcp --port 80 --type=LoadBalancer
 echo "--- openmcp-sync-controller"
 kubectl create -f openmcp-sync-controller/.
 echo "--- metallb"
