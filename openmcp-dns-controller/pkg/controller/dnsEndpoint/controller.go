@@ -27,6 +27,7 @@ import (
 	resapis "openmcp/openmcp/openmcp-resource-controller/apis"
 	resketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
 	"openmcp/openmcp/util/clusterManager"
+	"openmcp/openmcp/util/controller/logLevel"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -78,8 +79,8 @@ var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	i += 1
-	//fmt.Println("********* [ OpenMCP DNS Endpoint", i, "] *********")
-	//fmt.Println(req.Context, " / ", req.Namespace, " / ", req.Name)
+	//logLevel.KetiLog(0, "********* [ OpenMCP DNS Endpoint", i, "] *********")
+	//logLevel.KetiLog(0, req.Context, " / ", req.Namespace, " / ", req.Name)
 
 	// OpenMCPServiceDNSRecord 삭제 요청인 경우 종료
 	instanceServiceRecord := &ketiv1alpha1.OpenMCPServiceDNSRecord{}
@@ -102,7 +103,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			instanceEndpoint := OpenMCPEndpointUpdateObjectFromServiceDNS(instanceEndpoint, instanceServiceRecord, req.Namespace,  req.Name)
 			err = r.live.Update(context.TODO(), instanceEndpoint)
 			if err != nil {
-				fmt.Println("[OpenMCP DNS Endpoint Controller] : ",err)
+				logLevel.KetiLog(0, "[OpenMCP DNS Endpoint Controller] : ",err)
 				//return reconcile.Result{}, nil
 			}
 		} else if errors.IsNotFound(err) {
@@ -110,13 +111,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			instanceEndpoint := OpenMCPEndpointCreateObjectFromServiceDNS(instanceServiceRecord, req.Namespace,  req.Name)
 			err = r.live.Create(context.TODO(), instanceEndpoint)
 			if err != nil {
-				fmt.Println("[OpenMCP DNS Endpoint Controller] : ",err)
+				logLevel.KetiLog(0, "[OpenMCP DNS Endpoint Controller] : ",err)
 				//return reconcile.Result{}, nil
 			}
 
 		} else {
 			// Error !
-			fmt.Println("[OpenMCP DNS Endpoint Controller] : ",err)
+			logLevel.KetiLog(0, "[OpenMCP DNS Endpoint Controller] : ",err)
 			//return reconcile.Result{}, nil
 		}
 	} else if errors.IsNotFound(err) {
@@ -125,7 +126,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		instanceEndpoint := OpenMCPEndpointDeleteObjectFromServiceDNS(req.Namespace,  req.Name)
 		err :=r.live.Delete(context.TODO(), instanceEndpoint)
 		if err == nil {
-			fmt.Println("[OpenMCP DNS Endpoint Controller] : Deleted '", req.Name+"'")
+			logLevel.KetiLog(0, "[OpenMCP DNS Endpoint Controller] : Deleted '", req.Name+"'")
 			//return reconcile.Result{}, nil
 		}
 
@@ -143,7 +144,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		instanceOpenMCPIngress := &resketiv1alpha1.OpenMCPIngress{}
 		err = r.live.Get(context.TODO(), req.NamespacedName, instanceOpenMCPIngress)
 		if err != nil {
-			fmt.Println("[OpenMCP DNS Endpoint Controller] : ",err)
+			logLevel.KetiLog(0, "[OpenMCP DNS Endpoint Controller] : ",err)
 		}
 
 		domains := []string{}
@@ -163,7 +164,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			instanceEndpoint := OpenMCPEndpointUpdateObjectFromIngressDNS(instanceEndpoint, instanceIngressRecord, req.Namespace,  req.Name, domains)
 			err = r.live.Update(context.TODO(), instanceEndpoint)
 			if err != nil {
-				fmt.Println("[OpenMCP DNS Endpoint Controller] : ",err)
+				logLevel.KetiLog(0, "[OpenMCP DNS Endpoint Controller] : ",err)
 				//return reconcile.Result{}, nil
 			}
 		} else if errors.IsNotFound(err) {
@@ -171,13 +172,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			instanceEndpoint := OpenMCPEndpointCreateObjectFromIngressDNS(instanceIngressRecord, req.Namespace,  req.Name, domains)
 			err = r.live.Create(context.TODO(), instanceEndpoint)
 			if err != nil {
-				fmt.Println("[OpenMCP DNS Endpoint Controller] : ",err)
+				logLevel.KetiLog(0, "[OpenMCP DNS Endpoint Controller] : ",err)
 				//return reconcile.Result{}, nil
 			}
 
 		} else {
 			// Error !
-			fmt.Println("[OpenMCP DNS Endpoint Controller] : ",err)
+			logLevel.KetiLog(0, "[OpenMCP DNS Endpoint Controller] : ",err)
 			//return reconcile.Result{}, nil
 		}
 	} else if errors.IsNotFound(err) {
@@ -186,7 +187,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		instanceEndpoint := OpenMCPEndpointDeleteObjectFromIngressDNS(req.Namespace,  req.Name)
 		err :=r.live.Delete(context.TODO(), instanceEndpoint)
 		if err == nil {
-			fmt.Println("[OpenMCP DNS Endpoint Controller] : Deleted '", req.Name+"'")
+			logLevel.KetiLog(0, "[OpenMCP DNS Endpoint Controller] : Deleted '", req.Name+"'")
 			//return reconcile.Result{}, nil
 		}
 

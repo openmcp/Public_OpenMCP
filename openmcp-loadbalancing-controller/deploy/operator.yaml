@@ -15,17 +15,17 @@ spec:
     spec:
       serviceAccountName: loadbalancing-controller
       containers:
-        - name: loadbalancing-controller
+        - name: openmcp-loadbalancing-controller
           # Replace this with the built image name
           image: atyx300/openmcp-loadbalancing-controller:v0.0.1
           command:
-          - loadbalancing-controller
+          - openmcp-loadbalancing-controller
           imagePullPolicy: Always
           env:
             - name: GRPC_SERVER
-              value: REPLACE_GRPCIP
+              value: "10.0.3.20"
             - name: GRPC_PORT
-              value: REPLACE_GRPCPORT
+              value: "32050"
             - name: WATCH_NAMESPACE
               #value: ""
               valueFrom:

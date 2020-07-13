@@ -42,7 +42,7 @@ func main() {
 		cm := clusterManager.NewClusterManager()
 
 		host_ctx := "openmcp"
-		namespace := "kch"
+		namespace := "openmcp"
 
 		host_cfg := cm.Host_config
 		//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})

@@ -19,7 +19,6 @@ package main
 import (
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
-	"fmt"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"log"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/controller/dnsEndpoint"
@@ -28,11 +27,15 @@ import (
 	"openmcp/openmcp/openmcp-dns-controller/pkg/controller/ingressDNS"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/controller/serviceDNS"
 	"openmcp/openmcp/util/clusterManager"
+	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
 )
 
 func main() {
+	logLevel.KetiLogInit()
+
 	for {
+
 		cm := clusterManager.NewClusterManager()
 
 		host_ctx := "openmcp"
@@ -55,27 +58,31 @@ func main() {
 
 		cont_serviceDNS, err := serviceDNS.NewController(live, ghosts, namespace)
 		if err != nil {
-			fmt.Println("err New Controller - ServiceDNS", err)
+			logLevel.KetiLog(0, "err New Controller - ServiceDNS", err)
 		}
 		cont_domain, err := domain.NewController(live, ghosts, namespace)
 		if err != nil {
-			fmt.Println("err New Controller - Domain", err)
+			logLevel.KetiLog(0, "err New Controller - Domain", err)
 		}
 		cont_ingressDNS, err := ingressDNS.NewController(live, ghosts, namespace)
 		if err != nil {
-			fmt.Println("err New Controller - IngressDNS", err)
+			logLevel.KetiLog(0, "err New Controller - IngressDNS", err)
 		}
 		cont_dnsEndpoint, err := dnsEndpoint.NewController(live, ghosts, namespace)
 		if err != nil {
-			fmt.Println("err New Controller - DNSEndpoint", err)
+			logLevel.KetiLog(0, "err New Controller - DNSEndpoint", err)
 		}
 		cont_externalDNS, err := externalDNS.NewController(live, ghosts, namespace)
 		if err != nil {
-			fmt.Println("err New Controller - ExternalDNS", err)
+			logLevel.KetiLog(0, "err New Controller - ExternalDNS", err)
 		}
 		cont_reshape, err := reshape.NewController(live, ghosts, namespace)
 		if err != nil {
-			fmt.Println("err New Controller - Reshape", err)
+			logLevel.KetiLog(0, "err New Controller - Reshape", err)
+		}
+		cont_logLevel, err := logLevel.NewController(live, ghosts, namespace)
+		if err != nil {
+			logLevel.KetiLog(0, "err New Controller - logLevel", err)
 		}
 
 		m := manager.New()
@@ -85,6 +92,7 @@ func main() {
 		m.AddController(cont_dnsEndpoint)
 		m.AddController(cont_externalDNS)
 		m.AddController(cont_reshape)
+		m.AddController(cont_logLevel)
 
 		stop := reshape.SetupSignalHandler()
 		//stop := signals.SetupSignalHandler()

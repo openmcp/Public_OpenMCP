@@ -21,15 +21,15 @@ import (
 
 	"k8s.io/klog"
 
-	"openmcp/openmcp/openmcp-metric-collector/member/pkg/stats"
-	"openmcp/openmcp/openmcp-metric-collector/member/pkg/storage"
 	"k8s.io/apimachinery/pkg/api/resource"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"openmcp/openmcp/openmcp-metric-collector/member/pkg/stats"
+	"openmcp/openmcp/openmcp-metric-collector/member/pkg/storage"
 )
 
 func DecodeBatch(summary *stats.Summary) (*storage.MetricsBatch, error) {
-	//fmt.Println("Func DecodeBatch Called")
-	fmt.Println("Data Decoding Summary to MetricsBatch Structure")
+	klog.V(0).Info("Decode Start")
+	//klog.V(0).Info("Data Decoding Summary to MetricsBatch Structure")
 	res := &storage.MetricsBatch{
 		IP:   summary.IP,
 		Node: storage.NodeMetricsPoint{},
@@ -43,7 +43,7 @@ func DecodeBatch(summary *stats.Summary) (*storage.MetricsBatch, error) {
 		// if we had errors providing node metrics, discard the data point
 		// so that we don't incorrectly report metric values as zero.
 	}
-	fmt.Println("Node Decoding Completed")
+	klog.V(0).Info("Node Decoding Completed")
 
 	num := 0
 	for _, pod := range summary.Pods {
@@ -61,12 +61,14 @@ func DecodeBatch(summary *stats.Summary) (*storage.MetricsBatch, error) {
 		num++
 	}
 	res.Pods = res.Pods[:num]
-	fmt.Println("Pod Decoding Completed")
+	klog.V(0).Info("Pod Decoding Completed")
+	klog.V(0).Info("=> CPUUsageNanoCores, MemoryUsageBytes, MemoryAvailableBytes, MemoryWorkingSetBytes, NetworkRxBytes, NetworkTxBytes, FsAvailableBytes, FsCapacityBytes, FsUsedBytes")
+
 	return res, utilerrors.NewAggregate(errs)
 }
 
 func decodeNodeStats(nodeStats *stats.NodeStats, target *storage.NodeMetricsPoint) []error {
-	fmt.Println("Func decodeNodeStats Called")
+	//klog.V(0).Info("Func decodeNodeStats Called")
 	timestamp, err := getScrapeTimeNode(nodeStats.CPU, nodeStats.Memory, nodeStats.Network, nodeStats.Fs)
 	if err != nil {
 		// if we can't get a timestamp, assume bad data in general
@@ -98,7 +100,7 @@ func decodeNodeStats(nodeStats *stats.NodeStats, target *storage.NodeMetricsPoin
 }
 
 func decodePodStats(podStats *stats.PodStats, target *storage.PodMetricsPoint) []error {
-	fmt.Println("Func decodePodStats Called")
+	// klog.V(0).Info("Func decodePodStats Called")
 
 	timestamp, err := getScrapeTimePod(podStats.CPU, podStats.Memory)
 	if err != nil {
@@ -198,7 +200,7 @@ func decodeFs(target *storage.MetricsPoint, FsStats *stats.FsStats) error {
 	return nil
 }
 func getScrapeTimePod(cpu *stats.CPUStats, memory *stats.MemoryStats) (time.Time, error) {
-	fmt.Println("Func getScrapeTime Called")
+	//klog.V(0).Info("Func getScrapeTime Called")
 	// Ensure we get the earlier timestamp so that we can tell if a given data
 	// point was tainted by pod initialization.
 
@@ -218,7 +220,7 @@ func getScrapeTimePod(cpu *stats.CPUStats, memory *stats.MemoryStats) (time.Time
 	return *earliest, nil
 }
 func getScrapeTimeNode(cpu *stats.CPUStats, memory *stats.MemoryStats, network *stats.NetworkStats, fs *stats.FsStats) (time.Time, error) {
-	fmt.Println("Func getScrapeTime Called")
+	//klog.V(0).Info("Func getScrapeTime Called")
 	// Ensure we get the earlier timestamp so that we can tell if a given data
 	// point was tainted by pod initialization.
 

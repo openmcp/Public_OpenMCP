@@ -478,7 +478,8 @@ func initRegistry() {
 
 		config, _ := util.BuildClusterConfig(&cluster, cm.Host_client, cm.Fed_namespace)
 		clientset, _ := kubernetes.NewForConfig(config)
-		nodes, err := clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+		//nodes, err := clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+                nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
 
 		if err != nil {
 			fmt.Println(err)

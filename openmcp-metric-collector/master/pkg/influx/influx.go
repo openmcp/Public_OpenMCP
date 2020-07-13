@@ -3,6 +3,7 @@ package influx
 import (
 	"fmt"
 	"github.com/influxdata/influxdb/client/v2"
+	"k8s.io/klog"
 	"log"
 	"openmcp/openmcp/openmcp-metric-collector/master/pkg/protobuf"
 	"time"
@@ -46,7 +47,7 @@ func (in *Influx) CreateMeasurements() {
 	}
 }
 func (in *Influx) SaveMetrics(clusterName string, data *protobuf.Collection) {
-
+	klog.V(0).Info("[Save InfluxDB] ClusterName: '", clusterName,"'")
 	bp, _ := client.NewBatchPoints(client.BatchPointsConfig{
 		//Precision:        "rfc3339", // yyyy-MM-ddTHH:mm:ss
 		Database:         "Metrics",

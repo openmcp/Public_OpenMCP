@@ -1,11 +1,11 @@
 FROM registry.access.redhat.com/ubi7/ubi-minimal:latest
 
-ENV OPERATOR=/usr/local/bin/loadbalancing-controller \
+ENV OPERATOR=/usr/local/bin/openmcp-loadbalancing-controller \
     USER_UID=1001 \
-    USER_NAME=loadbalancing-controller
+    USER_NAME=openmcp-loadbalancing-controller
 
 # install operator binary
-COPY _output/bin/loadbalancing-controller ${OPERATOR}
+COPY _output/bin/openmcp-loadbalancing-controller ${OPERATOR}
 
 COPY bin /usr/local/bin
 COPY GeoLite2-City.mmdb /root/

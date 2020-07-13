@@ -24,13 +24,14 @@ import (
 	ketiv1alpha1 "openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/mypdns"
 	"openmcp/openmcp/util/clusterManager"
+	"openmcp/openmcp/util/controller/logLevel"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var cm *clusterManager.ClusterManager
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
-	fmt.Println(">>> externalDNS NewController()")
+	logLevel.KetiLog(0, ">>> externalDNS NewController()")
 	cm = clusterManager.NewClusterManager()
 
 	liveclient, err := live.GetDelegatingClient()
@@ -81,13 +82,13 @@ var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	i += 1
-	fmt.Println("********* [ OpenMCP External DNS", i, "] *********")
-	fmt.Println(req.Context, " / ", req.Namespace, " / ", req.Name)
+	logLevel.KetiLog(0, "********* [ OpenMCP External DNS", i, "] *********")
+	logLevel.KetiLog(0, req.Context, " / ", req.Namespace, " / ", req.Name)
 	//	cm := clusterManager.NewClusterManager()
 
 	pdnsClient, err := mypdns.PdnsNewClient()
 	if err != nil {
-		fmt.Println(err)
+		logLevel.KetiLog(0, err)
 	}
 
 	// Fetch the Sync instance
@@ -98,7 +99,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	if err != nil && errors.IsNotFound(err){
 		err = mypdns.DeleteZone(pdnsClient, r.live)
 		if err != nil {
-			fmt.Println("[OpenMCP External DNS Controller] : Delete?  ",err)
+			logLevel.KetiLog(0, "[OpenMCP External DNS Controller] : Delete?  ",err)
 		}
 		return reconcile.Result{}, nil
 	}
@@ -115,18 +116,18 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 		//zone, err := mypdns.GetZone(pdnsClient, domain)
 		//if err != nil {
-		//	fmt.Println("[OpenMCP External DNS Controller] : '", domain + "' Not Found")
+		//	logLevel.KetiLog(0, "[OpenMCP External DNS Controller] : '", domain + "' Not Found")
 		//}
 		//if err == nil {
 		//	// Already Exist
 		//	err = mypdns.UpdateZoneWithRecords(pdnsClient, *zone, domain, instance.Spec.Endpoints)
 		//	if err != nil {
-		//		fmt.Println("[OpenMCP External DNS Controller] : UpdateZone?  ",err)
+		//		logLevel.KetiLog(0, "[OpenMCP External DNS Controller] : UpdateZone?  ",err)
 		//	}
 		//} else {
 		//	err = mypdns.CreateZoneWithRecords(pdnsClient, domain, instance.Spec.Endpoints)
 		//	if err != nil {
-		//		fmt.Println("[OpenMCP External DNS Controller] : CreateZone? ",err)
+		//		logLevel.KetiLog(0, "[OpenMCP External DNS Controller] : CreateZone? ",err)
 		//	}
 		//}
 	}

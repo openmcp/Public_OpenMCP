@@ -3,9 +3,9 @@ package customMetrics
 import (
 	"bytes"
 	"crypto/tls"
-	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog"
 	"net/http"
 	//"bytes"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/storage"
@@ -36,7 +36,7 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 				for _, value := range podList {
 					if value.Name != "" {
 						if strings.HasPrefix(value.Name, replicaset.Name) {
-							//fmt.Println(value.Name, "  ", replicaset.Name)
+							//klog.V(0).Info(value.Name, "  ", replicaset.Name)
 							check_exist += 1
 
 							tmp_cpu, _ := strconv.Atoi(value.CPUUsageNanoCores.String()[:len(value.CPUUsageNanoCores.String())-1])
@@ -56,11 +56,11 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 						}
 
 					} else {
-						fmt.Println("err : value.Name nil")
+						klog.V(0).Info("err : value.Name nil")
 					}
 				}
 			} else {
-				fmt.Println("Fail : Cannot load podList")
+				klog.V(0).Info("Fail : Cannot load podList")
 			}
 
 			tr := &http.Transport{
@@ -71,7 +71,7 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 			if check_exist > 0 {
 				namespace := replicaset.Namespace
 				name := replicaset.Name[:strings.LastIndexAny(replicaset.Name, "-")]
-				//fmt.Println(name, " ",sum_cpuusage," ",sum_cpuusage/check_exist, " ", strconv.Itoa(sum_cpuusage/check_exist))
+				//klog.V(0).Info(name, " ",sum_cpuusage," ",sum_cpuusage/check_exist, " ", strconv.Itoa(sum_cpuusage/check_exist))
 
 				PostData(host, token, client, namespace, name, "CpuUsage", strconv.Itoa(sum_cpuusage/check_exist)+"n")
 				PostData(host, token, client, namespace, name, "MemoryUsage", strconv.Itoa(sum_memoryusage/check_exist)+"Ki")
@@ -82,7 +82,7 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 
 		}
 	} else {
-		fmt.Println("Fail : Cannot load RS ", err)
+		klog.V(0).Info("Fail : Cannot load RS ", err)
 	}
 }
 
@@ -106,11 +106,11 @@ func AddToPodCustomMetricServer(data *storage.Collection, token string, host str
 					PostData(host, token, client, namespace, name, "FsUsage", value.FsUsedBytes.String())
 
 				} else {
-					fmt.Println("Fail : Cannot load resources")
+					klog.V(0).Info("Fail : Cannot load resources")
 				}
 			}
 		} else {
-			fmt.Println("Fail : Cannot load Pod list")
+			klog.V(0).Info("Fail : Cannot load Pod list")
 		}
 	}
 }
@@ -120,36 +120,36 @@ func PostData(host string, token string, client *http.Client, resourceNamespace 
 	baselink := "/api/v1/namespaces/custom-metrics/services/custom-metrics-apiserver:http/proxy/"
 	basepath := "write-metrics"
 	resourceKind := "pods"
-	//fmt.Println(resourceMetricValue)
+	//klog.V(0).Info(resourceMetricValue)
 	//valueString := strconv.FormatFloat(resourceMetricValue, 'e', 4, 64)
 
 	url := "" + apiserver + baselink + basepath + "/namespaces/" + resourceNamespace + "/" + resourceKind + "/" + resourceName + "/" + resourceMetricName
 	buff := bytes.NewBufferString(resourceMetricValue)
 
-	//fmt.Println("value : ",buff)
+	//klog.V(0).Info("value : ",buff)
 
 	/*data := url1.Values{}
 	data.Set("metrics", "111111")
-	fmt.Println("value : ",strings.NewReader(data.Encode()))*/
+	klog.V(0).Info("value : ",strings.NewReader(data.Encode()))*/
 
 	req, err := http.NewRequest("POST", os.ExpandEnv(url), buff)
 
 	if err != nil {
 		// handle err
-		fmt.Println("Fail NewRequest")
+		klog.V(0).Info("Fail NewRequest")
 	}
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", os.ExpandEnv("Bearer "+token))
 
-	//fmt.Println("req", req)
+	//klog.V(0).Info("req", req)
 
 	resp, err := client.Do(req)
 	if err != nil {
 		// handle err
-		fmt.Println("Fail POST")
+		klog.V(0).Info("Fail POST")
 	} else {
-		//fmt.Println("Success POST")
+		//klog.V(0).Info("Success POST")
 	}
 	defer resp.Body.Close()
 }

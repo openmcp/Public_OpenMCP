@@ -5,12 +5,14 @@ import (
 	"context"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/jinzhu/copier"
+	"k8s.io/klog"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/customMetrics"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/kubeletClient"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/protobuf"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/scrap"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/storage"
 	"openmcp/openmcp/util/clusterManager"
+	"openmcp/openmcp/util/controller/logLevel"
 
 	//"github.com/jinzhu/copier"
 
@@ -22,13 +24,11 @@ import (
 	//timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	//"github.com/jinzhu/copier"
 
-	//"context"
-	"fmt"
 	"time"
 )
 
 func convert(data *storage.Collection) *protobuf.Collection{
-	fmt.Println("Convert GRPC Data Structure")
+	klog.V(0).Infof( "Convert GRPC Data Structure")
 
 	grpc_data := &protobuf.Collection{}
 
@@ -55,12 +55,12 @@ func convert(data *storage.Collection) *protobuf.Collection{
 		}
 		grpc_data.Matricsbatchs[i].Node.MP = mp
 
-		//fmt.Println(grpc_data.Matricsbatchs[0].IP)
-		//fmt.Println(grpc_data.Matricsbatchs[0].Node.Name)
-		//fmt.Println(grpc_data.Matricsbatchs[0].Node.MP.Timestamp.String())
-		//fmt.Println(grpc_data.Matricsbatchs[0].Node.MP.Timestamp.Seconds)
-		//fmt.Println(grpc_data.Matricsbatchs[0].Node.MP.CpuUsage)
-		//fmt.Println(grpc_data.Matricsbatchs[0].Node.MP.MemoryUsage)
+		//klog.V(0).Infof( grpc_data.Matricsbatchs[0].IP)
+		//klog.V(0).Infof( grpc_data.Matricsbatchs[0].Node.Name)
+		//klog.V(0).Infof( grpc_data.Matricsbatchs[0].Node.MP.Timestamp.String())
+		//klog.V(0).Infof( grpc_data.Matricsbatchs[0].Node.MP.Timestamp.Seconds)
+		//klog.V(0).Infof( grpc_data.Matricsbatchs[0].Node.MP.CpuUsage)
+		//klog.V(0).Infof( grpc_data.Matricsbatchs[0].Node.MP.MemoryUsage)
 
 		podMetricsPoints := []*protobuf.PodMetricsPoint{}
 
@@ -93,12 +93,12 @@ func convert(data *storage.Collection) *protobuf.Collection{
 		}
 		grpc_data.Matricsbatchs[i].Pods = podMetricsPoints
 
-		//fmt.Println(grpc_data.Matricsbatchs[0].IP)
-		//fmt.Println(grpc_data.Matricsbatchs[0].Pods[0].Name)
-		//fmt.Println(grpc_data.Matricsbatchs[0].Pods[0].MP.Timestamp.String())
-		//fmt.Println(grpc_data.Matricsbatchs[0].Pods[0].MP.Timestamp.Seconds)
-		//fmt.Println(grpc_data.Matricsbatchs[0].Pods[0].MP.CpuUsage)
-		//fmt.Println(grpc_data.Matricsbatchs[0].Pods[0].MP.MemoryUsage)
+		//klog.V(0).Infof( grpc_data.Matricsbatchs[0].IP)
+		//klog.V(0).Infof( grpc_data.Matricsbatchs[0].Pods[0].Name)
+		//klog.V(0).Infof( grpc_data.Matricsbatchs[0].Pods[0].MP.Timestamp.String())
+		//klog.V(0).Infof( grpc_data.Matricsbatchs[0].Pods[0].MP.Timestamp.Seconds)
+		//klog.V(0).Infof( grpc_data.Matricsbatchs[0].Pods[0].MP.CpuUsage)
+		//klog.V(0).Infof( grpc_data.Matricsbatchs[0].Pods[0].MP.MemoryUsage)
 
 	}
 
@@ -106,11 +106,16 @@ func convert(data *storage.Collection) *protobuf.Collection{
 	return grpc_data
 
 }
+var default_period int64 = 5
 func main(){
+	logLevel.KetiLogInit()
+	
 	SERVER_IP := os.Getenv("GRPC_SERVER")
 	SERVER_PORT := os.Getenv("GRPC_PORT")
 
 	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
+
+	period_int64 := default_period // default
 
 	for {
 		cm := clusterManager.NewClusterManager()
@@ -119,39 +124,41 @@ func main(){
 		kubeletClient, _ := kubeletClient.NewKubeletClient()
 		data, errs := scrap.Scrap(cm.Host_config, kubeletClient, nodes)
 		if errs != nil {
-			fmt.Println(errs)
+			klog.V(0).Info( errs)
 		}
 
 		grpc_data := convert(data)
 
-		fmt.Println("GRPC Data Send")
+		klog.V(0).Info( "GRPC Data Send")
 		r, err := grpcClient.SendMetrics(context.TODO(), grpc_data)
 		if err != nil {
-			fmt.Printf("could not connect : %v", err)
+			klog.V(0).Info( "could not connect : ", err)
+		} else {
+			//period_int64 := r.Tick
+			_ = data
+
+
+			token := cm.Host_config.BearerToken
+			host := cm.Host_config.Host
+			client := cm.Host_kubeClient
+			//klog.V(0).Infof( "host: ", host)
+			//klog.V(0).Infof( "token: ", token)
+			//klog.V(0).Infof( "client: ", client)
+
+			customMetrics.AddToPodCustomMetricServer(data, token, host)
+			customMetrics.AddToDeployCustomMetricServer(data, token, host, client)
+
+			period_int64 = r.Tick
 		}
-		//period_int64 := r.Tick
-		_ = data
 
-
-		token := cm.Host_config.BearerToken
-		host := cm.Host_config.Host
-		client := cm.Host_kubeClient
-		//fmt.Println("host: ", host)
-		//fmt.Println("token: ", token)
-		//fmt.Println("client: ", client)
-
-		customMetrics.AddToPodCustomMetricServer(data, token, host)
-		customMetrics.AddToDeployCustomMetricServer(data, token, host, client)
-
-		period_int64 := r.Tick
 
 		if period_int64 > 0 && err == nil {
 
-			fmt.Println("period : ",time.Duration(period_int64))
+			klog.V(0).Info( "period : ",time.Duration(period_int64) * time.Second)
 			time.Sleep(time.Duration(period_int64) * time.Second)
 		}else {
-			fmt.Println("--- Fail to get period")
-			time.Sleep(5 * time.Second)
+			klog.V(0).Info( "--- Fail to get period")
+			time.Sleep(time.Duration(default_period) * time.Second)
 		}
 	}
 }

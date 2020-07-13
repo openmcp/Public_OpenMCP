@@ -2,6 +2,7 @@ package main
 
 import (
 	"openmcp/openmcp/openmcp-metric-collector/master/pkg/metricCollector"
+	"openmcp/openmcp/util/controller/logLevel"
 	"os"
 
 	"runtime"
@@ -12,6 +13,8 @@ const (
 )
 
 func main() {
+	logLevel.KetiLogInit()
+
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	INFLUX_IP := os.Getenv("INFLUX_IP")
 	INFLUX_PORT := os.Getenv("INFLUX_PORT")
