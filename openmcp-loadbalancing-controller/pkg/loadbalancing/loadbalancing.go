@@ -57,6 +57,7 @@ func extractIP(target string) (string, error) {
 	ip, _ := tmp[0], tmp[1]
 	fmt.Println("IP : " + ip)
         ip = "202.131.30.11"
+	fmt.Println(ip)
 	return ip, nil
 }
 
@@ -89,13 +90,18 @@ func extractIP(target string) (string, error) {
 //	return country, continent
 //}
 
+var SERVER_IP = os.Getenv("GRPC_SERVER")
+var SERVER_PORT = os.Getenv("GRPC_PORT")
+var grpcClient = protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
+
+
 func Score(clusters []string, tip string, openmcpIP string) map[string]float64 {
 	fmt.Println("*****Resource Score*****")
-	SERVER_IP := openmcpIP
+//	SERVER_IP := openmcpIP
 	//fmt.Println(SERVER_IP2)
-	//SERVER_IP :="10.0.3.30"
-	SERVER_PORT := os.Getenv("GRPC_PORT")
-	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
+	//SERVER_IP :="10.0.3.20"
+//	SERVER_PORT := os.Getenv("GRPC_PORT")
+//	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
 	lbInfo := &protobuf.LBInfo{
 		ClusterNameList: clusters,
@@ -105,10 +111,10 @@ func Score(clusters []string, tip string, openmcpIP string) map[string]float64 {
 	response, err := grpcClient.SendLBAnalysis(context.TODO(), lbInfo)
 	if err != nil {
 		fmt.Println(err)
+                return nil
 	}
 	fmt.Println(response)
 	fmt.Println(response.ScoreMap)
-
 	//score := map[string]float64{}
 	//for _, cluster := range clusters {
 	//	cScore, _ := creg.ResourceScore(cluster)
@@ -144,14 +150,21 @@ func scoring(clusters []string, tip string, openmcpIP string) string {
 	}
 	//gscore := geoScore(clusters, tcountry, tcontinent, creg)
 	score := Score(clusters, tip, openmcpIP)
-	cluster := endpointCluster(score)
+        var cluster string
+        if score == nil {
+             cluster = clusters[0]
+        } else {
+	     cluster = endpointCluster(score)
+        }
 	return cluster
 }
 
 //geo score, resource score, hop score를 합쳐서 비율 계산
 //난수를 생성하여 비율에 속하는 클러스터를 엔드포인트로 선정
 func endpointCluster(score map[string]float64) string {
+	fmt.Println("asfdsadfsadf")
 	fmt.Println("*****Endpoint Cluster*****")
+	fmt.Println("Endpoint")
 	//geoPolicyWeight := 1.0
 	//resourcePolicyWeight := 1.0
 	totalScore := 0.0
@@ -164,8 +177,8 @@ func endpointCluster(score map[string]float64) string {
 		totalScore = totalScore + sumScore[cluster]
 	}
 	rand.Seed(time.Now().UnixNano())
-	n := rand.Float64()
-	fmt.Println("***********test*************")
+	n := rand.Float64() * totalScore
+	fmt.Println("*******test***************")
 	fmt.Println(n)
 	checkScore := 0.0
 	flag := true
@@ -174,7 +187,8 @@ func endpointCluster(score map[string]float64) string {
 			endpoint = cluster
 			flag = false
 		}
-		checkScore = checkScore + (sumScore[cluster] / totalScore)
+		//checkScore = checkScore + (sumScore[cluster] / totalScore)
+		checkScore = checkScore + sumScore[cluster]
 		if n <= checkScore {
 			endpoint = cluster
 			return endpoint
