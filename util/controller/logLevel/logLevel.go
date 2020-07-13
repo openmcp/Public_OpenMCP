@@ -12,8 +12,8 @@ import (
 	"k8s.io/klog"
 	"openmcp/openmcp/openmcp-resource-controller/apis"
 	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
-	"regexp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strconv"
 )
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
@@ -55,10 +55,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	if req.Namespace == "openmcp" && req.Name == "log-version" {
 		prevLogLevel := logLevel
 		logLevel = r.getLogLevel()
-		klog.Info("LogLevel Changed, Used LogLevel (" + prevLogLevel + " -> " + logLevel + ")")
+		if prevLogLevel != logLevel {
+			klog.Info("LogLevel Changed, Used LogLevel (" + prevLogLevel + " -> " + logLevel + ")")
 
-		flag.Set("v", logLevel)
-		flag.Parse()
+			flag.Set("v", logLevel)
+			flag.Parse()
+		}
+
 
 	}
 
@@ -80,12 +83,21 @@ func (r *reconciler) getLogLevel() string {
 	}
 	if instance.Spec.PolicyStatus == "Enabled" {
 		for _, policy := range instance.Spec.Template.Spec.Policies {
+			//if policy.Type == "Version" && len(policy.Value) == 1 {
+			//	matched, _ := regexp.MatchString("[0-9]", policy.Value[0])
+			//	if matched && len(policy.Value[0]) == 1 {
+			//		return policy.Value[0]
+			//	}
+			//	klog.Info("Policy 'log-version' Value must be [0-9], Use Default LogLevel (0)")
+			//	return "0"
+			//}
 			if policy.Type == "Version" && len(policy.Value) == 1 {
-				matched, _ := regexp.MatchString("[0-9]", policy.Value[0])
-				if matched && len(policy.Value[0]) == 1 {
-					return policy.Value[0]
+				logLevelString := policy.Value[0]
+				logLevelInt, err := strconv.Atoi(logLevelString)
+				if err == nil && logLevelInt >= -1 && logLevelInt <= 9 {
+					return logLevelString
 				}
-				klog.Info("Policy 'log-version' Value must be [0-9], Use Default LogLevel (0)")
+				klog.Info("Policy 'log-version' Value must be [-1~9], Use Default LogLevel (0)")
 				return "0"
 			}
 		}
@@ -97,4 +109,10 @@ func (r *reconciler) getLogLevel() string {
 		return "0"
 	}
 
+}
+
+func KetiLogInit() {
+	klog.InitFlags(nil)
+	flag.Set("v", "0")
+	flag.Parse()
 }

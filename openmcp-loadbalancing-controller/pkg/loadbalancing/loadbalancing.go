@@ -56,6 +56,7 @@ func extractIP(target string) (string, error) {
 	tmp := strings.Split(target, ":")
 	ip, _ := tmp[0], tmp[1]
 	fmt.Println("IP : " + ip)
+        ip = "202.131.30.11"
 	return ip, nil
 }
 
@@ -164,6 +165,8 @@ func endpointCluster(score map[string]float64) string {
 	}
 	rand.Seed(time.Now().UnixNano())
 	n := rand.Float64()
+	fmt.Println("***********test*************")
+	fmt.Println(n)
 	checkScore := 0.0
 	flag := true
 	for cluster, _ := range sumScore {

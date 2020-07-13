@@ -107,53 +107,42 @@ var syncIndex int = 0
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	klog.V(4).Info("[OpenMCP Deployment] Function Called Reconcile")
 	i += 1
-	klog.V(4).Info("********* [", i, "] *********")
-	klog.V(4).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
-
-	//klog.Info("Test Log Default")
-	//klog.V(0).Info("Test Log Level 0")
-	//klog.V(1).Info("Test Log Level 1")
-	//klog.V(2).Info("Test Log Level 2")
-	//klog.V(3).Info("Test Log Level 3")
-	//klog.V(4).Info("Test Log Level 4")
 
 	cm := clusterManager.NewClusterManager()
 
 	// Fetch the OpenMCPDeployment instance
 	instance := &ketiv1alpha1.OpenMCPDeployment{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
-
-	fmt.Println("instance Name: ", instance.Name)
-	fmt.Println("instance Namespace : ", instance.Namespace)
+	klog.V(0).Info("Resource Get => [Name] : "+ instance.Name + " [Namespace]  : " + instance.Namespace)
 
 	if err != nil {
-		fmt.Println("1. Delete Detection")
+
 		if errors.IsNotFound(err) {
+			klog.V(0).Info("[Delete Detect]")
 			// ...TODO: multicluster garbage collector
 			// Until then...
-			fmt.Println("Delete Deployments ..Cluster")
-			//err := DeleteDeployments(cm, req.NamespacedName)
+			klog.V(0).Info("Delete Deployment of All Cluster")
 			err := r.DeleteDeploys(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
 
+			klog.V(0).Info("Service Notify Send")
 			r.ServiceNotifyAll(req.Namespace)
 
 			return reconcile.Result{}, err
 		}
-		fmt.Println("check2", err)
 		return reconcile.Result{}, err
 	}
 
 	if instance.Status.CreateSyncRequestComplete == false {
-		fmt.Println("2. Create Detection")
-		fmt.Println("SchedulingNeed : ", instance.Status.SchedulingNeed, "SchedulingComplete : ", instance.Status.SchedulingComplete)
+		klog.V(0).Info("[Create Detect]")
+		klog.V(0).Info("Create Deployment Start")
+		klog.V(0).Info("SchedulingNeed : ", instance.Status.SchedulingNeed, ", SchedulingComplete : ", instance.Status.SchedulingComplete)
 		if instance.Status.SchedulingNeed == false && instance.Status.SchedulingComplete == false {
-			fmt.Println("2. Create Detection - (1/3) Scheduling 요청")
+			klog.V(0).Info("Scheduling 요청 (SchedulingNeed false => true)")
 			instance.Status.SchedulingNeed = true
 
 			err := r.live.Status().Update(context.TODO(), instance)
 			if err != nil {
-				fmt.Println("Failed to update instance status", err)
-				fmt.Println("check16", err)
+				klog.V(0).Info("Failed to update instance status", err)
 				return reconcile.Result{}, err
 			}
 			return reconcile.Result{}, err
@@ -161,7 +150,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			//} else if instance.Status.SchedulingNeed == true && instance.Status.SchedulingComplete == false {
 		} else if instance.Status.SchedulingNeed == true && instance.Status.SchedulingComplete == false && strings.Compare(instance.Spec.Labels["test"], "yes") != 0 {
 			//temp
-			fmt.Println("2. Create Detection - (2/3) Scheduling 시작")
+			klog.V(0).Info("Local Scheduling을 시작합니다.(랜덤 스케줄링)")
+			klog.V(0).Info("Scheduling Controller와 연계하려면 Labels의 test항목을 no로 변경해주세요")
 			replicas := instance.Spec.Replicas
 
 			instance.Status.ClusterMaps = Scheduling(cm, replicas)
@@ -169,24 +159,22 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 			instance.Status.SchedulingNeed = false
 			instance.Status.SchedulingComplete = true
-
+			klog.V(0).Info("Scheduling 완료")
 			err := r.live.Status().Update(context.TODO(), instance)
 			if err != nil {
-				fmt.Println("Failed to update instance status", err)
-				fmt.Println("check4", err)
+				klog.V(0).Info("Failed to update instance status", err)
 				return reconcile.Result{}, err
 			}
 			return reconcile.Result{}, err
 
 		} else if instance.Status.SchedulingNeed == false && instance.Status.SchedulingComplete == true {
-			fmt.Println("2. Create Detection - (3/3) Deployment Sync 요청")
+			klog.V(0).Info("Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.")
 
 			sync_req_name := instance.Status.SyncRequestName
 
 			for _, cluster := range cm.Cluster_list.Items {
 
 				if instance.Status.ClusterMaps[cluster.Name] == 0 {
-					fmt.Println("continue")
 					continue
 				}
 				found := &appsv1.Deployment{}
@@ -198,35 +186,33 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					// TODO: Today
 
 					replica := instance.Status.ClusterMaps[cluster.Name]
-					fmt.Println("Cluster '"+cluster.Name+"' Deployed (", replica, " / ", instance.Status.Replicas, ")")
+
 					dep := r.deploymentForOpenMCPDeployment(req, instance, replica)
 					command := "create"
+					klog.V(0).Info("SyncResource Create (ClusterName : "+cluster.Name+", Command : "+ command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
 					sync_req_name, err = r.sendSync(dep, command, cluster.Name)
 					//err = cluster_client.Create(context.Background(), dep)
 					if err != nil {
-						fmt.Println("check3", err)
 						return reconcile.Result{}, err
 					}
 				}
 			}
-
+			klog.V(0).Info("Service Notify Send")
 			r.ServiceNotify(instance.Spec.Labels, instance.Namespace)
 
 			instance.Status.LastSpec = instance.Spec
 			instance.Status.CreateSyncRequestComplete = true
 			instance.Status.SyncRequestName = sync_req_name
-			fmt.Println("sync_req_name : ", sync_req_name)
+			klog.V(0).Info("sync_req_name : ", sync_req_name)
 
 			//instance.Status.LastUpdateTime = time.Now().Format(time.RFC3339)
-
+			klog.V(0).Info("Update Status")
 			err := r.live.Status().Update(context.TODO(), instance)
 			if err != nil {
-				fmt.Println("Failed to update instance status", err)
-				fmt.Println("check4", err)
+				klog.V(0).Info("Failed to update instance status", err)
 				return reconcile.Result{}, err
 			}
 
-			fmt.Println("check5", err)
 			return reconcile.Result{}, nil
 		}
 
@@ -234,10 +220,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	if !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec) {
 
-		fmt.Println("3. Update Detection")
+		klog.V(0).Info("[Update Detection]")
 		sync_req_name := instance.Status.SyncRequestName
 		if instance.Status.Replicas != instance.Spec.Replicas {
-			fmt.Println("Change Spec Replicas ! ReScheduling Start & Update Deployment")
+			klog.V(0).Info("Change Spec Replicas ! ReScheduling Start & Update Deployment")
 			cluster_replicas_map := ReScheduling(instance.Spec.Replicas, instance.Status.Replicas, instance.Status.ClusterMaps)
 
 			for _, cluster := range cm.Cluster_list.Items {
@@ -253,16 +239,15 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					if update_replica != 0 {
 						// Create !
 						command := "create"
+						klog.V(0).Info("SyncResource Create (ClusterName : "+cluster.Name+", Command : "+ command+", Replicas :", update_replica, " / ", instance.Status.Replicas, ")")
 						sync_req_name, err = r.sendSync(dep, command, cluster.Name)
 						//err = cluster_client.Create(context.Background(), dep)
 						if err != nil {
-							fmt.Println("check6", err)
 							return reconcile.Result{}, err
 						}
 					}
 
 				} else if err != nil {
-					fmt.Println("check7", err)
 					return reconcile.Result{}, err
 				} else {
 					// Already Exist Deployment.
@@ -270,20 +255,21 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 						// Delete !
 						//dep := &appsv1.Deployment{}
 						command := "delete"
+						klog.V(0).Info("SyncResource Create (ClusterName : "+cluster.Name+", Command : "+ command+", Replicas :", update_replica, " / ", instance.Status.Replicas, ")")
 						sync_req_name, err = r.sendSync(dep, command, cluster.Name)
+
 						//err = cluster_client.Delete(context.Background(), dep, req.Namespace, req.Name)
 
 						if err != nil {
-							fmt.Println("check8", err)
 							return reconcile.Result{}, err
 						}
 					} else {
 						// Update !
 						command := "update"
+						klog.V(0).Info("SyncResource Create (ClusterName : "+cluster.Name+", Command : "+ command+", Replicas :", update_replica, " / ", instance.Status.Replicas, ")")
 						sync_req_name, err = r.sendSync(dep, command, cluster.Name)
 						//err = cluster_client.Update(context.TODO(), dep)
 						if err != nil {
-							fmt.Println("check9", err)
 							return reconcile.Result{}, err
 						}
 
@@ -300,8 +286,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 			//err := r.live.Status().Update(context.TODO(), instance)
 			//if err != nil {
-			//	fmt.Println("Failed to update instance status", err)
-			//	fmt.Println("check10", err)
+			//	klog.V(0).Info("Failed to update instance status", err)
+			//	klog.V(0).Info("check10", err)
 			//	return reconcile.Result{}, err
 			//}
 
@@ -309,19 +295,19 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		if !reflect.DeepEqual(instance.Status.LastSpec.Labels, instance.Spec.Labels) {
 			last_label := instance.Status.LastSpec.Labels
 			current_label := instance.Spec.Labels
-
+			klog.V(0).Info("Label Changed")
+			klog.V(0).Info("Service Notify")
 			r.ServiceNotify(last_label, instance.Namespace)
 			r.ServiceNotify(current_label, instance.Namespace)
 		}
 
 		instance.Status.LastSpec = instance.Spec
 		instance.Status.SyncRequestName = sync_req_name
-		fmt.Println("sync_req_name : ", sync_req_name)
-
+		klog.V(0).Info("sync_req_name : ", sync_req_name)
+		klog.V(0).Info("Status Update")
 		err := r.live.Status().Update(context.TODO(), instance)
 		if err != nil {
-			fmt.Println("Failed to update instance status", err)
-			fmt.Println("check10", err)
+			klog.V(0).Info("Failed to update instance status", err)
 			return reconcile.Result{}, err
 		}
 		return reconcile.Result{}, err
@@ -339,7 +325,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 
 	// Check Deployment in cluster
-	fmt.Println("4. Check Clusters")
+	klog.V(0).Info("[Member Cluster Check Deployment]")
 	sync_req_name := instance.Status.SyncRequestName
 	for k, v := range instance.Status.ClusterMaps {
 		cluster_name := k
@@ -354,13 +340,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 		if err != nil && errors.IsNotFound(err) {
 			// Delete Deployment Detected
-			fmt.Println("Cluster '"+cluster_name+"' ReDeployed => ", replica)
+			klog.V(0).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
 			dep := r.deploymentForOpenMCPDeployment(req, instance, replica)
 			command := "create"
+			klog.V(0).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+ command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
 			sync_req_name, err = r.sendSync(dep, command, cluster_name)
 			//err = cluster_client.Create(context.Background(), dep)
 			if err != nil {
-				fmt.Println("check11", err)
 				return reconcile.Result{}, err
 			}
 
@@ -368,16 +354,15 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	}
 	instance.Status.SyncRequestName = sync_req_name
-	fmt.Println("sync_req_name : ", sync_req_name)
+	klog.V(0).Info("sync_req_name : ", sync_req_name)
 
 	err = r.live.Status().Update(context.TODO(), instance)
 	if err != nil {
-		fmt.Println("Failed to update instance status", err)
-		fmt.Println("check10", err)
+		klog.V(0).Info("Failed to update instance status", err)
 		return reconcile.Result{}, err
 	}
 
-	fmt.Println("check12", err)
+	klog.V(0).Info("check12", err)
 	return reconcile.Result{}, nil // err
 }
 func (r *reconciler) DeleteDeploys(cm *clusterManager.ClusterManager, name string, namespace string) error {
@@ -394,7 +379,7 @@ func (r *reconciler) DeleteDeploys(cm *clusterManager.ClusterManager, name strin
 		},
 		Spec: appsv1.DeploymentSpec{},
 	}
-	fmt.Println("Delete Check ", dep.Name, dep.Namespace)
+	klog.V(0).Info("Delete Check ", dep.Name, dep.Namespace)
 	for _, cluster := range cm.Cluster_list.Items {
 		command := "delete"
 		_, err := r.sendSync(dep, command, cluster.Name)
@@ -421,10 +406,10 @@ func (r *reconciler) sendSync(dep *appsv1.Deployment, command string, clusterNam
 			Template:    *dep,
 		},
 	}
-	fmt.Println("Delete Check2 ", s.Spec.Template.(appsv1.Deployment).Name, s.Spec.Template.(appsv1.Deployment).Namespace)
+	klog.V(0).Info("Delete Check2 ", s.Spec.Template.(appsv1.Deployment).Name, s.Spec.Template.(appsv1.Deployment).Namespace)
 
 	err := r.live.Create(context.TODO(), s)
-	fmt.Println(s.Name)
+	klog.V(0).Info(s.Name)
 	return s.Name, err
 
 }
@@ -464,7 +449,7 @@ func (r *reconciler) ServiceNotifyAll(namespace string) error {
 	r.live.List(context.TODO(), osvc_list, listOptions)
 	for _, osvc := range osvc_list.Items {
 
-		fmt.Println("->", osvc.Name, " notify !")
+		klog.V(0).Info("->", osvc.Name, " notify !")
 		osvc.Status.ChangeNeed = true
 		err := r.live.Status().Update(context.TODO(), &osvc)
 		if err != nil {
@@ -475,7 +460,7 @@ func (r *reconciler) ServiceNotifyAll(namespace string) error {
 	return nil
 }
 func (r *reconciler) deploymentForOpenMCPDeployment(req reconcile.Request, m *ketiv1alpha1.OpenMCPDeployment, replica int32) *appsv1.Deployment {
-	fmt.Println("[CHECK] deploymentForOpenMCPDeployment")
+	klog.V(0).Info("[CHECK] deploymentForOpenMCPDeployment")
 	dep := &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Deployment",
@@ -509,18 +494,18 @@ func DeleteDeployments(cm *clusterManager.ClusterManager, nsn types.NamespacedNa
 		err := cluster_client.Get(context.Background(), dep, nsn.Namespace, nsn.Name)
 		if err != nil && errors.IsNotFound(err) {
 			// all good
-			fmt.Println("Not Found")
+			klog.V(0).Info("Not Found")
 			continue
 		}
 		if !isInObject(dep, "OpenMCPDeployment") {
 			continue
 		}
-		fmt.Println(cluster.Name, " Delete Start")
+		klog.V(0).Info(cluster.Name, " Delete Start")
 		err = cluster_client.Delete(context.Background(), dep, nsn.Namespace, nsn.Name)
 		if err != nil {
 			return err
 		}
-		fmt.Println(cluster.Name, "Delete Complete")
+		klog.V(0).Info(cluster.Name, "Delete Complete")
 	}
 	return nil
 
@@ -544,7 +529,7 @@ func Scheduling(cm *clusterManager.ClusterManager, replicas int32) map[string]in
 		}
 		for k, v := range joined_cluster.Labels {
 			if k == "openmcp" && v == "true" {
-				fmt.Println("Scheduling Except Cluster !! Include OpenMCP Label : ", k, v)
+				klog.V(0).Info("Scheduling Except Cluster !! Include OpenMCP Label : ", k, v)
 				except = true
 				break
 			}
@@ -568,10 +553,10 @@ func Scheduling(cm *clusterManager.ClusterManager, replicas int32) map[string]in
 	}
 	sort.Strings(keys)
 
-	fmt.Println("Scheduling Result: ")
+	klog.V(0).Info("Scheduling Result: ")
 	for _, k := range keys {
 		v := cluster_replicas_map[k]
-		fmt.Println("  ", k, ": ", v)
+		klog.V(0).Info("  ", k, ": ", v)
 	}
 	return cluster_replicas_map
 
@@ -594,7 +579,7 @@ func ReScheduling(spec_replicas int32, status_replicas int32, status_cluster_rep
 
 	for remain_replica != 0 {
 		cluster_len := len(result_cluster_replicas_map)
-		fmt.Println("cluster_len : ", cluster_len)
+		klog.V(0).Info("cluster_len : ", cluster_len)
 		selected_cluster_target_index := rand.Intn(cluster_len)
 
 		target_key := keyOf(result_cluster_replicas_map, selected_cluster_target_index)
@@ -614,11 +599,11 @@ func ReScheduling(spec_replicas int32, status_replicas int32, status_cluster_rep
 	}
 	sort.Strings(keys)
 
-	fmt.Println("ReScheduling Result: ")
+	klog.V(0).Info("ReScheduling Result: ")
 	for _, k := range keys {
 		v := result_cluster_replicas_map[k]
 		prev_v := status_cluster_replicas_map[k]
-		fmt.Println("  ", k, ": ", prev_v, " -> ", v)
+		klog.V(0).Info("  ", k, ": ", prev_v, " -> ", v)
 	}
 
 	return result_cluster_replicas_map
