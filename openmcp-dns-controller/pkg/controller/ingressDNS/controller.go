@@ -21,10 +21,10 @@ import (
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	extv1b1 "k8s.io/api/extensions/v1beta1"
-	"k8s.io/klog"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/apis"
 	ketiv1alpha1 "openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
 	"openmcp/openmcp/util/clusterManager"
+	"openmcp/openmcp/util/controller/logLevel"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -78,8 +78,8 @@ var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	i += 1
-	//klog.V(0).Info("********* [ OpenMCP Ingress DNS Record", i, "] *********")
-	//klog.V(0).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
+	//logLevel.KetiLog(0, "********* [ OpenMCP Ingress DNS Record", i, "] *********")
+	//logLevel.KetiLog(0, req.Context, " / ", req.Namespace, " / ", req.Name)
 	//cm := clusterManager.NewClusterManager()
 
 	// Fetch the Sync instance
@@ -87,7 +87,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	err := r.live.Get(context.TODO(), req.NamespacedName, instanceIngressRecord)
 	if err != nil {
 		// Delete
-		klog.V(0).Info("[OpenMCP Ingress DNS Record Controller] : ",err)
+		logLevel.KetiLog(0, "[OpenMCP Ingress DNS Record Controller] : ",err)
 		return reconcile.Result{}, nil
 	}
 
@@ -96,7 +96,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	FillStatus(instanceIngressRecord)
 	err = r.live.Status().Update(context.TODO(), instanceIngressRecord)
 	if err != nil {
-		klog.V(0).Info("[OpenMCP Ingress DNS Record Controller] : ",err)
+		logLevel.KetiLog(0, "[OpenMCP Ingress DNS Record Controller] : ",err)
 		return reconcile.Result{}, nil
 	}
 

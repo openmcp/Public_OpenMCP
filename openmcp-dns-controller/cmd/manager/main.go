@@ -19,9 +19,7 @@ package main
 import (
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
-	"flag"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"k8s.io/klog"
 	"log"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/controller/dnsEndpoint"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/controller/domain"
@@ -34,9 +32,7 @@ import (
 )
 
 func main() {
-	klog.InitFlags(nil)
-	flag.Set("v", "0")
-	flag.Parse()
+	logLevel.KetiLogInit()
 
 	for {
 
@@ -62,31 +58,31 @@ func main() {
 
 		cont_serviceDNS, err := serviceDNS.NewController(live, ghosts, namespace)
 		if err != nil {
-			klog.V(0).Info("err New Controller - ServiceDNS", err)
+			logLevel.KetiLog(0, "err New Controller - ServiceDNS", err)
 		}
 		cont_domain, err := domain.NewController(live, ghosts, namespace)
 		if err != nil {
-			klog.V(0).Info("err New Controller - Domain", err)
+			logLevel.KetiLog(0, "err New Controller - Domain", err)
 		}
 		cont_ingressDNS, err := ingressDNS.NewController(live, ghosts, namespace)
 		if err != nil {
-			klog.V(0).Info("err New Controller - IngressDNS", err)
+			logLevel.KetiLog(0, "err New Controller - IngressDNS", err)
 		}
 		cont_dnsEndpoint, err := dnsEndpoint.NewController(live, ghosts, namespace)
 		if err != nil {
-			klog.V(0).Info("err New Controller - DNSEndpoint", err)
+			logLevel.KetiLog(0, "err New Controller - DNSEndpoint", err)
 		}
 		cont_externalDNS, err := externalDNS.NewController(live, ghosts, namespace)
 		if err != nil {
-			klog.V(0).Info("err New Controller - ExternalDNS", err)
+			logLevel.KetiLog(0, "err New Controller - ExternalDNS", err)
 		}
 		cont_reshape, err := reshape.NewController(live, ghosts, namespace)
 		if err != nil {
-			klog.V(0).Info("err New Controller - Reshape", err)
+			logLevel.KetiLog(0, "err New Controller - Reshape", err)
 		}
 		cont_logLevel, err := logLevel.NewController(live, ghosts, namespace)
 		if err != nil {
-			klog.V(0).Info("err New Controller - logLevel", err)
+			logLevel.KetiLog(0, "err New Controller - logLevel", err)
 		}
 
 		m := manager.New()

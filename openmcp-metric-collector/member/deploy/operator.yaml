@@ -31,9 +31,9 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: GRPC_SERVER
-              value: REPLACE_GRPCIP
+              value: "10.0.3.20"
             - name: GRPC_PORT
-              value: REPLACE_GRPCPORT
+              value: "32051"
             - name: OPERATOR_NAME
               value: "openmcp-metric-collector"
 
