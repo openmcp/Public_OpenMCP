@@ -8,7 +8,6 @@ import (
 )
 const (
 	GRPC_PORT = "2050"
-
 )
 
 func main(){
