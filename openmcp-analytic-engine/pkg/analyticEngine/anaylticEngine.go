@@ -1,43 +1,25 @@
 package analyticEngine
 
 import (
-	"github.com/oschwald/geoip2-golang"
-	hpav2beta1 "k8s.io/api/autoscaling/v2beta2"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strconv"
-
-	//"admiralty.io/multicluster-controller/pkg/cluster"
-	//"k8s.io/apimachinery/pkg/types"
 	"fmt"
-	//"k8s.io/client-go/rest"
-
-	//	appsv1 "k8s.io/api/apps/v1"
-	//hpav2beta1 "k8s.io/api/autoscaling/v2beta2"
-	"k8s.io/apimachinery/pkg/api/resource"
-	//"k8s.io/apimachinery/pkg/types"
-
-	//"k8s.io/apimachinery/pkg/types"
-	"openmcp/openmcp/openmcp-analytic-engine/pkg/protobuf"
 	"sort"
 	"time"
-
 	"context"
-	//"github.com/influxdata/influxdb/client/v2"
-	//"github.com/influxdata/influxdb/models"
-	"google.golang.org/grpc"
 	"log"
-	//"math"
 	"net"
+	"google.golang.org/grpc"
+	"github.com/oschwald/geoip2-golang"
+	"k8s.io/klog"
+	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/kubefed/pkg/controller/util"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	"openmcp/openmcp/openmcp-analytic-engine/pkg/protobuf"
 	"openmcp/openmcp/openmcp-analytic-engine/pkg/Geo"
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/openmcp-analytic-engine/pkg/influx"
-
-	//fedapis "sigs.k8s.io/kubefed/pkg/apis"
-	//ketiapis "resource-controller/apis"
-
-	"k8s.io/client-go/kubernetes"
-	"sigs.k8s.io/kubefed/pkg/controller/util"
 )
 
 type AnalyticEngineStruct struct {
@@ -45,6 +27,17 @@ type AnalyticEngineStruct struct {
 	MetricsWeight map[string]float64
 	ResourceScore map[string]float64
 	ClusterGeo    map[string]map[string]string
+	NetworkInfos	map[string]map[string]*NetworkInfo
+}
+
+// Network is used to get real-time network information (receive data, transmit data)
+// Calculating the difference between previous_data and next_data is needed to get real-time network data 
+// because the data from Kubelet is cumulative data
+type NetworkInfo struct {
+	prev_rx		int64	
+	prev_tx		int64	
+	next_rx		int64	
+	next_tx		int64	
 }
 
 func NewAnalyticEngine(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD string) *AnalyticEngineStruct {
@@ -58,6 +51,8 @@ func (ae *AnalyticEngineStruct) CalcResourceScore() {
 	cm := clusterManager.NewClusterManager()
 	ae.MetricsWeight = make(map[string]float64)
 	ae.ClusterGeo = map[string]map[string]string{}
+	ae.NetworkInfos = make(map[string]map[string]*NetworkInfo)
+
 	//정책 엔진 - 메트릭 가중치 읽어오기----------------------------
 	openmcpPolicyInstance, target_cluster_policy_err := cm.Crd_client.OpenMCPPolicyEngine("openmcp").Get("analytic-metrics-weight", metav1.GetOptions{})
 
@@ -82,13 +77,66 @@ func (ae *AnalyticEngineStruct) CalcResourceScore() {
 			if err != nil {
 				fmt.Println(err)
 			}
-			node := nodes.Items[0]
-			//label로부터 zone, region 추출
-			ae.ClusterGeo[cluster.Name] = map[string]string{}
-			ae.ClusterGeo[cluster.Name]["Country"] = node.Labels["failure-domain.beta.kubernetes.io/zone"]
-			ae.ClusterGeo[cluster.Name]["Continent"] = node.Labels["failure-domain.beta.kubernetes.io/region"]
+
+			if len(nodes.Items) != 0 {
+				node := nodes.Items[0]
+				
+				//label로부터 zone, region 추출
+				ae.ClusterGeo[cluster.Name] = map[string]string{}
+				ae.ClusterGeo[cluster.Name]["Country"] = node.Labels["failure-domain.beta.kubernetes.io/zone"]
+				ae.ClusterGeo[cluster.Name]["Continent"] = node.Labels["failure-domain.beta.kubernetes.io/region"]
+			}
+			
+			// Update Network Data from InfluxDB
+			ae.UpdateNetworkData(cluster.Name, nodes)
 		}
 		time.Sleep(5 * time.Second)
+	}
+}
+
+// Update Network data from InfluxDB
+func (ae *AnalyticEngineStruct) UpdateNetworkData(clusterName string, nodeList *corev1.NodeList) {
+	
+	// Initialize cluster's network data
+	_, exists := ae.NetworkInfos[clusterName]
+	if !exists {
+		newClusterInfo := make(map[string]*NetworkInfo)
+		ae.NetworkInfos[clusterName] = newClusterInfo
+	}
+
+	// Update Node's network data
+	for _, node := range nodeList.Items{
+
+		// Initialize Node's network data 
+		_, exists := ae.NetworkInfos[clusterName][node.Name]
+		if !exists {
+			ae.NetworkInfos[clusterName][node.Name] = &NetworkInfo{}
+		}
+
+		// Get cumulative network data from InfluxDB 
+		result := ae.Influx.GetNetworkData(clusterName, node.Name)
+		
+		// If data is not stored, cannot calculate real-time network data
+		if len(result) == 0 {
+			continue;
+		}
+
+		for _, ser := range result[0].Series {
+
+			// First row is previous data because the result is ordered by desc
+			prev_rx, _ := strconv.ParseInt(fmt.Sprintf("%s", ser.Values[1][1]), 10, 64)
+			prev_tx, _ := strconv.ParseInt(fmt.Sprintf("%s", ser.Values[1][2]), 10, 64)
+
+			// Second row is next data 
+			next_rx, _ := strconv.ParseInt(fmt.Sprintf("%s", ser.Values[0][1]), 10, 64)
+			next_tx, _ := strconv.ParseInt(fmt.Sprintf("%s", ser.Values[0][2]), 10, 64)
+
+			// Update network data on NetworkInfo structure 
+			ae.NetworkInfos[clusterName][node.Name].prev_rx = prev_rx
+			ae.NetworkInfos[clusterName][node.Name].prev_tx = prev_tx
+			ae.NetworkInfos[clusterName][node.Name].next_rx = next_rx
+			ae.NetworkInfos[clusterName][node.Name].next_tx = next_tx
+		}
 	}
 }
 
@@ -105,15 +153,11 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
 	for _, ser := range result[0].Series {
 
 		nodeCapacity := &corev1.Node{}
-		//err := cm.Cluster_genClients["cluster4"].List(context.TODO(), nodeCapacity, "")
 		err := cm.Cluster_genClients[ser.Tags["cluster"]].Get(context.TODO(), nodeCapacity, "", ser.Tags["node"])
 		if err != nil {
 			fmt.Println("nodelist err : ", err)
 		} else {
-			//	fmt.Println(nodeCapacity)
-			//	fmt.Println(nodeCapacity.Items[0].Status.Capacity.Cpu().MilliValue())
 			fmt.Println("[CPU Capacity] ", ser.Tags["cluster"], "/", ser.Tags["node"], "/", nodeCapacity.Status.Capacity.Cpu().Value())
-			//fmt.Println(ser.Tags["node"])
 		}
 
 		totalCpuCore = totalCpuCore + nodeCapacity.Status.Capacity.Cpu().Value()
@@ -148,29 +192,7 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
 	diskScore := MetricsMap["FsAvailableBytes"] / MetricsMap["FsCapacityBytes"] * 100
 
 	score = cpuScore*ae.MetricsWeight["CPU"] + memScore*ae.MetricsWeight["Memory"] + diskScore*ae.MetricsWeight["FS"]
-	/*
-		cpuUsed := resource.NewQuantity(int64(totalCpuCore) - int64(MetricsMap["CPUUsageNanoCores"]),resource.BinarySI).String()
-		cpuTotal := resource.NewQuantity(int64(totalCpuCore), resource.BinarySI).String()
 
-		memUsed := resource.NewQuantity(int64(MetricsMap["MemoryAvailableBytes"]),resource.BinarySI).String()
-		memTotal := resource.NewQuantity(int64(MetricsMap["MemoryUsageBytes"] + MetricsMap["MemoryAvailableBytes"]), resource.BinarySI).String()
-
-		//netUsed := resource.NewQuantity(int64(MetricsMap["NetworkRxBytes"]) - int64(prevMetricsMap["NetworkRxBytes"]) +  int64(MetricsMap["NetworkTxBytes"]) - int64(prevMetricsMap["NetworkTxBytes"]) ,resource.BinarySI).String()
-		//netTotal := resource.NewQuantity(int64(totalNet), resource.BinarySI).String()
-
-		diskUsed := resource.NewQuantity(int64(MetricsMap["FsAvailableBytes"]),resource.BinarySI).String()
-		diskTotal := resource.NewQuantity(int64(MetricsMap["FsCapacityBytes"]), resource.BinarySI).String()
-
-
-
-		fmt.Println("--------------------------------------------------------------------------------------------")
-		fmt.Println("Cluster : ", clusterName)
-		fmt.Println("--------------------------------------------------------------------------------------------")
-		fmt.Println("cpuScore : ", cpuScore, "(",cpuUsed, " / ",  cpuTotal, ") , weight : ", ae.MetricsWeight["CPU"])
-		fmt.Println("memScore : ", memScore, "(", memUsed, " / ", memTotal, ") , weight : ", ae.MetricsWeight["Memory"])
-		//fmt.Println("netScore : ", netScore, "(", netUsed, " / ", netTotal, ")")
-		fmt.Println("diskScore : ", diskScore, "(", diskUsed, "/", diskTotal, ") , weight : ", ae.MetricsWeight["FS"])
-	*/
 	fmt.Println("--------------------------------------------------------------------------------------------")
 	fmt.Println("totalScore : ", score)
 	fmt.Println("--------------------------------------------------------------------------------------------")
@@ -197,7 +219,6 @@ func (ae *AnalyticEngineStruct) SendLBAnalysis(ctx context.Context, in *protobuf
 	country := ae.getCountry(clientIP)
 	continent := ae.getContinent(country)
 
-	//clusters := []string{"cluster4", "cluster5", "cluster6"}
 	score := ae.geoScore(clusterNameList, country, continent)
 
 	for _, clusterName := range clusterNameList {
@@ -223,56 +244,31 @@ func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) []strin
 		}
 	}
 	sort.Float64s(score)
-	fmt.Println("scoreMap : ", scoreMap)
 
 	filteringCluster := []string{}
 
 	for i := 0 ; i < len(score) ; i++ {
 		filteringCluster = append(filteringCluster, scoreMap[score[i]])
 	}
-/*
-	if len(score) > 1 {
-		filteringCluster = append(filteringCluster, scoreMap[score[0]])
-		filteringCluster = append(filteringCluster, scoreMap[score[1]])
-	}*/
-
-	fmt.Println("filteringCluster : ", filteringCluster)
-
-	//result := ae.CompareHPAInfo(filteringCluster, data.HPAName, data.HPANamespace)
-	//fmt.Println("result : ", result)
 
 	return filteringCluster
 }
 
-func (ae *AnalyticEngineStruct) CompareHPAMaxInfo(clusterList []string, hpaName string, hpaNamespace string) string {
+func (ae *AnalyticEngineStruct) CompareHPAMaxInfo(clusterList []string, data *protobuf.HASInfo) string {
 	replicasGap := map[string]int32{}
 	rebalancingCount := map[string]int32{}
 
-	cm := clusterManager.NewClusterManager()
-
-	hpaInstance := &hpav2beta1.HorizontalPodAutoscaler{}
 	for _, cluster := range clusterList {
-		err := cm.Cluster_genClients[cluster].Get(context.TODO(), hpaInstance, hpaNamespace, hpaName)
-		if err == nil {
-			fmt.Println(cluster, " hpa : ", hpaInstance.Spec.MaxReplicas, " / ", hpaInstance.Status.CurrentReplicas)
-			calc := hpaInstance.Spec.MaxReplicas - hpaInstance.Status.CurrentReplicas
-			if calc > 0 {
-				replicasGap[cluster] = calc
-			}
-		} else {
-			fmt.Println(err)
+		fmt.Println(cluster, " hpa : ", data.HPAMinORMaxReplicas, " / ", data.HPACurrentReplicas)
+		//calc := hpaInstance.Spec.MaxReplicas - hpaInstance.Status.CurrentReplicas
+		calc := data.HPAMinORMaxReplicas[cluster] - data.HPACurrentReplicas[cluster]
+		if calc > 0 {
+			replicasGap[cluster] = calc
 		}
 	}
 
-	openmcphasInstance, err := cm.Crd_client.OpenMCPHybridAutoScaler(hpaNamespace).Get(hpaName, metav1.GetOptions{})
-
-	if err == nil {
-		//fmt.Println("success: ",openmcphasInstance)
-		for cluster, _ := range replicasGap {
-			rebalancingCount[cluster] = openmcphasInstance.Status.RebalancingCount[cluster]
-		}
-	} else {
-		fmt.Println(err)
+	for cluster, _ := range replicasGap {
+		rebalancingCount[cluster] = data.HASRebalancingCount[cluster]
 	}
 
 	fmt.Println("desiredReplicas : ", replicasGap)
@@ -288,48 +284,38 @@ func (ae *AnalyticEngineStruct) CompareHPAMaxInfo(clusterList []string, hpaName 
 				result = cluster
 			}
 		}
-		//fmt.Println(result)
 	}
 
 	return result
 }
 
-func (ae *AnalyticEngineStruct) CompareHPAMinInfo(clusterList []string, hpaName string, hpaNamespace string) string {
+func (ae *AnalyticEngineStruct) CompareHPAMinInfo(clusterList []string, data *protobuf.HASInfo) string {
 	replicasGap := map[string]int32{}
 	rebalancingCount := map[string]int32{}
 
-	cm := clusterManager.NewClusterManager()
+	timeStart_analysis := time.Now()
 
-	hpaInstance := &hpav2beta1.HorizontalPodAutoscaler{}
 	for _, cluster := range clusterList {
-		err := cm.Cluster_genClients[cluster].Get(context.TODO(), hpaInstance, hpaNamespace, hpaName)
-		if err == nil {
-			fmt.Println(cluster, " hpa : ", *hpaInstance.Spec.MinReplicas, " / ", hpaInstance.Status.CurrentReplicas)
-			calc := hpaInstance.Status.CurrentReplicas - *hpaInstance.Spec.MinReplicas
-			if calc > 0 {
-				replicasGap[cluster] = calc
-			}
-		} else {
-			fmt.Println(err)
+		calc := data.HPACurrentReplicas[cluster] - data.HPAMinORMaxReplicas[cluster]
+		if calc > 0 {
+			replicasGap[cluster] = calc
 		}
 	}
 
-	openmcphasInstance, err := cm.Crd_client.OpenMCPHybridAutoScaler(hpaNamespace).Get(hpaName, metav1.GetOptions{})
+	timeEnd_analysis := time.Since(timeStart_analysis)
 
-	if err == nil {
-		//fmt.Println("success: ",openmcphasInstance)
-		for cluster, _ := range replicasGap {
-			rebalancingCount[cluster] = openmcphasInstance.Status.RebalancingCount[cluster]
-		}
-	} else {
-		fmt.Println(err)
+	fmt.Println("[2] GetHPAInfo \t\t\t", timeEnd_analysis)
+
+	timeStart_analysis2 := time.Now()
+	for cluster, _ := range replicasGap {
+		rebalancingCount[cluster] = data.HASRebalancingCount[cluster]
 	}
 
-	fmt.Println("desiredReplicas : ", replicasGap)
-	fmt.Println("countRebalancing : ", rebalancingCount)
+	timeEnd_analysis2 := time.Since(timeStart_analysis2)
+	fmt.Println("[3] GetHASInfo \t\t\t", timeEnd_analysis2)
 
 	result := ""
-
+	timeStart_analysis3 := time.Now()
 	for cluster, _ := range rebalancingCount {
 		if result == "" {
 			result = cluster
@@ -338,8 +324,10 @@ func (ae *AnalyticEngineStruct) CompareHPAMinInfo(clusterList []string, hpaName 
 				result = cluster
 			}
 		}
-		//fmt.Println(result)
 	}
+
+	timeEnd_analysis3 := time.Since(timeStart_analysis3)
+	fmt.Println("[4] CompareQoSScore \t\t", timeEnd_analysis3)
 
 	return result
 }
@@ -354,7 +342,7 @@ func (ae *AnalyticEngineStruct) SendHASMaxAnalysis(ctx context.Context, data *pr
 	if len(filteringCluster) == 1 {
 		result = filteringCluster[0]
 	}else {
-		result = ae.CompareHPAMaxInfo(filteringCluster, data.HPAName, data.HPANamespace)
+		result = ae.CompareHPAMaxInfo(filteringCluster, data)
 	}
 	fmt.Println("---------HAS Response End---------")
 
@@ -362,132 +350,50 @@ func (ae *AnalyticEngineStruct) SendHASMaxAnalysis(ctx context.Context, data *pr
 }
 
 func (ae *AnalyticEngineStruct) SendHASMinAnalysis(ctx context.Context, data *protobuf.HASInfo) (*protobuf.ResponseHAS, error) {
-	fmt.Println("---------HAS Request Start---------")
+	fmt.Println("\n******* [Start] HAS Rebalancing Analysis *******")
 
+	timeStart_analysis := time.Now()
 	filteringCluster := ae.SelectHPACluster(data)
-	fmt.Println("(Min)filteringCluster : " ,filteringCluster)
-
-	//result := ae.CompareHPAMinInfo(filteringCluster, data.HPAName, data.HPANamespace)
+	timeEnd_analysis := time.Since(timeStart_analysis)
+	fmt.Println("[1] SelectCandidateCluster \t", timeEnd_analysis)
 
 	var result string
-	if len(filteringCluster) == 1 {
-		result = filteringCluster[0]
-	}else {
-		result = ae.CompareHPAMinInfo(filteringCluster, data.HPAName, data.HPANamespace)
-	}
+	//if len(filteringCluster) == 1 {
+	//	result = filteringCluster[0]
+	//}else {
+		//timeStart_analysis2 := time.Now()
+		result = ae.CompareHPAMinInfo(filteringCluster, data)
+		//timeEnd_analysis2 := time.Since(timeStart_analysis2)
+		//fmt.Println("[2] CompareHPAMinInfo() \t", timeEnd_analysis2)
+	//}
 
-	fmt.Println("---------HAS Response End---------")
+	timeEnd_analysis4 := time.Since(timeStart_analysis)
+	fmt.Println("-----------------------------------------")
+	fmt.Println("==> Total Analysis time \t", timeEnd_analysis4)
+	fmt.Println("ResultCluster\t[", result,"]")
+
+	fmt.Println("*******  [End] HAS Rebalancing Analysis  ******* \n")
 
 	return &protobuf.ResponseHAS{TargetCluster: result}, nil
 }
 
-//
-//func (ae *AnalyticEngineStruct) SendHASAnalysis(ctx context.Context, data *protobuf.HASInfo) (*protobuf.ResponseHAS, error) {
-//	fmt.Println(">>> Get Request From HAS Controller [",data.ClusterName,"]")
-//	//요청한 클러스터들의 매트릭 값 받아오기
-//	influxData := ae.Influx.SelectMetricsData()
-//	//매트릭 값을 기반으로 QoS 분석하기
-//	result := ae.QoSAnalysisResult(data.HpaInfo, influxData)
-//
-//	fmt.Println(">>> Send Response(Result) To HAS Controller")
-//	//결과값을 리턴값으로 넘겨주기
-//	return &protobuf.ResponseHAS{
-//		TargetCluster:          result,
-//	}, nil
-//}
+func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *protobuf.NodeInfo) (*protobuf.ReponseNetwork, error) {
+	klog.Info("---------Network Request Start---------")
 
-/*func (ae *AnalyticEngineStruct) SearchInfluxDB(){
+	// calculate difference between previous data and next data
+	diff_rx := ae.NetworkInfos[data.ClusterName][data.NodeName].next_rx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_rx
+	diff_tx := ae.NetworkInfos[data.ClusterName][data.NodeName].next_tx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_tx
 
-}*/
-//
-//type metricInfo struct {
-//	clusterName string
-//	metricValue interface{}
-//}
-//
-//func (ae *AnalyticEngineStruct) QoSAnalysisResult(hpainfo []*protobuf.HASInfo, result []client.Result) string{
-//	fmt.Println(">>> Analysis Rebalancing Metric")
-//
-//	clusterNum := len(hpainfo[0].CL)
-//	filteringValue :=  make([]models.Row, 0)
-//	resultMap := make(map[string]metricInfo)
-//	countCluster := make(map[string]int)
-//
-//	tmp := 0
-//	targetCluster := ""
-//
-//
-//	resultMap["cpu_usage"] = metricInfo{clusterName: "", metricValue: float64(100000000000000000)}
-//	resultMap["fs_usage"] = metricInfo{clusterName: "", metricValue: float64(100000000000000000)}
-//	resultMap["memory_usage"] = metricInfo{clusterName: "", metricValue: float64(100000000000000000)}
-//	resultMap["network_rx_usage"] = metricInfo{clusterName: "", metricValue: float64(100000000000000000)}
-//	resultMap["network_tx_usage"] = metricInfo{clusterName: "", metricValue: float64(100000000000000000)}
-//
-//	if clusterNum == 1 {
-//		targetCluster = result[0].Series[0].Tags["cluster"]
-//	}else if clusterNum > 1{
-//		for i := 0; i < clusterNum; i++ {
-//			for _, data := range result[0].Series {
-//				if hpainfo[0].CL[i].ClusterName == data.Tags["cluster"] {
-//					filteringValue = append(filteringValue, data)
-//				}
-//			}
-//		}
-//
-//		for _, data := range filteringValue {
-//			//fmt.Println("===>", data.Tags["node"])
-//			for i := 0; i < len(data.Columns); i++ {
-//				if i != 0 && i != 1 && i != 4 {
-//					if data.Values[0][i] != nil {
-//						//	fmt.Println(data.Values[0][i].(string))
-//						//	fmt.Println(bestResult[data.Columns[i]].metricValue)
-//
-//						var aa float64
-//						if i == 2 {
-//							aa, _ = strconv.ParseFloat(data.Values[0][i].(string)[:len(data.Values[0][i].(string))-1], 64)
-//						} else if i == 3 || i == 5 {
-//							aa, _ = strconv.ParseFloat(data.Values[0][i].(string)[:len(data.Values[0][i].(string))-2], 64)
-//						} else {
-//							aa, _ = strconv.ParseFloat(data.Values[0][i].(string), 64)
-//						}
-//
-//						bb := resultMap[data.Columns[i]].metricValue.(float64)
-//
-//						min := math.Min(aa, bb)
-//						resultMap[data.Columns[i]] = metricInfo{clusterName: data.Tags["cluster"], metricValue: min}
-//						countCluster[data.Tags["cluster"]] = 0
-//						//fmt.Println("[", data.Columns[i], "] compare : ", aa, " -- ", bb, " // min : ", min)
-//					}
-//				}
-//			}
-//			//fmt.Println()
-//		}
-//
-//		for _, value := range resultMap {
-//			countCluster[value.clusterName] += 1
-//		}
-//
-//		for key, value := range countCluster {
-//			if tmp < value {
-//				targetCluster = key
-//				tmp = value
-//			}
-//		}
-//
-//		//fmt.Println("*********compare Result : ", resultMap)
-//	}
-//
-//
-//	//fmt.Println("*********targetCluster : ", targetCluster)
-//	fmt.Println("     => Anlysis Result [", targetCluster, "]")
-//
-//	return targetCluster
-//}
+	klog.Infof("check SnedNetworkAnalysis: %v, %v", diff_rx, diff_tx)
+
+	klog.Info("---------Network Response End---------")
+
+	return &protobuf.ReponseNetwork{RX: diff_rx, TX: diff_tx}, nil
+}
 
 func (ae *AnalyticEngineStruct) StartGRPC(GRPC_PORT string) {
 	log.Printf("Grpc Server Start at Port %s\n", GRPC_PORT)
 
-	//manager = NewClusterManager()
 	l, err := net.Listen("tcp", ":"+GRPC_PORT)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -501,9 +407,7 @@ func (ae *AnalyticEngineStruct) StartGRPC(GRPC_PORT string) {
 
 }
 
-//*****************************************
 //LoadBalancing
-
 func (ae *AnalyticEngineStruct) geoScore(clusters []string, clientCountry, clientContinent string) map[string]float64 {
 	fmt.Println("*****Geo Score*****")
 
