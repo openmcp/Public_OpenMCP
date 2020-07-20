@@ -18,24 +18,25 @@ package main
 
 import (
 	"log"
-	"fmt"
-
+	"k8s.io/klog"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"k8s.io/sample-controller/pkg/signals"
-
-	"openmcp/openmcp/openmcp-scheduler/pkg/controller"
+	"openmcp/openmcp/openmcp-scheduler/pkg"
+	"openmcp/openmcp/util/clusterManager"
+	"openmcp/openmcp/util/controller/logLevel"
+	"openmcp/openmcp/util/controller/reshape"
 )
 
 func main() {
-	cm := openmcpscheduler.NewClusterManager()
+	klog.V(0).Info("Start OpenMCP Scheduler ")
+	cm := clusterManager.NewClusterManager()
 
 	host_ctx := "openmcp"
 	namespace := "openmcp"
 
 	host_cfg := cm.Host_config
-	live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+	live := cluster.New(host_ctx, host_cfg, cluster.Options{})
 
 	ghosts := []*cluster.Cluster{}
 
@@ -43,19 +44,22 @@ func main() {
 		ghost_ctx := ghost_cluster.Name
 		ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
-		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
 		ghosts = append(ghosts, ghost)
 	}
-	for _, ghost := range ghosts {
 
-		fmt.Println(ghost.Name)
-	}
 	co, _ := openmcpscheduler.NewController(live, ghosts, namespace)
+	reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
+	loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
 	m := manager.New()
 	m.AddController(co)
+	m.AddController(reshape_cont)
+	m.AddController(loglevel_cont)
 
-	if err := m.Start(signals.SetupSignalHandler()); err != nil {
-			log.Fatal(err)
+	stop := reshape.SetupSignalHandler()
+
+	if err := m.Start(stop); err != nil {
+		log.Fatal(err)
 	}
 }
