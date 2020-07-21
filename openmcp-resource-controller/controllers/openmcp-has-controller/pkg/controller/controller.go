@@ -24,7 +24,6 @@ import (
 	"os"
 	"strconv"
 	"time"
-
 	//"sort"
 	//"math/rand"
 	//"time"
@@ -128,7 +127,7 @@ func (r *reconciler) sendSyncHPA(hpa *hpav2beta2.HorizontalPodAutoscaler, comman
 	err := r.live.Create(context.TODO(), s)
 
 	if err != nil {
-		fmt.Println("syncErr - ", err)
+		klog.V(0).Info("syncErr - ", err)
 	}
 
 	return err
@@ -165,15 +164,21 @@ var i int = 0
 var syncIndex int = 0
 var lastTimeRebalancing time.Time
 var tmpMap = map[string]int32{}
+//var a int = 0
 
 func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	//fmt.Println("Step 7.	r.Reconcile()")
+	klog.V(0).Info("[OpenMCPHAS] Function Called Reconcile")
 
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 
 	i += 1
-	fmt.Println("********* [", i, "] *********")
-	fmt.Println("Request Namespace: ", request.Namespace, " /  Request Name: ", request.Name, " / Request Context: ", request.Context)
+
+	klog.V(0).Info("********* [", i, "] *********")
+	klog.V(0).Info("Request Namespace: ", request.Namespace, " /  Request Name: ", request.Name, " / Request Context: ", request.Context)
+
+	//fmt.Println("********* [", i, "] *********")
+	//fmt.Println("Request Namespace: ", request.Namespace, " /  Request Name: ", request.Name, " / Request Context: ", request.Context)
 	cm := clusterManager.NewClusterManager()
 	type ObjectKey = types.NamespacedName
 
@@ -202,7 +207,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	if hasInstance.Status.Policies != nil { // 기존에 설정된 정책이 있는지 확인
 		for _, tmp := range hasInstance.Status.Policies {
 			if tmp.Type == "Target" { // Target 이미 설정되어 있으면
-				fmt.Println(">>> Policy \"Cluster Target\" Existed")
+				//fmt.Println(">>> Policy \"Cluster Target\" Existed")
 				if tmp.Value[0] == "Default" {
 					clusterListItems = cm.Cluster_list.Items
 				} else {
@@ -224,7 +229,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		target_cluster_policy_err := r.live.Get(context.TODO(), ObjectKey{Namespace: "openmcp", Name: "has-target-cluster"}, foundPolicy)
 		if target_cluster_policy_err == nil {
 			if foundPolicy.Spec.PolicyStatus == "Enabled" {
-				fmt.Println(">>> Policy \"Cluster Target\" Apply (Enabled)")
+				klog.V(0).Info(">>> Policy \"Cluster Target\" Apply (Enabled)")
 				hasInstance.Status.Policies = append(hasInstance.Status.Policies, foundPolicy.Spec.Template.Spec.Policies...)
 				for _, cluster := range cm.Cluster_list.Items {
 					for _, value := range foundPolicy.Spec.Template.Spec.Policies[0].Value {
@@ -234,7 +239,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 					}
 				}
 			} else {
-				fmt.Println(">>> Policy \"Cluster Target\" Apply (Disabled - set default)")
+				klog.V(0).Info(">>> Policy \"Cluster Target\" Apply (Disabled - set default)")
 				omp := make([]ketiv1alpha1.OpenMCPPolicies, 1)
 				omp[0].Type = "Target"
 				omp_value := make([]string, 0)
@@ -244,8 +249,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 				clusterListItems = cm.Cluster_list.Items
 			}
 		} else {
-			fmt.Println("!!! Fail to get policy \"Cluster Target\" (set default)")
-			fmt.Println("policy_err : ", target_cluster_policy_err)
+			klog.V(0).Info("!!! Fail to get policy \"Cluster Target\" (set default)")
+			klog.V(0).Info("policy_err : ", target_cluster_policy_err)
 			omp := make([]ketiv1alpha1.OpenMCPPolicies, 1)
 			omp[0].Type = "Target"
 			omp_value := make([]string, 0)
@@ -257,10 +262,10 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 		err := r.live.Status().Update(context.TODO(), hasInstance)
 		if err != nil {
-			fmt.Println("!!! Policy Status Update Error")
+			klog.V(0).Info("!!! Policy Status Update Error")
 			return reconcile.Result{}, err
 		} else {
-			fmt.Println(">>> Policy Status UPDATE Success")
+			klog.V(0).Info(">>> Policy Status UPDATE Success")
 		}
 	}
 	//-------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -268,7 +273,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	openmcpDep := &ketiv1alpha1.OpenMCPDeployment{}
 	openmcpDep_err := r.live.Get(context.TODO(), ObjectKey{Namespace: hasInstance.Namespace, Name: hasInstance.Spec.HpaTemplate.Spec.ScaleTargetRef.Name}, openmcpDep)
 
-	fmt.Println(">>> Target OpenMCPDeployment [", openmcpDep.Name, ":", openmcpDep.Namespace, "]")
+	klog.V(0).Info(">>> Target OpenMCPDeployment [", openmcpDep.Name, ":", openmcpDep.Namespace, "]")
 
 	if openmcpDep_err == nil {
 
@@ -318,15 +323,21 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			r.DeleteHPAVPA(cm, dep_list_except, request.Namespace, request.Name, request.Name)
 		}
 
-		fmt.Println(">>> Target Clusters ", dep_list_for_hpa, " /// except ", dep_list_except)
+		klog.V(0).Info(">>> Target Clusters ", dep_list_for_hpa, " /// except ", dep_list_except)
 		//----------------------------------------------------------------------------------------------
 
 		if dep_list_for_hpa != nil {
 			//min/max 분배 정책
-			cluster_min_map, cluster_max_map, hasInstance, min_max_err := CreateMinMaxMap(r, cm, hasInstance, dep_list_for_hpa, cluster_dep_replicas)
+			foundPolicy := &ketiv1alpha1.OpenMCPPolicyEngine{}
+			minmax_policy_err := r.live.Get(context.TODO(), ObjectKey{Namespace: "openmcp", Name: "hpa-minmax-distribution-mode"}, foundPolicy)
+
+			//timeStart_mixmaxdist := time.Now()
+			cluster_min_map, cluster_max_map, hasInstance, min_max_err := CreateMinMaxMap(r, cm, hasInstance, cluster_dep_request, foundPolicy, minmax_policy_err, dep_list_for_hpa, cluster_dep_replicas)
+			//timeEnd_mixmaxdist := time.Since(timeStart_mixmaxdist)
+			//fmt.Println("-------------------- min/max 분배 시간 : ", timeEnd_mixmaxdist,"------------------")
 
 			if min_max_err != nil {
-				fmt.Println(min_max_err)
+				klog.V(0).Info(min_max_err)
 				return reconcile.Result{}, min_max_err
 			}
 
@@ -349,6 +360,10 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 						command := "create"
 						err = r.sendSyncHPA(hpa, command, clustername)
 
+						/*if i == len(dep_list_for_hpa) -1 {
+							a = 0
+						}*/
+
 						//err = cluster_client.Create(context.TODO(), hpa)
 						//r.live.Create(context.TODO(), hpa)
 						reqLogger.Info("Creating a new HPA", "HPA.Namespace", hpa.Namespace, "HPA.Name", hpa.Name)
@@ -356,7 +371,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 							reqLogger.Error(err, "!!! Failed to create new HPA", "HPA.Namespace", hpa.Namespace, "HPA.Name", hpa.Name)
 							return reconcile.Result{}, err
 						}
-						fmt.Println(">>> "+clustername+" Create HPA [ min:", *hpa.Spec.MinReplicas, "/ max:", hpa.Spec.MaxReplicas, "]")
+						klog.V(0).Info(">>> "+clustername+" Create HPA [ min:", *hpa.Spec.MinReplicas, "/ max:", hpa.Spec.MaxReplicas, "]")
 						// HPA created successfully - return and requeue
 
 						//Status Update
@@ -366,10 +381,10 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 						err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 						if err_openmcp != nil {
-							fmt.Println("!!! Failed to update instance status", err)
+							klog.V(0).Info("!!! Failed to update instance status", err)
 							return reconcile.Result{}, err
 						} else {
-							fmt.Println(">>> OpenMCPHPA LastSpec Update (HPA Create)")
+							klog.V(0).Info(">>> OpenMCPHPA LastSpec Update (HPA Create)")
 						}
 
 						return reconcile.Result{Requeue: true}, nil
@@ -379,9 +394,12 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 					} else if err == nil { //UPDATE HPA - Rebalancing 조건을 만족했을 때 또는 min/max값이 수정되었을때
 						if foundHPA.Spec.MaxReplicas == foundHPA.Status.CurrentReplicas && foundHPA.Status.CurrentReplicas == foundHPA.Status.DesiredReplicas { //||  (*foundHPA.Spec.MinReplicas == foundHPA.Status.CurrentReplicas && foundHPA.Status.CurrentReplicas == foundHPA.Status.DesiredReplicas) {
 							if lastTimeRebalancing.IsZero() || (!lastTimeRebalancing.IsZero() && time.Since(lastTimeRebalancing) > time.Second*180) {
-								fmt.Println(">>> " + clustername + " max rebalancing")
+								klog.V(0).Info(">>> " + clustername + " max rebalancing")
 
 								var dep_list_for_analysis []string
+
+								maxReplicasMap := map[string]int32{}
+								currentReplicasMap := map[string]int32{}
 
 								for _, cn := range dep_list_for_hpa {
 									analysisHPA := &hpav2beta2.HorizontalPodAutoscaler{}
@@ -389,13 +407,16 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 									if analysisHPA.Spec.MaxReplicas > analysisHPA.Status.CurrentReplicas+1 {
 										dep_list_for_analysis = append(dep_list_for_analysis, cn)
+										maxReplicasMap[cn] = analysisHPA.Spec.MaxReplicas
+										currentReplicasMap[cn] = analysisHPA.Status.CurrentReplicas
 									}
 								}
 
 								//후보 클러스터가 없을 때
 								if len(dep_list_for_analysis) == 0 {
-									fmt.Println("!!! Failed Rebalancing : There is no candidate cluster")
+									klog.V(0).Info("!!! Failed Rebalancing : There is no candidate cluster")
 								} else {
+									timeStart_mixmaxrebal := time.Now()
 									//분석 엔진을 통해 얻은 결과 (gRPC 통신)
 									//---------------------------------------------------------------------------------------------------
 									SERVER_IP := os.Getenv("GRPC_SERVER")
@@ -403,18 +424,22 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 									grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
-									hi := &protobuf.HASInfo{HPAName: hasInstance.Name, HPANamespace: hasInstance.Namespace, ClusterName: clustername}
+									hi := &protobuf.HASInfo{HPAName: hasInstance.Name, HPANamespace: hasInstance.Namespace, ClusterName: clustername, HPACurrentReplicas: currentReplicasMap, HPAMinORMaxReplicas: maxReplicasMap, HASRebalancingCount: hasInstance.Status.RebalancingCount}
 
 									result, gRPCerr := grpcClient.SendHASMaxAnalysis(context.TODO(), hi)
 									if gRPCerr != nil || len(result.TargetCluster) == 0 {
 										if gRPCerr != nil {
-											fmt.Printf("could not connect : %v", gRPCerr)
+											klog.V(0).Info("could not connect : %v", gRPCerr)
 										}
-										fmt.Printf("!!! Failed Rebalacing : Failed to get Analysis Result :(")
+										klog.V(0).Info("!!! Failed Rebalacing : Failed to get Analysis Result :(")
 									} else {
 										//---------------------------------------------------------------------------------------------------
 										qosCluster := result.TargetCluster
-										fmt.Println("     => Anlysis Result [", qosCluster, "]")
+										klog.V(0).Info("     => Anlysis Result [", qosCluster, "]")
+
+										timeEnd_mixmaxrebal := time.Since(timeStart_mixmaxrebal)
+										klog.V(0).Info("     => Total Rebalancing Time [", timeEnd_mixmaxrebal, "] (Analysis + gRPC)")
+										//fmt.Println("-------------------- Min rebalancing result 분석 시간 : ", timeEnd_mixmaxrebal,"------------------")
 
 										foundHPA.TypeMeta.Kind = "HorizontalPodAutoscaler"
 										foundHPA.TypeMeta.APIVersion = "autoscaling/v2beta2"
@@ -427,7 +452,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 										err := qos_cluster_client.Get(context.TODO(), foundQosHPA, hasInstance.Namespace, hasInstance.Name)
 
 										if err != nil {
-											fmt.Println("err: ", err)
+											klog.V(0).Info("err: ", err)
 										}
 
 										foundQosHPA.TypeMeta.Kind = "HorizontalPodAutoscaler"
@@ -444,8 +469,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 										//qos_err := qos_cluster_client.Update(context.TODO(), updateQosHPA)
 
 										if current_err != nil || qos_err != nil { //둘 중 하나라도 에러가 날 경우 롤백
-											fmt.Println("current_err : ", current_err)
-											fmt.Println("qos_err : ", qos_err)
+											klog.V(0).Info("current_err : ", current_err)
+											klog.V(0).Info("qos_err : ", qos_err)
 
 											command := "update"
 											r.sendSyncHPA(foundHPA, command, clustername)
@@ -454,25 +479,25 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 											//cluster_client.Update(context.TODO(), foundHPA)
 											//qos_cluster_client.Update(context.TODO(), foundQosHPA)
 
-											fmt.Println(">>> "+clustername+" Rollback HPA [ min:", *foundHPA.Spec.MinReplicas, "/ max:", foundHPA.Spec.MaxReplicas, "]")
-											fmt.Println(">>> "+qosCluster+" Rollback HPA [ min:", *foundQosHPA.Spec.MinReplicas, "/ max:", foundQosHPA.Spec.MaxReplicas, "]")
+											klog.V(0).Info(">>> "+clustername+" Rollback HPA [ min:", *foundHPA.Spec.MinReplicas, "/ max:", foundHPA.Spec.MaxReplicas, "]")
+											klog.V(0).Info(">>> "+qosCluster+" Rollback HPA [ min:", *foundQosHPA.Spec.MinReplicas, "/ max:", foundQosHPA.Spec.MaxReplicas, "]")
 										} else if current_err == nil && qos_err == nil {
-											fmt.Println(">>> "+clustername+" Update HPA [ min:", *updateHPA.Spec.MinReplicas, "/ max:", updateHPA.Spec.MaxReplicas, "]")
-											fmt.Println(">>> "+qosCluster+" Update HPA [ min:", *updateQosHPA.Spec.MinReplicas, "/ max:", updateQosHPA.Spec.MaxReplicas, "]")
+											klog.V(0).Info(">>> "+clustername+" Update HPA [ min:", *updateHPA.Spec.MinReplicas, "/ max:", updateHPA.Spec.MaxReplicas, "]")
+											klog.V(0).Info(">>> "+qosCluster+" Update HPA [ min:", *updateQosHPA.Spec.MinReplicas, "/ max:", updateQosHPA.Spec.MaxReplicas, "]")
 
 											//Status Update
 											hasInstance.Status.RebalancingCount[clustername] += 1
 
 											err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 											if err_openmcp != nil {
-												fmt.Println("!!! Failed to update instance status \"RebalancingCount\"", err)
+												klog.V(0).Info("!!! Failed to update instance status \"RebalancingCount\"", err)
 												return reconcile.Result{}, err
 											} else {
-												fmt.Println(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
+												klog.V(0).Info(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
 											}
 
 											lastTimeRebalancing = time.Now()
-											fmt.Println("     => RebalancingTime : ", lastTimeRebalancing)
+											klog.V(0).Info("     => RebalancingTime : ", lastTimeRebalancing)
 											/*if lastTimeRebalancing.IsZero() {
 												lastTimeRebalancing = time.Now()
 											} else {
@@ -490,23 +515,33 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 							}
 						} else if *foundHPA.Spec.MinReplicas > 1 && *foundHPA.Spec.MinReplicas == foundHPA.Status.CurrentReplicas && foundHPA.Status.CurrentReplicas == foundHPA.Status.DesiredReplicas { //||  (*foundHPA.Spec.MinReplicas == foundHPA.Status.CurrentReplicas && foundHPA.Status.CurrentReplicas == foundHPA.Status.DesiredReplicas) {
 							if lastTimeRebalancing.IsZero() || (!lastTimeRebalancing.IsZero() && time.Since(lastTimeRebalancing) > time.Second*180) {
-								fmt.Println(">>> " + clustername + " min rebalancing")
+								klog.V(0).Info(">>> " + clustername + " min rebalancing")
 
 								var dep_list_for_analysis []string
+
+								minReplicasMap := map[string]int32{}
+								currentReplicasMap := map[string]int32{}
 
 								for _, cn := range dep_list_for_hpa {
 									analysisHPA := &hpav2beta2.HorizontalPodAutoscaler{}
 									err = cm.Cluster_genClients[cn].Get(context.TODO(), analysisHPA, hasInstance.Namespace, hasInstance.Name)
-
-									if *analysisHPA.Spec.MinReplicas < analysisHPA.Status.CurrentReplicas-1 {
-										dep_list_for_analysis = append(dep_list_for_analysis, cn)
+									if err == nil {
+										//fmt.Println("min : ", *analysisHPA.Spec.MinReplicas)
+										if *analysisHPA.Spec.MinReplicas < analysisHPA.Status.CurrentReplicas-1 {
+											dep_list_for_analysis = append(dep_list_for_analysis, cn)
+											minReplicasMap[cn] = *analysisHPA.Spec.MinReplicas
+											currentReplicasMap[cn] = analysisHPA.Status.CurrentReplicas
+										}
+									}else {
+										klog.V(0).Info("!!! Failed to get hpa info : ", err)
 									}
 								}
 
 								//후보 클러스터가 없을 때
 								if len(dep_list_for_analysis) == 0 {
-									fmt.Println("!!! Failed Rebalancing : There is no candidate cluster")
+									klog.V(0).Info("!!! Failed Rebalancing : There is no candidate cluster")
 								} else {
+									//timeStart_mixmaxrebal := time.Now()
 									//분석 엔진을 통해 얻은 결과 (gRPC 통신)
 									//---------------------------------------------------------------------------------------------------
 									SERVER_IP := os.Getenv("GRPC_SERVER")
@@ -514,18 +549,22 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 									grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
-									hi := &protobuf.HASInfo{HPAName: hasInstance.Name, HPANamespace: hasInstance.Namespace, ClusterName: clustername}
-
+									hi := &protobuf.HASInfo{HPAName: hasInstance.Name, HPANamespace: hasInstance.Namespace, ClusterName: clustername, HPACurrentReplicas: currentReplicasMap, HPAMinORMaxReplicas: minReplicasMap, HASRebalancingCount: hasInstance.Status.RebalancingCount}
+									timeStart_mixmaxrebal := time.Now()
 									result, gRPCerr := grpcClient.SendHASMinAnalysis(context.TODO(), hi)
 									if gRPCerr != nil || len(result.TargetCluster) == 0 {
 										if gRPCerr != nil {
-											fmt.Printf("could not connect : %v", gRPCerr)
+											klog.V(0).Info("could not connect : %v", gRPCerr)
 										}
-										fmt.Printf("!!! Failed Rebalacing : Failed to get Analysis Result :(")
+										klog.V(0).Info("!!! Failed Rebalacing : Failed to get Analysis Result :(")
 									} else {
 										//---------------------------------------------------------------------------------------------------
 										qosCluster := result.TargetCluster
-										fmt.Println("     => Anlysis Result [", qosCluster, "]")
+										klog.V(0).Info("     => Anlysis Result [", qosCluster, "]")
+
+										timeEnd_mixmaxrebal := time.Since(timeStart_mixmaxrebal)
+										klog.V(0).Info("     => Total Rebalancing Time [", timeEnd_mixmaxrebal, "] (Analysis + gRPC)")
+										//fmt.Println("-------------------- Min rebalancing result 분석 시간 : ", timeEnd_mixmaxrebal,"------------------")
 
 										foundHPA.TypeMeta.Kind = "HorizontalPodAutoscaler"
 										foundHPA.TypeMeta.APIVersion = "autoscaling/v2beta2"
@@ -538,7 +577,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 										err := qos_cluster_client.Get(context.TODO(), foundQosHPA, hasInstance.Namespace, hasInstance.Name)
 
 										if err != nil {
-											fmt.Println("err: ", err)
+											klog.V(0).Info("err: ", err)
 										}
 
 										foundQosHPA.TypeMeta.Kind = "HorizontalPodAutoscaler"
@@ -555,8 +594,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 										//qos_err := qos_cluster_client.Update(context.TODO(), updateQosHPA)
 
 										if current_err != nil || qos_err != nil { //둘 중 하나라도 에러가 날 경우 롤백
-											fmt.Println("current_err : ", current_err)
-											fmt.Println("qos_err : ", qos_err)
+											klog.V(0).Info("current_err : ", current_err)
+											klog.V(0).Info("qos_err : ", qos_err)
 
 											command := "update"
 											r.sendSyncHPA(foundHPA, command, clustername)
@@ -565,25 +604,25 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 											//cluster_client.Update(context.TODO(), foundHPA)
 											//qos_cluster_client.Update(context.TODO(), foundQosHPA)
 
-											fmt.Println(">>> "+clustername+" Rollback HPA [ min:", *foundHPA.Spec.MinReplicas, "/ max:", foundHPA.Spec.MaxReplicas, "]")
-											fmt.Println(">>> "+qosCluster+" Rollback HPA [ min:", *foundQosHPA.Spec.MinReplicas, "/ max:", foundQosHPA.Spec.MaxReplicas, "]")
+											klog.V(0).Info(">>> "+clustername+" Rollback HPA [ min:", *foundHPA.Spec.MinReplicas, "/ max:", foundHPA.Spec.MaxReplicas, "]")
+											klog.V(0).Info(">>> "+qosCluster+" Rollback HPA [ min:", *foundQosHPA.Spec.MinReplicas, "/ max:", foundQosHPA.Spec.MaxReplicas, "]")
 										} else if current_err == nil && qos_err == nil {
-											fmt.Println(">>> "+clustername+" Update HPA [ min:", *updateHPA.Spec.MinReplicas, "/ max:", updateHPA.Spec.MaxReplicas, "]")
-											fmt.Println(">>> "+qosCluster+" Update HPA [ min:", *updateQosHPA.Spec.MinReplicas, "/ max:", updateQosHPA.Spec.MaxReplicas, "]")
+											klog.V(0).Info(">>> "+clustername+" Update HPA [ min:", *updateHPA.Spec.MinReplicas, "/ max:", updateHPA.Spec.MaxReplicas, "]")
+											klog.V(0).Info(">>> "+qosCluster+" Update HPA [ min:", *updateQosHPA.Spec.MinReplicas, "/ max:", updateQosHPA.Spec.MaxReplicas, "]")
 
 											//Status Update
 											hasInstance.Status.RebalancingCount[clustername] += 1
 
 											err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 											if err_openmcp != nil {
-												fmt.Println("!!! Failed to update instance status \"RebalancingCount\"", err)
+												klog.V(0).Info("!!! Failed to update instance status \"RebalancingCount\"", err)
 												return reconcile.Result{}, err
 											} else {
-												fmt.Println(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
+												klog.V(0).Info(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
 											}
 
 											lastTimeRebalancing = time.Now()
-											fmt.Println("     => RebalancingTime : ", lastTimeRebalancing)
+											klog.V(0).Info("     => RebalancingTime : ", lastTimeRebalancing)
 											/*if lastTimeRebalancing.IsZero() {
 												lastTimeRebalancing = time.Now()
 											} else {
@@ -619,7 +658,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 										//err = cluster_client.Update(context.TODO(), updateHPA)
 										//fmt.Println("min: ", desired_min_replicas, "max: ", desired_max_replicas)
-										fmt.Println(">>> "+clustername+" Update HPA [ min:", *updateHPA.Spec.MinReplicas, "/ max:", updateHPA.Spec.MaxReplicas, "]")
+										klog.V(0).Info(">>> "+clustername+" Update HPA [ min:", *updateHPA.Spec.MinReplicas, "/ max:", updateHPA.Spec.MaxReplicas, "]")
 
 										if err != nil {
 											reqLogger.Error(err, "!!! Failed to update HPA", "Hpa.Namespace", updateHPA.Namespace, "Hpa.Name", updateHPA.Name)
@@ -629,6 +668,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 								}
 							}
 						}
+
 					}
 					// VPA 생성
 				} else if hasInstance.Spec.VpaMode == "Always" || (hasInstance.Spec.VpaMode == "Auto" && cluster_dep_request[clustername] == false) {
@@ -657,7 +697,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 							return reconcile.Result{}, err
 						}
 
-						fmt.Println(">>> "+clustername+" Create HPA [ min:", *hpa.Spec.MinReplicas, "/ max:", hpa.Spec.MaxReplicas, "]")
+						klog.V(0).Info(">>> "+clustername+" Create HPA [ min:", *hpa.Spec.MinReplicas, "/ max:", hpa.Spec.MaxReplicas, "]")
 						// HPA created successfully - return and requeue
 
 						//Status Update
@@ -668,10 +708,10 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 						err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 						if err_openmcp != nil {
-							fmt.Println("!!! Failed to update instance status", err)
+							klog.V(0).Info("!!! Failed to update instance status", err)
 							return reconcile.Result{}, err
 						} else {
-							fmt.Println(">>> OpenMCPHPA LastSpec Update (HPA Create)")
+							klog.V(0).Info(">>> OpenMCPHPA LastSpec Update (HPA Create)")
 						}
 
 						return reconcile.Result{Requeue: true}, nil
@@ -681,9 +721,12 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 					} else if err == nil { //UPDATE HPA - Rebalancing 조건을 만족했을 때 또는 min/max값이 수정되었을때
 						if foundHPA.Spec.MaxReplicas == foundHPA.Status.CurrentReplicas && foundHPA.Status.CurrentReplicas == foundHPA.Status.DesiredReplicas { //||  (*foundHPA.Spec.MinReplicas == foundHPA.Status.CurrentReplicas && foundHPA.Status.CurrentReplicas == foundHPA.Status.DesiredReplicas) {
 							if lastTimeRebalancing.IsZero() || (!lastTimeRebalancing.IsZero() && time.Since(lastTimeRebalancing) > time.Second*180) {
-								fmt.Println(">>> " + clustername + " max rebalancing")
+								klog.V(0).Info(">>> " + clustername + " max rebalancing")
 
 								var dep_list_for_analysis []string
+
+								maxReplicasMap := map[string]int32{}
+								currentReplicasMap := map[string]int32{}
 
 								for _, cn := range dep_list_for_hpa {
 									analysisHPA := &hpav2beta2.HorizontalPodAutoscaler{}
@@ -691,13 +734,17 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 									if analysisHPA.Spec.MaxReplicas > analysisHPA.Status.CurrentReplicas+1 {
 										dep_list_for_analysis = append(dep_list_for_analysis, cn)
+										maxReplicasMap[cn] = analysisHPA.Spec.MaxReplicas
+										currentReplicasMap[cn] = analysisHPA.Status.CurrentReplicas
 									}
 								}
 
 								//후보 클러스터가 없을 때
 								if len(dep_list_for_analysis) == 0 {
-									fmt.Println("!!! Failed Rebalancing : There is no candidate cluster")
+									klog.V(0).Info("!!! Failed Rebalancing : There is no candidate cluster")
 								} else {
+									timeStart_mixmaxrebal := time.Now()
+
 									//분석 엔진을 통해 얻은 결과 (gRPC 통신)
 									//---------------------------------------------------------------------------------------------------
 									SERVER_IP := os.Getenv("GRPC_SERVER")
@@ -705,18 +752,22 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 									grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
-									hi := &protobuf.HASInfo{HPAName: hasInstance.Name, HPANamespace: hasInstance.Namespace, ClusterName: clustername}
+									hi := &protobuf.HASInfo{HPAName: hasInstance.Name, HPANamespace: hasInstance.Namespace, ClusterName: clustername, HPACurrentReplicas: currentReplicasMap, HPAMinORMaxReplicas: maxReplicasMap, HASRebalancingCount: hasInstance.Status.RebalancingCount}
 
 									result, gRPCerr := grpcClient.SendHASMaxAnalysis(context.TODO(), hi)
 									if gRPCerr != nil || len(result.TargetCluster) == 0 {
 										if gRPCerr != nil {
-											fmt.Printf("could not connect : %v", gRPCerr)
+											klog.V(0).Info("could not connect : %v", gRPCerr)
 										}
-										fmt.Printf("!!! Failed Rebalacing : Failed to get Analysis Result :(")
+										klog.V(0).Info("!!! Failed Rebalacing : Failed to get Analysis Result :(")
 									} else {
 										//---------------------------------------------------------------------------------------------------
 										qosCluster := result.TargetCluster
-										fmt.Println("     => Anlysis Result [", qosCluster, "]")
+										klog.V(0).Info("     => Anlysis Result [", qosCluster, "]")
+
+										timeEnd_mixmaxrebal := time.Since(timeStart_mixmaxrebal)
+										klog.V(0).Info("     => Total Rebalancing Time [", timeEnd_mixmaxrebal, "] (Analysis + gRPC)")
+										//fmt.Println("-------------------- Min rebalancing result 분석 시간 : ", timeEnd_mixmaxrebal,"------------------")
 
 										foundHPA.TypeMeta.Kind = "HorizontalPodAutoscaler"
 										foundHPA.TypeMeta.APIVersion = "autoscaling/v2beta2"
@@ -729,7 +780,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 										err := qos_cluster_client.Get(context.TODO(), foundQosHPA, hasInstance.Namespace, hasInstance.Name)
 
 										if err != nil {
-											fmt.Println("err: ", err)
+											klog.V(0).Info("err: ", err)
 										}
 
 										foundQosHPA.TypeMeta.Kind = "HorizontalPodAutoscaler"
@@ -746,8 +797,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 										//qos_err := qos_cluster_client.Update(context.TODO(), updateQosHPA)
 
 										if current_err != nil || qos_err != nil { //둘 중 하나라도 에러가 날 경우 롤백
-											fmt.Println("current_err : ", current_err)
-											fmt.Println("qos_err : ", qos_err)
+											klog.V(0).Info("current_err : ", current_err)
+											klog.V(0).Info("qos_err : ", qos_err)
 
 											command := "update"
 											r.sendSyncHPA(foundHPA, command, clustername)
@@ -756,25 +807,25 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 											//cluster_client.Update(context.TODO(), foundHPA)
 											//qos_cluster_client.Update(context.TODO(), foundQosHPA)
 
-											fmt.Println(">>> "+clustername+" Rollback HPA [ min:", *foundHPA.Spec.MinReplicas, "/ max:", foundHPA.Spec.MaxReplicas, "]")
-											fmt.Println(">>> "+qosCluster+" Rollback HPA [ min:", *foundQosHPA.Spec.MinReplicas, "/ max:", foundQosHPA.Spec.MaxReplicas, "]")
+											klog.V(0).Info(">>> "+clustername+" Rollback HPA [ min:", *foundHPA.Spec.MinReplicas, "/ max:", foundHPA.Spec.MaxReplicas, "]")
+											klog.V(0).Info(">>> "+qosCluster+" Rollback HPA [ min:", *foundQosHPA.Spec.MinReplicas, "/ max:", foundQosHPA.Spec.MaxReplicas, "]")
 										} else if current_err == nil && qos_err == nil {
-											fmt.Println(">>> "+clustername+" Update HPA [ min:", *updateHPA.Spec.MinReplicas, "/ max:", updateHPA.Spec.MaxReplicas, "]")
-											fmt.Println(">>> "+qosCluster+" Update HPA [ min:", *updateQosHPA.Spec.MinReplicas, "/ max:", updateQosHPA.Spec.MaxReplicas, "]")
+											klog.V(0).Info(">>> "+clustername+" Update HPA [ min:", *updateHPA.Spec.MinReplicas, "/ max:", updateHPA.Spec.MaxReplicas, "]")
+											klog.V(0).Info(">>> "+qosCluster+" Update HPA [ min:", *updateQosHPA.Spec.MinReplicas, "/ max:", updateQosHPA.Spec.MaxReplicas, "]")
 
 											//Status Update
 											hasInstance.Status.RebalancingCount[clustername] += 1
 
 											err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 											if err_openmcp != nil {
-												fmt.Println("!!! Failed to update instance status \"RebalancingCount\"", err)
+												klog.V(0).Info("!!! Failed to update instance status \"RebalancingCount\"", err)
 												return reconcile.Result{}, err
 											} else {
-												fmt.Println(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
+												klog.V(0).Info(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
 											}
 
 											lastTimeRebalancing = time.Now()
-											fmt.Println("     => RebalancingTime : ", lastTimeRebalancing)
+											klog.V(0).Info("     => RebalancingTime : ", lastTimeRebalancing)
 											/*if lastTimeRebalancing.IsZero() {
 												lastTimeRebalancing = time.Now()
 											} else {
@@ -792,23 +843,37 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 							}
 						} else if *foundHPA.Spec.MinReplicas > 1 && *foundHPA.Spec.MinReplicas == foundHPA.Status.CurrentReplicas && foundHPA.Status.CurrentReplicas == foundHPA.Status.DesiredReplicas { //||  (*foundHPA.Spec.MinReplicas == foundHPA.Status.CurrentReplicas && foundHPA.Status.CurrentReplicas == foundHPA.Status.DesiredReplicas) {
 							if lastTimeRebalancing.IsZero() || (!lastTimeRebalancing.IsZero() && time.Since(lastTimeRebalancing) > time.Second*180) {
-								fmt.Println(">>> " + clustername + " min rebalancing")
+								klog.V(0).Info(">>> " + clustername + " min rebalancing")
 
 								var dep_list_for_analysis []string
+
+								minReplicasMap := map[string]int32{}
+								currentReplicasMap := map[string]int32{}
 
 								for _, cn := range dep_list_for_hpa {
 									analysisHPA := &hpav2beta2.HorizontalPodAutoscaler{}
 									err = cm.Cluster_genClients[cn].Get(context.TODO(), analysisHPA, hasInstance.Namespace, hasInstance.Name)
 
-									if *analysisHPA.Spec.MinReplicas < analysisHPA.Status.CurrentReplicas-1 {
-										dep_list_for_analysis = append(dep_list_for_analysis, cn)
+
+
+									if err == nil {
+										//fmt.Println("min : ", *analysisHPA.Spec.MinReplicas)
+										if *analysisHPA.Spec.MinReplicas < analysisHPA.Status.CurrentReplicas-1 {
+											dep_list_for_analysis = append(dep_list_for_analysis, cn)
+											minReplicasMap[cn] = *analysisHPA.Spec.MinReplicas
+											currentReplicasMap[cn] = analysisHPA.Status.CurrentReplicas
+										}
+									}else {
+										klog.V(0).Info("!!! Failed to get hpa info : ", err)
 									}
 								}
 
 								//후보 클러스터가 없을 때
 								if len(dep_list_for_analysis) == 0 {
-									fmt.Println("!!! Failed Rebalancing : There is no candidate cluster")
+									klog.V(0).Info("!!! Failed Rebalancing : There is no candidate cluster")
 								} else {
+									timeStart_mixmaxrebal := time.Now()
+
 									//분석 엔진을 통해 얻은 결과 (gRPC 통신)
 									//---------------------------------------------------------------------------------------------------
 									SERVER_IP := os.Getenv("GRPC_SERVER")
@@ -816,18 +881,22 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 									grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
-									hi := &protobuf.HASInfo{HPAName: hasInstance.Name, HPANamespace: hasInstance.Namespace, ClusterName: clustername}
+									hi := &protobuf.HASInfo{HPAName: hasInstance.Name, HPANamespace: hasInstance.Namespace, ClusterName: clustername, HPACurrentReplicas: currentReplicasMap, HPAMinORMaxReplicas: minReplicasMap, HASRebalancingCount: hasInstance.Status.RebalancingCount}
 
 									result, gRPCerr := grpcClient.SendHASMinAnalysis(context.TODO(), hi)
 									if gRPCerr != nil || len(result.TargetCluster) == 0 {
 										if gRPCerr != nil {
-											fmt.Printf("could not connect : %v", gRPCerr)
+											klog.V(0).Info("could not connect : %v", gRPCerr)
 										}
-										fmt.Printf("!!! Failed Rebalacing : Failed to get Analysis Result :(")
+										klog.V(0).Info("!!! Failed Rebalacing : Failed to get Analysis Result :(")
 									} else {
 										//---------------------------------------------------------------------------------------------------
 										qosCluster := result.TargetCluster
-										fmt.Println("     => Anlysis Result [", qosCluster, "]")
+										klog.V(0).Info("     => Anlysis Result [", qosCluster, "]")
+
+										timeEnd_mixmaxrebal := time.Since(timeStart_mixmaxrebal)
+										klog.V(0).Info("     => Total Rebalancing Time [", timeEnd_mixmaxrebal, "] (Analysis + gRPC)")
+										//fmt.Println("-------------------- Min rebalancing result 분석 시간 : ", timeEnd_mixmaxrebal,"------------------")
 
 										foundHPA.TypeMeta.Kind = "HorizontalPodAutoscaler"
 										foundHPA.TypeMeta.APIVersion = "autoscaling/v2beta2"
@@ -840,7 +909,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 										err := qos_cluster_client.Get(context.TODO(), foundQosHPA, hasInstance.Namespace, hasInstance.Name)
 
 										if err != nil {
-											fmt.Println("err: ", err)
+											klog.V(0).Info("err: ", err)
 										}
 
 										foundQosHPA.TypeMeta.Kind = "HorizontalPodAutoscaler"
@@ -857,8 +926,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 										//qos_err := qos_cluster_client.Update(context.TODO(), updateQosHPA)
 
 										if current_err != nil || qos_err != nil { //둘 중 하나라도 에러가 날 경우 롤백
-											fmt.Println("current_err : ", current_err)
-											fmt.Println("qos_err : ", qos_err)
+											klog.V(0).Info("current_err : ", current_err)
+											klog.V(0).Info("qos_err : ", qos_err)
 
 											command := "update"
 											r.sendSyncHPA(foundHPA, command, clustername)
@@ -867,25 +936,25 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 											//cluster_client.Update(context.TODO(), foundHPA)
 											//qos_cluster_client.Update(context.TODO(), foundQosHPA)
 
-											fmt.Println(">>> "+clustername+" Rollback HPA [ min:", *foundHPA.Spec.MinReplicas, "/ max:", foundHPA.Spec.MaxReplicas, "]")
-											fmt.Println(">>> "+qosCluster+" Rollback HPA [ min:", *foundQosHPA.Spec.MinReplicas, "/ max:", foundQosHPA.Spec.MaxReplicas, "]")
+											klog.V(0).Info(">>> "+clustername+" Rollback HPA [ min:", *foundHPA.Spec.MinReplicas, "/ max:", foundHPA.Spec.MaxReplicas, "]")
+											klog.V(0).Info(">>> "+qosCluster+" Rollback HPA [ min:", *foundQosHPA.Spec.MinReplicas, "/ max:", foundQosHPA.Spec.MaxReplicas, "]")
 										} else if current_err == nil && qos_err == nil {
-											fmt.Println(">>> "+clustername+" Update HPA [ min:", *updateHPA.Spec.MinReplicas, "/ max:", updateHPA.Spec.MaxReplicas, "]")
-											fmt.Println(">>> "+qosCluster+" Update HPA [ min:", *updateQosHPA.Spec.MinReplicas, "/ max:", updateQosHPA.Spec.MaxReplicas, "]")
+											klog.V(0).Info(">>> "+clustername+" Update HPA [ min:", *updateHPA.Spec.MinReplicas, "/ max:", updateHPA.Spec.MaxReplicas, "]")
+											klog.V(0).Info(">>> "+qosCluster+" Update HPA [ min:", *updateQosHPA.Spec.MinReplicas, "/ max:", updateQosHPA.Spec.MaxReplicas, "]")
 
 											//Status Update
 											hasInstance.Status.RebalancingCount[clustername] += 1
 
 											err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 											if err_openmcp != nil {
-												fmt.Println("!!! Failed to update instance status \"RebalancingCount\"", err)
+												klog.V(0).Info("!!! Failed to update instance status \"RebalancingCount\"", err)
 												return reconcile.Result{}, err
 											} else {
-												fmt.Println(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
+												klog.V(0).Info(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
 											}
 
 											lastTimeRebalancing = time.Now()
-											fmt.Println("     => RebalancingTime : ", lastTimeRebalancing)
+											klog.V(0).Info("     => RebalancingTime : ", lastTimeRebalancing)
 											/*if lastTimeRebalancing.IsZero() {
 												lastTimeRebalancing = time.Now()
 											} else {
@@ -918,7 +987,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 										command := "update"
 										r.sendSyncHPA(updateHPA, command, clustername)
 										//err = cluster_client.Update(context.TODO(), updateHPA)
-										fmt.Println(">>> "+clustername+" Update HPA [ min:", *updateHPA.Spec.MinReplicas, "/ max:", updateHPA.Spec.MaxReplicas, "]")
+										klog.V(0).Info(">>> "+clustername+" Update HPA [ min:", *updateHPA.Spec.MinReplicas, "/ max:", updateHPA.Spec.MaxReplicas, "]")
 
 										if err != nil {
 											reqLogger.Error(err, "!!! Failed to update HPA", "Hpa.Namespace", updateHPA.Namespace, "Hpa.Name", updateHPA.Name)
@@ -951,21 +1020,21 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 							return reconcile.Result{}, err
 						}
 						// VPA created successfully - return and requeue
-						fmt.Println(">>> " + clustername + " Create VPA")
+						klog.V(0).Info(">>> " + clustername + " Create VPA")
 
 						hasInstance.Status.LastSpec = hasInstance.Spec
 
 						err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 						if err_openmcp != nil {
-							fmt.Println("!!! Failed to update instance status", err)
+							klog.V(0).Info("!!! Failed to update instance status", err)
 							return reconcile.Result{}, err
 						} else {
-							fmt.Println(">>> OpenMCPHPA LastSpec Update (VPA Create)")
+							klog.V(0).Info(">>> OpenMCPHPA LastSpec Update (VPA Create)")
 						}
 
 						return reconcile.Result{Requeue: true}, nil
 					} else if err != nil {
-						fmt.Println("!!! Failed to get VPA")
+						klog.V(0).Info("!!! Failed to get VPA")
 						reqLogger.Error(err, "!!! Failed to get VPA")
 						return reconcile.Result{}, err
 					} else if err == nil { //UPDATE VPA
@@ -988,19 +1057,19 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 			err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 			if err_openmcp != nil {
-				fmt.Println("!!! Failed to update instance status", err)
+				klog.V(0).Info("!!! Failed to update instance status", err)
 				return reconcile.Result{}, err
 			} else {
-				fmt.Println(">>> OpenMCPHPA LastSpec Update (End)")
+				klog.V(0).Info(">>> OpenMCPHPA LastSpec Update (End)")
 			}
 
 		}
 	} else if err != nil && errors.IsNotFound(err) {
-		fmt.Println("!!! OpenmcpDeployment is not found")
+		klog.V(0).Info("!!! OpenmcpDeployment is not found")
 		reqLogger.Error(err, "!!! OpenMCPDeployment doesn't exist - ", "openmcpDep.Namespace: ", openmcpDep.Namespace, ", openmcpDep.Name: ", openmcpDep.Name)
 		return reconcile.Result{}, err
 	} else {
-		fmt.Println("!!! Failed to get OpenMCPDeployment")
+		klog.V(0).Info("!!! Failed to get OpenMCPDeployment")
 		reqLogger.Error(err, "!!! Failed to get OpenMCPDeployment")
 		return reconcile.Result{}, err
 	}
@@ -1013,13 +1082,15 @@ func (r *reconciler) UpdateStatusLastspec(hasInstance *ketiv1alpha1.OpenMCPHybri
 
 	err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 	if err_openmcp != nil {
-		fmt.Println("!!! Failed to update instance status", err_openmcp)
+		klog.V(0).Info("!!! Failed to update instance status", err_openmcp)
 	} else {
-		fmt.Println(">>> Update OpenMCPHPA LastSpec : ", hasInstance.Status.LastSpec.HpaTemplate.Spec.MaxReplicas)
+		klog.V(0).Info(">>> Update OpenMCPHPA LastSpec : ", hasInstance.Status.LastSpec.HpaTemplate.Spec.MaxReplicas)
 	}
 }
 
-func CreateMinMaxMap(r *reconciler, cm *clusterManager.ClusterManager, hasInstance *ketiv1alpha1.OpenMCPHybridAutoScaler, dep_list_for_hpa []string, cluster_dep_replicas map[string]int32) (map[string]int32, map[string]int32, *ketiv1alpha1.OpenMCPHybridAutoScaler, error) {
+func CreateMinMaxMap(r *reconciler, cm *clusterManager.ClusterManager, hasInstance *ketiv1alpha1.OpenMCPHybridAutoScaler, cluster_dep_request map[string]bool,foundPolicy *ketiv1alpha1.OpenMCPPolicyEngine, minmax_policy_err error, dep_list_for_hpa []string, cluster_dep_replicas map[string]int32) (map[string]int32, map[string]int32, *ketiv1alpha1.OpenMCPHybridAutoScaler, error) {
+	timeStart_mixmaxdist := time.Now()
+
 	cluster_min_map := make(map[string]int32)
 	cluster_max_map := make(map[string]int32)
 	var err error
@@ -1030,15 +1101,19 @@ func CreateMinMaxMap(r *reconciler, cm *clusterManager.ClusterManager, hasInstan
 	if hasInstance.Status.Policies != nil { // 정책이 하나라도 있는지 확인
 		for n, tmp := range hasInstance.Status.Policies {
 			if tmp.Type == "Mode" { // Mode 이미 설정되어 있으면
-				fmt.Println(">>> Policy \"Min Max Distribution\" Existed")
+				klog.V(0).Info(">>> Policy \"Min Max Distribution\" Existed")
 				if hasInstance.Status.Policies[n].Value[0] == "Equal" {
 					//fmt.Println("Policy - min max Equal")
 					cluster_min_map = hpaMinScheduling_equal(cm, dep_list_for_hpa, *hasInstance.Spec.HpaTemplate.Spec.MinReplicas)
 					cluster_max_map = hpaMaxScheduling_equal(cm, dep_list_for_hpa, hasInstance.Spec.HpaTemplate.Spec.MaxReplicas)
 				} else {
 					//fmt.Println("Policy - min max Unequal")
+
+
 					cluster_min_map = hpaMinScheduling(cm, dep_list_for_hpa, cluster_dep_replicas, *hasInstance.Spec.HpaTemplate.Spec.MinReplicas)
 					cluster_max_map = hpaMaxScheduling(cm, dep_list_for_hpa, cluster_dep_replicas, hasInstance.Spec.HpaTemplate.Spec.MaxReplicas)
+
+
 				}
 				checkPolicy = 1
 				break
@@ -1046,11 +1121,10 @@ func CreateMinMaxMap(r *reconciler, cm *clusterManager.ClusterManager, hasInstan
 		}
 	}
 	if checkPolicy == 0 { // Mode 설정 X
-		foundPolicy := &ketiv1alpha1.OpenMCPPolicyEngine{}
-		minmax_policy_err := r.live.Get(context.TODO(), ObjectKey{Namespace: "openmcp", Name: "hpa-minmax-distribution-mode"}, foundPolicy)
+
 		if minmax_policy_err == nil {
 			if foundPolicy.Spec.PolicyStatus == "Enabled" {
-				fmt.Println(">>> Policy \"Min Max Distribution\" Apply (Enabled)")
+				klog.V(0).Info(">>> Policy \"Min Max Distribution\" Apply (Enabled)")
 				if foundPolicy.Spec.Template.Spec.Policies[0].Value[0] == "Equal" {
 					//fmt.Println("New Policy - min max Equal")
 					cluster_min_map = hpaMinScheduling_equal(cm, dep_list_for_hpa, *hasInstance.Spec.HpaTemplate.Spec.MinReplicas)
@@ -1070,7 +1144,7 @@ func CreateMinMaxMap(r *reconciler, cm *clusterManager.ClusterManager, hasInstan
 				}
 
 			} else {
-				fmt.Println(">>> Policy \"Min Max Distribution\" Apply (Disabled - set default)")
+				klog.V(0).Info(">>> Policy \"Min Max Distribution\" Apply (Disabled - set default)")
 				cluster_min_map = hpaMinScheduling(cm, dep_list_for_hpa, cluster_dep_replicas, *hasInstance.Spec.HpaTemplate.Spec.MinReplicas)
 				cluster_max_map = hpaMaxScheduling(cm, dep_list_for_hpa, cluster_dep_replicas, hasInstance.Spec.HpaTemplate.Spec.MaxReplicas)
 				omp := make([]ketiv1alpha1.OpenMCPPolicies, 1)
@@ -1081,8 +1155,8 @@ func CreateMinMaxMap(r *reconciler, cm *clusterManager.ClusterManager, hasInstan
 				hasInstance.Status.Policies = append(hasInstance.Status.Policies, omp...)
 			}
 		} else {
-			fmt.Println("policy_err : ", minmax_policy_err)
-			fmt.Println("Fail to get policy \"Min Max Distribution\" (set default)")
+			klog.V(0).Info("policy_err : ", minmax_policy_err)
+			klog.V(0).Info("Fail to get policy \"Min Max Distribution\" (set default)")
 			cluster_min_map = hpaMinScheduling(cm, dep_list_for_hpa, cluster_dep_replicas, *hasInstance.Spec.HpaTemplate.Spec.MinReplicas)
 			cluster_max_map = hpaMaxScheduling(cm, dep_list_for_hpa, cluster_dep_replicas, hasInstance.Spec.HpaTemplate.Spec.MaxReplicas)
 			omp := make([]ketiv1alpha1.OpenMCPPolicies, 1)
@@ -1093,12 +1167,27 @@ func CreateMinMaxMap(r *reconciler, cm *clusterManager.ClusterManager, hasInstan
 			hasInstance.Status.Policies = append(hasInstance.Status.Policies, omp...)
 		}
 
+		for _, cluster := range dep_list_for_hpa {
+			if hasInstance.Spec.VpaMode == "Always" || (hasInstance.Spec.VpaMode == "Auto" && cluster_dep_request[cluster] == false){
+				if cluster_min_map[cluster] < 2 {
+					cluster_min_map[cluster] = 2
+				}
+			}
+		}
+
+		klog.V(0).Info("******* [Start] HAS Min/Max Distribution *******")
+		timeEnd_mixmaxdist := time.Since(timeStart_mixmaxdist)
+		for _, cluster := range dep_list_for_hpa {
+			klog.V(0).Info("[",cluster,"] min:",cluster_min_map[cluster]," / max:",cluster_max_map[cluster],"")
+		}
+		klog.V(0).Info("=> Total Min/Max Distribution Time [", timeEnd_mixmaxdist,"]")
+		klog.V(0).Info("*******  [End] HAS Min/Max Distribution  *******")
 		//정책 업데이트
 		err = r.live.Status().Update(context.TODO(), hasInstance)
 		if err != nil {
-			fmt.Println("Policy Status Update Error")
+			klog.V(0).Info("Policy Status Update Error")
 		} else {
-			fmt.Println(">>> Policy Status UPDATE Success")
+			klog.V(0).Info(">>> Policy Status UPDATE Success")
 		}
 
 	}
@@ -1118,24 +1207,24 @@ func (r *reconciler) DeleteOpenMCPHPA(cm *clusterManager.ClusterManager, namespa
 		if err1 != nil && errors.IsNotFound(err1) {
 			//fmt.Println("Fail to Delete HPA - ", err1)
 		} else if err1 != nil {
-			fmt.Println("!!! Fail to Delete HPA - ", err1)
+			klog.V(0).Info("!!! Fail to Delete HPA - ", err1)
 		} else if err1 == nil {
-			fmt.Println(">>> " + cluster.Name + " Delete HPA")
+			klog.V(0).Info(">>> " + cluster.Name + " Delete HPA")
 		}
 
 		err2 := r.ghosts[cluster.Name].Get(context.TODO(), ObjectKey{Namespace: namespace, Name: vpaName}, vpa)
 		if err2 != nil && errors.IsNotFound(err2) {
 			//fmt.Println("Fail to Get VPA - ", err2)
 		} else if err2 != nil {
-			fmt.Println("!!! Fail to Get VPA - ", err2)
+			klog.V(0).Info("!!! Fail to Get VPA - ", err2)
 		} else if err2 == nil {
 			err3 := r.ghosts[cluster.Name].Delete(context.Background(), vpa)
 			if err3 != nil && errors.IsNotFound(err3) {
 				//fmt.Println("Fail to Delete VPA - ", err3)
 			} else if err3 != nil {
-				fmt.Println("!!! Fail to Delete VPA - ", err3)
+				klog.V(0).Info("!!! Fail to Delete VPA - ", err3)
 			} else if err3 == nil {
-				fmt.Println(">>> " + cluster.Name + " Delete VPA")
+				klog.V(0).Info(">>> " + cluster.Name + " Delete VPA")
 			}
 		}
 
@@ -1177,26 +1266,26 @@ func (r *reconciler) DeleteHPAVPA(cm *clusterManager.ClusterManager, clustername
 		if err1 != nil && errors.IsNotFound(err1) {
 			//fmt.Println("Fail to Delete HPA - ", err1)
 		} else if err1 != nil {
-			fmt.Println("!!! Fail to Delete HPA - ", err1)
+			klog.V(0).Info("!!! Fail to Delete HPA - ", err1)
 		} else if err1 == nil {
-			fmt.Println(">>> " + cluster + " Delete HPA")
+			klog.V(0).Info(">>> " + cluster + " Delete HPA")
 		}
 
 		err2 := r.ghosts[cluster].Get(context.TODO(), ObjectKey{Namespace: namespace, Name: vpaName}, vpa)
 		if err2 != nil && errors.IsNotFound(err2) {
 			//fmt.Println("Fail to Get VPA - ", err2)
 		} else if err2 != nil {
-			fmt.Println("!!! Fail to Get VPA - ", err2)
+			klog.V(0).Info("!!! Fail to Get VPA - ", err2)
 		} else if err2 == nil {
 			command := "delete"
 			err3 := r.sendSyncVPA(vpa, command, cluster)
 			//err3 := r.ghosts[cluster].Delete(context.Background(), vpa)
 			if err3 != nil && errors.IsNotFound(err3) {
-				//fmt.Println("Fail to Delete VPA - ", err3)
+				//klog.V(0).Info("Fail to Delete VPA - ", err3)
 			} else if err3 != nil {
-				fmt.Println("!!! Fail to Delete VPA - ", err3)
+				klog.V(0).Info("!!! Fail to Delete VPA - ", err3)
 			} else if err3 == nil {
-				fmt.Println(">>> " + cluster + " Delete VPA")
+				klog.V(0).Info(">>> " + cluster + " Delete VPA")
 			}
 		}
 

@@ -53,8 +53,11 @@ import (
 	sync "openmcp/openmcp/openmcp-sync-controller/pkg/apis/keti/v1alpha1"
 )
 
-func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
+var cm *clusterManager.ClusterManager
+func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
 	klog.V(4).Info("[OpenMCP Deployment] Function Called NewController")
+	cm = myClusterManager
+
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
@@ -107,8 +110,6 @@ var syncIndex int = 0
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	klog.V(4).Info("[OpenMCP Deployment] Function Called Reconcile")
 	i += 1
-
-	cm := clusterManager.NewClusterManager()
 
 	// Fetch the OpenMCPDeployment instance
 	instance := &ketiv1alpha1.OpenMCPDeployment{}
@@ -167,30 +168,33 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			}
 			return reconcile.Result{}, err
 
+		} else if instance.Status.SchedulingNeed == true && instance.Status.SchedulingComplete == false && strings.Compare(instance.Spec.Labels["test"], "yes") == 0{
+			klog.V(0).Info("Scheduling Wait")
+			fmt.Println("testestsetsetseteststsetestsetestttttttttttttttttttttttttttttttt")
+			return reconcile.Result{}, err
+
 		} else if instance.Status.SchedulingNeed == false && instance.Status.SchedulingComplete == true {
 			klog.V(0).Info("Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.")
 
 			sync_req_name := instance.Status.SyncRequestName
 
-			for _, cluster := range cm.Cluster_list.Items {
-
-				if instance.Status.ClusterMaps[cluster.Name] == 0 {
+			for _, myCluster := range cm.Cluster_list.Items {
+				if instance.Status.ClusterMaps[myCluster.Name] == 0 {
 					continue
 				}
 				found := &appsv1.Deployment{}
-				cluster_client := cm.Cluster_genClients[cluster.Name]
+				cluster_client := cm.Cluster_genClients[myCluster.Name]
 
 				err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
-
 				if err != nil && errors.IsNotFound(err) {
 					// TODO: Today
 
-					replica := instance.Status.ClusterMaps[cluster.Name]
+					replica := instance.Status.ClusterMaps[myCluster.Name]
 
 					dep := r.deploymentForOpenMCPDeployment(req, instance, replica)
 					command := "create"
-					klog.V(0).Info("SyncResource Create (ClusterName : "+cluster.Name+", Command : "+ command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
-					sync_req_name, err = r.sendSync(dep, command, cluster.Name)
+					klog.V(0).Info("SyncResource Create (ClusterName : "+myCluster.Name+", Command : "+ command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
+					sync_req_name, err = r.sendSync(dep, command, myCluster.Name)
 					//err = cluster_client.Create(context.Background(), dep)
 					if err != nil {
 						return reconcile.Result{}, err
@@ -362,7 +366,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		return reconcile.Result{}, err
 	}
 
-	klog.V(0).Info("check12", err)
 	return reconcile.Result{}, nil // err
 }
 func (r *reconciler) DeleteDeploys(cm *clusterManager.ClusterManager, name string, namespace string) error {

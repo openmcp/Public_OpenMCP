@@ -5,12 +5,6 @@ metadata:
   namespace: openmcp
 spec:
   replicas: 3
-  affinity: 
-    region: 
-      - AS
-    zone: 
-      - KR
-      - CH
   template:       
     spec:
       template:  
@@ -18,32 +12,8 @@ spec:
           containers:
           - image: nginx
             name: nginx
-            ports:
-            - containerPort: 2020
-            volumeMounts:
-              - mountPath: /data
-                name: shared-storage
             resources:
               requests:        
                 memory: 1Gi
                 cpu: 1.5 
                 ephemeral-storage: 1Gi
-              needs:
-                gpu: true
-                hba: false
-          - image: ubuntu:16.04
-            name: ubuntu-container
-            command: ["tail", "-f", "/dev/null"]
-            volumeMounts:
-              - mountPath: /data
-                name: 
-            resources:
-              requests:
-                cpu: 1
-                memory: 1Ki
-                ephemeral-storage: 1Ki
-          volumes:
-            - name: shared-storage
-              emptyDir: {}
-          nodeSelector:
-            disktype: ssd

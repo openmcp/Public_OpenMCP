@@ -21,10 +21,10 @@ import (
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/apis"
 	ketiv1alpha1 "openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
 	"openmcp/openmcp/util/clusterManager"
-	"openmcp/openmcp/util/controller/logLevel"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -73,8 +73,8 @@ var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	i += 1
-	//logLevel.KetiLog(0, "********* [ OpenMCP Service DNS Record", i, "] *********")
-	//logLevel.KetiLog(0, req.Context, " / ", req.Namespace, " / ", req.Name)
+	//klog.V(0).Info( "********* [ OpenMCP Service DNS Record", i, "] *********")
+	//klog.V(0).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
 	//cm := clusterManager.NewClusterManager()
 
 
@@ -109,7 +109,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	err = r.live.Status().Update(context.TODO(), instanceServiceRecord)
 	if err != nil {
-		//logLevel.KetiLog(0, "[OpenMCP Service DNS Record Controller] : ",err)
+		//klog.V(0).Info( "[OpenMCP Service DNS Record Controller] : ",err)
 		return reconcile.Result{}, nil
 	}
 
@@ -131,7 +131,7 @@ func FillStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord, ins
 		instanceNodeList := &corev1.NodeList{}
 		err := cluster_client.List(context.TODO(), instanceNodeList, "default")
 		if err != nil {
-			logLevel.KetiLog(0, "[OpenMCP Service DNS Record Controller] : ",err)
+			klog.V(0).Info("[OpenMCP Service DNS Record Controller] : ",err)
 			return nil
 		}
 

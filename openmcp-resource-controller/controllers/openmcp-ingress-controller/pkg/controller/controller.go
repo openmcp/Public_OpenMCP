@@ -131,11 +131,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			foundService := &corev1.Service{}
 			nsn := types.NamespacedName{
 				Namespace: "openmcp",
-				Name:      "loadbalancing-controller",
+				Name:      "openmcp-loadbalancing-controller",
 			}
 			err = r.live.Get(context.TODO(), nsn, foundService)
 			if err != nil && errors.IsNotFound(err) {
-				fmt.Println("LoadBalancing-controller Service Not Found")
+				fmt.Println("openmcp-LoadBalancing-controller Service Not Found")
 				return reconcile.Result{}, err
 			} else {
 				fmt.Println("Update Ingress Status")
@@ -187,11 +187,11 @@ func (r *reconciler) registerPdnsServer(ingress *extv1b1.Ingress) error {
 	found := &corev1.Service{}
 	nsn := types.NamespacedName{
 		Namespace: "openmcp",
-		Name:      "loadbalancing-controller",
+		Name:      "openmcp-loadbalancing-controller",
 	}
 	err = r.live.Get(context.TODO(), nsn, found)
 	if err != nil && errors.IsNotFound(err) {
-		fmt.Println("LoadBalancing-controller Service Not Found")
+		fmt.Println("openmcp-LoadBalancing-controller Service Not Found")
 		return err
 	} else {
 		ip := found.Status.LoadBalancer.Ingress[0].IP
@@ -258,9 +258,9 @@ func (r *reconciler) registerPdnsServer(ingress *extv1b1.Ingress) error {
 //			}
 //			found := &corev1.Service{}
 //			openmcp := cm.Host_client
-//			err = openmcp.Get(context.TODO(), found, "openmcp", "loadbalancing-controller")
+//			err = openmcp.Get(context.TODO(), found, "openmcp", "openmcp-loadbalancing-controller")
 //			if err != nil && errors.IsNotFound(err) {
-//				fmt.Println("LoadBalancing-controller Service Not Found")
+//				fmt.Println("openmcp-LoadBalancing-controller Service Not Found")
 //			} else {
 //				ip := found.Status.LoadBalancer.Ingress[0].IP
 //				queryValue := "(" + id + "," + domainID + ",'" + host + "','A','" + ip + "',300,0 ,NULL ,0,NULL,1)"
@@ -348,7 +348,7 @@ func (r *reconciler) ingressForOpenMCPIngress(req reconcile.Request, m *ketiv1al
 
 	for i, _ := range host_ing.Spec.Rules {
 		for j, _ := range host_ing.Spec.Rules[i].HTTP.Paths {
-			host_ing.Spec.Rules[i].HTTP.Paths[j].Backend.ServiceName = "loadbalancing-controller"
+			host_ing.Spec.Rules[i].HTTP.Paths[j].Backend.ServiceName = "openmcp-loadbalancing-controller"
 			host_ing.Spec.Rules[i].HTTP.Paths[j].Backend.ServicePort.IntVal = 80
 		}
 	}

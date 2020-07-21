@@ -1,25 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sync-controller
+  name: openmcp-sync-controller
   namespace: openmcp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: sync-controller
+      name: openmcp-sync-controller
   template:
     metadata:
       labels:
-        name: sync-controller
+        name: openmcp-sync-controller
     spec:
-      serviceAccountName: sync-controller
+      serviceAccountName: openmcp-sync-controller
       containers:
-        - name: sync-controller
+        - name: openmcp-sync-controller
           # Replace this with the built image name
-          image: atyx300/sync-controller:v0.0.1
+          image: atyx300/openmcp-sync-controller:v0.0.1
           command:
-          - sync-controller
+          - openmcp-sync-controller
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
@@ -32,4 +32,4 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
-              value: "sync-controller"
+              value: "openmcp-sync-controller"

@@ -59,7 +59,7 @@ func main() {
 			ghosts = append(ghosts, ghost)
 		}
 
-		co, _ := openmcpdeployment.NewController(live, ghosts, namespace)
+		co, _ := openmcpdeployment.NewController(live, ghosts, namespace, cm)
 		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 

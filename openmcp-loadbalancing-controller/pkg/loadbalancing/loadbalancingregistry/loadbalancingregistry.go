@@ -51,7 +51,7 @@ type DefaultRegistry map[string]map[string]string
 // Lookup return the endpoint list for the given service name/version.
 
 func (r DefaultRegistry) Lookup(host string, path string) (string, error) {
-	fmt.Println("----Lookup----")
+	//fmt.Println("----Lookup----")
 	lock.RLock()
 	target, ok := r[host][path]
 	lock.RUnlock()

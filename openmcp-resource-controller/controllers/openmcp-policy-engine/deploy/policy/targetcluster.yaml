@@ -1,7 +1,7 @@
 apiVersion: keti.example.com/v1alpha1
 kind: OpenMCPPolicyEngine
 metadata:
-  name: has-target-cluster
+  name: hpa-target-cluster
   namespace: openmcp
 spec:
   template:

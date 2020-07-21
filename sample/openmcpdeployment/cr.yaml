@@ -4,7 +4,7 @@ metadata:
   name: openmcp-deployment
   namespace: openmcp
 spec:
-  replicas: 4
+  replicas: 8
   labels:
       app: openmcp-nginx
   template:

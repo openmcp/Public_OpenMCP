@@ -17,8 +17,11 @@ limitations under the License.
 package main
 
 import (
+	"flag"
+	"k8s.io/klog"
 	//"flag"
 	"log"
+	"openmcp/openmcp/util/controller/logLevel"
 
 	//"os"
 
@@ -43,6 +46,10 @@ import (
 )
 
 func main() {
+	klog.InitFlags(nil)
+	flag.Set("v", "0")
+	flag.Parse()
+
 	for {
 		cm := clusterManager.NewClusterManager()
 
@@ -68,10 +75,12 @@ func main() {
 		}
 		co, _ := controller.NewController(live, ghosts, namespace)
 		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
+		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 		//fmt.Println(live)
 		m := manager.New()
 		m.AddController(co)
 		m.AddController(reshape_cont)
+		m.AddController(loglevel_cont)
 
 		stop := reshape.SetupSignalHandler()
 

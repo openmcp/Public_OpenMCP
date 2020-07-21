@@ -11,5 +11,5 @@ spec:
       policies:
         - type: Version
           value:
-            - "2"
+            - "1"
   policyStatus: Enabled

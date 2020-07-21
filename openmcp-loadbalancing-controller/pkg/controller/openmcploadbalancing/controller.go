@@ -58,6 +58,8 @@ import (
 	//"github.com/HanJaeseung/LoadBalancing/ingressnameregistry"
 )
 
+
+
 type ClusterManager struct {
 	Fed_namespace   string
 	Host_config     *rest.Config
@@ -218,6 +220,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				}
 				serviceName := paths.Backend.ServiceName
 				serviceregistry.Registry.Delete(loadbalancing.ServiceRegistry, serviceName)
+				//queue := loadbalancing.Queue{}
 				for _, cluster := range cm.Cluster_list.Items {
 					cluster_client := cm.Cluster_clients[cluster.Name]
 					fmt.Println(cluster.Name)
@@ -229,8 +232,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					} else { // Add
 						loadbalancingregistry.Registry.Add(loadbalancing.LoadbalancingRegistry, host, path, serviceName)
 						serviceregistry.Registry.Add(loadbalancing.ServiceRegistry, serviceName, cluster.Name)
+						//queue.Set(cluster.Name)
+						//loadbalancing.PV(loadbalancing.RR[host+path]).Set(cluster.Name)
+						//loadbalancing.RR[host+path] = append(loadbalancing.RR[host+path], cluster.Name)
+						loadbalancing.RR[host+path] = 0
 					}
 				}
+				//loadbalancing.RR[host + path] = queue
 				ingressregistry.Registry.Add(loadbalancing.IngressRegistry, ingressName, url)
 			}
 		}
@@ -478,8 +486,7 @@ func initRegistry() {
 
 		config, _ := util.BuildClusterConfig(&cluster, cm.Host_client, cm.Fed_namespace)
 		clientset, _ := kubernetes.NewForConfig(config)
-		//nodes, err := clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
-                nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+		nodes, err := clientset.CoreV1().Nodes().List( metav1.ListOptions{})
 
 		if err != nil {
 			fmt.Println(err)
@@ -514,7 +521,7 @@ func initRegistry() {
 		//member cluster ingress 주소 초기화
 		found := &corev1.Service{}
 		cluster_client := cm.Cluster_clients[cluster.Name]
-		err = cluster_client.Get(context.TODO(), found, "ingress-nginx", "ingress-nginx-controller")
+		err = cluster_client.Get(context.TODO(), found, "ingress-nginx", "ingress-nginx")
 		if err != nil {
 			fmt.Println(cluster.Name)
 			fmt.Println("Cluster Ingress Controller Not Found")

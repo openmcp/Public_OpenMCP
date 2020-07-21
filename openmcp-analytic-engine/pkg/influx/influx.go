@@ -41,6 +41,7 @@ func (in *Influx) GetClusterMetricsData(clusterName string) []client.Result {
 	return nil
 
 }
+
 func (in *Influx) SelectMetricsData() []client.Result {
 	q := client.NewQuery("select * from Nodes group by * order by desc limit 1", "Metrics", "")
 
@@ -48,6 +49,19 @@ func (in *Influx) SelectMetricsData() []client.Result {
 
 	if err == nil && response.Error() == nil {
 		//fmt.Println(response.Results)
+		return response.Results
+	}
+
+	return nil
+}
+
+func (in *Influx) GetLatestNetworkDatas(NodeName string) []client.Result {
+	q := client.NewQuery("SELECT NetworkRxBytes,NetworkTxBytes FROM Nodes WHERE node = '" + NodeName + "' GROUP BY * ORDER BY DESC LIMIT 1", "Metrics", "")
+	// q := client.NewQuery("SELECT NetworkRxBytes,NetworkTxBytes FROM Nodes WHERE node = '" + NodeName + "' GROUP BY * ORDER BY DESC LIMIT 2", "Metrics", "")
+
+	response, err := in.inClient.Query(q)
+
+	if err == nil && response.Error() == nil {
 		return response.Results
 	}
 

@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/restmapper"
+	"k8s.io/klog"
 	"openmcp/openmcp/openmcp-sync-controller/pkg/apis"
 	ketiv1alpha1 "openmcp/openmcp/openmcp-sync-controller/pkg/apis/keti/v1alpha1"
 	"openmcp/openmcp/util/clusterManager"
@@ -34,7 +35,11 @@ import (
 	"strings"
 )
 
-func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
+var cm *clusterManager.ClusterManager
+
+func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
+	cm = myClusterManager
+
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
@@ -81,10 +86,8 @@ type reconciler struct {
 var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
+	klog.V(4).Info("[OpenMCP Sync] Function Called Reconcile")
 	i += 1
-	fmt.Println("********* [", i, "] *********")
-	fmt.Println(req.Context, " / ", req.Namespace, " / ", req.Name)
-	cm := clusterManager.NewClusterManager()
 
 	// Fetch the Sync instance
 	instance := &ketiv1alpha1.Sync{}
@@ -92,62 +95,65 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	if err != nil {
 		return reconcile.Result{}, nil
 	}
+	klog.V(0).Info("Resource Get => [Name] : "+ instance.Name + " [Namespace]  : " + instance.Namespace)
 
-	fmt.Println("instance Name: ", instance.Name)
-	fmt.Println("instance Namespace : ", instance.Namespace)
 
 	// Instance 삭제
 	err = r.live.Delete(context.TODO(), instance)
 	if err != nil {
-		fmt.Println("Delete Err", err)
+		return reconcile.Result{}, err
 	}
 
+	klog.V(0).Info("Resource Extract from SyncResource")
 	obj, clusterName, command := r.resourceForSync(instance)
 
 	if command == "create" {
+		klog.V(0).Info("Create Resource Start")
 		err := CreateObj(cm, obj, clusterName)
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
-				fmt.Println(err)
+				klog.V(0).Info(err)
 			} else {
 				return reconcile.Result{}, err
 			}
 		} else {
-			fmt.Println("Created Resource '" + obj.GetKind() + "' in Cluster'" + clusterName + "'")
-			fmt.Println("  Name : " + obj.GetName())
-			fmt.Println("  Namespace : " + obj.GetNamespace())
-			fmt.Println()
+			klog.V(0).Info("Created Resource '" + obj.GetKind() + "' in Cluster'" + clusterName + "'")
+			klog.V(0).Info("  Name : " + obj.GetName())
+			klog.V(0).Info("  Namespace : " + obj.GetNamespace())
+			klog.V(0).Info()
 		}
 	} else if command == "update" {
+		klog.V(0).Info("Update Resource Start")
 		err := UpdateObj(cm, obj, clusterName)
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
-				fmt.Println(err)
+				klog.V(0).Info(err)
 			} else {
 				return reconcile.Result{}, err
 			}
 		} else {
-			fmt.Println("Updated Resource '" + obj.GetKind() + "' in Cluster'" + clusterName + "'")
-			fmt.Println("  Name : " + obj.GetName())
-			fmt.Println("  Namespace : " + obj.GetNamespace())
-			fmt.Println()
+			klog.V(0).Info("Updated Resource '" + obj.GetKind() + "' in Cluster'" + clusterName + "'")
+			klog.V(0).Info("  Name : " + obj.GetName())
+			klog.V(0).Info("  Namespace : " + obj.GetNamespace())
+			klog.V(0).Info()
 		}
 	} else if command == "delete" { // Delete
+		klog.V(0).Info("Delete Resource Start")
 		err := DeleteObj(cm, obj, clusterName)
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
-				fmt.Println(err)
+				klog.V(0).Info(err)
 			} else {
 				return reconcile.Result{}, err
 			}
 		} else {
-			fmt.Println("Deleted Resource '" + obj.GetKind() + "' in Cluster'" + clusterName + "'")
-			fmt.Println("  Name : " + obj.GetName())
-			fmt.Println("  Namespace : " + obj.GetNamespace())
-			fmt.Println()
+			klog.V(0).Info("Deleted Resource '" + obj.GetKind() + "' in Cluster'" + clusterName + "'")
+			klog.V(0).Info("  Name : " + obj.GetName())
+			klog.V(0).Info("  Namespace : " + obj.GetNamespace())
+			klog.V(0).Info()
 		}
 	} else {
-		fmt.Println("Command '" + command + "' is not a valid command.")
+		klog.V(0).Info("Command '" + command + "' is not a valid command.")
 	}
 
 	return reconcile.Result{}, nil // err
@@ -160,13 +166,13 @@ func (r *reconciler) resourceForSync(instance *ketiv1alpha1.Sync) (*unstructured
 
 	u := &unstructured.Unstructured{}
 
-	fmt.Println(instance.Spec.ClusterName)
+	klog.V(0).Info("[Parsing Sync] ClusterName : ", clusterName, "command : ",command)
 	var err error
 	u.Object, err = runtime.DefaultUnstructuredConverter.ToUnstructured(&instance.Spec.Template)
 	if err != nil {
-		fmt.Println(err)
+		klog.V(0).Info(err)
 	}
-	fmt.Println(u.GetName(), u.GetNamespace())
+	klog.V(0).Info(u.GetName(), u.GetNamespace())
 
 	return u, clusterName, command
 }
@@ -179,7 +185,7 @@ func CreateObj(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured
 	rm := restmapper.NewDiscoveryRESTMapper(groupResources)
 	mapping, err := rm.RESTMapping(gk, gvk.Version)
 
-	//fmt.Println(mapping.Resource.Group, mapping.Resource.Version, mapping.Resource.Resource)
+	//klog.V(0).Info(mapping.Resource.Group, mapping.Resource.Version, mapping.Resource.Resource)
 	_, err = cm.Cluster_dynClients[clusterName].Resource(mapping.Resource).Namespace(obj.GetNamespace()).Create(obj, metav1.CreateOptions{})
 	return err
 
@@ -193,7 +199,7 @@ func UpdateObj(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured
 	rm := restmapper.NewDiscoveryRESTMapper(groupResources)
 	mapping, err := rm.RESTMapping(gk, gvk.Version)
 
-	// fmt.Println(mapping.Resource.Group, mapping.Resource.Version, mapping.Resource.Resource)
+	// klog.V(0).Info(mapping.Resource.Group, mapping.Resource.Version, mapping.Resource.Resource)
 	_, err = cm.Cluster_dynClients[clusterName].Resource(mapping.Resource).Namespace(obj.GetNamespace()).Update(obj, metav1.UpdateOptions{})
 	return err
 
@@ -204,8 +210,8 @@ func DeleteObj(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured
 	gvk := obj.GroupVersionKind()
 	gk := schema.GroupKind{Group: gvk.Group, Kind: gvk.Kind}
 
-	fmt.Println(gvk.Kind, gvk.Group, gvk.Version)
-	fmt.Println(obj.GetName(), obj.GetNamespace())
+	klog.V(0).Info(gvk.Kind, gvk.Group, gvk.Version)
+	klog.V(0).Info(obj.GetName(), obj.GetNamespace())
 	clientset := cm.Cluster_kubeClients[clusterName]
 	groupResources, err := restmapper.GetAPIGroupResources(clientset.Discovery())
 	rm := restmapper.NewDiscoveryRESTMapper(groupResources)
@@ -213,14 +219,14 @@ func DeleteObj(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured
 	found, err := cm.Cluster_dynClients[clusterName].Resource(mapping.Resource).Namespace(obj.GetNamespace()).Get(obj.GetName(), metav1.GetOptions{})
 	if err != nil && errors.IsNotFound(err) {
 		// all good
-		fmt.Println("Not Found")
+		klog.V(0).Info("Not Found")
 		return nil
 	}
 	if !isInObject(found, "OpenMCP") {
 		return nil
 	}
 
-	// fmt.Println(mapping.Resource.Group, mapping.Resource.Version, mapping.Resource.Resource)
+	// klog.V(0).Info(mapping.Resource.Group, mapping.Resource.Version, mapping.Resource.Resource)
 	err = cm.Cluster_dynClients[clusterName].Resource(mapping.Resource).Namespace(obj.GetNamespace()).Delete(obj.GetName(), &metav1.DeleteOptions{})
 	return err
 

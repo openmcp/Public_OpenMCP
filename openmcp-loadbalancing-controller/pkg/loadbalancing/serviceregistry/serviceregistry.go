@@ -78,7 +78,7 @@ func (r DefaultRegistry) Add(serviceName, endpoint string) {
 }
 
 func (r DefaultRegistry) Lookup(serviceName string) ([]string, error) {
-	fmt.Println("----Lookup----")
+	//fmt.Println("----Lookup----")
 	lock.RLock()
 	targets, ok := r[serviceName]
 	lock.RUnlock()

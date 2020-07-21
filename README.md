@@ -11,7 +11,6 @@
   - [2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]](#2-외부-스토리지에-join하고자-하는-클러스터-서버-등록-하위-클러스터에서-수행)
   - [3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]](#3-외부-스토리지에-등록된-하위-클러스터를-openmcp에-join-openmcp에서-수행)
   - [4. 하위 클러스터 Master Node에 Region, Zone 등록](#4-하위-클러스터-master-node에-region-zone-등록)
-  - [5. 하위 클러스터 MetalLB Config 생성 (LoadBalancer IP 할당)](#5-하위-클러스터-metallb-config-생성-loadbalancer-ip-할당)
 - [OpenMCP EXAMPLE](#openmcp-example)
   - [OpenMCPDeployment 배포](#openmcpdeployment-배포)
   - [OpenMCPService 배포](#openmcpservice-배포)
@@ -123,7 +122,7 @@ loadbalancing-controller-bb7547df8-fpbbj        1/1     Running   0          21h
 openmcp-analytic-engine-67dc4b7d9d-kxpb8        1/1     Running   0          21h
 openmcp-deployment-controller-747cf6d76-tvm64   1/1     Running   0          21h
 openmcp-dns-controller-78ff9bcdd5-lkcx8         1/1     Running   0          21h
-openmcp-has-controller-8688867566-bklhw         1/1     Running   0          21h
+openmcp-hpa-controller-8688867566-bklhw         1/1     Running   0          21h
 openmcp-ingress-controller-7fc4489594-jmccz     1/1     Running   0          21h
 openmcp-metric-collector-79dc4b466b-5h9wp       1/1     Running   0          21h
 openmcp-policy-engine-7c7b5fb7d5-4m4tl          1/1     Running   0          21h
@@ -135,7 +134,7 @@ $ kubectl get openmcppolicyengine -n openmcp
 NAME                           AGE
 analytic-metrics-weight        2m1s
 hpa-minmax-distribution-mode   2m10s
-has-target-cluster             2m6s
+hpa-target-cluster             2m6s
 ```
 
 ### OpenMCP Architecture
