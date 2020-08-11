@@ -23,6 +23,12 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"resource-controller/apis/keti/v1alpha1.OpenMCPHybridAutoScaler":       schema_pkg_apis_keti_v1alpha1_OpenMCPHybridAutoScaler(ref),
 		"resource-controller/apis/keti/v1alpha1.OpenMCPHybridAutoScalerSpec":   schema_pkg_apis_keti_v1alpha1_OpenMCPHybridAutoScalerSpec(ref),
 		"resource-controller/apis/keti/v1alpha1.OpenMCPHybridAutoScalerStatus": schema_pkg_apis_keti_v1alpha1_OpenMCPHybridAutoScalerStatus(ref),
+		"resource-controller/apis/keti/v1alpha1.OpenMCPConfigMap":              schema_pkg_apis_keti_v1alpha1_OpenMCPConfigMap(ref),
+		"resource-controller/apis/keti/v1alpha1.OpenMCPConfigMapSpec":   		schema_pkg_apis_keti_v1alpha1_OpenMCPConfigMapSpec(ref),
+		"resource-controller/apis/keti/v1alpha1.OpenMCPConfigMapStatus": 		schema_pkg_apis_keti_v1alpha1_OpenMCPConfigMapStatus(ref),
+		"resource-controller/apis/keti/v1alpha1.OpenMCPSecret":       schema_pkg_apis_keti_v1alpha1_OpenMCPSecret(ref),
+		"resource-controller/apis/keti/v1alpha1.OpenMCPSecretSpec":   schema_pkg_apis_keti_v1alpha1_OpenMCPSecretSpec(ref),
+		"resource-controller/apis/keti/v1alpha1.OpenMCPSecretStatus": schema_pkg_apis_keti_v1alpha1_OpenMCPSecretStatus(ref),
 	}
 }
 
@@ -287,6 +293,142 @@ func schema_pkg_apis_keti_v1alpha1_OpenMCPHybridAutoScalerStatus(ref common.Refe
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "OpenMCPHybridAutoScalerStatus defines the observed state of OpenMCPHybridAutoScaler",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+
+func schema_pkg_apis_keti_v1alpha1_OpenMCPConfigMap(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OpenMCPConfigMap is the Schema for the openmcpconfigmaps API",
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("resource-controller/apis/keti/v1alpha1.OpenMCPConfigMapSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("resource-controller/apis/keti/v1alpha1.OpenMCPConfigMapStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "resource-controller/apis/keti/v1alpha1.OpenMCPConfigMapSpec", "resource-controller/apis/keti/v1alpha1.OpenMCPConfigMapStatus"},
+	}
+}
+
+func schema_pkg_apis_keti_v1alpha1_OpenMCPConfigMapSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OpenMCPConfigMapSpec defines the desired state of OpenMCPConfigMap",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+func schema_pkg_apis_keti_v1alpha1_OpenMCPConfigMapStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OpenMCPConfigMapStatus defines the observed state of OpenMCPConfigMap",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+
+func schema_pkg_apis_keti_v1alpha1_OpenMCPSecret(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OpenMCPSecret is the Schema for the openmcpsecrets API",
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("resource-controller/apis/apis/keti/v1alpha1.OpenMCPSecretSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("resource-controller/apis/apis/keti/v1alpha1.OpenMCPSecretStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "resource-controller/apis/keti/v1alpha1.OpenMCPSecretSpec", "resource-controller/apis/keti/v1alpha1.OpenMCPSecretStatus"},
+	}
+}
+
+func schema_pkg_apis_keti_v1alpha1_OpenMCPSecretSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OpenMCPSecretSpec defines the desired state of OpenMCPSecret",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+func schema_pkg_apis_keti_v1alpha1_OpenMCPSecretStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OpenMCPSecretStatus defines the observed state of OpenMCPSecret",
 				Properties:  map[string]spec.Schema{},
 			},
 		},

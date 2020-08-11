@@ -148,7 +148,7 @@ func (kc *KubeletClient) makeRequestAndGetValue(client *http.Client, req *http.R
 		klog.V(0).Info( "Check11111111111111", err)
 		panic(err.Error())
 	}
-	klog.V(0).Infof("%s%s\n", prettyJSON.Bytes()[:400],"...................")
+	//klog.V(0).Infof("%s%s\n", prettyJSON.Bytes()[:400],"...................")
 	//klog.V(0).Infof(1,"%s\n", prettyJSON.Bytes())
 	//////////////////////////////////////////
 	//klog.V(0).Info( "makeRequestAndGetValue6")

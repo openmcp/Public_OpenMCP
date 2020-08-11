@@ -276,6 +276,7 @@ type OpenMCPHybridAutoScalerStatus struct {
 	LastSpec OpenMCPHybridAutoScalerSpec `json:"lastSpec"`
 	Policies []OpenMCPPolicies           `json:"policies"`
 	RebalancingCount map[string]int32    `json:"rebalancingCount"`
+	SyncRequestName string 				 `json:"syncRequestName"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -301,10 +302,10 @@ type OpenMCPHybridAutoScalerList struct {
 }
 
 type OpenMCPPolicyTemplate struct {
-	Spec OpenMCPPolicySpec `json:"spec"`
+	Spec OpenMCPPolicyTemplateSpec `json:"spec"`
 }
 
-type OpenMCPPolicySpec struct {
+type OpenMCPPolicyTemplateSpec struct {
 	TargetController OpenMCPPolicyTartgetController `json:"targetController"`
 	Policies         []OpenMCPPolicies              `json:"policies"`
 }
@@ -318,7 +319,7 @@ type OpenMCPPolicies struct {
 	Value []string `json:"value"`
 }
 
-type OpenMCPPolicyEngineSpec struct {
+type OpenMCPPolicySpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
@@ -344,7 +345,7 @@ type OpenMCPPolicyEngineSpec struct {
 
 // OpenMCPPolicyEngineStatus defines the observed state of OpenMCPPolicyEngine
 // +k8s:openapi-gen=true
-type OpenMCPPolicyEngineStatus struct {
+type OpenMCPPolicyStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
@@ -357,22 +358,102 @@ type OpenMCPPolicyEngineStatus struct {
 // OpenMCPPolicyEngine is the Schema for the openmcppolicyengines API
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
-type OpenMCPPolicyEngine struct {
+type OpenMCPPolicy struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   OpenMCPPolicyEngineSpec   `json:"spec,omitempty"`
-	Status OpenMCPPolicyEngineStatus `json:"status,omitempty"`
+	Spec   OpenMCPPolicySpec   `json:"spec,omitempty"`
+	Status OpenMCPPolicyStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // OpenMCPPolicyEngineList contains a list of OpenMCPPolicyEngine
-type OpenMCPPolicyEngineList struct {
+type OpenMCPPolicyList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []OpenMCPPolicyEngine `json:"items"`
+	Items           []OpenMCPPolicy `json:"items"`
 }
+
+// OpenMCPConfigMapSpec defines the desired state of OpenMCPConfigMap
+// +k8s:openapi-gen=true
+type OpenMCPConfigMapSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	Template corev1.ConfigMap `json:"template" protobuf:"bytes,3,opt,name=template"`
+}
+
+// OpenMCPConfigMapStatus defines the observed state of OpenMCPConfigMap
+// +k8s:openapi-gen=true
+type OpenMCPConfigMapStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	ClusterMaps map[string]int32 `json:"clusters"`
+	SyncRequestName 	string 				 `json:"syncRequestName"`
+}
+
+
+// OpenMCPConfigMap is the Schema for the openmcpconfigmaps API
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+type OpenMCPConfigMap struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   OpenMCPConfigMapSpec   `json:"spec,omitempty"`
+	Status OpenMCPConfigMapStatus `json:"status,omitempty"`
+}
+
+// OpenMCPConfigMapList contains a list of OpenMCPConfigMap
+type OpenMCPConfigMapList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []OpenMCPConfigMap `json:"items"`
+}
+
+
+
+type OpenMCPSecretSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	Template corev1.Secret `json:"template" protobuf:"bytes,3,opt,name=template"`
+}
+
+// OpenMCPSecretStatus defines the observed state of OpenMCPSecret
+// +k8s:openapi-gen=true
+type OpenMCPSecretStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	ClusterMaps map[string]int32 `json:"clusters"`
+
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// OpenMCPSecret is the Schema for the openmcpsecrets API
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+type OpenMCPSecret struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   OpenMCPSecretSpec   `json:"spec,omitempty"`
+	Status OpenMCPSecretStatus `json:"status,omitempty"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// OpenMCPSecretList contains a list of OpenMCPSecret
+type OpenMCPSecretList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []OpenMCPSecret `json:"items"`
+}
+
 
 //func init() {
 //	SchemeBuilder.Register(&OpenMCPDeployment{}, &OpenMCPDeploymentList{})

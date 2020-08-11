@@ -41,8 +41,12 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&OpenMCPHybridAutoScalerList{},
 		&OpenMCPIngress{},
 		&OpenMCPIngressList{},
-		&OpenMCPPolicyEngine{},
-		&OpenMCPPolicyEngineList{},
+		&OpenMCPPolicy{},
+		&OpenMCPPolicyList{},
+		&OpenMCPConfigMap{},
+		&OpenMCPConfigMapList{},
+		&OpenMCPSecret{},
+		&OpenMCPSecretList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

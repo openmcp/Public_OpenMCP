@@ -1,7 +1,7 @@
 #!/bin/bash
 NS=openmcp
 
-NAME=$(kubectl get pod -n $NS | grep -E 'sync-controller' | awk '{print $1}')
+NAME=$(kubectl get pod -n $NS | grep -E 'openmcp-sync-controller' | awk '{print $1}')
 
 echo "Exec Into '"$NAME"'"
 

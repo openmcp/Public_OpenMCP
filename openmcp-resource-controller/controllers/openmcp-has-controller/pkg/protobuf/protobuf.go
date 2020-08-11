@@ -1,15 +1,16 @@
 package protobuf
 
 import (
-	"fmt"
+	//"fmt"
 	"google.golang.org/grpc"
+	"openmcp/openmcp/omcplog"
 )
 
 func NewGrpcClient(ip, port string) RequestAnalysisClient {
 	host := ip + ":" + port
 	conn, err := grpc.Dial(host, grpc.WithInsecure())
 	if err != nil {
-		fmt.Printf("did not connect: %v", err)
+		omcplog.V(0).Info("did not connect: %v", err)
 	}
 	c := NewRequestAnalysisClient(conn)
 	return c

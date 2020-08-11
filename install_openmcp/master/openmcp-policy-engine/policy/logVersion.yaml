@@ -1,5 +1,5 @@
 apiVersion: keti.example.com/v1alpha1
-kind: OpenMCPPolicyEngine
+kind: OpenMCPPolicy
 metadata:
   name: log-version
   namespace: openmcp
