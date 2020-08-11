@@ -36,6 +36,8 @@ type NodeInfo struct {
 	IsNeedResourceMap		map[string]bool
 	// Affinity -> will be change to GeoAffinity
 	Affinity			map[string]string
+	// Score to Update Resourcese
+	NodeScore			int64
 }
 
 type Pod struct {

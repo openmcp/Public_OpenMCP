@@ -9,7 +9,11 @@ import (
 	"fmt"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/klog"
+	//"k8s.io/klog"
+
+	//"k8s.io/klog"
+	"openmcp/openmcp/omcplog"
+
 	"openmcp/openmcp/openmcp-resource-controller/apis"
 	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -36,7 +40,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	}
 
 	fmt.Printf("%T, %s\n", live, live.GetClusterName())
-	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPPolicyEngine{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPPolicy{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 	return co, nil
@@ -56,30 +60,26 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		prevLogLevel := logLevel
 		logLevel = r.getLogLevel()
 		if prevLogLevel != logLevel {
-			klog.Info("LogLevel Changed, Used LogLevel (" + prevLogLevel + " -> " + logLevel + ")")
-
-			flag.Set("v", logLevel)
+			omcplog.Info("LogLevel Changed, Used LogLevel (" + prevLogLevel + " -> " + logLevel + ")")
+			flag.Set("omcpv", logLevel)
 			flag.Parse()
 		}
-
-
 	}
-
 	return reconcile.Result{}, nil // err
 }
 
 func (r *reconciler) getLogLevel() string {
-	instance := &ketiv1alpha1.OpenMCPPolicyEngine{}
+	instance := &ketiv1alpha1.OpenMCPPolicy{}
 	nsn := types.NamespacedName{
 		Namespace: "openmcp",
 		Name:      "log-version",
 	}
 	err := r.live.Get(context.TODO(), nsn, instance)
 	if err != nil && errors.IsNotFound(err) {
-		klog.Info("Not Exist Policy 'log-version', Use Default LogLevel (0)")
+		omcplog.Info("Not Exist Policy 'log-version', Use Default LogLevel (0)")
 		return "0"
 	} else if err != nil {
-		klog.Info("FatalError ! ", err)
+		omcplog.Info("FatalError ! ", err)
 	}
 	if instance.Spec.PolicyStatus == "Enabled" {
 		for _, policy := range instance.Spec.Template.Spec.Policies {
@@ -97,22 +97,22 @@ func (r *reconciler) getLogLevel() string {
 				if err == nil && logLevelInt >= -1 && logLevelInt <= 9 {
 					return logLevelString
 				}
-				klog.Info("Policy 'log-version' Value must be [-1~9], Use Default LogLevel (0)")
+				omcplog.Info("Policy 'log-version' Value must be [-1~9], Use Default LogLevel (0)")
 				return "0"
 			}
 		}
-		klog.Info("Policy 'log-version' Format Error, Use Default LogLevel (0)")
+		omcplog.Info("Policy 'log-version' Format Error, Use Default LogLevel (0)")
 		return "0"
 
 	} else {
-		klog.Info("Policy 'log-version' Disabled, Use Default LogLevel (0)")
+		omcplog.Info("Policy 'log-version' Disabled, Use Default LogLevel (0)")
 		return "0"
 	}
 
 }
 
 func KetiLogInit() {
-	klog.InitFlags(nil)
-	flag.Set("v", "0")
+	omcplog.InitFlags(nil)
+	flag.Set("omcpv", "0")
 	flag.Parse()
 }

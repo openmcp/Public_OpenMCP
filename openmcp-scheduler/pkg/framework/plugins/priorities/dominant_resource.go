@@ -13,6 +13,7 @@ func (pl *DominantResource) Name() string {
 
 func (pl *DominantResource) Score(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) int64 {
 	dominantShareArr := make([]float64, 0)
+	var clusterScore int64
 
 	for _, node := range clusterInfo.Nodes {
 		dominantShare := float64(0)	
@@ -28,9 +29,13 @@ func (pl *DominantResource) Score(pod *ketiresource.Pod, clusterInfo *ketiresour
 		math.Max(dominantShare, tmp)
 
 		dominantShareArr = append(dominantShareArr, dominantShare)
+		nodeScore := int64(math.Round((1 / getMinDominantShare(dominantShareArr)) * math.MaxFloat64) * float64(maxScore))
+		
+		node.NodeScore = nodeScore
+		clusterScore += nodeScore
 	}
 
-	return int64(math.Round((1 / getMinDominantShare(dominantShareArr)) * math.MaxFloat64) * float64(maxScore))
+	return clusterScore
 }
 
 func getMinDominantShare(arr []float64) float64 {

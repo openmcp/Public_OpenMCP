@@ -54,7 +54,7 @@ func (ae *AnalyticEngineStruct) CalcResourceScore() {
 	ae.NetworkInfos = make(map[string]map[string]*NetworkInfo)
 
 	//정책 엔진 - 메트릭 가중치 읽어오기----------------------------
-	openmcpPolicyInstance, target_cluster_policy_err := cm.Crd_client.OpenMCPPolicyEngine("openmcp").Get("analytic-metrics-weight", metav1.GetOptions{})
+	openmcpPolicyInstance, target_cluster_policy_err := cm.Crd_client.OpenMCPPolicy("openmcp").Get("analytic-metrics-weight", metav1.GetOptions{})
 
 	if target_cluster_policy_err != nil {
 		fmt.Println(target_cluster_policy_err)
@@ -123,11 +123,11 @@ func (ae *AnalyticEngineStruct) UpdateNetworkData(clusterName string, nodeList *
 
 		for _, ser := range result[0].Series {
 
-			// First row is previous data because the result is ordered by desc
+			// Second row is previous data because the result is ordered by desc
 			prev_rx, _ := strconv.ParseInt(fmt.Sprintf("%s", ser.Values[1][1]), 10, 64)
 			prev_tx, _ := strconv.ParseInt(fmt.Sprintf("%s", ser.Values[1][2]), 10, 64)
 
-			// Second row is next data 
+			// First row is next data 
 			next_rx, _ := strconv.ParseInt(fmt.Sprintf("%s", ser.Values[0][1]), 10, 64)
 			next_tx, _ := strconv.ParseInt(fmt.Sprintf("%s", ser.Values[0][2]), 10, 64)
 
@@ -161,7 +161,8 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
 		}
 
 		totalCpuCore = totalCpuCore + nodeCapacity.Status.Capacity.Cpu().Value()
-
+		//fmt.Println(totalCpuCore)
+		//fmt.Println(ser)
 		for c, colName := range ser.Columns {
 			for r, _ := range ser.Values {
 
@@ -184,6 +185,7 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
 
 			}
 		}
+		//fmt.Println(totalCpuCore)
 	}
 
 	cpuScore := (float64(totalCpuCore) - MetricsMap["CPUUsageNanoCores"]) / float64(totalCpuCore) * 100 // 확인필요
@@ -236,7 +238,7 @@ func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) []strin
 
 	scoreMap := map[float64]string{}
 	score := []float64{}
-
+	fmt.Println(ae.ResourceScore)
 	for key, value := range ae.ResourceScore {
 		if key != data.ClusterName && value > 0 {
 			scoreMap[value] = key
@@ -250,7 +252,13 @@ func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) []strin
 	for i := 0 ; i < len(score) ; i++ {
 		filteringCluster = append(filteringCluster, scoreMap[score[i]])
 	}
+<<<<<<< HEAD
+	/*filteringCluster = append(filteringCluster, "cluster2")
+	filteringCluster = append(filteringCluster, "cluster3")
+	fmt.Println(filteringCluster)*/
+=======
 
+>>>>>>> develop
 	return filteringCluster
 }
 
@@ -333,18 +341,34 @@ func (ae *AnalyticEngineStruct) CompareHPAMinInfo(clusterList []string, data *pr
 }
 
 func (ae *AnalyticEngineStruct) SendHASMaxAnalysis(ctx context.Context, data *protobuf.HASInfo) (*protobuf.ResponseHAS, error) {
-	fmt.Println("---------HAS Request Start---------")
-
+	fmt.Println("\n******* [Start] HAS Rebalancing Analysis *******")
+	//fmt.Println(data)
+	timeStart_analysis := time.Now()
 	filteringCluster := ae.SelectHPACluster(data)
-	fmt.Println("(Max)filteringCluster : " ,filteringCluster)
+	timeEnd_analysis := time.Since(timeStart_analysis)
+	fmt.Println("[1] SelectCandidateCluster \t", timeEnd_analysis)
 
 	var result string
-	if len(filteringCluster) == 1 {
+	/*	if len(filteringCluster) == 1 {
 		result = filteringCluster[0]
+<<<<<<< HEAD
+	}else {*/
+	result = ae.CompareHPAMaxInfo(filteringCluster, data)
+	//	}
+
+	timeEnd_analysis4 := time.Since(timeStart_analysis)
+	fmt.Println("-----------------------------------------")
+	fmt.Println("==> Total Analysis time \t", timeEnd_analysis4)
+	fmt.Println("ResultCluster\t[", result,"]")
+
+	fmt.Println("*******  [End] HAS Rebalancing Analysis  ******* \n")
+	//fmt.Println("---------HAS Response End---------")
+=======
 	}else {
 		result = ae.CompareHPAMaxInfo(filteringCluster, data)
 	}
 	fmt.Println("---------HAS Response End---------")
+>>>>>>> develop
 
 	return &protobuf.ResponseHAS{TargetCluster: result}, nil
 }
@@ -378,15 +402,26 @@ func (ae *AnalyticEngineStruct) SendHASMinAnalysis(ctx context.Context, data *pr
 }
 
 func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *protobuf.NodeInfo) (*protobuf.ReponseNetwork, error) {
+<<<<<<< HEAD
+	klog.Info("***** [Start] Network Analysis *****")
+	startTime := time.Now()
+=======
 	klog.Info("---------Network Request Start---------")
+>>>>>>> develop
 
 	// calculate difference between previous data and next data
 	diff_rx := ae.NetworkInfos[data.ClusterName][data.NodeName].next_rx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_rx
 	diff_tx := ae.NetworkInfos[data.ClusterName][data.NodeName].next_tx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_tx
 
+<<<<<<< HEAD
+	elapsedTime := time.Since(startTime)
+	klog.V(0).Infof("%-30s [%v]", "=> Total Anlysis time", elapsedTime)
+	klog.Info("***** [End] Network Analysis *****")
+=======
 	klog.Infof("check SnedNetworkAnalysis: %v, %v", diff_rx, diff_tx)
 
 	klog.Info("---------Network Response End---------")
+>>>>>>> develop
 
 	return &protobuf.ReponseNetwork{RX: diff_rx, TX: diff_tx}, nil
 }

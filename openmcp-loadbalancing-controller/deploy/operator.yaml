@@ -7,13 +7,13 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      name: loadbalancing-controller
+      name: openmcp-loadbalancing-controller
   template:
     metadata:
       labels:
-        name: loadbalancing-controller
+        name: openmcp-loadbalancing-controller
     spec:
-      serviceAccountName: loadbalancing-controller
+      serviceAccountName: openmcp-loadbalancing-controller
       containers:
         - name: openmcp-loadbalancing-controller
           # Replace this with the built image name
@@ -22,6 +22,8 @@ spec:
           - openmcp-loadbalancing-controller
           imagePullPolicy: Always
           env:
+            - name: LB
+              value : "RV"
             - name: GRPC_SERVER
               value: "10.0.3.20"
             - name: GRPC_PORT

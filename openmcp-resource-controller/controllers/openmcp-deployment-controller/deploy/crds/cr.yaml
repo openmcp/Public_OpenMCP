@@ -4,17 +4,19 @@ metadata:
   name: example-openmcpdeployment
   namespace: openmcp
 spec:
-  replicas: 2
+  replicas: 3
   labels:
-      app: openmcp-nginx
+    app: openmcp-nginx
+    test: "yes"
   template:
     spec:
       template:
         spec:
           containers:
-          - image: nginx
-            name: nginx
-            resources:
-              requests:
-                memory: "100Mi"
-                cpu: "1"
+            - image: nginx
+              name: nginx
+              resources:
+                requests:
+                  memory: 1Gi
+                  cpu: 1
+                  ephemeral-storage: 1Gi

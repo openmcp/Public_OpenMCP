@@ -34,11 +34,11 @@ spec:
             - name: OPERATOR_NAME
               value: "openmcp-dns-controller"
             - name: PDNS_IP
-              value: REPLACE_PDNSIP
+              value: "10.0.3.12"
             - name: PDNS_PORT
-              value: REPLACE_PDNSPORT
+              value: "8081"
             - name: PDNS_API_KEY
-              value: REPLACE_PDNSAPIKEY
+              value: "1234"
           ports:
           - containerPort: 8080
             name: http

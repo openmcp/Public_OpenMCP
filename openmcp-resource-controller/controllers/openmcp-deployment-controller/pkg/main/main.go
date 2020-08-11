@@ -17,8 +17,8 @@ limitations under the License.
 package main
 
 import (
-	"flag"
-	"k8s.io/klog"
+
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 
 	"log"
@@ -32,12 +32,10 @@ import (
 )
 
 func main() {
-	klog.InitFlags(nil)
-	flag.Set("v", "0")
-	flag.Parse()
+	logLevel.KetiLogInit()
 
 	for {
-		klog.V(0).Info("Start OpenMCP Deployment Controller")
+		omcplog.V(0).Info("Start OpenMCP Deployment Controller")
 
 		cm := clusterManager.NewClusterManager()
 
@@ -59,7 +57,7 @@ func main() {
 			ghosts = append(ghosts, ghost)
 		}
 
-		co, _ := openmcpdeployment.NewController(live, ghosts, namespace)
+		co, _ := openmcpdeployment.NewController(live, ghosts, namespace, cm)
 		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 

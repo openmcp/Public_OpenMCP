@@ -26,9 +26,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"k8s.io/klog"
 	appsv1 "k8s.io/api/apps/v1"
+	"openmcp/openmcp/openmcp-scheduler/pkg/protobuf"
 )
 
-func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
+func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, grpcServer protobuf.RequestAnalysisClient) (*controller.Controller, error) {
 	klog.V(4).Info("[OpenMCP Deployment] Function Called NewController")
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
@@ -43,7 +44,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		ghostclients = append(ghostclients, ghostclient)
 	}
 
-	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{})
+	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace, grpcServer: grpcServer}, controller.Options{})
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
@@ -67,12 +68,11 @@ type reconciler struct {
 	live           client.Client
 	ghosts         []client.Client
 	ghostNamespace string
+	grpcServer		protobuf.RequestAnalysisClient
 }
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	klog.Infof("*********** Reconcile ***********")
-
-	klog.V(4).Info("[OpenMCP Deployment] Function Called Reconcile")
 	cm := clusterManager.NewClusterManager()
 
 	// Fetch the OpenMCPDeployment instance
@@ -86,9 +86,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	if instance.Status.CreateSyncRequestComplete == false {
 		if instance.Status.SchedulingNeed == true && instance.Status.SchedulingComplete == false {	
-			klog.Info("[SCHEDULING] Need Scheduling...")		
 			
-			cluster_replicas_map := Scheduling(cm, instance)
+			cluster_replicas_map := Scheduling(cm, instance, r.grpcServer)
 			klog.Infof("Check cluster's replicas_map :  %v", cluster_replicas_map)
 
 			instance.Status.ClusterMaps = cluster_replicas_map

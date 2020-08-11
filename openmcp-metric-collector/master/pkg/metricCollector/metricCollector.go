@@ -59,7 +59,7 @@ func (mc *MetricCollector) SendMetrics(ctx context.Context, data *protobuf.Colle
 	mc.Influx.SaveMetrics(clusterName, data)
 	var period_int64 int64
 
-	openmcpPolicyInstance, target_cluster_policy_err := mc.ClusterManager.Crd_client.OpenMCPPolicyEngine("openmcp").Get("metric-collector-period", metav1.GetOptions{})
+	openmcpPolicyInstance, target_cluster_policy_err := mc.ClusterManager.Crd_client.OpenMCPPolicy("openmcp").Get("metric-collector-period", metav1.GetOptions{})
 
 	if target_cluster_policy_err != nil {
 		klog.V(0).Info( target_cluster_policy_err)

@@ -1,7 +1,0 @@
-apiVersion: keti.example.com/v1alpha1
-kind: OpenMCPIngressDNSRecord
-metadata:
-  name: openmcp-ingress
-  namespace: openmcp
-spec:
-  recordTTL: 300

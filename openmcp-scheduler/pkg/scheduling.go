@@ -13,13 +13,13 @@ import (
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
 	ketiframework "openmcp/openmcp/openmcp-scheduler/pkg/framework/v1alpha1"
 	"openmcp/openmcp/util/clusterManager"
+	"openmcp/openmcp/openmcp-scheduler/pkg/protobuf"
 )
 
 type OpenMCPScheduler struct {
 	ClusterConfigs 	map[string]*rest.Config
 	ClusterClients	map[string]*kubernetes.Clientset
 	ClusterInfos	map[string]*ketiresource.Cluster
-	// Framework runs scheduler plugins (Filtering & Scoring)
 	Framework		ketiframework.OpenmcpFramework
 }
 
@@ -39,7 +39,7 @@ func newPodFromOpenMCPDeployment(dep *ketiv1alpha1.OpenMCPDeployment) *ketiresou
 			case corev1.ResourceEphemeralStorage:
 				res.EphemeralStorage = rQuant.Value() 
 			default:
-				klog.Infof("cannot use resource : %s", rName.String())
+				klog.V(0).Info("cannot use resource : ", rName.String())
 			}
 		}
 
@@ -72,8 +72,7 @@ func newPodFromOpenMCPDeployment(dep *ketiv1alpha1.OpenMCPDeployment) *ketiresou
 	}
 }
 
-func Scheduling (cm *clusterManager.ClusterManager, dep *ketiv1alpha1.OpenMCPDeployment) map[string]int32 {
-	klog.Infof("*********** Scheduling ***********")
+func Scheduling (cm *clusterManager.ClusterManager, dep *ketiv1alpha1.OpenMCPDeployment, grpcServer protobuf.RequestAnalysisClient) map[string]int32 {
 	depReplicas := dep.Spec.Replicas
 
 	// Return scheduling result (ex. cluster1:2, cluster2:1)
@@ -84,23 +83,26 @@ func Scheduling (cm *clusterManager.ClusterManager, dep *ketiv1alpha1.OpenMCPDep
 		ClusterConfigs:		cm.Cluster_configs,
 		ClusterClients:		make(map[string]*kubernetes.Clientset),
 		ClusterInfos:		make(map[string]*ketiresource.Cluster),
-		Framework:			ketiframework.NewFramework(),
+		Framework:			ketiframework.NewFramework(grpcServer),
 	}
 
 	// Get Data from Node&Pod Spec
 	sched.SetupResources()
 
 	// Make resource to schedule pod into cluster
-	startTime := time.Now()
+	// startTime := time.Now()
 	newPod := newPodFromOpenMCPDeployment(dep)
-	elapsedTime := time.Since(startTime)
-	klog.Infof("*********** [TIME] %s ***********", elapsedTime)
+	// elapsedTime := time.Since(startTime)
+	// klog.Infof("*********** [TIME] %s ***********", elapsedTime)
 
+	klog.Infof("***** [Start] Scheduling *****")
+	startTime := time.Now()
 	// Scheduling one pod
 	for i := int32(0); i < depReplicas; i++ {
-		klog.Info("*********** [START SCHEDULING POD]  ***********")
+		startTime2 := time.Now()
+		// klog.Info("*********** [START SCHEDULING POD]  ***********")
 		schedulingResult := sched.ScheduleOne(newPod)
-		klog.Infof("*********** [END SCHEDULING POD] %v ***********", schedulingResult)
+		// klog.Infof("*********** [END SCHEDULING POD] ***********")
 
 		_, exists := totalSchedulingResult[schedulingResult]
 		if !exists {
@@ -108,18 +110,49 @@ func Scheduling (cm *clusterManager.ClusterManager, dep *ketiv1alpha1.OpenMCPDep
 		} else{
 			totalSchedulingResult[schedulingResult] += 1
 		}
+
+		// sched.UpdateResources(newPod, schedulingResult)
+		elapsedTime2 := time.Since(startTime2)
+		klog.Infof("=> %d. Filtering & Scoring Time [%v] ", i, elapsedTime2)
 	}
+
+	elapsedTime := time.Since(startTime)
+	klog.Infof("=> Scheduling Result : ", totalSchedulingResult)
+	klog.Infof("=> Scheduling Time [%v]", elapsedTime)
+	klog.Infof("***** [End] Scheduling *****")
 	
 	return totalSchedulingResult
 }
 
-func (sched *OpenMCPScheduler) ScheduleOne (newPod *ketiresource.Pod) string {
+func (sched *OpenMCPScheduler) UpdateResources (newPod *ketiresource.Pod, schedulingResult string) {
+	// startTime := time.Now()
 	startTime := time.Now()
-	klog.Infof("*********** [START FILTERING] ***********")
-	filterdResult := sched.Framework.RunFilterPluginsOnClusters(newPod, sched.ClusterInfos)
+
+	var maxScoreNode *ketiresource.NodeInfo
+	maxScore := int64(0)
+
+	for _, node := range sched.ClusterInfos[schedulingResult].Nodes {
+		if maxScore < node.NodeScore {
+			maxScoreNode = node
+			maxScore = node.NodeScore
+		}
+	}
+
+	maxScoreNode.RequestedResource = ketiresource.AddResources(maxScoreNode.RequestedResource, newPod.RequestedResource)
+
 	elapsedTime := time.Since(startTime)
-	klog.Infof("*********** [END FILTERING] %v ***********", filterdResult)
-	klog.Infof("*********** [TOTAL FILTERING TIME] %s ***********", elapsedTime)
+	klog.Infof("=> Total updateResource Time : %v", elapsedTime)
+
+	// elapsedTime := time.Since(startTime)
+	// klog.Infof("=> Update Resource time [%v]", elapsedTime)
+}
+
+func (sched *OpenMCPScheduler) ScheduleOne (newPod *ketiresource.Pod) string {
+	// startTime := time.Now()
+	// klog.Infof("*********** [START FILTERING] ***********")
+	filterdResult := sched.Framework.RunFilterPluginsOnClusters(newPod, sched.ClusterInfos)
+	// elapsedTime := time.Since(startTime)
+	// klog.Infof("*********** [END FILTERING] %v ***********", elapsedTime)
 
 
 	filteredCluster := make(map[string]*ketiresource.Cluster)
@@ -129,12 +162,11 @@ func (sched *OpenMCPScheduler) ScheduleOne (newPod *ketiresource.Pod) string {
 		}
 	}
 
-	startTime = time.Now()
-	klog.Infof("*********** [START SCORING] ***********")
+	// startTime = time.Now()
+	// klog.Infof("*********** [START SCORING] ***********")
 	scoreResult := sched.Framework.RunScorePluginsOnClusters(newPod, filteredCluster)
-	elapsedTime = time.Since(startTime)
-	klog.Infof("*********** [END SCORING] %v ***********", scoreResult)
-	klog.Infof("*********** [TOTAL SCORING TIME] %s ***********", elapsedTime)
+	// elapsedTime = time.Since(startTime)
+	// klog.Infof("*********** [END SCORING] %v ***********", elapsedTime)
 
 	selectedCluster := selectCluster(scoreResult)
 
@@ -144,6 +176,8 @@ func (sched *OpenMCPScheduler) ScheduleOne (newPod *ketiresource.Pod) string {
 func selectCluster (scoreResult ketiframework.OpenmcpPluginToClusterScores) string{
 	var selectedCluster string
 	var maxScore int64
+
+	startTime := time.Now()
 
 	for clusterName, scoreList := range scoreResult {
 		var clusterScore int64
@@ -156,6 +190,10 @@ func selectCluster (scoreResult ketiframework.OpenmcpPluginToClusterScores) stri
 			maxScore = clusterScore
 		}
 	}
+
+	elapsedTime := time.Since(startTime)
+	klog.Infof("=> Total selectCluster Time : %v", elapsedTime)
+
 	return selectedCluster
 }
 
@@ -262,6 +300,7 @@ func (sched *OpenMCPScheduler)SetupResources() error {
 				AllocatableResource:	node_allocatable,
 				IsNeedResourceMap:		node_needRes,
 				Affinity:				node_affinity,
+				NodeScore:				0,
 			}
 			allNodes = append(allNodes, newNode)
 			cluster_request = ketiresource.AddResources(cluster_request, node_request)
@@ -277,7 +316,7 @@ func (sched *OpenMCPScheduler)SetupResources() error {
 		}
 	}
 
-	klog.Infof("[CHECK INFORMATIONS] %v", sched.ClusterInfos)
+	// klog.Infof("[CHECK INFORMATIONS] %v", sched.ClusterInfos)
 
 	return nil
 }

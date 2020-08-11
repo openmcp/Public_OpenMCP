@@ -1,0 +1,9 @@
+apiVersion: keti.example.com/v1alpha1
+kind: OpenMCPSecret
+metadata:
+  name: secret-test
+  namespace: openmcp
+spec:
+  template:
+    data:
+     JS: amF2YQo=

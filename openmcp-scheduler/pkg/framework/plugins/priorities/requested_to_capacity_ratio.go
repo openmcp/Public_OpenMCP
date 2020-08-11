@@ -40,18 +40,21 @@ func (pl *RequestedToCapacityRatio) Name() string {
 }
 
 func (pl *RequestedToCapacityRatio) Score(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) int64 {
-	var clutserScore int64
+	var clusterScore int64
 
 	for _, node := range clusterInfo.Nodes {
 		requested := node.RequestedResource.MilliCPU + pod.RequestedResource.MilliCPU
-		clutserScore += RunRequestedToCapacityRatioScorerFunction(node.CapacityResource.MilliCPU, requested)
+		nodeScore := RunRequestedToCapacityRatioScorerFunction(node.CapacityResource.MilliCPU, requested)
 		requested = node.RequestedResource.Memory + pod.RequestedResource.Memory
-		clutserScore += RunRequestedToCapacityRatioScorerFunction(node.CapacityResource.Memory, requested)
+		nodeScore += RunRequestedToCapacityRatioScorerFunction(node.CapacityResource.Memory, requested)
 		requested = node.RequestedResource.EphemeralStorage + pod.RequestedResource.EphemeralStorage
-		clutserScore += RunRequestedToCapacityRatioScorerFunction(node.CapacityResource.EphemeralStorage, requested)
+		nodeScore += RunRequestedToCapacityRatioScorerFunction(node.CapacityResource.EphemeralStorage, requested)
+
+		node.NodeScore = nodeScore
+		clusterScore += nodeScore
 	}
 
-	return clutserScore
+	return clusterScore
 }
 
 func RunRequestedToCapacityRatioScorerFunction (capacity, requested int64) int64 {

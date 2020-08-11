@@ -21,6 +21,7 @@ func (pl *QosPriority) Score(pod *ketiresource.Pod, clusterInfo *ketiresource.Cl
 	var clusterScore int64
 
 	for _, node := range clusterInfo.Nodes {
+		var nodeScore int64
 		for _, pod := range node.Pods {
 
 			// get PodQOSClass from v1.Pod
@@ -28,13 +29,16 @@ func (pl *QosPriority) Score(pod *ketiresource.Pod, clusterInfo *ketiresource.Cl
 
 			switch qos{
 			case v1.PodQOSGuaranteed:
-				clusterScore += minScore
+				nodeScore += minScore
 			case v1.PodQOSBurstable:
-				clusterScore += midScore
+				nodeScore += midScore
 			case v1.PodQOSBestEffort:
-				clusterScore += maxScore
+				nodeScore += maxScore
 			}
 		}
+
+		node.NodeScore = nodeScore
+		clusterScore += nodeScore
 	}
 
 	return clusterScore
