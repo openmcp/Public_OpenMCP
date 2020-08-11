@@ -130,7 +130,7 @@ openmcp-scheduler-65794548ff-92fql              1/1     Running   0          21h
 openmcp-service-controller-776cc6574-xfd8c      1/1     Running   0          21h
 sync-controller-67b4d858d9-4zwnk                1/1     Running   0          21h
 
-$ kubectl get openmcppolicyengine -n openmcp
+$ kubectl get openmcppolicy -n openmcp
 NAME                           AGE
 analytic-metrics-weight        2m1s
 hpa-minmax-distribution-mode   2m10s

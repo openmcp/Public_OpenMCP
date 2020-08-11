@@ -19,16 +19,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/getlantern/deepcopy"
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
+	"strconv"
 
-	//"github.com/jinzhu/copier"
 	"k8s.io/apimachinery/pkg/api/errors"
-	//"math/rand"
+
 	"reflect"
-	//"reflect"
-	//"sort"
-	//"time"
-	//"github.com/jinzhu/copier"
+
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
@@ -39,11 +37,13 @@ import (
 	//corev1 "k8s.io/api/core/v1"
 	//"k8s.io/apimachinery/pkg/api/errors"
 	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
+	//"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	sync "openmcp/openmcp/openmcp-sync-controller/pkg/apis/keti/v1alpha1"
+	syncapis "openmcp/openmcp/openmcp-sync-controller/pkg/apis"
 )
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
@@ -64,6 +64,9 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 
 	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{})
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
+		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
+	}
+	if err := syncapis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
@@ -113,7 +116,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			// ...TODO: multicluster garbage collector
 			// Until then...
 			fmt.Println("Delete Services ..Cluster")
-			err := DeleteServices(cm, req.NamespacedName)
+
+			err := r.DeleteServices(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
 			return reconcile.Result{}, err
 		}
 		fmt.Println("Error1")
@@ -218,6 +222,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 func (r *reconciler) serviceForOpenMCPService(req reconcile.Request, m *ketiv1alpha1.OpenMCPService) *corev1.Service {
 
 	svc := &corev1.Service{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Service",
+			APIVersion: "v1",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name,
 			Namespace: m.Namespace,
@@ -233,12 +241,25 @@ func (r *reconciler) serviceForOpenMCPService(req reconcile.Request, m *ketiv1al
 
 	return svc
 }
-func DeleteServices(cm *clusterManager.ClusterManager, nsn types.NamespacedName) error {
+
+
+func(r *reconciler) DeleteServices(cm *clusterManager.ClusterManager, name string, namespace string) error {
+
+	//svc := &corev1.Service{
+	//	TypeMeta: metav1.TypeMeta{
+	//		Kind:       "Service",
+	//		APIVersion: "v1",
+	//	},
+	//	ObjectMeta: metav1.ObjectMeta{
+	//		Name:      name,
+	//		Namespace: namespace,
+	//	},
+	//}
 	svc := &corev1.Service{}
 	for _, cluster := range cm.Cluster_list.Items {
 		cluster_client := cm.Cluster_genClients[cluster.Name]
-		fmt.Println(nsn.Namespace, nsn.Name)
-		err := cluster_client.Get(context.Background(), svc, nsn.Namespace, nsn.Name)
+		fmt.Println(namespace, name)
+		err := cluster_client.Get(context.Background(), svc, namespace, name)
 		if err != nil && errors.IsNotFound(err) {
 			// all good
 			fmt.Println("Not Found")
@@ -248,15 +269,49 @@ func DeleteServices(cm *clusterManager.ClusterManager, nsn types.NamespacedName)
 			continue
 		}
 		fmt.Println(cluster.Name, " Delete Start")
-		err = cluster_client.Delete(context.Background(), svc, nsn.Namespace, nsn.Name)
+		svc = &corev1.Service{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Service",
+				APIVersion: "v1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: namespace,
+			},
+		}
+		command := "delete"
+		_,err = r.sendSync(svc, command, cluster.Name)
+		//err = cluster_client.Delete(context.Background(), svc, namespace, name)
 		if err != nil {
 			return err
 		}
 		fmt.Println(cluster.Name, "Delete Complate")
 	}
 	return nil
-
 }
+//func DeleteServices(cm *clusterManager.ClusterManager, nsn types.NamespacedName) error {
+//	svc := &corev1.Service{}
+//	for _, cluster := range cm.Cluster_list.Items {
+//		cluster_client := cm.Cluster_genClients[cluster.Name]
+//		fmt.Println(nsn.Namespace, nsn.Name)
+//		err := cluster_client.Get(context.Background(), svc, nsn.Namespace, nsn.Name)
+//		if err != nil && errors.IsNotFound(err) {
+//			// all good
+//			fmt.Println("Not Found")
+//			continue
+//		}
+//		if !isInObject(svc, "OpenMCPService") {
+//			continue
+//		}
+//		fmt.Println(cluster.Name, " Delete Start")
+//		err = cluster_client.Delete(context.Background(), svc, nsn.Namespace, nsn.Name)
+//		if err != nil {
+//			return err
+//		}
+//		fmt.Println(cluster.Name, "Delete Complate")
+//	}
+//	return nil
+//}
 
 func isInObject(child *corev1.Service, parent string) bool {
 	refKind_str := child.ObjectMeta.Annotations["multicluster.admiralty.io/controller-reference"]
@@ -326,7 +381,9 @@ func (r *reconciler) createService(req reconcile.Request, cm *clusterManager.Clu
 		err := cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 
 		if err != nil && errors.IsNotFound(err) {
-			err = cluster_client.Create(context.TODO(), svc)
+			command := "create"
+			_,err = r.sendSync(svc, command, cluster_name)
+			//err = cluster_client.Create(context.TODO(), svc)
 			cluster_map[cluster_name] = 1
 			if err != nil {
 				return err
@@ -368,8 +425,9 @@ func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.Clu
 			if err != nil && errors.IsNotFound(err) {
 				svc := r.serviceForOpenMCPService(req, instance)
 				cluster_map[cluster.Name] = 1
-
-				err = cluster_client.Create(context.TODO(), svc)
+				command := "create"
+				_,err = r.sendSync(svc, command, cluster.Name)
+				//err = cluster_client.Create(context.TODO(), svc)
 				if err != nil {
 					return err
 				}
@@ -380,8 +438,9 @@ func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.Clu
 				svc.ResourceVersion = found.ResourceVersion
 
 				cluster_map[cluster.Name] = 1
-
-				err = cluster_client.Update(context.TODO(), svc)
+				command := "update"
+				_,err = r.sendSync(svc, command, cluster.Name)
+				//err = cluster_client.Update(context.TODO(), svc)
 				if err != nil {
 					return err
 				}
@@ -390,7 +449,19 @@ func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.Clu
 			if err != nil && errors.IsNotFound(err) {
 				continue
 			} else if err == nil {
-				err = cluster_client.Delete(context.TODO(), found, instance.Namespace, instance.Name)
+				svc := &corev1.Service{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "Service",
+						APIVersion: "v1",
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      instance.Name,
+						Namespace: instance.Namespace,
+					},
+				}
+				command := "delete"
+				_,err = r.sendSync(svc, command, cluster.Name)
+				//err = cluster_client.Delete(context.TODO(), found, instance.Namespace, instance.Name)
 				if err != nil {
 					return err
 				}
@@ -401,4 +472,33 @@ func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.Clu
 	err := r.live.Status().Update(context.TODO(), instance)
 	return err
 
+}
+
+
+var syncIndex int = 0
+func (r *reconciler) sendSync(service *corev1.Service, command string, clusterName string) (string, error) {
+	omcplog.V(0).Info("[OpenMCP ConfigMap] Function Called sendSync")
+	syncIndex += 1
+
+	s := &sync.Sync{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "openmcp-service-sync-" + strconv.Itoa(syncIndex),
+			Namespace: "openmcp",
+		},
+		Spec: sync.SyncSpec{
+			ClusterName: clusterName,
+			Command:     command,
+			Template:    *service,
+		},
+	}
+	omcplog.V(0).Info("Delete Check2 ", s.Spec.Template.(corev1.Service).Name, s.Spec.Template.(corev1.Service).Namespace)
+
+	err := r.live.Create(context.TODO(), s)
+
+	if err != nil {
+		omcplog.V(0).Info(err)
+	}
+
+	omcplog.V(0).Info(s.Name)
+	return s.Name, err
 }

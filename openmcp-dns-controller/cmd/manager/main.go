@@ -57,23 +57,23 @@ func main() {
 			ghosts = append(ghosts, ghost)
 		}
 
-		cont_serviceDNS, err := serviceDNS.NewController(live, ghosts, namespace)
+		cont_serviceDNS, err := serviceDNS.NewController(live, ghosts, namespace, cm)
 		if err != nil {
 			klog.V(0).Info( "err New Controller - ServiceDNS", err)
 		}
-		cont_domain, err := domain.NewController(live, ghosts, namespace)
+		cont_domain, err := domain.NewController(live, ghosts, namespace, cm)
 		if err != nil {
 			klog.V(0).Info( "err New Controller - Domain", err)
 		}
-		cont_ingressDNS, err := ingressDNS.NewController(live, ghosts, namespace)
+		cont_ingressDNS, err := ingressDNS.NewController(live, ghosts, namespace, cm)
 		if err != nil {
 			klog.V(0).Info( "err New Controller - IngressDNS", err)
 		}
-		cont_dnsEndpoint, err := dnsEndpoint.NewController(live, ghosts, namespace)
+		cont_dnsEndpoint, err := dnsEndpoint.NewController(live, ghosts, namespace, cm)
 		if err != nil {
 			klog.V(0).Info( "err New Controller - DNSEndpoint", err)
 		}
-		cont_externalDNS, err := externalDNS.NewController(live, ghosts, namespace)
+		cont_externalDNS, err := externalDNS.NewController(live, ghosts, namespace, cm)
 		if err != nil {
 			klog.V(0).Info( "err New Controller - ExternalDNS", err)
 		}
@@ -81,7 +81,7 @@ func main() {
 		if err != nil {
 			klog.V(0).Info( "err New Controller - Reshape", err)
 		}
-		cont_logLevel, err := logLevel.NewController(live, ghosts, namespace)
+		contLoglevel, err := logLevel.NewController(live, ghosts, namespace)
 		if err != nil {
 			klog.V(0).Info( "err New Controller - logLevel", err)
 		}
@@ -93,7 +93,7 @@ func main() {
 		m.AddController(cont_dnsEndpoint)
 		m.AddController(cont_externalDNS)
 		m.AddController(cont_reshape)
-		m.AddController(cont_logLevel)
+		m.AddController(contLoglevel)
 
 		stop := reshape.SetupSignalHandler()
 		//stop := signals.SetupSignalHandler()

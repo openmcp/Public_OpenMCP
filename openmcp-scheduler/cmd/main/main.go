@@ -17,45 +17,86 @@ limitations under the License.
 package main
 
 import (
+	"os"
 	"log"
 	"fmt"
-
+	"k8s.io/klog"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"k8s.io/sample-controller/pkg/signals"
-
-	"openmcp/openmcp/openmcp-scheduler/pkg/controller"
+	"openmcp/openmcp/openmcp-scheduler/pkg"
+	"openmcp/openmcp/util/clusterManager"
+	"openmcp/openmcp/util/controller/logLevel"
+	"openmcp/openmcp/util/controller/reshape"
+	"openmcp/openmcp/openmcp-scheduler/pkg/protobuf"
+	"openmcp/openmcp/util/controller/logLevel"
+	"google.golang.org/grpc"
 )
 
 func main() {
-	cm := openmcpscheduler.NewClusterManager()
+	// setting logging
+	logLevel.KetiLogInit()
 
-	host_ctx := "openmcp"
-	namespace := "openmcp"
+	// setting grpc connection
+	SERVER_IP := os.Getenv("GRPC_SERVER")
+	SERVER_PORT := os.Getenv("GRPC_PORT")
+	grpcClient := newGrpcClient(SERVER_IP, SERVER_PORT)
 
-	host_cfg := cm.Host_config
-	live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
 
-	ghosts := []*cluster.Cluster{}
+	for{
+		klog.V(0).Info("***** [START] OpenMCP Scheduler *****")
+		cm := clusterManager.NewClusterManager()
 
-	for _, ghost_cluster := range cm.Cluster_list.Items {
-		ghost_ctx := ghost_cluster.Name
-		ghost_cfg := cm.Cluster_configs[ghost_ctx]
+		host_ctx := "openmcp"
+		namespace := "openmcp"
 
-		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
-		ghosts = append(ghosts, ghost)
-	}
-	for _, ghost := range ghosts {
+		host_cfg := cm.Host_config
+		live := cluster.New(host_ctx, host_cfg, cluster.Options{})
 
-		fmt.Println(ghost.Name)
-	}
-	co, _ := openmcpscheduler.NewController(live, ghosts, namespace)
+		ghosts := []*cluster.Cluster{}
 
-	m := manager.New()
-	m.AddController(co)
+		for _, ghost_cluster := range cm.Cluster_list.Items {
+			ghost_ctx := ghost_cluster.Name
+			ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
-	if err := m.Start(signals.SetupSignalHandler()); err != nil {
+			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
+			ghosts = append(ghosts, ghost)
+		}
+
+		sched_cont, err := openmcpscheduler.NewController(live, ghosts, namespace, grpcClient) 
+		if err != nil {
+			klog.V(0).Info("err New Controller - Scheduler", err)
+		}
+		reshape_cont, err := reshape.NewController(live, ghosts, namespace)
+		if err != nil {
+			klog.V(0).Info("err New Controller - Reshape", err)
+		}
+		loglevel_cont, err := logLevel.NewController(live, ghosts, namespace)
+		if err != nil {
+			klog.V(0).Info("err New Controller - logLevel", err)
+		}
+
+		m := manager.New()
+		m.AddController(sched_cont)
+		m.AddController(reshape_cont)
+		m.AddController(loglevel_cont)
+
+		stop := reshape.SetupSignalHandler()
+
+		if err := m.Start(stop); err != nil {
 			log.Fatal(err)
+		}
 	}
+}
+
+func newGrpcClient(ip, port string) protobuf.RequestAnalysisClient {
+	host := ip + ":" + port
+	conn, err := grpc.Dial(host, grpc.WithInsecure())
+	if err != nil {
+		klog.V(0).Info("did not connect", err)
+	}
+	defer conn.Close()
+
+	c := protobuf.NewRequestAnalysisClient(conn)
+	return c
 }

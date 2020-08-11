@@ -32,7 +32,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: GRPC_SERVER
-              value: "10.0.3.30"
+              value: "10.0.3.20"
             - name: GRPC_PORT
               value: "32050"
             - name: OPERATOR_NAME

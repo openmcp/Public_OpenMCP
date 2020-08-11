@@ -17,8 +17,9 @@ limitations under the License.
 package main
 
 import (
-	"flag"
-	"k8s.io/klog"
+	//"os"
+	//"time"
+
 	//"flag"
 	"log"
 	"openmcp/openmcp/util/controller/logLevel"
@@ -43,13 +44,12 @@ import (
 	//genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 	//fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 	//"sigs.k8s.io/kubefed/pkg/controller/util"
+	//"openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-has-controller/pkg/protobuf"
+	//"context"
 )
 
 func main() {
-	klog.InitFlags(nil)
-	flag.Set("v", "0")
-	flag.Parse()
-
+	logLevel.KetiLogInit()
 	for {
 		cm := clusterManager.NewClusterManager()
 
@@ -88,21 +88,8 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-	/*//gRPC Test
-	//--------------------------------------------------------------------------------------------------
-	SERVER_IP := os.Getenv("GRPC_SERVER")
-	SERVER_PORT := os.Getenv("GRPC_PORT")
 
-	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
-	hi := &protobuf.HASInfo{HPAName: "openmcp-hpa", HPANamespace: "keti", ClusterName: "cluster2"}
 
-	result, gRPCerr := grpcClient.SendHASAnalysis(context.TODO(), hi)
-	if gRPCerr != nil {
-		fmt.Printf("could not connect : %v", gRPCerr)
-	}
-	fmt.Println(len(result.TargetCluster))
-	fmt.Println("Anlysis Result:", result.TargetCluster)
-	//--------------------------------------------------------------------------------------------------*/
 
 }

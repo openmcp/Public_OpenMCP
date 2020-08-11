@@ -19,6 +19,8 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"openmcp/openmcp/omcplog"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -70,7 +72,7 @@ type ClusterManager struct {
 }
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
-
+	omcplog.V(0).Info("[OpenMCP Loadbalancing Controller] Function Called NewController")
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
@@ -625,7 +627,14 @@ func Loadbalancer(openmcpIP string) {
 
 	initRegistry()
 
-	http.HandleFunc("/", loadbalancing.NewMultipleHostReverseProxy(loadbalancing.LoadbalancingRegistry, loadbalancing.ClusterRegistry, loadbalancing.CountryRegistry, loadbalancing.ServiceRegistry, openmcpIP))
+	lb := os.Getenv("LB")
+
+	if lb == "RR" {
+		http.HandleFunc("/", loadbalancing.NewMultipleHostReverseProxyRR(loadbalancing.LoadbalancingRegistry, loadbalancing.ClusterRegistry, loadbalancing.CountryRegistry, loadbalancing.ServiceRegistry, openmcpIP))
+
+	} else {
+		http.HandleFunc("/", loadbalancing.NewMultipleHostReverseProxy(loadbalancing.LoadbalancingRegistry, loadbalancing.ClusterRegistry, loadbalancing.CountryRegistry, loadbalancing.ServiceRegistry, openmcpIP))
+	}
 	http.HandleFunc("/add", func(writer http.ResponseWriter, request *http.Request) {
 		fmt.Fprintf(writer, "add")
 		loadbalancingregistry.Registry.Add(loadbalancing.LoadbalancingRegistry, "keti.host.com", "service2/v2", "10.0.3.202:80")

@@ -18,37 +18,19 @@ package main
 
 import (
 	"os"
-	//"context"
-	//"flag"
-	////"k8s.io/apimachinery/pkg/api/errors"
-	//"net"
-	////"resource-controller/apis/keti/v1alpha1"
-	//"time"
-
-	//"flag"
 	"log"
-	//"strings"
-	//"context"
 	"fmt"
-	//"strings"
-	//"strconv"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
-	//"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/manager"
-	//"admiralty.io/multicluster-controller/pkg/reconcile"
-	//"admiralty.io/multicluster-service-account/pkg/config"
-	//corev1 "k8s.io/api/core/v1"
-	//"k8s.io/apimachinery/pkg/api/errors"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"k8s.io/sample-controller/pkg/signals"
 
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/controller/openmcploadbalancing"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/controller/service"
-	//v1beta1 "k8s.io/api/extensions/v1beta1"
-	//
-	//"github.com/aeden/traceroute"
-	//v1alpha1 "resource-controller/apis/keti/v1alpha1"
+
+	"openmcp/openmcp/util/clusterManager"
+	"openmcp/openmcp/util/controller/reshape"
+	"openmcp/openmcp/util/controller/logLevel"
 )
 
 //
@@ -370,94 +352,48 @@ import (
 //
 
 func main() {
-	//var f = flag.String("contexts", "", "a comma-separated list of contexts to watch, e.g., cluster1,cluster2")
-	//flag.Parse()
-	//ctxs := strings.Split(*f, ",")
-	/*
-	   	ghosts := []cluster.Cluster{}
-	   	ghostNamespaces := []string{}
+	logLevel.KetiLogInit()
 
-	   	host_ctx := "openmcp"
-	   	ghost_ctxs := []string{"cluster1, cluster2"}
+	for {
+		cm := clusterManager.NewClusterManager()
 
-	   	host_cfg, _, err := config.NamedConfigAndNamespace(host_ctx)
+		host_ctx := "openmcp"
+		namespace := "openmcp"
 
-	   	if err != nil {
-	                   log.Fatal(err)
-	           }
+		host_cfg := cm.Host_config
+		live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
 
-	   	for _, ghost_ctx := range ghost_ctxs {
-	   		ghost_cfg, _, err := config.NamedConfigAndNamespace(ghost_ctx)
-	   		if err != nil {
-	   			log.Fatal(err)
-	   		}
-	   		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
-	   		ghostNamespace := "default"
+		ghosts := []*cluster.Cluster{}
 
-	   		ghosts = append(ghosts, *ghost)
-	   		ghostNamespaces = append(ghostNamespaces, ghostNamespace)
-	   	}
-	   	co, _ := openmcploadbalancing.NewController(live, ghosts, ghostNamespaces)
+		SERVER_IP := os.Getenv("GRPC_SERVER")
 
-	   	m := manager.New()
-	   	m.AddController(co)
+		for _, ghost_cluster := range cm.Cluster_list.Items {
+			ghost_ctx := ghost_cluster.Name
+			ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
-	   	if err := m.Start(signals.SetupSignalHandler()); err != nil {
-	   		log.Fatal(err)
-	   	}
-	*/
+			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
 
-	cm := openmcploadbalancing.NewClusterManager()
+			ghosts = append(ghosts, ghost)
+		}
+		for _, ghost := range ghosts {
+			fmt.Println(ghost.Name)
+		}
+		co, _ := openmcploadbalancing.NewController(live, ghosts, namespace)
+		serviceWatch, _ := service.NewController(live, ghosts, namespace)
+		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
+		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
-	host_ctx := "openmcp"
-	namespace := "openmcp"
+		m := manager.New()
+		m.AddController(co)
+		m.AddController(serviceWatch)
+		m.AddController(reshape_cont)
+		m.AddController(loglevel_cont)
+		go openmcploadbalancing.Loadbalancer(SERVER_IP)
 
-	host_cfg := cm.Host_config
-	live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+		stop := reshape.SetupSignalHandler()
 
-	ghosts := []*cluster.Cluster{}
-
-	//nodeList := &corev1.NodeList{}
-	//err := cm.Host_client.List(context.TODO(), nodeList, "")
-
-	SERVER_IP := os.Getenv("GRPC_SERVER")
-	//var openmcpIP string
-	//if err != nil && errors.IsNotFound(err) {
-	//	fmt.Println("Node Not Found")
-	//} else {
-	//	for _,node := range nodeList.Items {
-	//		fmt.Println(node.Name)
-	//		 _,ok := node.Labels["node-role.kubernetes.io/master"]
-	//
-	//		 if ok {
-	//		 	openmcpIP = node.Status.Addresses[0].Address
-	//		 }
-	//	}
-	//	fmt.Println("OpenMCP IP")
-	//	fmt.Println(openmcpIP)
-	//}
-
-	for _, ghost_cluster := range cm.Cluster_list.Items {
-		ghost_ctx := ghost_cluster.Name
-		ghost_cfg := cm.Cluster_configs[ghost_ctx]
-
-		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
-
-		ghosts = append(ghosts, ghost)
+		if err := m.Start(stop); err != nil {
+			log.Fatal(err)
+		}
 	}
-	for _, ghost := range ghosts {
-		fmt.Println(ghost.Name)
-	}
-	co, _ := openmcploadbalancing.NewController(live, ghosts, namespace)
-	serviceWatch, _ := service.NewController(live, ghosts, namespace)
-
-	m := manager.New()
-	m.AddController(co)
-	m.AddController(serviceWatch)
-	go openmcploadbalancing.Loadbalancer(SERVER_IP)
-
-	if err := m.Start(signals.SetupSignalHandler()); err != nil {
-		log.Fatal(err)
-	}
-
 }

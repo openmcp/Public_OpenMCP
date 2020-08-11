@@ -2,7 +2,7 @@ package mypdns
 
 import (
 	"context"
-	"k8s.io/klog"
+	"openmcp/openmcp/omcplog"
 	//"database/sql"
 	//"github.com/dmportella/powerdns"
 	"os"
@@ -72,7 +72,7 @@ func DeleteZone(pdnsClient pdns.Client, liveClient client.Client) error {
 			err := pdnsClient.Zones().DeleteZone(context.TODO(), "localhost", zone.Name)
 			if err != nil {
 				for {
-					klog.V(0).Info( "[ERROR Retry Delete] ", err)
+					omcplog.V(0).Info( "[ERROR Retry Delete] ", err)
 					err = pdnsClient.Zones().DeleteZone(context.TODO(), "localhost", zone.Name)
 					if err == nil {
 						break
@@ -83,7 +83,7 @@ func DeleteZone(pdnsClient pdns.Client, liveClient client.Client) error {
 		}
 
 	}
-	klog.V(0).Info( "[Deleted Pdns Zone] ", deleteZone.Name)
+	omcplog.V(0).Info( "[Deleted Pdns Zone] ", deleteZone.Name)
 	return nil
 }
 
@@ -125,7 +125,7 @@ func GetResourceRecordSets(domainName string, Endpoints []*ketiv1alpha1.Endpoint
 
 	}
 
-	klog.V(1).Info( "[Get RecordSets] ", ResourceRecordSets)
+	omcplog.V(1).Info( "[Get RecordSets] ", ResourceRecordSets)
 	return ResourceRecordSets
 }
 func UpdateZoneWithRecords(client pdns.Client, domainName string, resourceRecordSets []zones.ResourceRecordSet) error {
@@ -163,17 +163,17 @@ func SyncZone(pdnsClient pdns.Client, domainName string, Endpoints []*ketiv1alph
 
 	if err == nil {
 		// Already Exist
-		klog.V(0).Info( "Update Zone ", domainName)
 		err = UpdateZoneWithRecords(pdnsClient, domainName, resourceRecordSets)
 		if err != nil {
-			klog.V(0).Info( "[OpenMCP External DNS Controller] : UpdateZone?  ", err)
+			omcplog.V(0).Info( "[OpenMCP External DNS Controller] : UpdateZone?  ", err)
 		}
+		omcplog.V(0).Info( "Update Zone ", domainName)
 	} else {
-		klog.V(0).Info( "Create Zone ", domainName)
 		err = CreateZoneWithRecords(pdnsClient, domainName, resourceRecordSets)
 		if err != nil {
-			klog.V(0).Info( "[OpenMCP External DNS Controller] : CreateZone? ", err)
+			omcplog.V(0).Info( "[OpenMCP External DNS Controller] : CreateZone? ", err)
 		}
+		omcplog.V(0).Info( "Create Zone ", domainName)
 	}
 	return err
 }

@@ -1,0 +1,10 @@
+apiVersion: keti.example.com/v1alpha1
+kind: OpenMCPConfigMap
+metadata:
+  name: openmcpconfigmap-test
+  namespace: openmcp
+spec:
+  template:
+     data:
+       JS: test333
+

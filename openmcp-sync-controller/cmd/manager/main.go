@@ -17,8 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"flag"
-	"k8s.io/klog"
 	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
 
@@ -47,9 +45,8 @@ import (
 )
 
 func main() {
-	klog.InitFlags(nil)
-	flag.Set("v", "0")
-	flag.Parse()
+
+	logLevel.KetiLogInit()
 
 	for {
 		cm := clusterManager.NewClusterManager()

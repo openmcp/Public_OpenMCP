@@ -12,7 +12,9 @@ import (
 type ExampleV1Alpha1Interface interface {
 	OpenMCPDeployment(namespace string) OpenMCPDeploymentInterface
 	OpenMCPHybridAutoScaler(namespace string) OpenMCPHybridAutoScalerInterface
-	OpenMCPPolicyEngine(namespace string) OpenMCPPolicyEngineInterface
+	OpenMCPPolicy(namespace string) OpenMCPPolicyInterface
+	OpenMCPService(namespace string) OpenMCPServiceInterface
+	OpenMCPIngress(namespace string) OpenMCPIngressInterface
 }
 
 type ExampleV1Alpha1Client struct {
@@ -49,8 +51,20 @@ func (c *ExampleV1Alpha1Client) OpenMCPHybridAutoScaler(namespace string) OpenMC
 		ns:         namespace,
 	}
 }
-func (c *ExampleV1Alpha1Client) OpenMCPPolicyEngine(namespace string) OpenMCPPolicyEngineInterface {
-	return &OpenMCPPolicyEngineClient{
+func (c *ExampleV1Alpha1Client) OpenMCPPolicy(namespace string) OpenMCPPolicyInterface {
+	return &OpenMCPPolicyClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPService(namespace string) OpenMCPServiceInterface {
+	return &OpenMCPServiceClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPIngress(namespace string) OpenMCPIngressInterface {
+	return &OpenMCPIngressClient{
 		restClient: c.restClient,
 		ns:         namespace,
 	}

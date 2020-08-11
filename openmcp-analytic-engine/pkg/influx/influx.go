@@ -2,8 +2,8 @@ package influx
 
 import (
 	"github.com/influxdata/influxdb/client/v2"
+	"k8s.io/klog"
 	"log"
-	//"openmcp-analytic-engine/pkg/protobuf"
 )
 
 type Influx struct {
@@ -34,7 +34,6 @@ func (in *Influx) GetClusterMetricsData(clusterName string) []client.Result {
 	response, err := in.inClient.Query(q)
 
 	if err == nil && response.Error() == nil {
-		//fmt.Println(response.Results)
 		return response.Results
 	}
 
@@ -48,21 +47,27 @@ func (in *Influx) SelectMetricsData() []client.Result {
 	response, err := in.inClient.Query(q)
 
 	if err == nil && response.Error() == nil {
-		//fmt.Println(response.Results)
 		return response.Results
 	}
 
 	return nil
 }
 
-func (in *Influx) GetLatestNetworkDatas(NodeName string) []client.Result {
-	q := client.NewQuery("SELECT NetworkRxBytes,NetworkTxBytes FROM Nodes WHERE node = '" + NodeName + "' GROUP BY * ORDER BY DESC LIMIT 1", "Metrics", "")
-	// q := client.NewQuery("SELECT NetworkRxBytes,NetworkTxBytes FROM Nodes WHERE node = '" + NodeName + "' GROUP BY * ORDER BY DESC LIMIT 2", "Metrics", "")
+func (in *Influx) GetNetworkData(clusterName, nodeName string) []client.Result {
+	query_str := "SELECT NetworkRxBytes, NetworkTxBytes FROM Nodes WHERE "
+	query_str += "cluster='" + clusterName + "' "
+	query_str += "AND node='" + nodeName + "' "
+	query_str += "GROUP BY * ORDER BY DESC LIMIT 2"
+
+	q := client.NewQuery(query_str, "Metrics", "")
 
 	response, err := in.inClient.Query(q)
 
 	if err == nil && response.Error() == nil {
 		return response.Results
+	}else {
+		klog.V(0).Infof("Cannot get data from InfluxDB: %v", err)
+		return nil
 	}
 
 	return nil

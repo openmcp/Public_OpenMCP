@@ -8,25 +8,25 @@ import (
 	"openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
 )
 
-type OpenMCPPolicyEngineInterface interface {
-	List(opts metav1.ListOptions) (*v1alpha1.OpenMCPPolicyEngineList, error)
-	Get(name string, options metav1.GetOptions) (*v1alpha1.OpenMCPPolicyEngine, error)
-	Create(deployment *v1alpha1.OpenMCPPolicyEngine) (*v1alpha1.OpenMCPPolicyEngine, error)
+type OpenMCPPolicyInterface interface {
+	List(opts metav1.ListOptions) (*v1alpha1.OpenMCPPolicyList, error)
+	Get(name string, options metav1.GetOptions) (*v1alpha1.OpenMCPPolicy, error)
+	Create(deployment *v1alpha1.OpenMCPPolicy) (*v1alpha1.OpenMCPPolicy, error)
 	Watch(opts metav1.ListOptions) (watch.Interface, error)
 	// ...
 }
 
-type OpenMCPPolicyEngineClient struct {
+type OpenMCPPolicyClient struct {
 	restClient rest.Interface
 	ns         string
 }
 
-func (c *OpenMCPPolicyEngineClient) List(opts metav1.ListOptions) (*v1alpha1.OpenMCPPolicyEngineList, error) {
-	result := v1alpha1.OpenMCPPolicyEngineList{}
+func (c *OpenMCPPolicyClient) List(opts metav1.ListOptions) (*v1alpha1.OpenMCPPolicyList, error) {
+	result := v1alpha1.OpenMCPPolicyList{}
 	err := c.restClient.
 		Get().
 		Namespace(c.ns).
-		Resource("openmcppolicyengines").
+		Resource("openmcppolicys").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Do().
 		Into(&result)
@@ -34,12 +34,12 @@ func (c *OpenMCPPolicyEngineClient) List(opts metav1.ListOptions) (*v1alpha1.Ope
 	return &result, err
 }
 
-func (c *OpenMCPPolicyEngineClient) Get(name string, opts metav1.GetOptions) (*v1alpha1.OpenMCPPolicyEngine, error) {
-	result := v1alpha1.OpenMCPPolicyEngine{}
+func (c *OpenMCPPolicyClient) Get(name string, opts metav1.GetOptions) (*v1alpha1.OpenMCPPolicy, error) {
+	result := v1alpha1.OpenMCPPolicy{}
 	err := c.restClient.
 		Get().
 		Namespace(c.ns).
-		Resource("openmcppolicyengines").
+		Resource("openmcppolicys").
 		Name(name).
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Do().
@@ -48,12 +48,12 @@ func (c *OpenMCPPolicyEngineClient) Get(name string, opts metav1.GetOptions) (*v
 	return &result, err
 }
 
-func (c *OpenMCPPolicyEngineClient) Create(deployment *v1alpha1.OpenMCPPolicyEngine) (*v1alpha1.OpenMCPPolicyEngine, error) {
-	result := v1alpha1.OpenMCPPolicyEngine{}
+func (c *OpenMCPPolicyClient) Create(deployment *v1alpha1.OpenMCPPolicy) (*v1alpha1.OpenMCPPolicy, error) {
+	result := v1alpha1.OpenMCPPolicy{}
 	err := c.restClient.
 		Post().
 		Namespace(c.ns).
-		Resource("openmcppolicyengines").
+		Resource("openmcppolicys").
 		Body(deployment).
 		Do().
 		Into(&result)
@@ -61,12 +61,12 @@ func (c *OpenMCPPolicyEngineClient) Create(deployment *v1alpha1.OpenMCPPolicyEng
 	return &result, err
 }
 
-func (c *OpenMCPPolicyEngineClient) Watch(opts metav1.ListOptions) (watch.Interface, error) {
+func (c *OpenMCPPolicyClient) Watch(opts metav1.ListOptions) (watch.Interface, error) {
 	opts.Watch = true
 	return c.restClient.
 		Get().
 		Namespace(c.ns).
-		Resource("openmcppolicyengines").
+		Resource("openmcppolicys").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Watch()
 }

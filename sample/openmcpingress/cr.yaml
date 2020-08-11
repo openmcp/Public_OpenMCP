@@ -11,7 +11,7 @@ spec:
         http:
           paths:
           - backend:
-              serviceName: openmcp-service
+              serviceName: sysbench-test
               servicePort: 80
 
 

@@ -34,7 +34,7 @@ spec:
             - name: OPERATOR_NAME
               value: "sysbench-test"
           ports:
-            - containerPort: 8080
+            - containerPort: 80
               name: http
 
 ---
@@ -45,7 +45,7 @@ metadata:
   namespace: openmcp
 spec:
   ports:
-    - port: 8080
+    - port: 80
       protocol: TCP
       targetPort: 8080
       nodePort: 32222

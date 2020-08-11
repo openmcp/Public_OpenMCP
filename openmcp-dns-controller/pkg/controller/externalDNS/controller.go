@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/klog"
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/apis"
 	ketiv1alpha1 "openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/mypdns"
@@ -30,9 +30,9 @@ import (
 
 var cm *clusterManager.ClusterManager
 
-func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
-	klog.V(0).Info( ">>> externalDNS NewController()")
-	cm = clusterManager.NewClusterManager()
+func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
+	omcplog.V(0).Info( ">>> externalDNS NewController()")
+	cm = myClusterManager
 
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
@@ -82,13 +82,13 @@ var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	i += 1
-	klog.V(0).Info( "********* [ OpenMCP External DNS", i, "] *********")
-	klog.V(0).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
+	//omcplog.V(0).Info( "********* [ OpenMCP External DNS", i, "] *********")
+	//omcplog.V(0).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
 	//	cm := clusterManager.NewClusterManager()
 
 	pdnsClient, err := mypdns.PdnsNewClient()
 	if err != nil {
-		klog.V(0).Info( err)
+		omcplog.V(0).Info( err)
 	}
 
 	// Fetch the Sync instance
@@ -97,9 +97,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 
 	if err != nil && errors.IsNotFound(err){
+		omcplog.V(0).Info( "DNSEndpoint 삭제 감지, PowerDNS 정보 삭제")
 		err = mypdns.DeleteZone(pdnsClient, r.live)
 		if err != nil {
-			klog.V(0).Info( "[OpenMCP External DNS Controller] : Delete?  ",err)
+			omcplog.V(0).Info( "[OpenMCP External DNS Controller] : Delete?  ",err)
 		}
 		return reconcile.Result{}, nil
 	}
@@ -109,6 +110,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		if domain == ""{
 			continue
 		}
+		omcplog.V(0).Info( "DNSEndpoint 생성/업데이트 감지, PowerDNS 정보 갱신")
 		err = mypdns.SyncZone(pdnsClient, domain, instance.Spec.Endpoints)
 		if err != nil {
 			return reconcile.Result{}, err
@@ -116,18 +118,18 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 		//zone, err := mypdns.GetZone(pdnsClient, domain)
 		//if err != nil {
-		//	klog.V(0).Info( "[OpenMCP External DNS Controller] : '", domain + "' Not Found")
+		//	omcplog.V(0).Info( "[OpenMCP External DNS Controller] : '", domain + "' Not Found")
 		//}
 		//if err == nil {
 		//	// Already Exist
 		//	err = mypdns.UpdateZoneWithRecords(pdnsClient, *zone, domain, instance.Spec.Endpoints)
 		//	if err != nil {
-		//		klog.V(0).Info( "[OpenMCP External DNS Controller] : UpdateZone?  ",err)
+		//		omcplog.V(0).Info( "[OpenMCP External DNS Controller] : UpdateZone?  ",err)
 		//	}
 		//} else {
 		//	err = mypdns.CreateZoneWithRecords(pdnsClient, domain, instance.Spec.Endpoints)
 		//	if err != nil {
-		//		klog.V(0).Info( "[OpenMCP External DNS Controller] : CreateZone? ",err)
+		//		omcplog.V(0).Info( "[OpenMCP External DNS Controller] : CreateZone? ",err)
 		//	}
 		//}
 	}
