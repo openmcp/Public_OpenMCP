@@ -1,4 +1,7 @@
 /test/
-/.gitnore
+/.gitignore
 /.idea/
-/.testRestClient/
+/testRestClient/
+/sample/
+/sysbench-test/
+
