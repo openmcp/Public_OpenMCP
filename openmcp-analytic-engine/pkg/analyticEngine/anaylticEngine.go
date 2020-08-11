@@ -252,9 +252,13 @@ func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) []strin
 	for i := 0 ; i < len(score) ; i++ {
 		filteringCluster = append(filteringCluster, scoreMap[score[i]])
 	}
+<<<<<<< HEAD
 	/*filteringCluster = append(filteringCluster, "cluster2")
 	filteringCluster = append(filteringCluster, "cluster3")
 	fmt.Println(filteringCluster)*/
+=======
+
+>>>>>>> develop
 	return filteringCluster
 }
 
@@ -347,6 +351,7 @@ func (ae *AnalyticEngineStruct) SendHASMaxAnalysis(ctx context.Context, data *pr
 	var result string
 	/*	if len(filteringCluster) == 1 {
 		result = filteringCluster[0]
+<<<<<<< HEAD
 	}else {*/
 	result = ae.CompareHPAMaxInfo(filteringCluster, data)
 	//	}
@@ -358,6 +363,12 @@ func (ae *AnalyticEngineStruct) SendHASMaxAnalysis(ctx context.Context, data *pr
 
 	fmt.Println("*******  [End] HAS Rebalancing Analysis  ******* \n")
 	//fmt.Println("---------HAS Response End---------")
+=======
+	}else {
+		result = ae.CompareHPAMaxInfo(filteringCluster, data)
+	}
+	fmt.Println("---------HAS Response End---------")
+>>>>>>> develop
 
 	return &protobuf.ResponseHAS{TargetCluster: result}, nil
 }
@@ -391,16 +402,26 @@ func (ae *AnalyticEngineStruct) SendHASMinAnalysis(ctx context.Context, data *pr
 }
 
 func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *protobuf.NodeInfo) (*protobuf.ReponseNetwork, error) {
+<<<<<<< HEAD
 	klog.Info("***** [Start] Network Analysis *****")
 	startTime := time.Now()
+=======
+	klog.Info("---------Network Request Start---------")
+>>>>>>> develop
 
 	// calculate difference between previous data and next data
 	diff_rx := ae.NetworkInfos[data.ClusterName][data.NodeName].next_rx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_rx
 	diff_tx := ae.NetworkInfos[data.ClusterName][data.NodeName].next_tx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_tx
 
+<<<<<<< HEAD
 	elapsedTime := time.Since(startTime)
 	klog.V(0).Infof("%-30s [%v]", "=> Total Anlysis time", elapsedTime)
 	klog.Info("***** [End] Network Analysis *****")
+=======
+	klog.Infof("check SnedNetworkAnalysis: %v, %v", diff_rx, diff_tx)
+
+	klog.Info("---------Network Response End---------")
+>>>>>>> develop
 
 	return &protobuf.ReponseNetwork{RX: diff_rx, TX: diff_tx}, nil
 }

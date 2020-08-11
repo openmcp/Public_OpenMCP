@@ -11,18 +11,15 @@ func (pl *MostRequested) Name() string {
 }
 
 func (pl *MostRequested) Score(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) int64 {
-	var clusterScore int64
+	var clutserScore int64
 
 	for _, node := range clusterInfo.Nodes {
-		nodeScore := mostRequestedScore(pod.RequestedResource.MilliCPU, node.AllocatableResource.MilliCPU)
-		nodeScore += mostRequestedScore(pod.RequestedResource.Memory, node.AllocatableResource.Memory)
-		nodeScore += mostRequestedScore(pod.RequestedResource.EphemeralStorage, node.AllocatableResource.EphemeralStorage)
-	
-		node.NodeScore = nodeScore
-		clusterScore += nodeScore
+		clutserScore += mostRequestedScore(pod.RequestedResource.MilliCPU, node.AllocatableResource.MilliCPU)
+		clutserScore += mostRequestedScore(pod.RequestedResource.Memory, node.AllocatableResource.Memory)
+		clutserScore += mostRequestedScore(pod.RequestedResource.EphemeralStorage, node.AllocatableResource.EphemeralStorage)
 	}
 
-	return clusterScore
+	return clutserScore
 }
 
 func mostRequestedScore(requested, allocable int64) int64 {
