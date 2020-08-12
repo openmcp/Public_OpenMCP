@@ -81,14 +81,14 @@ func moveToUnjoin(memberIP string) {
 
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
-	util.CmdExec("umount -l /mnt")
-	defer util.CmdExec("umount -l /mnt")
+	util.CmdExec2("umount -l /mnt")
+	defer util.CmdExec2("umount -l /mnt")
 
-	util.CmdExec("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
+	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
 	openmcpIP := GetOutboundIP()
 
-	util.CmdExec("mv /mnt/openmcp/"+openmcpIP+"/members/join/"+memberIP+" /mnt/openmcp/"+openmcpIP+"/members/unjoin/"+memberIP)
+	util.CmdExec2("mv /mnt/openmcp/"+openmcpIP+"/members/join/"+memberIP+" /mnt/openmcp/"+openmcpIP+"/members/unjoin/"+memberIP)
 
 }
 
@@ -99,10 +99,10 @@ func getDiffJoinIP() []string {
 
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
-	util.CmdExec("umount -l /mnt")
-	defer util.CmdExec("umount -l /mnt")
+	util.CmdExec2("umount -l /mnt")
+	defer util.CmdExec2("umount -l /mnt")
 
-	util.CmdExec("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
+	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 	openmcpIP := GetOutboundIP()
 	nfsClusterJoinStr, err := util.CmdExec("ls /mnt/openmcp/"+openmcpIP+"/members/join")
 	nfsClusterJoinList := strings.Split(nfsClusterJoinStr, "\n")
@@ -136,10 +136,10 @@ func getDiffJoinIP() []string {
 func  joinCluster(memberIP string) {
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
-	util.CmdExec("umount -l /mnt")
-	defer util.CmdExec("umount -l /mnt")
+	util.CmdExec2("umount -l /mnt")
+	defer util.CmdExec2("umount -l /mnt")
 
-	util.CmdExec("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
+	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
 	fmt.Println("Cluster Join Start")
 
@@ -170,8 +170,8 @@ func  joinCluster(memberIP string) {
 	//cobrautil.WriteKubeConfig(kc, "/root/.kube/config_2")
 
 	cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
-	util.CmdExec("mv /mnt/openmcp/"+openmcpIP+"/members/unjoin/"+memberIP+" /mnt/openmcp/"+openmcpIP+"/members/join/"+memberIP)
-	util.CmdExec("kubefedctl join "+cluster.Name+" --cluster-context "+cluster.Name+" --host-cluster-context openmcp --v=2")
+	util.CmdExec2("mv /mnt/openmcp/"+openmcpIP+"/members/unjoin/"+memberIP+" /mnt/openmcp/"+openmcpIP+"/members/join/"+memberIP)
+	util.CmdExec2("kubefedctl join "+cluster.Name+" --cluster-context "+cluster.Name+" --host-cluster-context openmcp --v=2")
 
 	installInitCluster(cluster.Name, c.OpenmcpDir)
 
@@ -183,13 +183,13 @@ func installInitCluster(clusterName, openmcpDir string) {
 	install_dir := filepath.Join(openmcpDir,"install_openmcp/member_cp")
 	initYamls := []string{"custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller"}
 
-	util.CmdExec("kubectl create ns openmcp --context " + clusterName)
+	util.CmdExec2("kubectl create ns openmcp --context " + clusterName)
 	for _, initYaml := range initYamls{
-		util.CmdExec("kubectl create -f " + install_dir + "/" + initYaml + " --context " + clusterName)
+		util.CmdExec2("kubectl create -f " + install_dir + "/" + initYaml + " --context " + clusterName)
 	}
 
-	util.CmdExec("chmod 755 "+ install_dir + "/vertical-pod-autoscaler/hack/*")
-	util.CmdExec(install_dir + "/vertical-pod-autoscaler/hack/vpa-up.sh " + clusterName)
+	util.CmdExec2("chmod 755 "+ install_dir + "/vertical-pod-autoscaler/hack/*")
+	util.CmdExec2(install_dir + "/vertical-pod-autoscaler/hack/vpa-up.sh " + clusterName)
 	fmt.Println("Init Module Deployment Finished - " + clusterName)
 }
 
