@@ -180,7 +180,7 @@ func  joinCluster(memberIP string) {
 
 func installInitCluster(clusterName, openmcpDir string) {
 	fmt.Println("Init Module Deployment Start - " + clusterName)
-	install_dir := filepath.Join(openmcpDir,"install_openmcp/member")
+	install_dir := filepath.Join(openmcpDir,"install_openmcp/member_cp")
 	initYamls := []string{"custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller"}
 
 	util.CmdExec("kubectl create ns openmcp --context " + clusterName)
