@@ -56,7 +56,7 @@ openmcpctl unjoin cluster <CLUSTERIP>`,
 			// => unjoin
 			clusterIps := getDiffJoinIP()
 			for _, clusterIp := range clusterIps {
-				fmt.Println("Not Correct - ",clusterIp)
+				fmt.Println("Not Correct - ", clusterIp)
 				moveToUnjoin(clusterIp)
 				unjoinCluster(clusterIp)
 			}
@@ -64,7 +64,7 @@ openmcpctl unjoin cluster <CLUSTERIP>`,
 			// => join
 			clusterIps = getDiffUnjoinIP()
 			for _, clusterIp := range clusterIps {
-				fmt.Println("Not Correct - ",clusterIp)
+				fmt.Println("Not Correct - ", clusterIp)
 				moveToJoin(clusterIp)
 				joinCluster(clusterIp)
 			}
@@ -85,7 +85,7 @@ func getDiffUnjoinIP() []string {
 
 	util.CmdExec("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 	openmcpIP := GetOutboundIP()
-	nfsClusterUnjoinStr, err := util.CmdExec("ls /mnt/openmcp/"+openmcpIP+"/members/unjoin")
+	nfsClusterUnjoinStr, err := util.CmdExec("ls /mnt/openmcp/" + openmcpIP + "/members/unjoin")
 	nfsClusterUnjoinList := strings.Split(nfsClusterUnjoinStr, "\n")
 	nfsClusterUnjoinList = nfsClusterUnjoinList[:len(nfsClusterUnjoinList)-1]
 	if err != nil {
@@ -118,11 +118,11 @@ func moveToJoin(memberIP string) {
 
 	openmcpIP := GetOutboundIP()
 
-	util.CmdExec("mv /mnt/openmcp/"+openmcpIP+"/members/unjoin/"+memberIP+" /mnt/openmcp/"+openmcpIP+"/members/join/"+memberIP)
+	util.CmdExec("mv /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP + " /mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP)
 
 }
 
-func GetUnjoinClusterList()  {
+func GetUnjoinClusterList() {
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
 	util.CmdExec("umount -l /mnt")
@@ -130,7 +130,7 @@ func GetUnjoinClusterList()  {
 
 	util.CmdExec("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 	openmcpIP := GetOutboundIP()
-	nfsClusterJoinStr, err := util.CmdExec("ls /mnt/openmcp/"+openmcpIP+"/members/unjoin")
+	nfsClusterJoinStr, err := util.CmdExec("ls /mnt/openmcp/" + openmcpIP + "/members/unjoin")
 	nfsClusterJoinList := strings.Split(nfsClusterJoinStr, "\n")
 	nfsClusterJoinList = nfsClusterJoinList[:len(nfsClusterJoinList)-1]
 	if err != nil {
@@ -153,16 +153,15 @@ func GetUnjoinClusterList()  {
 	table.Render()
 }
 
-func removeInitCluster(clusterName, openmcpDir string){
+func removeInitCluster(clusterName, openmcpDir string) {
 	install_dir := filepath.Join(openmcpDir, "install_openmcp/member")
 	initYamls := []string{"custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller"}
 
-
-	for _, initYaml := range initYamls{
+	for _, initYaml := range initYamls {
 		util.CmdExec("kubectl delete -f " + install_dir + "/" + initYaml + " --context " + clusterName)
 	}
 
-	util.CmdExec("chmod 755 "+ install_dir + "/vertical-pod-autoscaler/hack/*")
+	util.CmdExec("chmod 755 " + install_dir + "/vertical-pod-autoscaler/hack/*")
 	util.CmdExec(install_dir + "/vertical-pod-autoscaler/hack/vpa-down.sh " + clusterName)
 	util.CmdExec("kubectl delete ns openmcp --context " + clusterName)
 }
@@ -178,17 +177,17 @@ func unjoinCluster(memberIP string) {
 	fmt.Println("Cluster UnJoin Start")
 
 	openmcpIP := GetOutboundIP()
-	if !fileExists("/mnt/openmcp/" + openmcpIP){
-		fmt.Println("Failed UnJoin Cluster '"+memberIP+"' in OpenMCP Master: " + openmcpIP)
+	if !fileExists("/mnt/openmcp/" + openmcpIP) {
+		fmt.Println("Failed UnJoin Cluster '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Not Yet Register OpenMCP.")
 		fmt.Println("=> First You Must be Input the Next Command in 'OpenMCP Master Server(" + openmcpIP + ")' : ompcpctl register openmcp")
 
 		return
 	}
 
-	if !fileExists("/mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP){
+	if !fileExists("/mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP) {
 		fmt.Println("Failed UnJoin Cluster '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
-		fmt.Println("=> '"+memberIP+"' is Not Joined Cluster in OpenMCP.")
+		fmt.Println("=> '" + memberIP + "' is Not Joined Cluster in OpenMCP.")
 
 		return
 	}
@@ -209,7 +208,7 @@ func unjoinCluster(memberIP string) {
 		}
 	}
 	for j, context := range kc.Contexts {
-		if target_name == context.Context.Cluster{
+		if target_name == context.Context.Cluster {
 			target_user = context.Context.User
 			target_context_index = j
 			break
@@ -224,13 +223,13 @@ func unjoinCluster(memberIP string) {
 
 	removeInitCluster(target_name, c.OpenmcpDir)
 
-	util.CmdExec("kubefedctl unjoin "+target_name+" --cluster-context "+target_name+" --host-cluster-context openmcp --v=2")
-	kc.Clusters = append(kc.Clusters[:target_name_index], kc.Clusters[target_name_index:]...)
-	kc.Contexts = append(kc.Contexts[:target_context_index], kc.Contexts[target_context_index:]...)
-	kc.Users = append(kc.Users[:target_user_index], kc.Users[target_user_index:]...)
+	util.CmdExec("kubefedctl unjoin " + target_name + " --cluster-context " + target_name + " --host-cluster-context openmcp --v=2")
+	kc.Clusters = append(kc.Clusters[:target_name_index], kc.Clusters[target_name_index+1:]...)
+	kc.Contexts = append(kc.Contexts[:target_context_index], kc.Contexts[target_context_index+1:]...)
+	kc.Users = append(kc.Users[:target_user_index], kc.Users[target_user_index+1:]...)
 
 	cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
-	util.CmdExec("mv /mnt/openmcp/"+openmcpIP+"/members/join/"+memberIP+" /mnt/openmcp/"+openmcpIP+"/members/unjoin/"+memberIP)
+	util.CmdExec("mv /mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP + " /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP)
 
 	fmt.Println("Cluster Unjoin Completed - " + target_name)
 }
