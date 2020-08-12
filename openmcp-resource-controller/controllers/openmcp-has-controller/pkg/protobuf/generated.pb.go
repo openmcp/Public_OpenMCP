@@ -265,6 +265,116 @@ func (x *ResponseLB) GetScoreMap() map[string]float64 {
 	return nil
 }
 
+type NodeInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ClusterName string `protobuf:"bytes,1,opt,name=ClusterName,proto3" json:"ClusterName,omitempty"`
+	NodeName    string `protobuf:"bytes,2,opt,name=NodeName,proto3" json:"NodeName,omitempty"`
+}
+
+func (x *NodeInfo) Reset() {
+	*x = NodeInfo{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_generated_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *NodeInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NodeInfo) ProtoMessage() {}
+
+func (x *NodeInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_generated_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NodeInfo.ProtoReflect.Descriptor instead.
+func (*NodeInfo) Descriptor() ([]byte, []int) {
+	return file_generated_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *NodeInfo) GetClusterName() string {
+	if x != nil {
+		return x.ClusterName
+	}
+	return ""
+}
+
+func (x *NodeInfo) GetNodeName() string {
+	if x != nil {
+		return x.NodeName
+	}
+	return ""
+}
+
+type ReponseNetwork struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	RX int64 `protobuf:"varint,1,opt,name=RX,proto3" json:"RX,omitempty"`
+	TX int64 `protobuf:"varint,2,opt,name=TX,proto3" json:"TX,omitempty"`
+}
+
+func (x *ReponseNetwork) Reset() {
+	*x = ReponseNetwork{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_generated_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ReponseNetwork) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReponseNetwork) ProtoMessage() {}
+
+func (x *ReponseNetwork) ProtoReflect() protoreflect.Message {
+	mi := &file_generated_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReponseNetwork.ProtoReflect.Descriptor instead.
+func (*ReponseNetwork) Descriptor() ([]byte, []int) {
+	return file_generated_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ReponseNetwork) GetRX() int64 {
+	if x != nil {
+		return x.RX
+	}
+	return 0
+}
+
+func (x *ReponseNetwork) GetTX() int64 {
+	if x != nil {
+		return x.TX
+	}
+	return 0
+}
+
 var File_generated_proto protoreflect.FileDescriptor
 
 var file_generated_proto_rawDesc = []byte{
@@ -324,21 +434,34 @@ var file_generated_proto_rawDesc = []byte{
 	0x72, 0x65, 0x4d, 0x61, 0x70, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65,
 	0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05,
 	0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x01, 0x52, 0x05, 0x76, 0x61, 0x6c,
-	0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x32, 0xd1, 0x01, 0x0a, 0x0f, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x41, 0x6e, 0x61, 0x6c, 0x79, 0x73, 0x69, 0x73, 0x12, 0x40, 0x0a, 0x12, 0x53, 0x65,
-	0x6e, 0x64, 0x48, 0x41, 0x53, 0x4d, 0x69, 0x6e, 0x41, 0x6e, 0x61, 0x6c, 0x79, 0x73, 0x69, 0x73,
-	0x12, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x48, 0x41, 0x53, 0x49,
-	0x6e, 0x66, 0x6f, 0x1a, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x48, 0x41, 0x53, 0x22, 0x00, 0x12, 0x40, 0x0a, 0x12,
-	0x53, 0x65, 0x6e, 0x64, 0x48, 0x41, 0x53, 0x4d, 0x61, 0x78, 0x41, 0x6e, 0x61, 0x6c, 0x79, 0x73,
-	0x69, 0x73, 0x12, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x48, 0x41,
-	0x53, 0x49, 0x6e, 0x66, 0x6f, 0x1a, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
-	0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x48, 0x41, 0x53, 0x22, 0x00, 0x12, 0x3a,
-	0x0a, 0x0e, 0x53, 0x65, 0x6e, 0x64, 0x4c, 0x42, 0x41, 0x6e, 0x61, 0x6c, 0x79, 0x73, 0x69, 0x73,
-	0x12, 0x10, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x4c, 0x42, 0x49, 0x6e,
-	0x66, 0x6f, 0x1a, 0x14, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x4c, 0x42, 0x22, 0x00, 0x42, 0x0c, 0x5a, 0x0a, 0x2e, 0x3b,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0x48, 0x0a, 0x08, 0x4e, 0x6f, 0x64, 0x65, 0x49, 0x6e,
+	0x66, 0x6f, 0x12, 0x20, 0x0a, 0x0b, 0x43, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x4e, 0x61, 0x6d,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x43, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72,
+	0x4e, 0x61, 0x6d, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x4e, 0x6f, 0x64, 0x65, 0x4e, 0x61, 0x6d, 0x65,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x4e, 0x6f, 0x64, 0x65, 0x4e, 0x61, 0x6d, 0x65,
+	0x22, 0x30, 0x0a, 0x0e, 0x52, 0x65, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x4e, 0x65, 0x74, 0x77, 0x6f,
+	0x72, 0x6b, 0x12, 0x0e, 0x0a, 0x02, 0x52, 0x58, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02,
+	0x52, 0x58, 0x12, 0x0e, 0x0a, 0x02, 0x54, 0x58, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02,
+	0x54, 0x58, 0x32, 0x98, 0x02, 0x0a, 0x0f, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x41, 0x6e,
+	0x61, 0x6c, 0x79, 0x73, 0x69, 0x73, 0x12, 0x40, 0x0a, 0x12, 0x53, 0x65, 0x6e, 0x64, 0x48, 0x41,
+	0x53, 0x4d, 0x69, 0x6e, 0x41, 0x6e, 0x61, 0x6c, 0x79, 0x73, 0x69, 0x73, 0x12, 0x11, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x48, 0x41, 0x53, 0x49, 0x6e, 0x66, 0x6f, 0x1a,
+	0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x48, 0x41, 0x53, 0x22, 0x00, 0x12, 0x40, 0x0a, 0x12, 0x53, 0x65, 0x6e, 0x64,
+	0x48, 0x41, 0x53, 0x4d, 0x61, 0x78, 0x41, 0x6e, 0x61, 0x6c, 0x79, 0x73, 0x69, 0x73, 0x12, 0x11,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x48, 0x41, 0x53, 0x49, 0x6e, 0x66,
+	0x6f, 0x1a, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x48, 0x41, 0x53, 0x22, 0x00, 0x12, 0x3a, 0x0a, 0x0e, 0x53, 0x65,
+	0x6e, 0x64, 0x4c, 0x42, 0x41, 0x6e, 0x61, 0x6c, 0x79, 0x73, 0x69, 0x73, 0x12, 0x10, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x4c, 0x42, 0x49, 0x6e, 0x66, 0x6f, 0x1a, 0x14,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x4c, 0x42, 0x22, 0x00, 0x12, 0x45, 0x0a, 0x13, 0x53, 0x65, 0x6e, 0x64, 0x4e, 0x65,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x41, 0x6e, 0x61, 0x6c, 0x79, 0x73, 0x69, 0x73, 0x12, 0x12, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x49, 0x6e, 0x66,
+	0x6f, 0x1a, 0x18, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x52, 0x65, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x22, 0x00, 0x42, 0x0c, 0x5a,
+	0x0a, 0x2e, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
@@ -353,30 +476,34 @@ func file_generated_proto_rawDescGZIP() []byte {
 	return file_generated_proto_rawDescData
 }
 
-var file_generated_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_generated_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_generated_proto_goTypes = []interface{}{
-	(*HASInfo)(nil),     // 0: protobuf.HASInfo
-	(*ResponseHAS)(nil), // 1: protobuf.ResponseHAS
-	(*LBInfo)(nil),      // 2: protobuf.LBInfo
-	(*ResponseLB)(nil),  // 3: protobuf.ResponseLB
-	nil,                 // 4: protobuf.HASInfo.HASRebalancingCountEntry
-	nil,                 // 5: protobuf.HASInfo.HPAMinORMaxReplicasEntry
-	nil,                 // 6: protobuf.HASInfo.HPACurrentReplicasEntry
-	nil,                 // 7: protobuf.ResponseLB.ScoreMapEntry
+	(*HASInfo)(nil),        // 0: protobuf.HASInfo
+	(*ResponseHAS)(nil),    // 1: protobuf.ResponseHAS
+	(*LBInfo)(nil),         // 2: protobuf.LBInfo
+	(*ResponseLB)(nil),     // 3: protobuf.ResponseLB
+	(*NodeInfo)(nil),       // 4: protobuf.NodeInfo
+	(*ReponseNetwork)(nil), // 5: protobuf.ReponseNetwork
+	nil,                    // 6: protobuf.HASInfo.HASRebalancingCountEntry
+	nil,                    // 7: protobuf.HASInfo.HPAMinORMaxReplicasEntry
+	nil,                    // 8: protobuf.HASInfo.HPACurrentReplicasEntry
+	nil,                    // 9: protobuf.ResponseLB.ScoreMapEntry
 }
 var file_generated_proto_depIdxs = []int32{
-	4, // 0: protobuf.HASInfo.HASRebalancingCount:type_name -> protobuf.HASInfo.HASRebalancingCountEntry
-	5, // 1: protobuf.HASInfo.HPAMinORMaxReplicas:type_name -> protobuf.HASInfo.HPAMinORMaxReplicasEntry
-	6, // 2: protobuf.HASInfo.HPACurrentReplicas:type_name -> protobuf.HASInfo.HPACurrentReplicasEntry
-	7, // 3: protobuf.ResponseLB.ScoreMap:type_name -> protobuf.ResponseLB.ScoreMapEntry
+	6, // 0: protobuf.HASInfo.HASRebalancingCount:type_name -> protobuf.HASInfo.HASRebalancingCountEntry
+	7, // 1: protobuf.HASInfo.HPAMinORMaxReplicas:type_name -> protobuf.HASInfo.HPAMinORMaxReplicasEntry
+	8, // 2: protobuf.HASInfo.HPACurrentReplicas:type_name -> protobuf.HASInfo.HPACurrentReplicasEntry
+	9, // 3: protobuf.ResponseLB.ScoreMap:type_name -> protobuf.ResponseLB.ScoreMapEntry
 	0, // 4: protobuf.RequestAnalysis.SendHASMinAnalysis:input_type -> protobuf.HASInfo
 	0, // 5: protobuf.RequestAnalysis.SendHASMaxAnalysis:input_type -> protobuf.HASInfo
 	2, // 6: protobuf.RequestAnalysis.SendLBAnalysis:input_type -> protobuf.LBInfo
-	1, // 7: protobuf.RequestAnalysis.SendHASMinAnalysis:output_type -> protobuf.ResponseHAS
-	1, // 8: protobuf.RequestAnalysis.SendHASMaxAnalysis:output_type -> protobuf.ResponseHAS
-	3, // 9: protobuf.RequestAnalysis.SendLBAnalysis:output_type -> protobuf.ResponseLB
-	7, // [7:10] is the sub-list for method output_type
-	4, // [4:7] is the sub-list for method input_type
+	4, // 7: protobuf.RequestAnalysis.SendNetworkAnalysis:input_type -> protobuf.NodeInfo
+	1, // 8: protobuf.RequestAnalysis.SendHASMinAnalysis:output_type -> protobuf.ResponseHAS
+	1, // 9: protobuf.RequestAnalysis.SendHASMaxAnalysis:output_type -> protobuf.ResponseHAS
+	3, // 10: protobuf.RequestAnalysis.SendLBAnalysis:output_type -> protobuf.ResponseLB
+	5, // 11: protobuf.RequestAnalysis.SendNetworkAnalysis:output_type -> protobuf.ReponseNetwork
+	8, // [8:12] is the sub-list for method output_type
+	4, // [4:8] is the sub-list for method input_type
 	4, // [4:4] is the sub-list for extension type_name
 	4, // [4:4] is the sub-list for extension extendee
 	0, // [0:4] is the sub-list for field type_name
@@ -436,6 +563,30 @@ func file_generated_proto_init() {
 				return nil
 			}
 		}
+		file_generated_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*NodeInfo); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_generated_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ReponseNetwork); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -443,7 +594,7 @@ func file_generated_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_generated_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -472,6 +623,7 @@ type RequestAnalysisClient interface {
 	SendHASMinAnalysis(ctx context.Context, in *HASInfo, opts ...grpc.CallOption) (*ResponseHAS, error)
 	SendHASMaxAnalysis(ctx context.Context, in *HASInfo, opts ...grpc.CallOption) (*ResponseHAS, error)
 	SendLBAnalysis(ctx context.Context, in *LBInfo, opts ...grpc.CallOption) (*ResponseLB, error)
+	SendNetworkAnalysis(ctx context.Context, in *NodeInfo, opts ...grpc.CallOption) (*ReponseNetwork, error)
 }
 
 type requestAnalysisClient struct {
@@ -509,11 +661,21 @@ func (c *requestAnalysisClient) SendLBAnalysis(ctx context.Context, in *LBInfo, 
 	return out, nil
 }
 
+func (c *requestAnalysisClient) SendNetworkAnalysis(ctx context.Context, in *NodeInfo, opts ...grpc.CallOption) (*ReponseNetwork, error) {
+	out := new(ReponseNetwork)
+	err := c.cc.Invoke(ctx, "/protobuf.RequestAnalysis/SendNetworkAnalysis", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RequestAnalysisServer is the server API for RequestAnalysis service.
 type RequestAnalysisServer interface {
 	SendHASMinAnalysis(context.Context, *HASInfo) (*ResponseHAS, error)
 	SendHASMaxAnalysis(context.Context, *HASInfo) (*ResponseHAS, error)
 	SendLBAnalysis(context.Context, *LBInfo) (*ResponseLB, error)
+	SendNetworkAnalysis(context.Context, *NodeInfo) (*ReponseNetwork, error)
 }
 
 // UnimplementedRequestAnalysisServer can be embedded to have forward compatible implementations.
@@ -528,6 +690,9 @@ func (*UnimplementedRequestAnalysisServer) SendHASMaxAnalysis(context.Context, *
 }
 func (*UnimplementedRequestAnalysisServer) SendLBAnalysis(context.Context, *LBInfo) (*ResponseLB, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendLBAnalysis not implemented")
+}
+func (*UnimplementedRequestAnalysisServer) SendNetworkAnalysis(context.Context, *NodeInfo) (*ReponseNetwork, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendNetworkAnalysis not implemented")
 }
 
 func RegisterRequestAnalysisServer(s *grpc.Server, srv RequestAnalysisServer) {
@@ -588,6 +753,24 @@ func _RequestAnalysis_SendLBAnalysis_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RequestAnalysis_SendNetworkAnalysis_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NodeInfo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RequestAnalysisServer).SendNetworkAnalysis(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protobuf.RequestAnalysis/SendNetworkAnalysis",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RequestAnalysisServer).SendNetworkAnalysis(ctx, req.(*NodeInfo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _RequestAnalysis_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "protobuf.RequestAnalysis",
 	HandlerType: (*RequestAnalysisServer)(nil),
@@ -603,6 +786,10 @@ var _RequestAnalysis_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendLBAnalysis",
 			Handler:    _RequestAnalysis_SendLBAnalysis_Handler,
+		},
+		{
+			MethodName: "SendNetworkAnalysis",
+			Handler:    _RequestAnalysis_SendNetworkAnalysis_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
