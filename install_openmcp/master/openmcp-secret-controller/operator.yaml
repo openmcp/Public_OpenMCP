@@ -1,31 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: openmcp-loadbalancing-controller
+  name: openmcp-secret-controller
   namespace: openmcp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: openmcp-loadbalancing-controller
+      name: openmcp-secret-controller
   template:
     metadata:
       labels:
-        name: openmcp-loadbalancing-controller
+        name: openmcp-secret-controller
     spec:
-      serviceAccountName: openmcp-loadbalancing-controller
+      serviceAccountName: openmcp-secret-controller
       containers:
-        - name: openmcp-loadbalancing-controller
+        - name: openmcp-secret-controller
           # Replace this with the built image name
-          image: atyx300/openmcp-loadbalancing-controller:v0.0.1
+          image: atyx300/openmcp-secret-controller:v0.0.1
           command:
-            - openmcp-loadbalancing-controller
+          - openmcp-secret-controller
           imagePullPolicy: Always
           env:
-            - name: GRPC_SERVER
-              value: REPLACE_GRPCIP
-            - name: GRPC_PORT
-              value: REPLACE_GRPCPORT
             - name: WATCH_NAMESPACE
               #value: ""
               valueFrom:
@@ -36,4 +32,4 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
-              value: "openmcp-loadbalancing-controller"
+              value: "openmcp-secret-controller"

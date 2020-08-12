@@ -1,11 +1,11 @@
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: openmcp-loadbalancing-controller
+  name: openmcp-apiserver-rolebinding
   namespace: openmcp
 subjects:
 - kind: ServiceAccount
-  name: openmcp-loadbalancing-controller
+  name: openmcp-apiserver-sa
   namespace: openmcp
 roleRef:
   kind: ClusterRole

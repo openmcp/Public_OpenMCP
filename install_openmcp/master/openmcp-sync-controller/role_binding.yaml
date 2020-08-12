@@ -1,11 +1,11 @@
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: sync-controller
+  name: openmcp-sync-controller
   namespace: openmcp
 subjects:
 - kind: ServiceAccount
-  name: sync-controller
+  name: openmcp-sync-controller
   namespace: openmcp
 roleRef:
   kind: ClusterRole

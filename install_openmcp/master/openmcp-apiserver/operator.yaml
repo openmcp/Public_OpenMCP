@@ -1,31 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: openmcp-loadbalancing-controller
+  name: openmcp-apiserver
   namespace: openmcp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: openmcp-loadbalancing-controller
+      name: openmcp-apiserver
   template:
     metadata:
       labels:
-        name: openmcp-loadbalancing-controller
+        name: openmcp-apiserver
     spec:
-      serviceAccountName: openmcp-loadbalancing-controller
+      serviceAccountName: openmcp-apiserver-sa
       containers:
-        - name: openmcp-loadbalancing-controller
+        - name: openmcp-apiserver
           # Replace this with the built image name
-          image: atyx300/openmcp-loadbalancing-controller:v0.0.1
+          image: atyx300/openmcp-apiserver:v0.0.1
           command:
-            - openmcp-loadbalancing-controller
+          - openmcp-apiserver
           imagePullPolicy: Always
           env:
-            - name: GRPC_SERVER
-              value: REPLACE_GRPCIP
-            - name: GRPC_PORT
-              value: REPLACE_GRPCPORT
             - name: WATCH_NAMESPACE
               #value: ""
               valueFrom:
@@ -36,4 +32,21 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
-              value: "openmcp-loadbalancing-controller"
+              value: "openmcp-apiserver"
+          ports:
+          - containerPort: 8080
+            name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openmcp-apiserver
+  namespace: openmcp
+spec:
+  selector:
+    name: openmcp-apiserver
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 31635
+  type: LoadBalancer
