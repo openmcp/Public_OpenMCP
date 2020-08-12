@@ -3,6 +3,12 @@ kubectl create ns metallb-system
 
 echo "--- openmcp-analytic-engine"
 kubectl create -f openmcp-analytic-engine/.
+echo "--- openmcp-apiserver"
+kubectl create -f openmcp-apiserver/.
+echo "--- openmcp-configmap-controller"
+kubectl create -f openmcp-configmap-controller/.
+echo "--- openmcp-secret-controller"
+kubectl create -f openmcp-secret-controller/.
 echo "--- openmcp-metric-collector"
 kubectl create -f openmcp-metric-collector/.
 echo "--- influxdb"

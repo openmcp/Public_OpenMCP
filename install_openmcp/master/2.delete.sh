@@ -1,6 +1,12 @@
-echo "--- analytic-engine"
+echo "--- openmcp-analytic-engine"
 kubectl delete -f openmcp-analytic-engine/.
-echo "--- metric-collector"
+echo "--- openmcp-apiserver"
+kubectl delete -f openmcp-apiserver/.
+echo "--- openmcp-configmap-controller"
+kubectl delete -f openmcp-configmap-controller/.
+echo "--- openmcp-secret-controller"
+kubectl delete -f openmcp-secret-controller/.
+echo "--- openmcp-metric-collector"
 kubectl delete -f openmcp-metric-collector/.
 echo "--- influxdb"
 kubectl delete -f influxdb/.
