@@ -36,10 +36,10 @@ OpenMCP 설치를 위해서는 먼저 `federation`, `ketikubecli` 그리고 nfs�
 
 -----------------------------------------------------------------------------------------------
 
-OpenMCP  Master IP : 10.0.3.30
-Cluster1 Master IP : 10.0.3.40
-Cluster2 Master IP : 10.0.3.50
-NFS      Server IP : 10.0.3.12
+OpenMCP  Master IP : 10.0.3.30  
+Cluster1 Master IP : 10.0.3.40  
+Cluster2 Master IP : 10.0.3.50  
+NFS      Server IP : 10.0.3.12  
 
 ## 1. ketikubecli를 이용한 OpenMCP 서버 등록
 
