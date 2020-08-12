@@ -43,9 +43,9 @@ read ADDRESS_FROM
 echo -n "OpenMCP MetalLB Address IP Range (TO) -> "
 read ADDRESS_TO
 
-sed -i 's|REPLACE_GRPCIP|'"$MYIP"'|g' master/openmcp-has-controller/operator.yaml
-sed -i 's|REPLACE_GRPCIP|'"$MYIP"'|g' master/openmcp-scheduler/operator.yaml
-sed -i 's|REPLACE_GRPCIP|'"$MYIP"'|g' master/openmcp-loadbalancing-controller/operator.yaml
+sed -i 's|REPLACE_GRPCIP|'\"$MYIP\"'|g' master/openmcp-has-controller/operator.yaml
+sed -i 's|REPLACE_GRPCIP|'\"$MYIP\"'|g' master/openmcp-scheduler/operator.yaml
+sed -i 's|REPLACE_GRPCIP|'\"$MYIP\"'|g' master/openmcp-loadbalancing-controller/operator.yaml
 
 sed -i 's|REPLACE_GRPCPORT|'"$OAE_GRPC_PORT"'|g' master/openmcp-has-controller/operator.yaml
 sed -i 's|REPLACE_GRPCPORT|'"$OAE_GRPC_PORT"'|g' master/openmcp-scheduler/operator.yaml
@@ -72,5 +72,5 @@ sed -i 's|REPLACE_PDNSIP|'\"$NFS_PDNS_IP\"'|g' master/openmcp-dns-controller/ope
 sed -i 's|REPLACE_PDNSPORT|'\"$PDNS_PORT\"'|g' master/openmcp-dns-controller/operator.yaml
 sed -i 's|REPLACE_PDNSAPIKEY|'\"$PDNS_API_KEY\"'|g' master/openmcp-dns-controller/operator.yaml
 
-sed -i 's|REPLACE_ADDRESS_FROM|'\"$ADDRESS_FROM\"'|g' master/metallb/configmap.yaml
-sed -i 's|REPLACE_ADDRESS_TO|'\"$ADDRESS_TO\"'|g' master/metallb/configmap.yaml
+sed -i 's|REPLACE_ADDRESS_FROM|'"$ADDRESS_FROM"'|g' master/metallb/configmap.yaml
+sed -i 's|REPLACE_ADDRESS_TO|'"$ADDRESS_TO"'|g' master/metallb/configmap.yaml
