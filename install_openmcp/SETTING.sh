@@ -16,15 +16,6 @@ MYIP=`ip route get 8.8.8.8 | head -1 | cut -d' ' -f8`
 echo -n "OpenmMCP Analytic Engine GRPC Server Port -> "
 read OAE_GRPC_PORT
 
-sed -i 's|REPLACE_GRPCIP|'"$MYIP"'|g' master/openmcp-has-controller/operator.yaml
-sed -i 's|REPLACE_GRPCIP|'"$MYIP"'|g' master/openmcp-scheduler/operator.yaml
-sed -i 's|REPLACE_GRPCIP|'"$MYIP"'|g' master/openmcp-loadbalancing-controller/operator.yaml
-
-sed -i 's|REPLACE_GRPCPORT|'"$OAE_GRPC_PORT"'|g' master/openmcp-has-controller/operator.yaml
-sed -i 's|REPLACE_GRPCPORT|'"$OAE_GRPC_PORT"'|g' master/openmcp-scheduler/operator.yaml
-sed -i 's|REPLACE_GRPCPORT|'"$OAE_GRPC_PORT"'|g' master/openmcp-loadbalancing-controller/operator.yaml
-
-
 echo -n "OpenmMCP Metric Collector GRPC Server Port -> "
 read OME_GRPC_PORT
 
@@ -51,6 +42,14 @@ read ADDRESS_FROM
 
 echo -n "OpenMCP MetalLB Address IP Range (TO) -> "
 read ADDRESS_TO
+
+sed -i 's|REPLACE_GRPCIP|'"$MYIP"'|g' master/openmcp-has-controller/operator.yaml
+sed -i 's|REPLACE_GRPCIP|'"$MYIP"'|g' master/openmcp-scheduler/operator.yaml
+sed -i 's|REPLACE_GRPCIP|'"$MYIP"'|g' master/openmcp-loadbalancing-controller/operator.yaml
+
+sed -i 's|REPLACE_GRPCPORT|'"$OAE_GRPC_PORT"'|g' master/openmcp-has-controller/operator.yaml
+sed -i 's|REPLACE_GRPCPORT|'"$OAE_GRPC_PORT"'|g' master/openmcp-scheduler/operator.yaml
+sed -i 's|REPLACE_GRPCPORT|'"$OAE_GRPC_PORT"'|g' master/openmcp-loadbalancing-controller/operator.yaml
 
 sed -i 's|REPLACE_GRPCIP|'\"$MYIP\"'|g' member/metric-collector/operator.yaml
 sed -i 's|REPLACE_GRPCPORT|'\"$OME_GRPC_PORT\"'|g' member/metric-collector/operator.yaml
