@@ -36,7 +36,8 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.
 
-`,
+omcpctl register openmcp <OPENMCPIP>
+omcpctl register member  <OPENMCPIP>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 0 && args[0] == "openmcp" {
 			registerASOpenMCP()
@@ -80,9 +81,9 @@ func registerASOpenMCP() {
 
 	openmcpIP := GetOutboundIP()
 
-	if fileExists("/mnt/openmcp/"+openmcpIP) {
+	if fileExists("/mnt/openmcp/" + openmcpIP) {
 		fmt.Println("Failed Register OpenMCP Master")
-		fmt.Println("=> Already Registered OpenMCP :"+openmcpIP)
+		fmt.Println("=> Already Registered OpenMCP :" + openmcpIP)
 		return
 	}
 
@@ -120,27 +121,27 @@ func registerMemberToOpenMCP(openmcpIP string) {
 	//openmcpIP := cobrautil.Option_ip
 
 	if !fileExists("/mnt/openmcp/" + openmcpIP + "/master") {
-		fmt.Println("Failed Register '"+memberIP +"' in OpenMCP Master: "+openmcpIP)
+		fmt.Println("Failed Register '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Not Yet Register OpenMCP.")
 		fmt.Println("=> First You Must be Input the Next Command in 'OpenMCP Master Server(" + openmcpIP + ")' : omcpctl register openmcp")
 		return
 	}
 
 	if memberIP == openmcpIP {
-		fmt.Println("Failed Register '"+memberIP +"' in OpenMCP Master: "+openmcpIP)
-		fmt.Println("=> Can Not Self regist. [My_IP '"+memberIP+"', OpenMCP_IP '"+openmcpIP+"']")
+		fmt.Println("Failed Register '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
+		fmt.Println("=> Can Not Self regist. [My_IP '" + memberIP + "', OpenMCP_IP '" + openmcpIP + "']")
 		return
 	}
 
 	// Already Regist
-	if fileExists("/mnt/openmcp/"+openmcpIP+"/members/unjoin/"+memberIP) {
-		fmt.Println("Failed Register '"+memberIP+"' in OpenMCP Master: "+openmcpIP)
+	if fileExists("/mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP) {
+		fmt.Println("Failed Register '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Already Regist")
 		return
 
-	} else if fileExists("/mnt/openmcp/"+openmcpIP+"/members/join/"+memberIP) {
-		fmt.Println("Failed Register '"+memberIP +"' in OpenMCP Master: "+openmcpIP)
-		fmt.Println("=> Already Joined by OpenMCP '"+openmcpIP+"'")
+	} else if fileExists("/mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP) {
+		fmt.Println("Failed Register '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
+		fmt.Println("=> Already Joined by OpenMCP '" + openmcpIP + "'")
 		return
 
 	} else {
@@ -156,7 +157,7 @@ func registerMemberToOpenMCP(openmcpIP string) {
 		// SSH Public Key Copy
 		util.CmdExec("cat /mnt/ssh/id_rsa.pub >> /root/.ssh/authorized_keys")
 
-		fmt.Println("Success Register '"+memberIP +"' in OpenMCP Master: "+openmcpIP)
+		fmt.Println("Success Register '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
 		return
 	}
 }
