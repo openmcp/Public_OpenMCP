@@ -15,7 +15,6 @@ require (
 	github.com/go-openapi/spec v0.19.8
 	github.com/golang/mock v1.3.1
 	github.com/golang/protobuf v1.4.2
-	github.com/google/gofuzz v1.1.0
 	github.com/googleapis/gnostic v0.4.0
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/imdario/mergo v0.3.8 // indirect
@@ -34,7 +33,6 @@ require (
 	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.4.0
 	github.com/valyala/fasthttp v1.15.1 // indirect
-	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
 	gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e // indirect
 	google.golang.org/grpc v1.30.0
 	google.golang.org/protobuf v1.25.0
