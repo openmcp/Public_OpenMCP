@@ -31,8 +31,14 @@
 OpenMCP 설치를 위해서는 먼저 `federation`, `ketikubecli` 그리고 nfs를 위한 `외부 서버`가 구축되어 있어야 합니다.
 
 1. [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) 설치
-1. [ketikubecli](https://github.com/openmcp/openmcp-cli) 설치
 1. [nfs 서버](https://github.com/openmcp/external) 설치
+
+-----------------------------------------------------------------------------------------------
+
+OpenMCP   Master IP : 10.0.3.30  
+Cluster1  Master IP : 10.0.3.40  
+Cluster2  Master IP : 10.0.3.50  
+NFS       Server IP : 10.0.3.12  
 
 ## 1. ketikubecli를 이용한 OpenMCP 서버 등록
 
@@ -53,7 +59,7 @@ apiVersion: v1
 clusters:
 - cluster:
     certificate-authority-data: ...
-    server: https://10.0.3.20:6443
+    server: https://10.0.3.30:6443
   name: openmcp
 contexts:
 - context:
@@ -71,10 +77,10 @@ users:
 ```
 
 ### (3) 외부 스토리지에 OpenMCP 서버 등록
-ketikubecli를 사용하여 nfs 서버에 OpenMCP 서버를 등록합니다.
+omcpctl 사용하여 nfs 서버에 OpenMCP 서버를 등록합니다.
 ```bash
-$ ketikubecli regist openmcp
-Success OpenMCP Master Regist '10.0.3.30'
+$ omcpctl register openmcp 10.0.3.30
+Success OpenMCP Master Register '10.0.3.30'
 ```
 
 ## 2. OpenMCP 기본 모듈 배포  
@@ -83,9 +89,8 @@ Success OpenMCP Master Regist '10.0.3.30'
 ```bash
 $ cd ./install_openmcp
 $ ./SETTING.sh
-GRPC Server IP -> 10.0.3.30
-GRPC Server Port -> 32050
-InfluxDB Server IP -> 10.0.3.30
+OpenMCP Analytic Engine GRPC Server Port -> 32050
+OpenMCP Metric Collector GRPC Server Port -> 32051
 InfluxDB Server Port -> 31051
 InfluxDB User Name -> root
 InfluxDB User Password -> root
@@ -105,36 +110,40 @@ $ ./1.create.sh
 ```
 > 설치 항목
 > - Sync Controller
-> - Resource Controller (Deployment, HybridAutoScaler, Ingress, Service)
+> - Resource Controller (Deployment, HybridAutoScaler, Ingress, Service, Configmap, Secret)
 > - LoadBalancing Controller
 > - Scheduler
 > - Resource Manager (Analytic Engine, Metric Collector)
 > - Policy Engine
 > - DNS Controller
+> - API Server
+> - MetalLB
 > - InfluxDB
 
 설치 확인
 ```bash
 $ kubectl get pods -n openmcp
-NAME                                            READY   STATUS    RESTARTS   AGE
-influxdb-68bff77cbd-kdcs4                       1/1     Running   0          21h
-loadbalancing-controller-bb7547df8-fpbbj        1/1     Running   0          21h
-openmcp-analytic-engine-67dc4b7d9d-kxpb8        1/1     Running   0          21h
-openmcp-deployment-controller-747cf6d76-tvm64   1/1     Running   0          21h
-openmcp-dns-controller-78ff9bcdd5-lkcx8         1/1     Running   0          21h
-openmcp-hpa-controller-8688867566-bklhw         1/1     Running   0          21h
-openmcp-ingress-controller-7fc4489594-jmccz     1/1     Running   0          21h
-openmcp-metric-collector-79dc4b466b-5h9wp       1/1     Running   0          21h
-openmcp-policy-engine-7c7b5fb7d5-4m4tl          1/1     Running   0          21h
-openmcp-scheduler-65794548ff-92fql              1/1     Running   0          21h
-openmcp-service-controller-776cc6574-xfd8c      1/1     Running   0          21h
-sync-controller-67b4d858d9-4zwnk                1/1     Running   0          21h
+NAME                                                    READY   STATUS    RESTARTS   AGE
+influxdb-68bff77cbd-kdcs4                               1/1     Running   0          21h
+openmcp-analytic-engine-67dc4b7d9d-kxpb8                1/1     Running   0          21h
+openmcp-deployment-controller-747cf6d76-tvm64           1/1     Running   0          21h
+openmcp-dns-controller-78ff9bcdd5-lkcx8                 1/1     Running   0          21h
+openmcp-has-controller-8688867566-bklhw                 1/1     Running   0          21h
+openmcp-ingress-controller-7fc4489594-jmccz             1/1     Running   0          21h
+openmcp-loadbalancing-controller-bb7547df8-fpbbj        1/1     Running   0          21h
+openmcp-metric-collector-79dc4b466b-5h9wp               1/1     Running   0          21h
+openmcp-policy-engine-7c7b5fb7d5-4m4tl                  1/1     Running   0          21h
+openmcp-scheduler-65794548ff-92fql                      1/1     Running   0          21h
+openmcp-service-controller-776cc6574-xfd8c              1/1     Running   0          21h
+openmcp-sync-controller-67b4d858d9-4zwnk                1/1     Running   0          21h
 
 $ kubectl get openmcppolicy -n openmcp
 NAME                           AGE
 analytic-metrics-weight        2m1s
 hpa-minmax-distribution-mode   2m10s
-hpa-target-cluster             2m6s
+has-target-cluster             2m6s
+log-version                    2m3s
+metric-collector-period        2m3s
 ```
 
 ### OpenMCP Architecture
@@ -153,7 +162,7 @@ apiVersion: v1
 clusters:
 - cluster:
     certificate-authority-data: ...
-    server: https://10.0.3.30:6443
+    server: https://10.0.3.40:6443
   name: cluster1
 contexts:
 - context:
@@ -171,10 +180,10 @@ users:
 ```
 
 ## 2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]
-ketikubecli를 사용하여 nfs 서버에 join 하고자 하는 클러스터를 등록합니다.
+omctl 사용하여 nfs 서버에 join 하고자 하는 클러스터를 등록합니다.
 ```bash
 $ OPENMCP_IP="10.0.3.30"
-$ ketikubecli regist member --ip ${OPENMCP_IP}
+$ omctl register member ${OPENMCP_IP}
 Success Regist '10.0.3.40' in OpenMCP Master: 10.0.3.30
 ```
 
@@ -182,7 +191,7 @@ Success Regist '10.0.3.40' in OpenMCP Master: 10.0.3.30
 OpenMCP 서버에서 ketikubecli를 사용하여 특정 클러스터를 join합니다.
 ```bash
 $ CLUSTER_IP="10.0.3.40"
-$ ketikubecli join cluster --ip ${CLUSTER_IP}
+$ omcpctl join cluster ${CLUSTER_IP}
 ```
 
 ## 4. 하위 클러스터 Master Node에 Region, Zone 등록
