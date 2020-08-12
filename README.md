@@ -80,7 +80,7 @@ users:
 ### (3) 외부 스토리지에 OpenMCP 서버 등록
 omcpctl 사용하여 nfs 서버에 OpenMCP 서버를 등록합니다.
 ```bash
-$ omcpctl regist openmcp 10.0.3.30
+$ omcpctl register openmcp 10.0.3.30
 Success OpenMCP Master Regist '10.0.3.30'
 ```
 
@@ -112,12 +112,14 @@ $ ./1.create.sh
 ```
 > 설치 항목
 > - Sync Controller
-> - Resource Controller (Deployment, HybridAutoScaler, Ingress, Service)
+> - Resource Controller (Deployment, HybridAutoScaler, Ingress, Service, Configmap, Secret)
 > - LoadBalancing Controller
 > - Scheduler
 > - Resource Manager (Analytic Engine, Metric Collector)
 > - Policy Engine
 > - DNS Controller
+> - API Server
+> - MetalLB
 > - InfluxDB
 
 설치 확인
@@ -183,7 +185,7 @@ users:
 omctl 사용하여 nfs 서버에 join 하고자 하는 클러스터를 등록합니다.
 ```bash
 $ OPENMCP_IP="10.0.3.30"
-$ omctl regist member ${OPENMCP_IP}
+$ omctl register member ${OPENMCP_IP}
 Success Regist '10.0.3.40' in OpenMCP Master: 10.0.3.30
 ```
 
