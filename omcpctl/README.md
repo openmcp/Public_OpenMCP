@@ -20,9 +20,7 @@ OPENMCP_APISERVER="10.0.3.20:31635"                # OpenMCP API Server 지정 (
 OPENMCP_DIR="\/root\/workspace\/openmcp\/openmcp"  # OpenMCP 설치 디렉토리 지정
 EXTERNAL_IP="10.0.3.12"                            # External(nfs) 서버 지정
 ...
-```
-실행 프로그램 빌드 & 경로 지정 및 Config 파일 경로 지정
-```
+
 $ ./1.build.sh
 ```
 
