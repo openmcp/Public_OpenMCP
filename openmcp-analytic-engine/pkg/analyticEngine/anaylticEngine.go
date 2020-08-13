@@ -1,25 +1,25 @@
 package analyticEngine
 
 import (
-	"strconv"
-	"fmt"
-	"sort"
-	"time"
 	"context"
+	"fmt"
+	"github.com/oschwald/geoip2-golang"
+	"google.golang.org/grpc"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog"
 	"log"
 	"net"
-	"google.golang.org/grpc"
-	"github.com/oschwald/geoip2-golang"
-	"k8s.io/klog"
-	"k8s.io/client-go/kubernetes"
-	"sigs.k8s.io/kubefed/pkg/controller/util"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	"openmcp/openmcp/openmcp-analytic-engine/pkg/protobuf"
 	"openmcp/openmcp/openmcp-analytic-engine/pkg/Geo"
-	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/openmcp-analytic-engine/pkg/influx"
+	"openmcp/openmcp/openmcp-analytic-engine/pkg/protobuf"
+	"openmcp/openmcp/util/clusterManager"
+	"sigs.k8s.io/kubefed/pkg/controller/util"
+	"sort"
+	"strconv"
+	"time"
 )
 
 type AnalyticEngineStruct struct {
@@ -27,17 +27,17 @@ type AnalyticEngineStruct struct {
 	MetricsWeight map[string]float64
 	ResourceScore map[string]float64
 	ClusterGeo    map[string]map[string]string
-	NetworkInfos	map[string]map[string]*NetworkInfo
+	NetworkInfos  map[string]map[string]*NetworkInfo
 }
 
 // Network is used to get real-time network information (receive data, transmit data)
-// Calculating the difference between previous_data and next_data is needed to get real-time network data 
+// Calculating the difference between previous_data and next_data is needed to get real-time network data
 // because the data from Kubelet is cumulative data
 type NetworkInfo struct {
-	prev_rx		int64	
-	prev_tx		int64	
-	next_rx		int64	
-	next_tx		int64	
+	prev_rx int64
+	prev_tx int64
+	next_rx int64
+	next_tx int64
 }
 
 func NewAnalyticEngine(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD string) *AnalyticEngineStruct {
@@ -80,13 +80,13 @@ func (ae *AnalyticEngineStruct) CalcResourceScore() {
 
 			if len(nodes.Items) != 0 {
 				node := nodes.Items[0]
-				
+
 				//label로부터 zone, region 추출
 				ae.ClusterGeo[cluster.Name] = map[string]string{}
 				ae.ClusterGeo[cluster.Name]["Country"] = node.Labels["failure-domain.beta.kubernetes.io/zone"]
 				ae.ClusterGeo[cluster.Name]["Continent"] = node.Labels["failure-domain.beta.kubernetes.io/region"]
 			}
-			
+
 			// Update Network Data from InfluxDB
 			ae.UpdateNetworkData(cluster.Name, nodes)
 		}
@@ -96,7 +96,7 @@ func (ae *AnalyticEngineStruct) CalcResourceScore() {
 
 // Update Network data from InfluxDB
 func (ae *AnalyticEngineStruct) UpdateNetworkData(clusterName string, nodeList *corev1.NodeList) {
-	
+
 	// Initialize cluster's network data
 	_, exists := ae.NetworkInfos[clusterName]
 	if !exists {
@@ -105,20 +105,20 @@ func (ae *AnalyticEngineStruct) UpdateNetworkData(clusterName string, nodeList *
 	}
 
 	// Update Node's network data
-	for _, node := range nodeList.Items{
+	for _, node := range nodeList.Items {
 
-		// Initialize Node's network data 
+		// Initialize Node's network data
 		_, exists := ae.NetworkInfos[clusterName][node.Name]
 		if !exists {
 			ae.NetworkInfos[clusterName][node.Name] = &NetworkInfo{}
 		}
 
-		// Get cumulative network data from InfluxDB 
+		// Get cumulative network data from InfluxDB
 		result := ae.Influx.GetNetworkData(clusterName, node.Name)
-		
+
 		// If data is not stored, cannot calculate real-time network data
 		if len(result) == 0 {
-			continue;
+			continue
 		}
 
 		for _, ser := range result[0].Series {
@@ -127,11 +127,11 @@ func (ae *AnalyticEngineStruct) UpdateNetworkData(clusterName string, nodeList *
 			prev_rx, _ := strconv.ParseInt(fmt.Sprintf("%s", ser.Values[1][1]), 10, 64)
 			prev_tx, _ := strconv.ParseInt(fmt.Sprintf("%s", ser.Values[1][2]), 10, 64)
 
-			// First row is next data 
+			// First row is next data
 			next_rx, _ := strconv.ParseInt(fmt.Sprintf("%s", ser.Values[0][1]), 10, 64)
 			next_tx, _ := strconv.ParseInt(fmt.Sprintf("%s", ser.Values[0][2]), 10, 64)
 
-			// Update network data on NetworkInfo structure 
+			// Update network data on NetworkInfo structure
 			ae.NetworkInfos[clusterName][node.Name].prev_rx = prev_rx
 			ae.NetworkInfos[clusterName][node.Name].prev_tx = prev_tx
 			ae.NetworkInfos[clusterName][node.Name].next_rx = next_rx
@@ -249,16 +249,14 @@ func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) []strin
 
 	filteringCluster := []string{}
 
-	for i := 0 ; i < len(score) ; i++ {
+	for i := 0; i < len(score); i++ {
 		filteringCluster = append(filteringCluster, scoreMap[score[i]])
 	}
-<<<<<<< HEAD
+
 	/*filteringCluster = append(filteringCluster, "cluster2")
 	filteringCluster = append(filteringCluster, "cluster3")
 	fmt.Println(filteringCluster)*/
-=======
 
->>>>>>> develop
 	return filteringCluster
 }
 
@@ -351,7 +349,7 @@ func (ae *AnalyticEngineStruct) SendHASMaxAnalysis(ctx context.Context, data *pr
 	var result string
 	/*	if len(filteringCluster) == 1 {
 		result = filteringCluster[0]
-<<<<<<< HEAD
+
 	}else {*/
 	result = ae.CompareHPAMaxInfo(filteringCluster, data)
 	//	}
@@ -359,16 +357,10 @@ func (ae *AnalyticEngineStruct) SendHASMaxAnalysis(ctx context.Context, data *pr
 	timeEnd_analysis4 := time.Since(timeStart_analysis)
 	fmt.Println("-----------------------------------------")
 	fmt.Println("==> Total Analysis time \t", timeEnd_analysis4)
-	fmt.Println("ResultCluster\t[", result,"]")
+	fmt.Println("ResultCluster\t[", result, "]")
 
 	fmt.Println("*******  [End] HAS Rebalancing Analysis  ******* \n")
 	//fmt.Println("---------HAS Response End---------")
-=======
-	}else {
-		result = ae.CompareHPAMaxInfo(filteringCluster, data)
-	}
-	fmt.Println("---------HAS Response End---------")
->>>>>>> develop
 
 	return &protobuf.ResponseHAS{TargetCluster: result}, nil
 }
@@ -385,16 +377,16 @@ func (ae *AnalyticEngineStruct) SendHASMinAnalysis(ctx context.Context, data *pr
 	//if len(filteringCluster) == 1 {
 	//	result = filteringCluster[0]
 	//}else {
-		//timeStart_analysis2 := time.Now()
-		result = ae.CompareHPAMinInfo(filteringCluster, data)
-		//timeEnd_analysis2 := time.Since(timeStart_analysis2)
-		//fmt.Println("[2] CompareHPAMinInfo() \t", timeEnd_analysis2)
+	//timeStart_analysis2 := time.Now()
+	result = ae.CompareHPAMinInfo(filteringCluster, data)
+	//timeEnd_analysis2 := time.Since(timeStart_analysis2)
+	//fmt.Println("[2] CompareHPAMinInfo() \t", timeEnd_analysis2)
 	//}
 
 	timeEnd_analysis4 := time.Since(timeStart_analysis)
 	fmt.Println("-----------------------------------------")
 	fmt.Println("==> Total Analysis time \t", timeEnd_analysis4)
-	fmt.Println("ResultCluster\t[", result,"]")
+	fmt.Println("ResultCluster\t[", result, "]")
 
 	fmt.Println("*******  [End] HAS Rebalancing Analysis  ******* \n")
 
@@ -402,26 +394,17 @@ func (ae *AnalyticEngineStruct) SendHASMinAnalysis(ctx context.Context, data *pr
 }
 
 func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *protobuf.NodeInfo) (*protobuf.ReponseNetwork, error) {
-<<<<<<< HEAD
+
 	klog.Info("***** [Start] Network Analysis *****")
 	startTime := time.Now()
-=======
-	klog.Info("---------Network Request Start---------")
->>>>>>> develop
 
 	// calculate difference between previous data and next data
 	diff_rx := ae.NetworkInfos[data.ClusterName][data.NodeName].next_rx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_rx
 	diff_tx := ae.NetworkInfos[data.ClusterName][data.NodeName].next_tx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_tx
 
-<<<<<<< HEAD
 	elapsedTime := time.Since(startTime)
 	klog.V(0).Infof("%-30s [%v]", "=> Total Anlysis time", elapsedTime)
 	klog.Info("***** [End] Network Analysis *****")
-=======
-	klog.Infof("check SnedNetworkAnalysis: %v, %v", diff_rx, diff_tx)
-
-	klog.Info("---------Network Response End---------")
->>>>>>> develop
 
 	return &protobuf.ReponseNetwork{RX: diff_rx, TX: diff_tx}, nil
 }
