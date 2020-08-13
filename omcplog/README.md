@@ -33,7 +33,7 @@ import (
 )
 
 func main() {
-  logLevel.KetiLogInit() //log init
-  omcplog.V(0).Info("[OpenMCP] omcplog Test")
+   logLevel.KetiLogInit() //log init
+   omcplog.V(0).Info("[OpenMCP] omcplog Test")
 }
 ```
