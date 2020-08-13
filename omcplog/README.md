@@ -19,7 +19,7 @@ import (
 func main() {
    omcplog.InitFlags(nil)
    flag.Set("omcpv", "0") //Log Level Init
-	flag.Parse()
+   flag.Parse()
    omcplog.V(0).Info("[OpenMCP] omcplog Test")
 }
 ```
