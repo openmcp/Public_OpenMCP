@@ -189,7 +189,7 @@ users:
 ```bash
 $ OPENMCP_IP="10.0.3.30"
 $ omctl register member ${OPENMCP_IP}
-Success Regist '10.0.3.40' in OpenMCP Master: 10.0.3.30
+Success Register '10.0.3.40' in OpenMCP Master: 10.0.3.30
 ```
 
 ## 3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]
