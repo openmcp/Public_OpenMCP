@@ -7,6 +7,23 @@
 
 ## How to Use
 omcplog를 Import후 함수를 호출해서 사용
+> 정적 Log Level 사용
+```
+package main
+
+import (
+   "flat"
+   "openmcp/omcplog" //omcplog import
+)
+
+func main() {
+   omcplog.InitFlags(nil)
+   flag.Set("omcpv", "0") //Log Level Init
+	flag.Parse()
+   omcplog.V(0).Info("[OpenMCP] omcplog Test")
+}
+```
+> 동적 Log Level 사용
 ```
 package main
 
