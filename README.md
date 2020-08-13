@@ -29,7 +29,7 @@
 
 ## Requirement
 
-OpenMCP 설치를 위해서는 먼저 `federation`, `ketikubecli` 그리고 nfs를 위한 `외부 서버`가 구축되어 있어야 합니다.
+OpenMCP 설치를 위해서는 먼저 `federation`, `omcpctl` 그리고 nfs를 위한 `외부 서버`가 구축되어 있어야 합니다.
 
 1. [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) 설치
 1. [nfs 서버](https://github.com/openmcp/external) 설치
@@ -216,7 +216,7 @@ $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> 
 ---
 
 ## 5. 하위 클러스터 MetalLB Config 생성 [OpenMCP에서 수행]
-metallb_config.yaml 파일을 새로 생성하여 하위 클러스터 LoadBalancer의 할당 IP 범위를 설정 후 각 클러스터에 배포합니다.
+'metallb_config.yaml' 파일을 새로 생성하여 하위 클러스터 LoadBalancer의 할당 IP 범위를 설정 후 각 클러스터에 배포합니다.
 ```
 $ vim metallb_config.yaml 
 apiVersion: v1
@@ -243,6 +243,10 @@ $ kubectl get kubefedcluster -n kube-federation-system
 NAME       READY   AGE
 cluster1   True    23h
 cluster2   True    23h
+```
+각 클러스터에 'openmcp' namespaces를 생성합니다.
+```bash
+$ kubectl create ns openmcp --context=<cluster-name>
 ```
 
 ## OpenMCPDeployment 배포
