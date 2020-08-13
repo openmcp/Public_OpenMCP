@@ -104,7 +104,7 @@ OpenMCP MetalLB Address IP Range (TO) -> 10.0.3.250
 OpenMCP 동작에 필요한 기본 모듈을 배포합니다.
 
 ```bash
-$ cd master
+$ cd master/
 $ ./1.create.sh
 ```
 > 설치 항목
@@ -196,7 +196,7 @@ $ CLUSTER_IP="10.0.3.40"
 $ omcpctl join cluster ${CLUSTER_IP}
 ```
 
-## 4. 하위 클러스터 Master Node에 Region, Zone 등록
+## 4. 하위 클러스터 Master Node에 Region, Zone 등록 [OpenMCP에서 수행]
 하위 클러스터의 Label에 Region과 Zone을 등록합니다.
 ```bash
 $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/region=<region> --context=<cluster-name>
@@ -214,8 +214,9 @@ $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> 
 > - https://ko.wikipedia.org/wiki/ISO_3166-1
 ---
 
-## 5. 하위 클러스터 MetalLB Config 생성 (LoadBalancer IP 할당)
-하위 클러스터 LoadBalancer의 할당 IP 범위를 설정합니다.
+## 5. 하위 클러스터 MetalLB Config 생성 [OpenMCP에서 수행]
+하위 클러스터 LoadBalancer의 할당 IP 범위를 설정합니다.  
+metallb_config.yaml 파일 생성
 
 > vim metallb_config.yaml 
 ```
@@ -234,7 +235,7 @@ data:
 ```
 > 위에서 만든 Metallb의 Loadbalancer IP 할당범위를 등록합니다.
 ```  
-kubectl create -f metallb_config.yaml
+kubectl create -f metallb_config.yaml --context=<cluster-name>
 ```
 
 # OpenMCP EXAMPLE
