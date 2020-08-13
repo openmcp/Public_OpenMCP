@@ -31,7 +31,6 @@
 OpenMCP 설치를 위해서는 먼저 `federation`, `ketikubecli` 그리고 nfs를 위한 `외부 서버`가 구축되어 있어야 합니다.
 
 1. [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) 설치
-1. [omcpctl](https://github.com/openmcp/openmcp-cli) 설치
 1. [nfs 서버](https://github.com/openmcp/external) 설치
 
 -----------------------------------------------------------------------------------------------
@@ -80,8 +79,8 @@ users:
 ### (3) 외부 스토리지에 OpenMCP 서버 등록
 omcpctl 사용하여 nfs 서버에 OpenMCP 서버를 등록합니다.
 ```bash
-$ omcpctl regist openmcp 10.0.3.30
-Success OpenMCP Master Regist '10.0.3.30'
+$ omcpctl register openmcp
+Success OpenMCP Master Register '10.0.3.30'
 ```
 
 ## 2. OpenMCP 기본 모듈 배포  
@@ -90,9 +89,8 @@ Success OpenMCP Master Regist '10.0.3.30'
 ```bash
 $ cd ./install_openmcp
 $ ./SETTING.sh
-GRPC Server IP -> 10.0.3.30
-GRPC Server Port -> 32050
-InfluxDB Server IP -> 10.0.3.30
+OpenMCP Analytic Engine GRPC Server Port -> 32050
+OpenMCP Metric Collector GRPC Server Port -> 32051
 InfluxDB Server Port -> 31051
 InfluxDB User Name -> root
 InfluxDB User Password -> root
@@ -107,17 +105,19 @@ OpenMCP MetalLB Address IP Range (TO) -> 10.0.3.250
 OpenMCP 동작에 필요한 기본 모듈을 배포합니다.
 
 ```bash
-$ cd ./install_openmcp/master
+$ cd master
 $ ./1.create.sh
 ```
 > 설치 항목
 > - Sync Controller
-> - Resource Controller (Deployment, HybridAutoScaler, Ingress, Service)
+> - Resource Controller (Deployment, HybridAutoScaler, Ingress, Service, Configmap, Secret)
 > - LoadBalancing Controller
 > - Scheduler
 > - Resource Manager (Analytic Engine, Metric Collector)
 > - Policy Engine
 > - DNS Controller
+> - API Server
+> - MetalLB
 > - InfluxDB
 
 설치 확인
@@ -183,7 +183,7 @@ users:
 omctl 사용하여 nfs 서버에 join 하고자 하는 클러스터를 등록합니다.
 ```bash
 $ OPENMCP_IP="10.0.3.30"
-$ omctl regist member ${OPENMCP_IP}
+$ omctl register member ${OPENMCP_IP}
 Success Regist '10.0.3.40' in OpenMCP Master: 10.0.3.30
 ```
 
