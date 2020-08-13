@@ -1,7 +1,7 @@
 **Table of Contents**
 - [Introduction of OpenMCP&reg;](#introduction-of-openmcp)
 - [How To Install](#how-to-install)
-  - [1. ketikubecli를 이용한 OpenMCP 서버 등록](#1-ketikubecli를-이용한-openmcp-서버-등록)
+  - [1. omcpctl을 이용한 OpenMCP 서버 등록](#1-omcpctl을-이용한-openmcp-서버-등록)
     - [(1) `openmcp` namespaces 리소스 생성](#1-openmcp-namespaces-리소스-생성)
     - [(2) cluster 이름 변경](#2-cluster-이름-변경)
     - [(3) 외부 스토리지에 OpenMCP 서버 등록](#3-외부-스토리지에-openmcp-서버-등록)   
@@ -42,7 +42,7 @@ Cluster1  Master IP : 10.0.3.40
 Cluster2  Master IP : 10.0.3.50  
 NFS       Server IP : 10.0.3.12  
 
-## 1. ketikubecli를 이용한 OpenMCP 서버 등록
+## 1. omcpctl을 이용한 OpenMCP 서버 등록
 
 ### (1) `openmcp` namespaces 리소스 생성
 
