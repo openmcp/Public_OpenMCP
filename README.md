@@ -183,7 +183,7 @@ users:
 ```
 
 ## 2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]
-omctl 사용하여 nfs 서버에 join 하고자 하는 클러스터를 등록합니다.
+omctl 사용하여 nfs 서버에 join 하고자 하는 클러스터를 등록합니다.  
 [omctl](https://github.com/openmcp/openmcp-cli) 설치
 ```bash
 $ OPENMCP_IP="10.0.3.30"
