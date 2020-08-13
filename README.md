@@ -182,8 +182,7 @@ users:
 ```
 
 ## 2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]
-omctl 사용하여 nfs 서버에 join 하고자 하는 클러스터를 등록합니다.  
-[omctl](https://github.com/openmcp/openmcp-cli) 설치
+각 클러스터에 [omctl](https://github.com/openmcp/openmcp-cli) 설치 후, omctl 사용하여 nfs 서버에 join 하고자 하는 클러스터를 등록합니다.
 ```bash
 $ OPENMCP_IP="10.0.3.30"
 $ omctl register member ${OPENMCP_IP}
@@ -216,8 +215,7 @@ $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> 
 ---
 
 ## 5. 하위 클러스터 MetalLB Config 생성 [OpenMCP에서 수행]
-metallb_config.yaml 파일을 새로  생성하위 클러스터 LoadBalancer의 할당 IP 범위를 설정합니다.  
-
+metallb_config.yaml 파일을 새로 생성하여 하위 클러스터 LoadBalancer의 할당 IP 범위를 설정 후 각 클러스터에 배포합니다.
 ```
 $ vim metallb_config.yaml 
 apiVersion: v1
@@ -232,9 +230,8 @@ data:
      protocol: layer2
      addresses:
      - <<REPLACE_ADDRESS_FROM>>-<<REPLACE_ADDRESS_TO>>
-```
-위에서 만든 Metallb의 Loadbalancer IP 할당범위를 등록합니다.
-```  
+
+
 $ kubectl create -f metallb_config.yaml --context=<cluster-name>
 ```
 
