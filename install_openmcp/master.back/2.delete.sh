@@ -32,7 +32,7 @@ echo "--- openmcp-dns-controller"
 kubectl delete -f openmcp-dns-controller/.
 echo "--- loadbalancing-controller"
 kubectl delete -f openmcp-loadbalancing-controller/.
-kubectl delete service loadbalancing-controller -n openmcp
+kubectl delete service openmcp-loadbalancing-controller -n openmcp
 echo "--- sync-controller"
 kubectl delete -f openmcp-sync-controller/.
 echo "--- metallb"
