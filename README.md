@@ -32,6 +32,7 @@ OpenMCP 설치를 위해서는 먼저 `federation`, `ketikubecli` 그리고 nfs�
 
 1. [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) 설치
 1. [nfs 서버](https://github.com/openmcp/external) 설치
+1. [omcpctl](https://github.com/openmcp/openmcp/tree/master/omcpctl) 설치
 
 -----------------------------------------------------------------------------------------------
 
@@ -183,6 +184,7 @@ users:
 
 ## 2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]
 omctl 사용하여 nfs 서버에 join 하고자 하는 클러스터를 등록합니다.
+[omctl](https://github.com/openmcp/openmcp-cli) 설치
 ```bash
 $ OPENMCP_IP="10.0.3.30"
 $ omctl register member ${OPENMCP_IP}
@@ -190,7 +192,7 @@ Success Regist '10.0.3.40' in OpenMCP Master: 10.0.3.30
 ```
 
 ## 3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]
-OpenMCP 서버에서 ketikubecli를 사용하여 특정 클러스터를 join합니다.
+OpenMCP 서버에서 omcpctl 사용하여 특정 클러스터를 join합니다.
 ```bash
 $ CLUSTER_IP="10.0.3.40"
 $ omcpctl join cluster ${CLUSTER_IP}
