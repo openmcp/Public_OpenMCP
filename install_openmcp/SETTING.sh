@@ -47,9 +47,9 @@ sed -i 's|REPLACE_GRPCIP|'\"$MYIP\"'|g' master/openmcp-has-controller/operator.y
 sed -i 's|REPLACE_GRPCIP|'\"$MYIP\"'|g' master/openmcp-scheduler/operator.yaml
 sed -i 's|REPLACE_GRPCIP|'\"$MYIP\"'|g' master/openmcp-loadbalancing-controller/operator.yaml
 
-sed -i 's|REPLACE_GRPCPORT|'"$OAE_GRPC_PORT"'|g' master/openmcp-has-controller/operator.yaml
-sed -i 's|REPLACE_GRPCPORT|'"$OAE_GRPC_PORT"'|g' master/openmcp-scheduler/operator.yaml
-sed -i 's|REPLACE_GRPCPORT|'"$OAE_GRPC_PORT"'|g' master/openmcp-loadbalancing-controller/operator.yaml
+sed -i 's|REPLACE_GRPCPORT|'\"$OAE_GRPC_PORT\"'|g' master/openmcp-has-controller/operator.yaml
+sed -i 's|REPLACE_GRPCPORT|'\"$OAE_GRPC_PORT\"'|g' master/openmcp-scheduler/operator.yaml
+sed -i 's|REPLACE_GRPCPORT|'\"$OAE_GRPC_PORT\"'|g' master/openmcp-loadbalancing-controller/operator.yaml
 
 sed -i 's|REPLACE_GRPCIP|'\"$MYIP\"'|g' member/metric-collector/operator.yaml
 sed -i 's|REPLACE_GRPCPORT|'\"$OME_GRPC_PORT\"'|g' member/metric-collector/operator.yaml
