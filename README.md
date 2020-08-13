@@ -117,7 +117,6 @@ $ ./1.create.sh
 > - Policy Engine
 > - DNS Controller
 > - API Server
-> - MetalLB
 > - InfluxDB
 
 설치 확인
