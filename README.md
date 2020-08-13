@@ -94,8 +94,7 @@ OpenMCP Metric Collector GRPC Server Port -> 32051
 InfluxDB Server Port -> 31051
 InfluxDB User Name -> root
 InfluxDB User Password -> root
-NFS Server IP -> 10.0.3.12
-PowerDNS Server IP -> 10.0.3.12
+NFS & PowerDNS Server IP -> 10.0.3.12
 PowerDNS Server Port -> 8081
 PowerDNS Server API Key -> 1234
 OpenMCP MetalLB Address IP Range (FROM) -> 10.0.3.241
