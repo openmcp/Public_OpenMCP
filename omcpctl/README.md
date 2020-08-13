@@ -11,8 +11,6 @@
 
 [2. OpenMCP 플랫폼 설치](https://github.com/openmcp/openmcp)
 
-3. Go 1.14.2 설치
-
 ## How to Install
 1.build.sh 에서 환경변수 설정 후 빌드
 ```
