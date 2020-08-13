@@ -12,7 +12,7 @@ omcplog를 Import후 함수를 호출해서 사용
 package main
 
 import (
-   "flat"
+   "flag"
    "openmcp/omcplog" //omcplog import
 )
 
