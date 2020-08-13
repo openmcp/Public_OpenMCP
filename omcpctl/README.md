@@ -12,15 +12,24 @@
 [2. OpenMCP 플랫폼 설치](https://github.com/openmcp/openmcp)
 
 ## How to Install
+1.build.sh 에서 환경변수 설정 후 빌드
 ```
-# 실행 프로그램 빌드 & 경로 지정 및 Config 파일 경로 지정
-./1.build.sh
+$ vim 1.build.sh
+...
+OPENMCP_APISERVER="10.0.3.20:31635"
+OPENMCP_DIR="\/root\/workspace\/openmcp\/openmcp"
+EXTERNAL_IP="10.0.3.12"
+...
+```
+실행 프로그램 빌드 & 경로 지정 및 Config 파일 경로 지정
+```
+$ ./1.build.sh
 ```
 
 ## Config 파일 설정
 
 > omcpctl는 다음과 같은 설정값(/var/lib/omcpctl/config.yaml)이 필요합니다.  
-> 1.build.sh 에서 수정
+> 1.build.sh 에서 환경변수 설정 후 빌드
 ```
 # OpenMCP API Server 지정 (kubectl get svc -n openmcp 참고)
 openmcpAPIServer: "10.0.3.20:31635"
