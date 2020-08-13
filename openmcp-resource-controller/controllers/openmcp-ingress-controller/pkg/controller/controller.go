@@ -41,9 +41,8 @@ import (
 
 	extv1b1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	sync "openmcp/openmcp/openmcp-sync-controller/pkg/apis/keti/v1alpha1"
 	syncapis "openmcp/openmcp/openmcp-sync-controller/pkg/apis"
-
+	sync "openmcp/openmcp/openmcp-sync-controller/pkg/apis/keti/v1alpha1"
 )
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
@@ -141,7 +140,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			foundService := &corev1.Service{}
 			nsn := types.NamespacedName{
 				Namespace: "openmcp",
-				Name:      "loadbalancing-controller",
+				Name:      "openmcp-loadbalancing-controller",
 			}
 			err = r.live.Get(context.TODO(), nsn, foundService)
 			if err != nil && errors.IsNotFound(err) {
@@ -203,7 +202,7 @@ func (r *reconciler) registerPdnsServer(ingress *extv1b1.Ingress) error {
 	found := &corev1.Service{}
 	nsn := types.NamespacedName{
 		Namespace: "openmcp",
-		Name:      "loadbalancing-controller",
+		Name:      "openmcp-loadbalancing-controller",
 	}
 	err = r.live.Get(context.TODO(), nsn, found)
 	if err != nil && errors.IsNotFound(err) {
@@ -341,7 +340,7 @@ func (r *reconciler) createIngress(req reconcile.Request, cm *clusterManager.Clu
 				omcplog.V(0).Info("Create Ingress Resource - ", cluster.Name)
 				//err = cluster_client.Create(context.Background(), cluster_ing)
 				command := "create"
-				_, err = r.sendSync(ing, command, cluster.Name)
+				_, err = r.sendSync(cluster_ing, command, cluster.Name)
 				cluster_map[cluster.Name] = 1
 				if err != nil {
 					omcplog.V(0).Info(cluster.Name, " - ", err)
@@ -354,7 +353,6 @@ func (r *reconciler) createIngress(req reconcile.Request, cm *clusterManager.Clu
 	err = r.live.Status().Update(context.TODO(), instance)
 	return err
 }
-
 
 func (r *reconciler) ingressForOpenMCPIngress(req reconcile.Request, m *ketiv1alpha1.OpenMCPIngress) (*extv1b1.Ingress, *extv1b1.Ingress) {
 	host_ing := &extv1b1.Ingress{
@@ -374,7 +372,7 @@ func (r *reconciler) ingressForOpenMCPIngress(req reconcile.Request, m *ketiv1al
 
 	for i, _ := range host_ing.Spec.Rules {
 		for j, _ := range host_ing.Spec.Rules[i].HTTP.Paths {
-			host_ing.Spec.Rules[i].HTTP.Paths[j].Backend.ServiceName = "loadbalancing-controller"
+			host_ing.Spec.Rules[i].HTTP.Paths[j].Backend.ServiceName = "openmcp-loadbalancing-controller"
 			host_ing.Spec.Rules[i].HTTP.Paths[j].Backend.ServicePort.IntVal = 80
 		}
 	}
@@ -399,8 +397,7 @@ func (r *reconciler) ingressForOpenMCPIngress(req reconcile.Request, m *ketiv1al
 	return host_ing, ing
 }
 
-
-func(r *reconciler) DeleteIngress(cm *clusterManager.ClusterManager, name string, namespace string) error {
+func (r *reconciler) DeleteIngress(cm *clusterManager.ClusterManager, name string, namespace string) error {
 	ing := &extv1b1.Ingress{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Ingress",
@@ -422,17 +419,17 @@ func(r *reconciler) DeleteIngress(cm *clusterManager.ClusterManager, name string
 	omcplog.V(0).Info("OpenMCP Delete Start")
 	//command := "delete"
 	//_,err = r.sendSync(ing, command, "openmcp")
-	err = cm.Host_client.Delete(context.Background(), ing,  namespace, name)
+	err = cm.Host_client.Delete(context.Background(), ing, namespace, name)
 
 	if err != nil {
 		return err
 	}
-	omcplog.V(0).Info("OpenMCP Delete Complate")
+	omcplog.V(0).Info("OpenMCP Delete Complete")
 
 	for _, cluster := range cm.Cluster_list.Items {
 		cluster_client := cm.Cluster_genClients[cluster.Name]
 		omcplog.V(0).Info(namespace, name)
-		err := cluster_client.Get(context.Background(), ing,  namespace, name)
+		err := cluster_client.Get(context.Background(), ing, namespace, name)
 		if err != nil && errors.IsNotFound(err) {
 			// all good
 			omcplog.V(0).Info("Not Found")
@@ -440,13 +437,26 @@ func(r *reconciler) DeleteIngress(cm *clusterManager.ClusterManager, name string
 		}
 		omcplog.V(0).Info(cluster.Name, " Delete Start")
 		command := "delete"
-		_,err = r.sendSync(ing, command, cluster.Name)
+		omcplog.V(0).Info(name)
+		omcplog.V(0).Info(namespace)
+
+		ing = &extv1b1.Ingress{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Ingress",
+				APIVersion: "networking.k8s.io/v1beta1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: namespace,
+			},
+		}
+		_, err = r.sendSync(ing, command, cluster.Name)
 
 		//err = cluster_client.Delete(context.Background(), ing,  namespace, name)
 		if err != nil {
 			return err
 		}
-		omcplog.V(0).Info(cluster.Name, "Delete Complate")
+		omcplog.V(0).Info(cluster.Name, "Delete Complete")
 	}
 	return nil
 
@@ -489,6 +499,7 @@ func(r *reconciler) DeleteIngress(cm *clusterManager.ClusterManager, name string
 //}
 
 var syncIndex int = 0
+
 func (r *reconciler) sendSync(ingress *extv1b1.Ingress, command string, clusterName string) (string, error) {
 	omcplog.V(0).Info("[OpenMCP ConfigMap] Function Called sendSync")
 	syncIndex += 1
@@ -515,4 +526,3 @@ func (r *reconciler) sendSync(ingress *extv1b1.Ingress, command string, clusterN
 	omcplog.V(0).Info(s.Name)
 	return s.Name, err
 }
-
