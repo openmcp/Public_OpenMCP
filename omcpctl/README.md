@@ -19,8 +19,8 @@
 
 ## Config 파일 설정
 
-> omcpctl는 다음과 같은 설정값(/var/lib/omcpctl/config.yaml)이 필요합니다.
-> 1.build.sh 
+> omcpctl는 다음과 같은 설정값(/var/lib/omcpctl/config.yaml)이 필요합니다.  
+> 1.build.sh 에서 수정
 ```
 # OpenMCP API Server 지정 (kubectl get svc -n openmcp 참고)
 openmcpAPIServer: "10.0.3.20:31635"
