@@ -79,8 +79,7 @@ users:
 ### (3) 외부 스토리지에 OpenMCP 서버 등록
 omcpctl 사용하여 nfs 서버에 OpenMCP 서버를 등록합니다.
 ```bash
-$ OPENMCP_IP="10.0.3.30"
-$ omcpctl register openmcp ${OPENMCP_IP}
+$ omcpctl register openmcp
 Success OpenMCP Master Register '10.0.3.30'
 ```
 
