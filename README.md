@@ -122,27 +122,30 @@ $ ./1.create.sh
 설치 확인
 ```bash
 $ kubectl get pods -n openmcp
-NAME                                                    READY   STATUS    RESTARTS   AGE
-influxdb-68bff77cbd-kdcs4                               1/1     Running   0          21h
-openmcp-analytic-engine-67dc4b7d9d-kxpb8                1/1     Running   0          21h
-openmcp-deployment-controller-747cf6d76-tvm64           1/1     Running   0          21h
-openmcp-dns-controller-78ff9bcdd5-lkcx8                 1/1     Running   0          21h
-openmcp-has-controller-8688867566-bklhw                 1/1     Running   0          21h
-openmcp-ingress-controller-7fc4489594-jmccz             1/1     Running   0          21h
-openmcp-loadbalancing-controller-bb7547df8-fpbbj        1/1     Running   0          21h
-openmcp-metric-collector-79dc4b466b-5h9wp               1/1     Running   0          21h
-openmcp-policy-engine-7c7b5fb7d5-4m4tl                  1/1     Running   0          21h
-openmcp-scheduler-65794548ff-92fql                      1/1     Running   0          21h
-openmcp-service-controller-776cc6574-xfd8c              1/1     Running   0          21h
-openmcp-sync-controller-67b4d858d9-4zwnk                1/1     Running   0          21h
+NAME                                                READY   STATUS    RESTARTS   AGE
+influxdb-68bff77cbd-f9p6k                           1/1     Running   0          3m11s
+openmcp-analytic-engine-cbbcfd7f4-fjrvb             1/1     Running   0          3m12s
+openmcp-apiserver-56bf4c7bd-7q4vw                   1/1     Running   0          3m12s
+openmcp-configmap-controller-6c97c8cd57-ww7x8       1/1     Running   0          3m11s
+openmcp-deployment-controller-747cf6d76-2xr52       1/1     Running   0          3m9s
+openmcp-dns-controller-78ff9bcdd5-5fkpq             1/1     Running   0          3m2s
+openmcp-has-controller-ccbcd86c4-bxtn8              1/1     Running   0          3m9s
+openmcp-ingress-controller-7fc4489594-zmcsl         1/1     Running   0          3m8s
+openmcp-loadbalancing-controller-867b79b8d6-bhrkk   1/1     Running   0          3m1s
+openmcp-metric-collector-77c5f94759-79tjq           1/1     Running   0          3m10s
+openmcp-policy-engine-7c7b5fb7d5-st5qs              1/1     Running   0          3m7s
+openmcp-scheduler-75f4bc655-4mzdl                   1/1     Running   0          3m8s
+openmcp-secret-controller-6d7c5bf4fc-5mlm2          1/1     Running   0          3m11s
+openmcp-service-controller-776cc6574-b8wsm          1/1     Running   0          3m8s
+openmcp-sync-controller-769b85d4b4-crnxc            1/1     Running   0          3m1s
 
 $ kubectl get openmcppolicy -n openmcp
 NAME                           AGE
-analytic-metrics-weight        2m1s
-hpa-minmax-distribution-mode   2m10s
-has-target-cluster             2m6s
-log-version                    2m3s
-metric-collector-period        2m3s
+analytic-metrics-weight        3m16s
+has-target-cluster             3m15s
+hpa-minmax-distribution-mode   3m15s
+log-version                    3m16s
+metric-collector-period        3m16s
 ```
 
 ### OpenMCP Architecture
