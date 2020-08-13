@@ -80,10 +80,10 @@ func getDiffUnjoinIP() []string {
 
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
-	util.CmdExec2("umount -l /mnt")
-	defer util.CmdExec2("umount -l /mnt")
+	util.CmdExec("umount -l /mnt")
+	defer util.CmdExec("umount -l /mnt")
 
-	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
+	util.CmdExec("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 	openmcpIP := GetOutboundIP()
 	nfsClusterUnjoinStr, err := util.CmdExec("ls /mnt/openmcp/" + openmcpIP + "/members/unjoin")
 	nfsClusterUnjoinList := strings.Split(nfsClusterUnjoinStr, "\n")
@@ -111,25 +111,24 @@ func moveToJoin(memberIP string) {
 
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
-	util.CmdExec2("umount -l /mnt")
-	defer util.CmdExec2("umount -l /mnt")
+	util.CmdExec("umount -l /mnt")
+	defer util.CmdExec("umount -l /mnt")
 
-	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
+	util.CmdExec("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
 	openmcpIP := GetOutboundIP()
 
-	util.CmdExec2("mv /mnt/openmcp/"+openmcpIP+"/members/unjoin/"+memberIP+" /mnt/openmcp/"+openmcpIP+"/members/join/"+memberIP)
-
+	util.CmdExec("mv /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP + " /mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP)
 
 }
 
 func GetUnjoinClusterList() {
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
-	util.CmdExec2("umount -l /mnt")
-	defer util.CmdExec2("umount -l /mnt")
+	util.CmdExec("umount -l /mnt")
+	defer util.CmdExec("umount -l /mnt")
 
-	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
+	util.CmdExec("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 	openmcpIP := GetOutboundIP()
 	nfsClusterJoinStr, err := util.CmdExec("ls /mnt/openmcp/" + openmcpIP + "/members/unjoin")
 	nfsClusterJoinList := strings.Split(nfsClusterJoinStr, "\n")
@@ -158,24 +157,22 @@ func removeInitCluster(clusterName, openmcpDir string) {
 	install_dir := filepath.Join(openmcpDir, "install_openmcp/member")
 	initYamls := []string{"custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller"}
 
-
-	for _, initYaml := range initYamls{
-		util.CmdExec2("kubectl delete -f " + install_dir + "/" + initYaml + " --context " + clusterName)
+	for _, initYaml := range initYamls {
+		util.CmdExec("kubectl delete -f " + install_dir + "/" + initYaml + " --context " + clusterName)
 	}
 
-	util.CmdExec2("chmod 755 "+ install_dir + "/vertical-pod-autoscaler/hack/*")
-	util.CmdExec2(install_dir + "/vertical-pod-autoscaler/hack/vpa-down.sh " + clusterName)
-	util.CmdExec2("kubectl delete ns openmcp --context " + clusterName)
-
+	util.CmdExec("chmod 755 " + install_dir + "/vertical-pod-autoscaler/hack/*")
+	util.CmdExec(install_dir + "/vertical-pod-autoscaler/hack/vpa-down.sh " + clusterName)
+	util.CmdExec("kubectl delete ns openmcp --context " + clusterName)
 }
 
 func unjoinCluster(memberIP string) {
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
-	util.CmdExec2("umount -l /mnt")
-	defer util.CmdExec2("umount -l /mnt")
+	util.CmdExec("umount -l /mnt")
+	defer util.CmdExec("umount -l /mnt")
 
-	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
+	util.CmdExec("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
 	fmt.Println("Cluster UnJoin Start")
 
@@ -226,15 +223,13 @@ func unjoinCluster(memberIP string) {
 
 	removeInitCluster(target_name, c.OpenmcpDir)
 
-
-	util.CmdExec2("kubefedctl unjoin "+target_name+" --cluster-context "+target_name+" --host-cluster-context openmcp --v=2")
-	kc.Clusters = append(kc.Clusters[:target_name_index], kc.Clusters[target_name_index:]...)
-	kc.Contexts = append(kc.Contexts[:target_context_index], kc.Contexts[target_context_index:]...)
-	kc.Users = append(kc.Users[:target_user_index], kc.Users[target_user_index:]...)
+	util.CmdExec("kubefedctl unjoin " + target_name + " --cluster-context " + target_name + " --host-cluster-context openmcp --v=2")
+	kc.Clusters = append(kc.Clusters[:target_name_index], kc.Clusters[target_name_index+1:]...)
+	kc.Contexts = append(kc.Contexts[:target_context_index], kc.Contexts[target_context_index+1:]...)
+	kc.Users = append(kc.Users[:target_user_index], kc.Users[target_user_index+1:]...)
 
 	cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
-	util.CmdExec2("mv /mnt/openmcp/"+openmcpIP+"/members/join/"+memberIP+" /mnt/openmcp/"+openmcpIP+"/members/unjoin/"+memberIP)
-
+	util.CmdExec("mv /mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP + " /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP)
 
 	fmt.Println("Cluster Unjoin Completed - " + target_name)
 }
