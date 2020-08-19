@@ -17,7 +17,7 @@ spec:
       containers:
         - name: openmcp-apiserver
           # Replace this with the built image name
-          image: atyx300/openmcp-apiserver:v0.0.1
+          image: openmcp/openmcp-apiserver:v0.0.1
           command:
           - openmcp-apiserver
           imagePullPolicy: Always

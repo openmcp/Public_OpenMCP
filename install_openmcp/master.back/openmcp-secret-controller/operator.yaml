@@ -17,7 +17,7 @@ spec:
       containers:
         - name: openmcp-secret-controller
           # Replace this with the built image name
-          image: atyx300/openmcp-secret-controller:v0.0.1
+          image: openmcp/openmcp-secret-controller:v0.0.1
           command:
           - openmcp-secret-controller
           imagePullPolicy: Always

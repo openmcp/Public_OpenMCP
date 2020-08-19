@@ -3,8 +3,8 @@ package influx
 import (
 	"fmt"
 	"github.com/influxdata/influxdb/client/v2"
-	"k8s.io/klog"
 	"log"
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-metric-collector/master/pkg/protobuf"
 	"time"
 )
@@ -14,12 +14,14 @@ type Influx struct {
 }
 
 func NewInflux(INFLUX_IP, INFLUX_PORT, username, password string) *Influx {
+	omcplog.V(4).Info("NewInflux Called")
 	inf := &Influx{
 		inClient: InfluxDBClient(INFLUX_IP, INFLUX_PORT, username, password),
 	}
 	return inf
 }
 func InfluxDBClient(INFLUX_IP, INFLUX_PORT, username, password string) client.Client {
+	omcplog.V(4).Info("InfluxDBClient Called")
 	c, err := client.NewHTTPClient(client.HTTPConfig{
 		Addr:     "http://" + INFLUX_IP + ":" + INFLUX_PORT,
 		Username: username,
@@ -31,12 +33,14 @@ func InfluxDBClient(INFLUX_IP, INFLUX_PORT, username, password string) client.Cl
 	return c
 }
 func (in *Influx) CreateDatabase() {
+	omcplog.V(4).Info("CreateDatabase Called")
 	q := client.NewQuery("CREATE DATABASE Metrics", "", "")
 	if response, err := in.inClient.Query(q); err == nil && response.Error() == nil {
 		fmt.Println(response.Results)
 	}
 }
 func (in *Influx) CreateMeasurements() {
+	omcplog.V(4).Info("CreateMeasurements Called")
 	q1 := client.NewQuery("CREATE MEASUREMENTS Nodes", "Metrics", "")
 	if response, err := in.inClient.Query(q1); err == nil && response.Error() == nil {
 		fmt.Println(response.Results)
@@ -47,7 +51,8 @@ func (in *Influx) CreateMeasurements() {
 	}
 }
 func (in *Influx) SaveMetrics(clusterName string, data *protobuf.Collection) {
-	klog.V(0).Info("[Save InfluxDB] ClusterName: '", clusterName,"'")
+	omcplog.V(4).Info("SaveMetrics Called")
+	omcplog.V(2).Info("[Save InfluxDB] ClusterName: '", clusterName,"'")
 	bp, _ := client.NewBatchPoints(client.BatchPointsConfig{
 		//Precision:        "rfc3339", // yyyy-MM-ddTHH:mm:ss
 		Database:         "Metrics",

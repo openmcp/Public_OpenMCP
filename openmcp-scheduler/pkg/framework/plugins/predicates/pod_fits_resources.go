@@ -6,33 +6,29 @@ import (
 
 type PodFitsResources struct{}
 
-// Name returns name of the plugin
 func (pl *PodFitsResources) Name() string {
 	return "PodFitsResources"
 }
 
-func (pl *PodFitsResources) Filter(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
+func (pl *PodFitsResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
 
 	for _, node := range clusterInfo.Nodes{
-		result := true
+		node_result := true
 
-		// check CPU
-		if node.AllocatableResource.MilliCPU < pod.RequestedResource.MilliCPU {
-			result = result || false
-			continue
+		// check if node has enough CPU
+		if node.AllocatableResource.MilliCPU < newPod.RequestedResource.MilliCPU {
+			node_result = false
 		}
-		// check Memory
-		if node.AllocatableResource.Memory < pod.RequestedResource.Memory {
-			result = result || false
-			continue
+		// check if node has enough Memory
+		if node.AllocatableResource.Memory < newPod.RequestedResource.Memory {
+			node_result = false
 		}
-		// check Storage
-		if node.AllocatableResource.EphemeralStorage < pod.RequestedResource.EphemeralStorage {
-			result = result || false
-			continue
+		// check if node has enough EphemeralStorage
+		if node.AllocatableResource.EphemeralStorage < newPod.RequestedResource.EphemeralStorage {
+			node_result = false
 		}
 
-		if result == true{
+		if node_result == true{
 			return true
 		}
 	}

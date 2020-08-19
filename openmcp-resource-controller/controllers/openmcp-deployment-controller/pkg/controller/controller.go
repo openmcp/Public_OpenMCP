@@ -113,18 +113,18 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	// Fetch the OpenMCPDeployment instance
 	instance := &ketiv1alpha1.OpenMCPDeployment{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
-	omcplog.V(0).Info("Resource Get => [Name] : "+ instance.Name + " [Namespace]  : " + instance.Namespace)
+	omcplog.V(5).Info("Resource Get => [Name] : "+ instance.Name + " [Namespace]  : " + instance.Namespace)
 
 	if err != nil {
 
 		if errors.IsNotFound(err) {
-			omcplog.V(0).Info("[Delete Detect]")
+			omcplog.V(2).Info("[Delete Detect]")
 			// ...TODO: multicluster garbage collector
 			// Until then...
-			omcplog.V(0).Info("Delete Deployment of All Cluster")
+			omcplog.V(2).Info("Delete Deployment of All Cluster")
 			err := r.DeleteDeploys(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
 
-			omcplog.V(0).Info("Service Notify Send")
+			omcplog.V(2).Info("Service Notify Send")
 			r.ServiceNotifyAll(req.Namespace)
 
 			return reconcile.Result{}, err
@@ -133,11 +133,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 
 	if instance.Status.CreateSyncRequestComplete == false {
-		omcplog.V(0).Info("[Create Detect]")
-		omcplog.V(0).Info("Create Deployment Start")
-		omcplog.V(0).Info("SchedulingNeed : ", instance.Status.SchedulingNeed, ", SchedulingComplete : ", instance.Status.SchedulingComplete)
+		omcplog.V(2).Info("[Create Detect]")
+		omcplog.V(2).Info("Create Deployment Start")
+		omcplog.V(3).Info("SchedulingNeed : ", instance.Status.SchedulingNeed, ", SchedulingComplete : ", instance.Status.SchedulingComplete)
 		if instance.Status.SchedulingNeed == false && instance.Status.SchedulingComplete == false {
-			omcplog.V(0).Info("Scheduling 요청 (SchedulingNeed false => true)")
+			omcplog.V(3).Info("Scheduling 요청 (SchedulingNeed false => true)")
 			instance.Status.SchedulingNeed = true
 
 			err := r.live.Status().Update(context.TODO(), instance)
@@ -151,8 +151,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		} else if instance.Status.SchedulingNeed == true && instance.Status.SchedulingComplete == false {
 			if strings.Compare(instance.Spec.Labels["test"], "yes") != 0 {
 
-				omcplog.V(0).Info("Local Scheduling을 시작합니다.(랜덤 스케줄링)")
-				omcplog.V(0).Info("Scheduling Controller와 연계하려면 Labels의 test항목을 no로 변경해주세요")
+				omcplog.V(2).Info("Local Scheduling을 시작합니다.(랜덤 스케줄링)")
+				omcplog.V(2).Info("Scheduling Controller와 연계하려면 Labels의 test항목을 no로 변경해주세요")
 				replicas := instance.Spec.Replicas
 				
 				//instance.Status.ClusterMaps = RandomScheduling(cm, replicas)
@@ -161,7 +161,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				
 				instance.Status.SchedulingNeed = false
 				instance.Status.SchedulingComplete = true
-				omcplog.V(0).Info("Scheduling 완료")
+				omcplog.V(2).Info("Scheduling 완료")
 				err := r.live.Status().Update(context.TODO(), instance)
 				if err != nil {
 					omcplog.V(0).Info("Failed to update instance status", err)
@@ -170,12 +170,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				return reconcile.Result{}, err
 
 			} else if strings.Compare(instance.Spec.Labels["test"], "yes") == 0 {
-				omcplog.V(0).Info("Scheduling Wait")
+				omcplog.V(2).Info("Scheduling Wait")
 				return reconcile.Result{}, err
 			}
 
 		} else if instance.Status.SchedulingNeed == false && instance.Status.SchedulingComplete == true {
-			omcplog.V(0).Info("Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.")
+			omcplog.V(2).Info("Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.")
 
 			sync_req_name := instance.Status.SyncRequestName
 
@@ -194,7 +194,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 					dep := r.deploymentForOpenMCPDeployment(req, instance, replica)
 					command := "create"
-					omcplog.V(0).Info("SyncResource Create (ClusterName : "+myCluster.Name+", Command : "+ command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
+					omcplog.V(3).Info("SyncResource Create (ClusterName : "+myCluster.Name+", Command : "+ command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
 					sync_req_name, err = r.sendSync(dep, command, myCluster.Name)
 					//err = cluster_client.Create(context.Background(), dep)
 					if err != nil {
@@ -202,16 +202,16 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					}
 				}
 			}
-			omcplog.V(0).Info("Service Notify Send")
+			omcplog.V(2).Info("Service Notify Send")
 			r.ServiceNotify(instance.Spec.Labels, instance.Namespace)
 
 			instance.Status.LastSpec = instance.Spec
 			instance.Status.CreateSyncRequestComplete = true
 			instance.Status.SyncRequestName = sync_req_name
-			omcplog.V(0).Info("sync_req_name : ", sync_req_name)
+			omcplog.V(3).Info("sync_req_name : ", sync_req_name)
 
 			//instance.Status.LastUpdateTime = time.Now().Format(time.RFC3339)
-			omcplog.V(0).Info("Update Status")
+			omcplog.V(2).Info("Update Status")
 			err := r.live.Status().Update(context.TODO(), instance)
 			if err != nil {
 				omcplog.V(0).Info("Failed to update instance status", err)
@@ -225,10 +225,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	if !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec) {
 
-		omcplog.V(0).Info("[Update Detection]")
+		omcplog.V(2).Info("[Update Detection]")
 		sync_req_name := instance.Status.SyncRequestName
 		if instance.Status.Replicas != instance.Spec.Replicas {
-			omcplog.V(0).Info("Change Spec Replicas ! ReScheduling Start & Update Deployment")
+			omcplog.V(2).Info("Change Spec Replicas ! ReScheduling Start & Update Deployment")
 			cluster_replicas_map := ReScheduling(instance.Spec.Replicas, instance.Status.Replicas, instance.Status.ClusterMaps)
 
 			for _, cluster := range cm.Cluster_list.Items {
@@ -244,7 +244,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					if update_replica != 0 {
 						// Create !
 						command := "create"
-						omcplog.V(0).Info("SyncResource Create (ClusterName : "+cluster.Name+", Command : "+ command+", Replicas :", update_replica, " / ", instance.Status.Replicas, ")")
+						omcplog.V(2).Info("SyncResource Create (ClusterName : "+cluster.Name+", Command : "+ command+", Replicas :", update_replica, " / ", instance.Status.Replicas, ")")
 						sync_req_name, err = r.sendSync(dep, command, cluster.Name)
 						//err = cluster_client.Create(context.Background(), dep)
 						if err != nil {
@@ -260,7 +260,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 						// Delete !
 						//dep := &appsv1.Deployment{}
 						command := "delete"
-						omcplog.V(0).Info("SyncResource Create (ClusterName : "+cluster.Name+", Command : "+ command+", Replicas :", update_replica, " / ", instance.Status.Replicas, ")")
+						omcplog.V(2).Info("SyncResource Create (ClusterName : "+cluster.Name+", Command : "+ command+", Replicas :", update_replica, " / ", instance.Status.Replicas, ")")
 						sync_req_name, err = r.sendSync(dep, command, cluster.Name)
 
 						//err = cluster_client.Delete(context.Background(), dep, req.Namespace, req.Name)
@@ -271,7 +271,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					} else {
 						// Update !
 						command := "update"
-						omcplog.V(0).Info("SyncResource Create (ClusterName : "+cluster.Name+", Command : "+ command+", Replicas :", update_replica, " / ", instance.Status.Replicas, ")")
+						omcplog.V(2).Info("SyncResource Create (ClusterName : "+cluster.Name+", Command : "+ command+", Replicas :", update_replica, " / ", instance.Status.Replicas, ")")
 						sync_req_name, err = r.sendSync(dep, command, cluster.Name)
 						//err = cluster_client.Update(context.TODO(), dep)
 						if err != nil {
@@ -300,19 +300,19 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		if !reflect.DeepEqual(instance.Status.LastSpec.Labels, instance.Spec.Labels) {
 			last_label := instance.Status.LastSpec.Labels
 			current_label := instance.Spec.Labels
-			omcplog.V(0).Info("Label Changed")
-			omcplog.V(0).Info("Service Notify")
+			omcplog.V(2).Info("Label Changed")
+			omcplog.V(2).Info("Service Notify")
 			r.ServiceNotify(last_label, instance.Namespace)
 			r.ServiceNotify(current_label, instance.Namespace)
 		}
 
 		instance.Status.LastSpec = instance.Spec
 		instance.Status.SyncRequestName = sync_req_name
-		omcplog.V(0).Info("sync_req_name : ", sync_req_name)
-		omcplog.V(0).Info("Status Update")
+		omcplog.V(2).Info("sync_req_name : ", sync_req_name)
+		omcplog.V(2).Info("Status Update")
 		err := r.live.Status().Update(context.TODO(), instance)
 		if err != nil {
-			omcplog.V(0).Info("Failed to update instance status", err)
+			omcplog.V(2).Info("Failed to update instance status", err)
 			return reconcile.Result{}, err
 		}
 		return reconcile.Result{}, err
@@ -330,7 +330,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 
 	// Check Deployment in cluster
-	omcplog.V(0).Info("[Member Cluster Check Deployment]")
+	omcplog.V(2).Info("[Member Cluster Check Deployment]")
 	sync_req_name := instance.Status.SyncRequestName
 	for k, v := range instance.Status.ClusterMaps {
 		cluster_name := k
@@ -345,10 +345,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 		if err != nil && errors.IsNotFound(err) {
 			// Delete Deployment Detected
-			omcplog.V(0).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
+			omcplog.V(2).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
 			dep := r.deploymentForOpenMCPDeployment(req, instance, replica)
 			command := "create"
-			omcplog.V(0).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+ command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
+			omcplog.V(3).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+ command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
 			sync_req_name, err = r.sendSync(dep, command, cluster_name)
 			//err = cluster_client.Create(context.Background(), dep)
 			if err != nil {
@@ -359,7 +359,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	}
 	instance.Status.SyncRequestName = sync_req_name
-	omcplog.V(0).Info("sync_req_name : ", sync_req_name)
+	omcplog.V(3).Info("sync_req_name : ", sync_req_name)
 
 	err = r.live.Status().Update(context.TODO(), instance)
 	if err != nil {
@@ -383,7 +383,7 @@ func (r *reconciler) DeleteDeploys(cm *clusterManager.ClusterManager, name strin
 		},
 		Spec: appsv1.DeploymentSpec{},
 	}
-	omcplog.V(0).Info("Delete Check ", dep.Name, dep.Namespace)
+	omcplog.V(2).Info("Delete Check ", dep.Name, dep.Namespace)
 	for _, cluster := range cm.Cluster_list.Items {
 		command := "delete"
 		_, err := r.sendSync(dep, command, cluster.Name)
@@ -422,19 +422,19 @@ func (r *reconciler) ServiceNotify(label_map map[string]string, namespace string
 	osvc_list := &ketiv1alpha1.OpenMCPServiceList{}
 	listOptions := &client.ListOptions{Namespace: namespace}
 
-	omcplog.V(4).Info("[OpenMCP Deployment] find Notify Target Service")
+	omcplog.V(2).Info("[OpenMCP Deployment] find Notify Target Service")
 	r.live.List(context.TODO(), osvc_list, listOptions)
 	for _, osvc := range osvc_list.Items {
 		for k, v := range osvc.Spec.LabelSelector {
 			omcplog.V(4).Info("[OpenMCP Deployment] find Notify Target Label : ", k, " / ", v)
 			if label_map[k] == v {
-				omcplog.V(4).Info("[OpenMCP Deployment] Service '", osvc.Name, "' Will Notify!")
+				omcplog.V(2).Info("[OpenMCP Deployment] Service '", osvc.Name, "' Will Notify!")
 				osvc.Status.ChangeNeed = true
 				err := r.live.Status().Update(context.TODO(), &osvc)
 				if err != nil {
 					return err
 				}
-				omcplog.V(4).Info("[OpenMCP Deployment] Service '", osvc.Name, "' Notify Success!")
+				omcplog.V(2).Info("[OpenMCP Deployment] Service '", osvc.Name, "' Notify Success!")
 
 			}
 		}
@@ -462,7 +462,7 @@ func (r *reconciler) ServiceNotifyAll(namespace string) error {
 	return nil
 }
 func (r *reconciler) deploymentForOpenMCPDeployment(req reconcile.Request, m *ketiv1alpha1.OpenMCPDeployment, replica int32) *appsv1.Deployment {
-	omcplog.V(0).Info("[CHECK] deploymentForOpenMCPDeployment")
+	omcplog.V(4).Info("[OpenMCP Deployment] Function Called deploymentForOpenMCPDeployment")
 	dep := &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Deployment",
@@ -496,18 +496,18 @@ func DeleteDeployments(cm *clusterManager.ClusterManager, nsn types.NamespacedNa
 		err := cluster_client.Get(context.Background(), dep, nsn.Namespace, nsn.Name)
 		if err != nil && errors.IsNotFound(err) {
 			// all good
-			omcplog.V(0).Info("Not Found")
+			omcplog.V(2).Info("Not Found")
 			continue
 		}
 		if !isInObject(dep, "OpenMCPDeployment") {
 			continue
 		}
-		omcplog.V(0).Info(cluster.Name, " Delete Start")
+		omcplog.V(2).Info(cluster.Name, " Delete Start")
 		err = cluster_client.Delete(context.Background(), dep, nsn.Namespace, nsn.Name)
 		if err != nil {
 			return err
 		}
-		omcplog.V(0).Info(cluster.Name, "Delete Complete")
+		omcplog.V(2).Info(cluster.Name, "Delete Complete")
 	}
 	return nil
 
@@ -530,7 +530,7 @@ func RRScheduling(cm *clusterManager.ClusterManager, replicas int32) map[string]
 		}
 		for k, v := range joined_cluster.Labels {
 			if k == "openmcp" && v == "true" {
-				omcplog.V(0).Info("Scheduling Except Cluster !! Include OpenMCP Label : ", k, v)
+				omcplog.V(2).Info("Scheduling Except Cluster !! Include OpenMCP Label : ", k, v)
 				except = true
 				break
 			}
@@ -554,10 +554,10 @@ func RRScheduling(cm *clusterManager.ClusterManager, replicas int32) map[string]
 	}
 	sort.Strings(keys)
 
-	omcplog.V(0).Info("Scheduling Result: ")
+	omcplog.V(3).Info("Scheduling Result: ")
 	for _, k := range keys {
 		v := cluster_replicas_map[k]
-		omcplog.V(0).Info("  ", k, ": ", v)
+		omcplog.V(3).Info("  ", k, ": ", v)
 	}
 	return cluster_replicas_map
 }
@@ -579,7 +579,7 @@ func RandomScheduling(cm *clusterManager.ClusterManager, replicas int32) map[str
 		}
 		for k, v := range joined_cluster.Labels {
 			if k == "openmcp" && v == "true" {
-				omcplog.V(0).Info("Scheduling Except Cluster !! Include OpenMCP Label : ", k, v)
+				omcplog.V(3).Info("Scheduling Except Cluster !! Include OpenMCP Label : ", k, v)
 				except = true
 				break
 			}
@@ -603,10 +603,10 @@ func RandomScheduling(cm *clusterManager.ClusterManager, replicas int32) map[str
 	}
 	sort.Strings(keys)
 
-	omcplog.V(0).Info("Scheduling Result: ")
+	omcplog.V(3).Info("Scheduling Result: ")
 	for _, k := range keys {
 		v := cluster_replicas_map[k]
-		omcplog.V(0).Info("  ", k, ": ", v)
+		omcplog.V(3).Info("  ", k, ": ", v)
 	}
 	return cluster_replicas_map
 
@@ -629,7 +629,7 @@ func ReScheduling(spec_replicas int32, status_replicas int32, status_cluster_rep
 
 	for remain_replica != 0 {
 		cluster_len := len(result_cluster_replicas_map)
-		omcplog.V(0).Info("cluster_len : ", cluster_len)
+		omcplog.V(5).Info("cluster_len : ", cluster_len)
 		selected_cluster_target_index := rand.Intn(cluster_len)
 
 		target_key := keyOf(result_cluster_replicas_map, selected_cluster_target_index)
@@ -649,11 +649,11 @@ func ReScheduling(spec_replicas int32, status_replicas int32, status_cluster_rep
 	}
 	sort.Strings(keys)
 
-	omcplog.V(0).Info("ReScheduling Result: ")
+	omcplog.V(3).Info("ReScheduling Result: ")
 	for _, k := range keys {
 		v := result_cluster_replicas_map[k]
 		prev_v := status_cluster_replicas_map[k]
-		omcplog.V(0).Info("  ", k, ": ", prev_v, " -> ", v)
+		omcplog.V(3).Info("  ", k, ": ", prev_v, " -> ", v)
 	}
 
 	return result_cluster_replicas_map

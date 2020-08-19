@@ -17,7 +17,7 @@ spec:
       containers:
         - name: openmcp-deployment-controller
           # Replace this with the built image name
-          image: atyx300/openmcp-deployment-controller:v0.0.1
+          image: openmcp/openmcp-deployment-controller:v0.0.1
           command:
           - openmcp-deployment-controller
           imagePullPolicy: Always

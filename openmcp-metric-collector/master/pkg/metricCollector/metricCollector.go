@@ -5,8 +5,8 @@ import (
 	"google.golang.org/grpc"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog"
-	"log"
 	"net"
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-metric-collector/master/pkg/influx"
 	"openmcp/openmcp/openmcp-metric-collector/master/pkg/protobuf"
 	"openmcp/openmcp/util/clusterManager"
@@ -22,6 +22,7 @@ type MetricCollector struct {
 }
 
 func NewMetricCollector(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD string) *MetricCollector {
+	omcplog.V(4).Info("NewMetricCollector Called")
 	mc := &MetricCollector{}
 	mc.ClusterManager = *clusterManager.NewClusterManager()
 	mc.Influx = *influx.NewInflux(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD)
@@ -29,9 +30,10 @@ func NewMetricCollector(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD
 	return mc
 }
 func (mc *MetricCollector) FindClusterName(data *protobuf.Collection) string {
+	omcplog.V(4).Info("FindClusterName Called")
 	IpList := []string{}
 	for _, Matricsbatch := range data.Matricsbatchs {
-		klog.V(0).Info("[Recieved Data] NodeName: ", Matricsbatch.Node.Name, ", IP: "+ Matricsbatch.IP)
+		omcplog.V(2).Info("[Recieved Data] NodeName: ", Matricsbatch.Node.Name, ", IP: "+ Matricsbatch.IP)
 		IpList = append(IpList, Matricsbatch.IP)
 	}
 
@@ -49,11 +51,12 @@ func (mc *MetricCollector) FindClusterName(data *protobuf.Collection) string {
 			break
 		}
 	}
-	klog.V(0).Info("=> Recieved Metric Data From '", clusterName,"'")
+	klog.V(2).Info("=> Recieved Metric Data From '", clusterName,"'")
 	return clusterName
 }
 
 func (mc *MetricCollector) SendMetrics(ctx context.Context, data *protobuf.Collection) (*protobuf.ReturnValue, error) {
+	omcplog.V(4).Info("SendMetrics Called")
 	//startTime := time.Now()
 	clusterName := mc.FindClusterName(data)
 	mc.Influx.SaveMetrics(clusterName, data)
@@ -67,14 +70,14 @@ func (mc *MetricCollector) SendMetrics(ctx context.Context, data *protobuf.Colle
 	} else {
 		a := openmcpPolicyInstance.Spec.Template.Spec.Policies
 		period := a[0].Value[0]
-		klog.V(0).Info("getPeriodPolicy: ",period+" sec")
+		klog.V(3).Info("getPeriodPolicy: ",period+" sec")
 		period_int64,_ = strconv.ParseInt(period, 10, 64)
 	}
 
 	//timetick := 3600
 	clustername := "c1"
 
-	klog.V(0).Info("gRPC Return Period")
+	klog.V(2).Info("gRPC Return Period")
 	return &protobuf.ReturnValue{
 		Tick:        period_int64,
 		ClusterName: clustername,
@@ -96,18 +99,21 @@ func (mc *MetricCollector) SendMetrics(ctx context.Context, data *protobuf.Colle
 //	//return nil, nil
 //}
 func (mc *MetricCollector) StartGRPC(GRPC_PORT string) {
-	log.Printf("Grpc Server Start at Port %s\n", GRPC_PORT)
+	omcplog.V(4).Info("StartGRPC Called")
+	omcplog.V(2).Info("Grpc Server Start at Port %s\n", GRPC_PORT)
 
 	//manager = NewClusterManager()
 	l, err := net.Listen("tcp", ":"+GRPC_PORT)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		omcplog.V(0).Info("failed to listen: ", err)
+
 	}
 	grpcServer := grpc.NewServer()
 
 	protobuf.RegisterSendMetricsServer(grpcServer, mc)
 	if err := grpcServer.Serve(l); err != nil {
-		log.Fatalf("fail to serve: %v", err)
+		omcplog.V(0).Info("fail to serve: ", err)
+
 	}
 
 }

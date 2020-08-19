@@ -6,52 +6,64 @@ import (
 
 type MatchClusterAffinity struct{}
 
-// Name returns name of the plugin
 func (pl *MatchClusterAffinity) Name() string {
 	return "MatchClusterAffinity"
 }
 
-func (pl *MatchClusterAffinity) Filter(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
+func (pl *MatchClusterAffinity) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
+	
+	// Node must have all of the additional resource
+	// Examples of *.yaml for a new OpenMCPDeployemt as folllow:
+	// # Example 01 #
+	//   spec:
+	//     affinity:
+	//       region: 
+	//         -AS
+	//         -EU
+	//       zone:
+	//         -KR
+	//         -DE
+	//         -PT
+	// In this case, selected node must have "KR:AS" or "DE:EU" or "PT:EU"
+	//
+	// # Example 02 #
+	//   spec:
+	//     affinity:
+	//       zone:
+	//         -KR
+	//         -CH
+	// In this case, selected node must have "KR" or "CH"
 
-	// check all nodes in this cluster
+	if len(newPod.Affinity) == 0 {
+		return true
+	}
+
 	for _, node := range clusterInfo.Nodes {
-		result := []bool{}
+		node_result := true
 
-		// check node's affinity value corresponding pod's affinity value
-		for key, pod_values := range pod.Affinity{
+		for key, pod_values := range newPod.Affinity{
+
+			// compare Node's Affinity and Pod's Affinity
 			if node_value, ok := node.Affinity[key]; ok{
+
 				// if node's affinity has pod's affinity, new deployment can be deploymented
-				if containsAffinity(pod_values, node_value) == true{
-					result = append(result, true) 
-				}else{
-					result = append(result, false)
+				if contains(pod_values, node_value) == false{
+					node_result = false
 				}
+
 			} else {
-				result = append(result, false)
+				node_result = false
+			}
+
+			if node_result == false {
+				break
 			}
 		}
-		if !containsBoolean(result, false){
+
+		if node_result == true{
 			return true
 		}
 	}
 
-	return false
-}
-
-func containsAffinity(arr []string, str string) bool {
-	for _, a := range arr {
-		if str == a {
-			return true
-		}
-	}
-	return false
-}
-
-func containsBoolean(list []bool, it bool) bool {
-	for _, l := range list {
-		if l == it {
-			return true
-		}
-	}
 	return false
 }

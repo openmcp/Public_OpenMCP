@@ -1,7 +1,7 @@
 apiVersion: keti.example.com/v1alpha1
 kind: OpenMCPDeployment
 metadata:
-  name: example-openmcpdeployment
+  name: example-openmcpdeployment1
   namespace: openmcp
 spec:
   replicas: 3

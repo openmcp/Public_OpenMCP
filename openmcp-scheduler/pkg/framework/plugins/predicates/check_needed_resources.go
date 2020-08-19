@@ -6,43 +6,48 @@ import (
 
 type CheckNeededResources struct{}
 
-// Name returns name of the plugin
 func (pl *CheckNeededResources) Name() string {
 	return "CheckNeededResources"
 }
 
-func (pl *CheckNeededResources) Filter(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
-	// Need datas about hardware spec
-	var result bool
+// Return true if there is at least 1 node that have AdditionalResources
+func (pl *CheckNeededResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
 
-	if len(pod.IsNeedResourceMap) == 0 {
+	// Node must have all of the additional resource
+	// Example of *.yaml for a new OpenMCPDeployemt as folllow:
+	//     resource:
+	//       request:
+	//         nvidia.com/gpu: 1
+	//         amd.com/gpu: 1
+	// In this case, selected node must have both of "nvidia.com/gpu, amd.com/gpu"
+	
+	if len(newPod.AdditionalResource) == 0 {
 		return true
 	}
 
 	for _, node := range clusterInfo.Nodes {
+		node_result := true
 
-		for key, pod_value := range pod.IsNeedResourceMap {
-			if node_value, ok := node.IsNeedResourceMap[key]; ok{
-				result = (pod_value == node_value)
-				if !result {
-					break
-				}
-			} else {
-				// if pod doesn't need this resource, node may not have resource
-				// if pod need this resource, node must have this resource
-				if pod_value == false{
-					result = true
-				}else {
-					result = false
-				}
+		for _, resource := range newPod.AdditionalResource {
+			if contains(node.AdditionalResource, resource) == false {
+				node_result = false
+				break
 			}
 		}
-
-		// If ther is a cluster can be deployed a new Pod, return true
-		if result == true{
-			break
+		
+		if node_result == true{
+			return true
 		}
 	}
 
-	return result
+	return false
+}
+
+func contains(arr []string, str string) bool {
+	for _, a := range arr {
+		if str == a {
+			return true
+		}
+	}
+	return false
 }

@@ -51,7 +51,7 @@ spec:
       serviceAccountName: custom-metrics-apiserver
       containers:
       - name: custom-metrics-apiserver
-        image: atyx300/k8s-test-metrics-adapter-amd64:latest
+        image: openmcp/k8s-test-metrics-adapter-amd64:latest
         imagePullPolicy: IfNotPresent
         args:
         - /adapter
