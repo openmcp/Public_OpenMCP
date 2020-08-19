@@ -65,7 +65,7 @@ type ClusterManager struct {
 
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
-	omcplog.V(0).Info("[OpenMCP ConfigMap] Function Called NewController")
+	omcplog.V(4).Info("Function Called NewController")
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
@@ -116,41 +116,43 @@ var i int = 0
 var syncIndex int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
-	omcplog.V(0).Info("[OpenMCP ConfigMap] Function Called Reconcile")
+	omcplog.V(4).Info("Function Called Reconcile")
 	i += 1
-	omcplog.V(0).Info("********* [",i,"] *********")
-	omcplog.V(0).Info(req.Context,"/",req.Namespace,"/",req.Name)
+	omcplog.V(5).Info("********* [",i,"] *********")
+	omcplog.V(3).Info(req.Context,"/",req.Namespace,"/",req.Name)
 	cm := NewClusterManager()
 
 	// Fetch the OpenMCPDeployment instance
 	instance := &ketiv1alpha1.OpenMCPConfigMap{}
     err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 
-	omcplog.V(0).Info("instance Name: ", instance.Name)
-	omcplog.V(0).Info("instance Namespace : ", instance.Namespace)
+	omcplog.V(3).Info("instance Name: ", instance.Name)
+	omcplog.V(3).Info("instance Namespace : ", instance.Namespace)
 
 
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// ...TODO: multicluster garbage collector
 			// Until then...
-			omcplog.V(0).Info("Delete ConfigMap")
+			omcplog.V(3).Info("Delete ConfigMap")
 
 			err := r.DeleteConfigMap(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
 			return reconcile.Result{}, err
 		}
-		omcplog.V(0).Info("Error1")
+		omcplog.V(1).Info(err)
 		return reconcile.Result{}, err
 	}
 	if instance.Status.ClusterMaps == nil {
 		err := r.createConfigMap(req, cm, instance)
 		if err != nil {
+			omcplog.V(1).Info(err)
 			return reconcile.Result{}, err
 		}
 		return reconcile.Result{}, nil
 	} else {
 		err := r.updateConfigMap(req, cm, instance)
 		if err != nil {
+			omcplog.V(1).Info(err)
 			return reconcile.Result{}, err
 		}
 		return reconcile.Result{}, nil
@@ -158,7 +160,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	err = r.live.Status().Update(context.TODO(), instance)
 	if err != nil {
-		omcplog.V(0).Info("Failed to update instance status", err)
+		omcplog.V(1).Info("Failed to update instance status", err)
 		return reconcile.Result{}, err
 	}
 	return reconcile.Result{}, nil
@@ -168,6 +170,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 //instance.Status.SyncRequestName = sync_req_name
 
 func (r *reconciler) configmapForOpenMCPConfigMap(req reconcile.Request, m *ketiv1alpha1.OpenMCPConfigMap) *corev1.ConfigMap {
+	omcplog.V(4).Info("Function Called configmapForOpenMCPConfigMap")
 	configmap := &corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ConfigMap",
@@ -186,31 +189,33 @@ func (r *reconciler) configmapForOpenMCPConfigMap(req reconcile.Request, m *keti
 
 
 func (r *reconciler) createConfigMap(req reconcile.Request, cm *ClusterManager, instance *ketiv1alpha1.OpenMCPConfigMap) error {
-	omcplog.V(0).Info("Function Called createConfigMap")
+	omcplog.V(4).Info("Function Called createConfigMap")
 	cluster_map := make(map[string]int32)
 	for _, cluster := range cm.Cluster_list.Items {
 
-		omcplog.V(0).Info("Cluster '" + cluster.Name + "' Deployed")
+		omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
 		dep := r.configmapForOpenMCPConfigMap(req, instance)
 		command := "create"
 		_, err := r.sendSync(dep, command, cluster.Name)
 		cluster_map[cluster.Name] = 1
 		if err != nil {
+			omcplog.V(0).Info(err)
 			return err
 		}
 	}
 	instance.Status.ClusterMaps = cluster_map
+	omcplog.V(3).Info("Update Status")
 	err := r.live.Status().Update(context.TODO(), instance)
 	return err
 }
 
 
 func (r *reconciler) updateConfigMap(req reconcile.Request, cm *ClusterManager, instance *ketiv1alpha1.OpenMCPConfigMap) error {
-	omcplog.V(0).Info("Function Called updateConfigMap")
+	omcplog.V(4).Info("Function Called updateConfigMap")
 
 	for _, cluster := range cm.Cluster_list.Items {
 
-		omcplog.V(0).Info("Cluster '" + cluster.Name + "' Deployed")
+		omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
 		dep := r.configmapForOpenMCPConfigMap(req, instance)
 		command := "update"
 		_, err := r.sendSync(dep, command, cluster.Name)
@@ -222,10 +227,11 @@ func (r *reconciler) updateConfigMap(req reconcile.Request, cm *ClusterManager, 
 }
 
 func (r *reconciler) DeleteConfigMap(cm *ClusterManager, name string, namespace string) error {
+	omcplog.V(4).Info("Function Called DeleteConfigMap")
 
 	for _, cluster := range cm.Cluster_list.Items {
 
-		fmt.Println(cluster.Name," Delete Start")
+		omcplog.V(3).Info(cluster.Name," Delete Start")
 
 		dep := &corev1.ConfigMap{
 			TypeMeta: metav1.TypeMeta{
@@ -243,13 +249,14 @@ func (r *reconciler) DeleteConfigMap(cm *ClusterManager, name string, namespace 
 		if err != nil {
 			return err
 		}
-		fmt.Println(cluster.Name, "Delete Complate")
+		omcplog.V(3).Info(cluster.Name, "Delete Complete")
 	}
 	return nil
 }
 
 
 func ListKubeFedClusters(client genericclient.Client, namespace string) *fedv1b1.KubeFedClusterList {
+	omcplog.V(4).Info("Function Called ListKubeFedClusters")
         clusterList := &fedv1b1.KubeFedClusterList{}
         err := client.List(context.TODO(), clusterList, namespace)
         if err != nil {
@@ -263,6 +270,7 @@ func ListKubeFedClusters(client genericclient.Client, namespace string) *fedv1b1
 }
 
 func KubeFedClusterConfigs(clusterList *fedv1b1.KubeFedClusterList, client genericclient.Client, fedNamespace string) map[string]*rest.Config {
+	omcplog.V(4).Info("Function Called KubeFedClusterConfigs")
         clusterConfigs := make(map[string]*rest.Config)
         for _, cluster := range clusterList.Items {
                 config, _ := util.BuildClusterConfig(&cluster, client, fedNamespace)
@@ -271,6 +279,7 @@ func KubeFedClusterConfigs(clusterList *fedv1b1.KubeFedClusterList, client gener
         return clusterConfigs
 }
 func KubeFedClusterClients(clusterList *fedv1b1.KubeFedClusterList, cluster_configs map[string]*rest.Config) map[string]genericclient.Client {
+	omcplog.V(4).Info("Function Called KubeFedClusterClients")
 
         cluster_clients := make(map[string]genericclient.Client)
         for _, cluster := range clusterList.Items {
@@ -283,6 +292,7 @@ func KubeFedClusterClients(clusterList *fedv1b1.KubeFedClusterList, cluster_conf
 }
 
 func NewClusterManager() *ClusterManager {
+	omcplog.V(4).Info("Function Called NewClusterManager")
         fed_namespace := "kube-federation-system"
         host_config, _ := rest.InClusterConfig()
         host_client := genericclient.NewForConfigOrDie(host_config)
@@ -303,7 +313,7 @@ func NewClusterManager() *ClusterManager {
 
 
 func (r *reconciler) sendSync(configmap *corev1.ConfigMap, command string, clusterName string) (string, error) {
-	omcplog.V(0).Info("[OpenMCP ConfigMap] Function Called sendSync")
+	omcplog.V(4).Info("[OpenMCP ConfigMap] Function Called sendSync")
 	syncIndex += 1
 
 	s := &sync.Sync{
@@ -317,7 +327,7 @@ func (r *reconciler) sendSync(configmap *corev1.ConfigMap, command string, clust
 			Template:    *configmap,
 		},
 	}
-	omcplog.V(0).Info("Delete Check2 ", s.Spec.Template.(corev1.ConfigMap).Name, s.Spec.Template.(corev1.ConfigMap).Namespace)
+	omcplog.V(5).Info("Delete Check ", s.Spec.Template.(corev1.ConfigMap).Name, s.Spec.Template.(corev1.ConfigMap).Namespace)
 
 	err := r.live.Create(context.TODO(), s)
 
