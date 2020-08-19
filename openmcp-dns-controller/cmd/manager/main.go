@@ -20,8 +20,8 @@ import (
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"k8s.io/klog"
 	"log"
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/controller/dnsEndpoint"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/controller/domain"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/controller/externalDNS"
@@ -59,31 +59,31 @@ func main() {
 
 		cont_serviceDNS, err := serviceDNS.NewController(live, ghosts, namespace, cm)
 		if err != nil {
-			klog.V(0).Info( "err New Controller - ServiceDNS", err)
+			omcplog.V(0).Info( "err New Controller - ServiceDNS", err)
 		}
 		cont_domain, err := domain.NewController(live, ghosts, namespace, cm)
 		if err != nil {
-			klog.V(0).Info( "err New Controller - Domain", err)
+			omcplog.V(0).Info( "err New Controller - Domain", err)
 		}
 		cont_ingressDNS, err := ingressDNS.NewController(live, ghosts, namespace, cm)
 		if err != nil {
-			klog.V(0).Info( "err New Controller - IngressDNS", err)
+			omcplog.V(0).Info( "err New Controller - IngressDNS", err)
 		}
 		cont_dnsEndpoint, err := dnsEndpoint.NewController(live, ghosts, namespace, cm)
 		if err != nil {
-			klog.V(0).Info( "err New Controller - DNSEndpoint", err)
+			omcplog.V(0).Info( "err New Controller - DNSEndpoint", err)
 		}
 		cont_externalDNS, err := externalDNS.NewController(live, ghosts, namespace, cm)
 		if err != nil {
-			klog.V(0).Info( "err New Controller - ExternalDNS", err)
+			omcplog.V(0).Info( "err New Controller - ExternalDNS", err)
 		}
 		cont_reshape, err := reshape.NewController(live, ghosts, namespace)
 		if err != nil {
-			klog.V(0).Info( "err New Controller - Reshape", err)
+			omcplog.V(0).Info( "err New Controller - Reshape", err)
 		}
 		contLoglevel, err := logLevel.NewController(live, ghosts, namespace)
 		if err != nil {
-			klog.V(0).Info( "err New Controller - logLevel", err)
+			omcplog.V(0).Info( "err New Controller - logLevel", err)
 		}
 
 		m := manager.New()

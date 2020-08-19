@@ -95,7 +95,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	if err != nil {
 		return reconcile.Result{}, nil
 	}
-	omcplog.V(0).Info("Resource Get => [Name] : "+ instance.Name + " [Namespace]  : " + instance.Namespace)
+	omcplog.V(5).Info("Resource Get => [Name] : "+ instance.Name + " [Namespace]  : " + instance.Namespace)
 
 
 	// Instance 삭제
@@ -104,11 +104,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		return reconcile.Result{}, err
 	}
 
-	omcplog.V(0).Info("Resource Extract from SyncResource")
+	omcplog.V(2).Info("Resource Extract from SyncResource")
 	obj, clusterName, command := r.resourceForSync(instance)
 
 	if command == "create" {
-		omcplog.V(0).Info("Create Resource Start")
+		omcplog.V(2).Info("Create Resource Start")
 		err := CreateObj(cm, obj, clusterName)
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
@@ -117,13 +117,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				return reconcile.Result{}, err
 			}
 		} else {
-			omcplog.V(0).Info("Created Resource '" + obj.GetKind() + "' in Cluster'" + clusterName + "'")
-			omcplog.V(0).Info("  Name : " + obj.GetName())
-			omcplog.V(0).Info("  Namespace : " + obj.GetNamespace())
-			omcplog.V(0).Info()
+			omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "' in Cluster'" + clusterName + "'")
+			omcplog.V(3).Info("  Name : " + obj.GetName())
+			omcplog.V(3).Info("  Namespace : " + obj.GetNamespace())
+			omcplog.V(2).Info()
 		}
 	} else if command == "update" {
-		omcplog.V(0).Info("Update Resource Start")
+		omcplog.V(2).Info("Update Resource Start")
 		err := UpdateObj(cm, obj, clusterName)
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
@@ -132,13 +132,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				return reconcile.Result{}, err
 			}
 		} else {
-			omcplog.V(0).Info("Updated Resource '" + obj.GetKind() + "' in Cluster'" + clusterName + "'")
-			omcplog.V(0).Info("  Name : " + obj.GetName())
-			omcplog.V(0).Info("  Namespace : " + obj.GetNamespace())
-			omcplog.V(0).Info()
+			omcplog.V(2).Info("Updated Resource '" + obj.GetKind() + "' in Cluster'" + clusterName + "'")
+			omcplog.V(3).Info("  Name : " + obj.GetName())
+			omcplog.V(3).Info("  Namespace : " + obj.GetNamespace())
+			omcplog.V(2).Info()
 		}
 	} else if command == "delete" { // Delete
-		omcplog.V(0).Info("Delete Resource Start")
+		omcplog.V(2).Info("Delete Resource Start")
 		err := DeleteObj(cm, obj, clusterName)
 		if err != nil {
 			if errors.IsAlreadyExists(err) {
@@ -147,38 +147,39 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				return reconcile.Result{}, err
 			}
 		} else {
-			omcplog.V(0).Info("Deleted Resource '" + obj.GetKind() + "' in Cluster'" + clusterName + "'")
-			omcplog.V(0).Info("  Name : " + obj.GetName())
-			omcplog.V(0).Info("  Namespace : " + obj.GetNamespace())
-			omcplog.V(0).Info()
+			omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() + "' in Cluster'" + clusterName + "'")
+			omcplog.V(3).Info("  Name : " + obj.GetName())
+			omcplog.V(3).Info("  Namespace : " + obj.GetNamespace())
+			omcplog.V(2).Info()
 		}
 	} else {
-		omcplog.V(0).Info("Command '" + command + "' is not a valid command.")
+		omcplog.V(1).Info("Command '" + command + "' is not a valid command.")
 	}
 
 	return reconcile.Result{}, nil // err
 }
 
 func (r *reconciler) resourceForSync(instance *ketiv1alpha1.Sync) (*unstructured.Unstructured, string, string) {
-
+	omcplog.V(4).Info("[OpenMCP Sync] Function Called resourceForSync")
 	clusterName := instance.Spec.ClusterName
 	command := instance.Spec.Command
 
 	u := &unstructured.Unstructured{}
 
-	omcplog.V(0).Info("[Parsing Sync] ClusterName : ", clusterName, "command : ",command)
+	omcplog.V(2).Info("[Parsing Sync] ClusterName : ", clusterName, "command : ",command)
 	var err error
 	u.Object, err = runtime.DefaultUnstructuredConverter.ToUnstructured(&instance.Spec.Template)
 	if err != nil {
 		omcplog.V(0).Info(err)
 	}
-	omcplog.V(0).Info(u.GetName(), u.GetNamespace())
+	omcplog.V(4).Info(u.GetName(), u.GetNamespace())
 
 	return u, clusterName, command
 }
 func CreateObj(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured, clusterName string) error {
+	omcplog.V(4).Info("[OpenMCP Sync] Function Called CreateObj")
 	//deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
-	omcplog.V(0).Info("*****CreateOBJ*****")
+
 	gvk := obj.GroupVersionKind()
 
 	gk := schema.GroupKind{Group: gvk.Group, Kind: gvk.Kind}
@@ -198,6 +199,7 @@ func CreateObj(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured
 
 }
 func UpdateObj(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured, clusterName string) error {
+	omcplog.V(4).Info("[OpenMCP Sync] Function Called UpdateObj")
 	//deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
 	gvk := obj.GroupVersionKind()
 	gk := schema.GroupKind{Group: gvk.Group, Kind: gvk.Kind}
@@ -212,13 +214,14 @@ func UpdateObj(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured
 
 }
 func DeleteObj(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured, clusterName string) error {
+	omcplog.V(4).Info("[OpenMCP Sync] Function Called DeleteObj")
 	//deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
 
 	gvk := obj.GroupVersionKind()
 	gk := schema.GroupKind{Group: gvk.Group, Kind: gvk.Kind}
 
-	omcplog.V(0).Info(gvk.Kind, gvk.Group, gvk.Version)
-	omcplog.V(0).Info(obj.GetName(), obj.GetNamespace())
+	omcplog.V(5).Info(gvk.Kind, gvk.Group, gvk.Version)
+	omcplog.V(5).Info(obj.GetName(), obj.GetNamespace())
 	clientset := cm.Cluster_kubeClients[clusterName]
 	groupResources, err := restmapper.GetAPIGroupResources(clientset.Discovery())
 	rm := restmapper.NewDiscoveryRESTMapper(groupResources)

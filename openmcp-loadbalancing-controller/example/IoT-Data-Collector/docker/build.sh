@@ -1,7 +1,7 @@
 registry="10.0.6.230:5000"
 imagename="keti-iotgateway"
 version="v1.0"
-docker_id="atyx300"
+docker_id="openmcp"
 
 # make image
 #docker build -t $imagename:$version .

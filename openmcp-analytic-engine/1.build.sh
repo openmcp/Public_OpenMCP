@@ -1,5 +1,5 @@
 #!/bin/bash
-docker_id="atyx300"
+docker_id="openmcp"
 image_name="openmcp-analytic-engine"
 
 export GO111MODULE=on

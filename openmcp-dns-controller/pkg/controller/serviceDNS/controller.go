@@ -31,6 +31,7 @@ import (
 var cm *clusterManager.ClusterManager
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string,  myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
+	omcplog.V(4).Info( ">>> ServiceDNS NewController()")
 	cm = myClusterManager
 
 	liveclient, err := live.GetDelegatingClient()
@@ -72,22 +73,24 @@ type reconciler struct {
 var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
+	omcplog.V(4).Info( "Function Called Reconcile")
 	i += 1
-	//omcplog.V(0).Info( "********* [ OpenMCP Service DNS Record", i, "] *********")
-	//omcplog.V(0).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
+	omcplog.V(5).Info( "********* [ OpenMCP Domain", i, "] *********")
+	omcplog.V(5).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
 	//cm := clusterManager.NewClusterManager()
 
 
 	// OpenMCPServiceDNSRecord 삭제 요청인 경우 종료
-	omcplog.V(0).Info("ServiceDNSRecord or Service 요청")
+	omcplog.V(2).Info("ServiceDNSRecord or Service 요청")
 	instanceServiceRecord := &ketiv1alpha1.OpenMCPServiceDNSRecord{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instanceServiceRecord)
+	omcplog.V(2).Info("[Get] OpenMCPServiceDNSRecord")
 	if err != nil {
 		// Delete
 		omcplog.V(0).Info("ServiceDNSRecord가 존재하지 않거나 삭제되었습니다. 요청을 무시합니다.")
 		return reconcile.Result{}, nil
 	}
-	omcplog.V(0).Info("ServiceDNSRecord or Service 생성 감지")
+	omcplog.V(2).Info("ServiceDNSRecord or Service 생성 감지")
 
 
 	// 도메인이 있는지 체크
@@ -100,6 +103,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		Name:      domainName,
 	}
 	err = r.live.Get(context.TODO(), nsn, instanceDomain)
+	omcplog.V(2).Info("[Get] OpenMCPDomain")
 
 	if err != nil {
 		// OpenMCPDomain이 없을경우
@@ -109,12 +113,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	// OpenMCPServiceDNSRecord과 OpenMCPDomain이 존재하는경우
 	// Status 업데이트
-	omcplog.V(0).Info("ServiceDNSRecord Status 업데이트")
+	omcplog.V(2).Info("ServiceDNSRecord Status 업데이트")
 	FillStatus(instanceServiceRecord, instanceDomain)
 
 	err = r.live.Status().Update(context.TODO(), instanceServiceRecord)
 	if err != nil {
-		//omcplog.V(0).Info( "[OpenMCP Service DNS Record Controller] : ",err)
+		omcplog.V(0).Info( "[OpenMCP Service DNS Record Controller] : ",err)
 		return reconcile.Result{}, nil
 	}
 
@@ -185,6 +189,11 @@ func FillStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord, ins
 			Zones:        zones,
 			Region:       region,
 		}
+
+		omcplog.V(3).Info("Cluster : ", clusterDNS.Cluster)
+		omcplog.V(3).Info("LoadBalancer Ingress : ", clusterDNS.LoadBalancer.Ingress)
+		omcplog.V(3).Info("Zones : ", clusterDNS.Zones)
+		omcplog.V(3).Info("Region : ", clusterDNS.Region)
 
 		instanceServiceRecord.Status.DNS = append(instanceServiceRecord.Status.DNS, *clusterDNS)
 

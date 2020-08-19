@@ -17,6 +17,7 @@ import (
 var cm *clusterManager.ClusterManager
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
+	omcplog.V(4).Info( ">>> Domain NewController()")
 	cm = myClusterManager
 
 	liveclient, err := live.GetDelegatingClient()
@@ -57,13 +58,14 @@ func (r *reconciler) UpdateStatusServiceDNSRecordFromDelete() error {
 
 	instanceServiceRecordList := &ketiv1alpha1.OpenMCPServiceDNSRecordList{}
 	err := r.live.List(context.TODO(), instanceServiceRecordList, &client.ListOptions{})
+	omcplog.V(2).Info("[List] OpenMCPServiceDNSRecordList")
 	if err != nil {
 		return err
 	}
 	instanceDomainList := &ketiv1alpha1.OpenMCPDomainList{}
 	err = r.live.List(context.TODO(), instanceDomainList, &client.ListOptions{})
+	omcplog.V(2).Info("[List] OpenMCPDomainList")
 	if err != nil {
-		omcplog.V(0).Info( "[OpenMCP Domain Controller] : ", err)
 		return err
 	}
 
@@ -79,8 +81,9 @@ func (r *reconciler) UpdateStatusServiceDNSRecordFromDelete() error {
 		}
 
 		if !find {
-			omcplog.V(0).Info( "[OpenMCP Domain Controller] Service DNS Record Delete :", instanceServiceRecordList.Items[deleted_index].Name)
+			omcplog.V(2).Info( "[OpenMCP Domain Controller] Service DNS Record Delete :", instanceServiceRecordList.Items[deleted_index].Name)
 
+			omcplog.V(2).Info("ServiceRecord Clear Status")
 			serviceDNS.ClearStatus(&instanceServiceRecordList.Items[deleted_index])
 			err = r.live.Status().Update(context.TODO(), &instanceServiceRecordList.Items[deleted_index])
 			if err != nil {
@@ -95,6 +98,7 @@ func (r *reconciler) UpdateStatusServiceDNSRecordFromCreate(instanceDomain *keti
 	// OpenMCPDomain Create시 OpenMCPServiceDNSRecord 업데이트
 	instanceServiceRecordList := &ketiv1alpha1.OpenMCPServiceDNSRecordList{}
 	err := r.live.List(context.TODO(), instanceServiceRecordList, &client.ListOptions{})
+	omcplog.V(2).Info("[List] OpenMCPServiceDNSRecordList")
 	if err != nil {
 		return err
 	}
@@ -102,6 +106,7 @@ func (r *reconciler) UpdateStatusServiceDNSRecordFromCreate(instanceDomain *keti
 	for _, instanceServiceRecord := range instanceServiceRecordList.Items {
 		if instanceServiceRecord.Spec.DomainRef == instanceDomain.Name {
 
+			omcplog.V(2).Info("ServiceRecord Fill Status")
 			serviceDNS.FillStatus(&instanceServiceRecord, instanceDomain)
 
 			err = r.live.Status().Update(context.TODO(), &instanceServiceRecord)
@@ -114,15 +119,17 @@ func (r *reconciler) UpdateStatusServiceDNSRecordFromCreate(instanceDomain *keti
 }
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
+	omcplog.V(4).Info( "Function Called Reconcile")
 	i += 1
-	//omcplog.V(0).Info( "********* [ OpenMCP Domain", i, "] *********")
-	//omcplog.V(0).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
+	omcplog.V(5).Info( "********* [ OpenMCP Domain", i, "] *********")
+	omcplog.V(5).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
 	//cm := clusterManager.NewClusterManager()
 
 	instanceDomain := &ketiv1alpha1.OpenMCPDomain{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instanceDomain)
+	omcplog.V(2).Info("[List] OpenMCPDomain")
 	if err != nil {
-		omcplog.V(0).Info( "Domain 삭제 감지")
+		omcplog.V(2).Info( "Domain 삭제 감지")
 		err = r.UpdateStatusServiceDNSRecordFromDelete()
 		if err != nil {
 			omcplog.V(0).Info( "[OpenMCP Domain Controller] : ", err)
@@ -130,8 +137,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 		return reconcile.Result{}, nil
 	}
-	omcplog.V(0).Info( "Domain 생성 감지")
-	omcplog.V(0).Info( "ServiceDNSRecord Status Update")
+	omcplog.V(2).Info( "Domain 생성 감지")
+	omcplog.V(2).Info( "ServiceDNSRecord Status Update")
 	err = r.UpdateStatusServiceDNSRecordFromCreate(instanceDomain)
 	if err != nil {
 		omcplog.V(0).Info( "[OpenMCP Domain Controller] : ", err)

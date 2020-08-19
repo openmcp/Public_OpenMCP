@@ -5,7 +5,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/rest"
-	"k8s.io/klog"
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/clock"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/decode"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/kubeletClient"
@@ -13,7 +13,7 @@ import (
 )
 
 func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nodes []corev1.Node) (*storage.Collection, error) {
-	klog.V(0).Info("Scrap Start")
+	omcplog.V(4).Info( "Func Scrap Called")
 
 	responseChannel := make(chan *storage.MetricsBatch, len(nodes))
 	errChannel := make(chan error, len(nodes))
@@ -62,17 +62,17 @@ func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nod
 		nodeNum += 1
 		podNum += len(srcBatch.Pods)
 	}
-	klog.V(0).Infof("ScrapeMetrics: time: %s, nodes: %v, pods: %v", clock.MyClock.Since(startTime), nodeNum, podNum)
+	omcplog.V(3).Infof("ScrapeMetrics: time: ",clock.MyClock.Since(startTime), "nodes: ", nodeNum, "pods: ", podNum)
 	return res, utilerrors.NewAggregate(errs)
 }
 
 func CollectNode(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, node corev1.Node) (*storage.MetricsBatch, error) {
-	klog.V(0).Info("Collect Node Start goroutine : '", node.Name, "'")
+	omcplog.V(4).Info("Func CollectNode Called")
+	omcplog.V(2).Info("Collect Node Start goroutine : '", node.Name, "'")
 	host := node.Status.Addresses[0].Address
 	token := config.BearerToken
 	summary, err := kubelet_client.GetSummary(host, token)
 	if err != nil {
-		klog.V(0).Info("check1")
 		return nil, fmt.Errorf("unable to fetch metrics from Kubelet %s (%s): %v", node.Name, node.Status.Addresses[0].Address, err)
 	}
 

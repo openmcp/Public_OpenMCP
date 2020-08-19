@@ -17,9 +17,8 @@ package decode
 import (
 	"fmt"
 	"math"
+	"openmcp/openmcp/omcplog"
 	"time"
-
-	"k8s.io/klog"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -28,7 +27,7 @@ import (
 )
 
 func DecodeBatch(summary *stats.Summary) (*storage.MetricsBatch, error) {
-	klog.V(0).Info("Decode Start")
+	omcplog.V(4).Info("Func DecodeBatch Called")
 	//klog.V(0).Info("Data Decoding Summary to MetricsBatch Structure")
 	res := &storage.MetricsBatch{
 		IP:   summary.IP,
@@ -43,7 +42,7 @@ func DecodeBatch(summary *stats.Summary) (*storage.MetricsBatch, error) {
 		// if we had errors providing node metrics, discard the data point
 		// so that we don't incorrectly report metric values as zero.
 	}
-	klog.V(0).Info("Node Decoding Completed")
+	omcplog.V(2).Info("Node Decoding Completed")
 
 	num := 0
 	for _, pod := range summary.Pods {
@@ -61,13 +60,14 @@ func DecodeBatch(summary *stats.Summary) (*storage.MetricsBatch, error) {
 		num++
 	}
 	res.Pods = res.Pods[:num]
-	klog.V(0).Info("Pod Decoding Completed")
-	klog.V(0).Info("=> CPUUsageNanoCores, MemoryUsageBytes, MemoryAvailableBytes, MemoryWorkingSetBytes, NetworkRxBytes, NetworkTxBytes, FsAvailableBytes, FsCapacityBytes, FsUsedBytes")
+	omcplog.V(2).Info("Pod Decoding Completed")
+	omcplog.V(3).Info("=> CPUUsageNanoCores, MemoryUsageBytes, MemoryAvailableBytes, MemoryWorkingSetBytes, NetworkRxBytes, NetworkTxBytes, FsAvailableBytes, FsCapacityBytes, FsUsedBytes")
 
 	return res, utilerrors.NewAggregate(errs)
 }
 
 func decodeNodeStats(nodeStats *stats.NodeStats, target *storage.NodeMetricsPoint) []error {
+	omcplog.V(4).Info("Func decodeNodeStats Called")
 	//klog.V(0).Info("Func decodeNodeStats Called")
 	timestamp, err := getScrapeTimeNode(nodeStats.CPU, nodeStats.Memory, nodeStats.Network, nodeStats.Fs)
 	if err != nil {
@@ -100,6 +100,7 @@ func decodeNodeStats(nodeStats *stats.NodeStats, target *storage.NodeMetricsPoin
 }
 
 func decodePodStats(podStats *stats.PodStats, target *storage.PodMetricsPoint) []error {
+	omcplog.V(4).Info("Func decodePodStats Called")
 	// klog.V(0).Info("Func decodePodStats Called")
 
 	timestamp, err := getScrapeTimePod(podStats.CPU, podStats.Memory)
@@ -136,6 +137,7 @@ func decodePodStats(podStats *stats.PodStats, target *storage.PodMetricsPoint) [
 }
 
 func decodeCPU(target *storage.MetricsPoint, cpuStats *stats.CPUStats) error {
+	omcplog.V(4).Info("Func decodeCPU Called")
 	if cpuStats == nil || cpuStats.UsageNanoCores == nil {
 		return fmt.Errorf("missing cpu usage metric")
 	}
@@ -146,6 +148,7 @@ func decodeCPU(target *storage.MetricsPoint, cpuStats *stats.CPUStats) error {
 }
 
 func decodeMemory(target *storage.MetricsPoint, memStats *stats.MemoryStats) error {
+	omcplog.V(4).Info("Func decodeMemory Called")
 	if memStats == nil || memStats.WorkingSetBytes == nil {
 		return fmt.Errorf("missing memory usage metric")
 	}
@@ -163,6 +166,7 @@ func decodeMemory(target *storage.MetricsPoint, memStats *stats.MemoryStats) err
 	return nil
 }
 func decodeNetwork(target *storage.MetricsPoint, netStats *stats.NetworkStats) error {
+	omcplog.V(4).Info("Func decodeNetwork Called")
 	if netStats == nil || len(netStats.Interfaces) != 0 && netStats.Interfaces[0].RxBytes == nil {
 		return fmt.Errorf("missing network RX usage metric")
 	}
@@ -184,6 +188,7 @@ func decodeNetwork(target *storage.MetricsPoint, netStats *stats.NetworkStats) e
 }
 
 func decodeFs(target *storage.MetricsPoint, FsStats *stats.FsStats) error {
+	omcplog.V(4).Info("Func decodeFs Called")
 	if FsStats == nil || FsStats.UsedBytes == nil {
 		return fmt.Errorf("missing memory usage metric")
 	}
@@ -200,6 +205,7 @@ func decodeFs(target *storage.MetricsPoint, FsStats *stats.FsStats) error {
 	return nil
 }
 func getScrapeTimePod(cpu *stats.CPUStats, memory *stats.MemoryStats) (time.Time, error) {
+	omcplog.V(4).Info("Func getScrapeTimePod Called")
 	//klog.V(0).Info("Func getScrapeTime Called")
 	// Ensure we get the earlier timestamp so that we can tell if a given data
 	// point was tainted by pod initialization.
@@ -220,6 +226,7 @@ func getScrapeTimePod(cpu *stats.CPUStats, memory *stats.MemoryStats) (time.Time
 	return *earliest, nil
 }
 func getScrapeTimeNode(cpu *stats.CPUStats, memory *stats.MemoryStats, network *stats.NetworkStats, fs *stats.FsStats) (time.Time, error) {
+	omcplog.V(4).Info("Func getScrapeTimeNode Called")
 	//klog.V(0).Info("Func getScrapeTime Called")
 	// Ensure we get the earlier timestamp so that we can tell if a given data
 	// point was tainted by pod initialization.
@@ -257,7 +264,7 @@ func uint64Quantity(val uint64, scale resource.Scale) *resource.Quantity {
 		return resource.NewScaledQuantity(int64(val), scale)
 	}
 
-	klog.V(1).Infof("unexpectedly large resource value %v, loosing precision to fit in scaled resource.Quantity", val)
+	omcplog.V(1).Infof("unexpectedly large resource value %v, loosing precision to fit in scaled resource.Quantity", val)
 
 	// otherwise, lose an decimal order-of-magnitude precision,
 	// so we can fit into a scaled quantity

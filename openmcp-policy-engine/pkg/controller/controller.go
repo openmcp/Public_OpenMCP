@@ -40,7 +40,7 @@ var log = logf.Log.WithName("controller_openmcphybridautoscaler")
 var cm *clusterManager.ClusterManager
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
-	omcplog.V(0).Info("[OpenMCP Policy Engine] Function Called NewController")
+	omcplog.V(4).Info("[OpenMCP Policy Engine] Function Called NewController")
 	cm = myClusterManager
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
@@ -60,7 +60,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	fmt.Printf("%T, %s\n", live, live.GetClusterName())
+	omcplog.V(4).Info(live, live.GetClusterName())
 	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPPolicy{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
@@ -82,46 +82,45 @@ type reconciler struct {
 var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
-	reqLogger := log.WithValues("Request.Namespace", req.Namespace, "Request.Name", req.Name)
 	i += 1
-	fmt.Println("********* [", i, "] *********")
-	fmt.Println("Request Context: ", req.Context, " / Request Namespace: ", req.Namespace, " /  Request Name: ", req.Name)
+	omcplog.V(4).Info("********* [", i, "] *********")
+	omcplog.V(5).Info("Request Context: ", req.Context, " / Request Namespace: ", req.Namespace, " /  Request Name: ", req.Name)
 	//cm := NewClusterManager()
 
 	// Fetch the OpenMCPDeployment instance
 	instance := &ketiv1alpha1.OpenMCPPolicy{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
-	//	fmt.Println("instance: ", instance)
-	fmt.Println("instance Name: ", instance.Name)
-	fmt.Println("instance Namespace: ", instance.Namespace)
+	//	omcplog.V(4).Info("instance: ", instance)
+	omcplog.V(5).Info("instance Name: ", instance.Name)
+	omcplog.V(5).Info("instance Namespace: ", instance.Namespace)
 
 	if err != nil {
 		if errors.IsNotFound(err) {
-			fmt.Println("Delete Policy Resource")
+			omcplog.V(2).Info("Delete Policy Resource")
 			return reconcile.Result{}, nil
 		}
-		fmt.Println("Error1")
-		reqLogger.Error(err, "Failed to get hasInstance")
+		omcplog.V(0).Info("Error: ", err)
+
 		return reconcile.Result{}, err
 	}
 
 	if instance.Spec.PolicyStatus == "Disabled" {
-		fmt.Println("Policy Disabled")
+		omcplog.V(2).Info("Policy Disabled")
 	} else if instance.Spec.PolicyStatus == "Enabled" {
 		if instance.Spec.RangeOfApplication == "FromNow" {
-			fmt.Println("Policy Enabled - FromNow")
+			omcplog.V(2).Info("Policy Enabled - FromNow")
 		} else if instance.Spec.RangeOfApplication == "All" {
-			//fmt.Println("Policy Enabled - All")
+			//omcplog.V(4).Info("Policy Enabled - All")
 			object := instance.Spec.Template.Spec.TargetController.Kind
 			if object == "OpenMCPHybridAutoScaler" {
-				fmt.Println("Policy Enabled - OpenMCPHybridAutoScaler")
+				omcplog.V(2).Info("Policy Enabled - OpenMCPHybridAutoScaler")
 				hpaList := &ketiv1alpha1.OpenMCPHybridAutoScalerList{}
 				listOptions := &client.ListOptions{Namespace: ""} //all resources
 				r.live.List(context.TODO(), hpaList, listOptions)
-				//fmt.Println("List: ", hpaList)
+				//omcplog.V(4).Info("List: ", hpaList)
 				for _, hpaInstance := range hpaList.Items {
-					//fmt.Println("hpastatus: ",hpaInstance.Status.Policies)
-					//fmt.Println("policies: ",instance.Spec.Template.Spec.Policies)
+					//omcplog.V(4).Info("hpastatus: ",hpaInstance.Status.Policies)
+					//omcplog.V(4).Info("policies: ",instance.Spec.Template.Spec.Policies)
 					var i = 0
 					for index, tmpPolicy := range hpaInstance.Status.Policies { //정책 이름 대조하여 해당 정책만 수정
 						if tmpPolicy.Type == instance.Spec.Template.Spec.Policies[0].Type { //같은 정책이 이미 있는 경우
@@ -135,10 +134,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					}
 					err := r.live.Status().Update(context.TODO(), &hpaInstance)
 					if err != nil {
-						fmt.Println("OpenMCPHPA Policy Update Error")
+						omcplog.V(0).Info("OpenMCPHPA Policy Update Error")
 						return reconcile.Result{}, err
 					} else {
-						fmt.Println("OpenMCPHPA Policy UPDATE Success!")
+						omcplog.V(2).Info("OpenMCPHPA Policy UPDATE Success!")
 					}
 				}
 			} else if object == "OpenMCPLoadbalancer" {
@@ -153,19 +152,19 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	dep := &appsv1.Deployment{}
 	for _, cluster := range cm.Cluster_list.Items {
 		cluster_client := cm.Cluster_clients[cluster.Name]
-		fmt.Println(nsn.Namespace, nsn.Name)
+		omcplog.V(4).Info(nsn.Namespace, nsn.Name)
 		err := cluster_client.Get(context.Background(), dep, nsn.Namespace, nsn.Name+"-deploy")
 		if err != nil && errors.IsNotFound(err) {
 			// all good
-			fmt.Println("Not Found")
+			omcplog.V(4).Info("Not Found")
 			continue
 		}
-		fmt.Println(cluster.Name," Delete Start")
+		omcplog.V(4).Info(cluster.Name," Delete Start")
 		err = cluster_client.Delete(context.Background(), dep, nsn.Namespace, nsn.Name+"-deploy")
 		if err != nil {
 			return err
 		}
-		fmt.Println(cluster.Name, "Delete Complate")
+		omcplog.V(4).Info(cluster.Name, "Delete Complate")
 	}
 	return nil
 

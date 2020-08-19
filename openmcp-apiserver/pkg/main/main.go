@@ -8,13 +8,16 @@ import (
 	"fmt"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
+
 	"io"
 	corev1 "k8s.io/api/core/v1"
+
 	"k8s.io/client-go/tools/remotecommand"
 
+
 	//	corev1 "k8s.io/api/core/v1"
-//	"k8s.io/client-go/kubernetes"
-//	"k8s.io/client-go/tools/remotecommand"
+	//	"k8s.io/client-go/kubernetes"
+	//	"k8s.io/client-go/tools/remotecommand"
 	"strings"
 	"time"
 
@@ -32,9 +35,9 @@ import (
 	"sigs.k8s.io/kubefed/pkg/controller/util"
 	//"time"
 
+	"k8s.io/client-go/kubernetes/scheme"
 	//"openmcp/openmcp/openmcp-apiserver/pkg/protobuf"
 	restclient "k8s.io/client-go/rest"
-	"k8s.io/client-go/kubernetes/scheme"
 )
 
 const (
@@ -453,7 +456,6 @@ const (
 	GRPC_PORT = "8080"
 
 )
-
 
 func main() {
 

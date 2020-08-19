@@ -17,7 +17,7 @@ spec:
       containers:
         - name: openmcp-sync-controller
           # Replace this with the built image name
-          image: atyx300/openmcp-sync-controller:v0.0.1
+          image: openmcp/openmcp-sync-controller:v0.0.1
           command:
           - openmcp-sync-controller
           imagePullPolicy: Always
