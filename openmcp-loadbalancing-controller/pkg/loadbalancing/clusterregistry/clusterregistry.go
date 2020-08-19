@@ -2,7 +2,7 @@ package clusterregistry
 
 import (
 	"errors"
-	"fmt"
+	"openmcp/openmcp/omcplog"
 	"strconv"
 	"sync"
 )
@@ -45,7 +45,7 @@ type Registry interface {
 type DefaultClusterInfo map[string]map[string]string
 
 func (c DefaultClusterInfo) Lookup(cluster string) (bool, error) {
-	fmt.Println("----Cluster Lookup----")
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster Lookup")
 	lock.RLock()
 	_, ok := c[cluster]
 	lock.RUnlock()
@@ -56,7 +56,7 @@ func (c DefaultClusterInfo) Lookup(cluster string) (bool, error) {
 }
 
 func (c DefaultClusterInfo) IngressIP(ClusterName string) (string, error) {
-	fmt.Println("----IngressIP----")
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster IngressIP")
 	lock.RLock()
 	cluster, ok := c[ClusterName]
 	lock.RUnlock()
@@ -68,7 +68,7 @@ func (c DefaultClusterInfo) IngressIP(ClusterName string) (string, error) {
 }
 
 func (c DefaultClusterInfo) Longitude(ClusterName string) (float64, error) {
-	fmt.Println("----Longitude----")
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster Longitude")
 	lock.RLock()
 	cluster, ok := c[ClusterName]
 	lock.RUnlock()
@@ -80,7 +80,7 @@ func (c DefaultClusterInfo) Longitude(ClusterName string) (float64, error) {
 }
 
 func (c DefaultClusterInfo) Latitude(ClusterName string) (float64, error) {
-	fmt.Println("----Latitude----")
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster Latitude")
 	lock.RLock()
 	cluster, ok := c[ClusterName]
 	lock.RUnlock()
@@ -92,7 +92,7 @@ func (c DefaultClusterInfo) Latitude(ClusterName string) (float64, error) {
 }
 
 func (c DefaultClusterInfo) Country(ClusterName string) (string, error) {
-	fmt.Println("----Country----")
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster Country")
 	lock.RLock()
 	cluster, ok := c[ClusterName]
 	lock.RUnlock()
@@ -104,7 +104,7 @@ func (c DefaultClusterInfo) Country(ClusterName string) (string, error) {
 }
 
 func (c DefaultClusterInfo) Continent(ClusterName string) (string, error) {
-	fmt.Println("----Continent----")
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster Continent")
 	lock.RLock()
 	cluster, ok := c[ClusterName]
 	lock.RUnlock()
@@ -116,7 +116,7 @@ func (c DefaultClusterInfo) Continent(ClusterName string) (string, error) {
 }
 
 func (c DefaultClusterInfo) ResourceScore(ClusterName string) (float64, error) {
-	fmt.Println("----ResourceScore----")
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster ResourceScore")
 	lock.RLock()
 	cluster, ok := c[ClusterName]
 	lock.RUnlock()
@@ -128,7 +128,7 @@ func (c DefaultClusterInfo) ResourceScore(ClusterName string) (float64, error) {
 }
 
 func (c DefaultClusterInfo) HopScore(ClusterName string) (float64, error) {
-	fmt.Println("----HopScore----")
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster HopScore")
 	lock.RLock()
 	cluster, ok := c[ClusterName]
 	lock.RUnlock()
@@ -140,7 +140,7 @@ func (c DefaultClusterInfo) HopScore(ClusterName string) (float64, error) {
 }
 
 func (c DefaultClusterInfo) Add(ClusterName, Latitude, Longitude, IngressIP, Country, Continent, ResourceScore, HopScore string) {
-	fmt.Println("----Cluster Add----")
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster Add")
 	lock.Lock()
 	defer lock.Unlock()
 

@@ -41,11 +41,13 @@ import (
 
 	extv1b1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	syncapis "openmcp/openmcp/openmcp-sync-controller/pkg/apis"
 	sync "openmcp/openmcp/openmcp-sync-controller/pkg/apis/keti/v1alpha1"
+	syncapis "openmcp/openmcp/openmcp-sync-controller/pkg/apis"
+
 )
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
+	omcplog.V(4).Info("[OpenMCP Ingress Controller] Function Called NewController")
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
@@ -67,7 +69,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	fmt.Printf("%T, %s\n", live, live.GetClusterName())
 	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPIngress{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
@@ -80,7 +81,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	// add it to each cluster's scheme, which points to the same underlying scheme.
 
 	for _, ghost := range ghosts {
-		fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
 		if err := co.WatchResourceReconcileController(ghost, &extv1b1.Ingress{}, controller.WatchOptions{}); err != nil {
 			return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
 		}
@@ -97,42 +97,44 @@ type reconciler struct {
 var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
+	omcplog.V(4).Info("[OpenMCP Ingress Controller] Function Called Reconcile")
 	i += 1
-	omcplog.V(0).Info("********* [", i, "] *********")
-	omcplog.V(0).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
+	omcplog.V(5).Info("********* [", i, "] *********")
+	omcplog.V(3).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
 	cm := clusterManager.NewClusterManager()
 
 	// Fetch the OpenMCPDeployment instance
 	instance := &ketiv1alpha1.OpenMCPIngress{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 
-	omcplog.V(0).Info("instance Name: ", instance.Name)
-	omcplog.V(0).Info("instance Namespace : ", instance.Namespace)
+	omcplog.V(3).Info("instance Name: ", instance.Name)
+	omcplog.V(3).Info("instance Namespace : ", instance.Namespace)
 
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// ...TODO: multicluster garbage collector
 			// Until then...
-			omcplog.V(0).Info("Delete Deployments ..Cluster")
+			omcplog.V(3).Info("Delete Deployments ..Cluster")
 			err := r.DeleteIngress(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
 			//err := DeleteIngress(cm, req.NamespacedName)
 			return reconcile.Result{}, err
 		}
-		omcplog.V(0).Info("Error1")
+		omcplog.V(1).Info(err)
 		return reconcile.Result{}, err
 	}
 	if instance.Status.ClusterMaps == nil || instance.Status.ChangeNeed == true {
-		omcplog.V(0).Info("Ingress Create Start")
+		omcplog.V(3).Info("Ingress Create Start")
 		r.createIngress(req, cm, instance)
 
 		if err != nil {
+			omcplog.V(1).Info(err)
 			return reconcile.Result{}, err
 		}
 		return reconcile.Result{}, nil
 
 	} else {
 		// Check Ingress In Openmcp
-		omcplog.V(0).Info("check Ingress In Openmcp")
+		omcplog.V(3).Info("Check Ingress In Openmcp")
 		foundIngress := &extv1b1.Ingress{}
 		err = cm.Host_client.Get(context.TODO(), foundIngress, instance.Namespace, instance.Name)
 
@@ -147,7 +149,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.V(0).Info("LoadBalancing-controller Service Not Found")
 				return reconcile.Result{}, err
 			} else {
-				omcplog.V(0).Info("Update Ingress Status")
+				omcplog.V(3).Info("Update Ingress Status")
 				foundIngress.Status.LoadBalancer = foundService.Status.LoadBalancer
 				err = cm.Host_client.UpdateStatus(context.Background(), foundIngress)
 				if err != nil {
@@ -155,7 +157,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				}
 			}
 		} else if errors.IsNotFound(err) {
-			omcplog.V(0).Info("Create Ingress")
+			omcplog.V(3).Info("Create Ingress")
 			host_ing, _ := r.ingressForOpenMCPIngress(req, instance)
 			//command := "create"
 			//_,err = r.sendSync(host_ing, command, "openmcp")
@@ -174,7 +176,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 			if err != nil && errors.IsNotFound(err) {
 				// Delete Ingress Detected
-				omcplog.V(0).Info("Cluster '" + cluster_name + "' ReDeployed")
+				omcplog.V(3).Info("Cluster '" + cluster_name + "' ReDeployed")
 				_, ing := r.ingressForOpenMCPIngress(req, instance)
 
 				command := "create"
@@ -193,6 +195,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 }
 
 func (r *reconciler) registerPdnsServer(ingress *extv1b1.Ingress) error {
+	omcplog.V(4).Info("[OpenMCP Ingress Controller] Function Called registerPdnsServer")
 	pdnsClient, err := mypdns.PdnsNewClient()
 	if err != nil {
 		omcplog.V(0).Info(err)
@@ -203,6 +206,7 @@ func (r *reconciler) registerPdnsServer(ingress *extv1b1.Ingress) error {
 	nsn := types.NamespacedName{
 		Namespace: "openmcp",
 		Name:      "openmcp-loadbalancing-controller",
+
 	}
 	err = r.live.Get(context.TODO(), nsn, found)
 	if err != nil && errors.IsNotFound(err) {
@@ -290,6 +294,7 @@ func (r *reconciler) registerPdnsServer(ingress *extv1b1.Ingress) error {
 //}
 
 func (r *reconciler) createIngress(req reconcile.Request, cm *clusterManager.ClusterManager, instance *ketiv1alpha1.OpenMCPIngress) error {
+	omcplog.V(4).Info("[OpenMCP Ingress Controller] Function Called createIngress")
 	host_ing, ing := r.ingressForOpenMCPIngress(req, instance)
 
 	found := &extv1b1.Ingress{}
@@ -317,15 +322,12 @@ func (r *reconciler) createIngress(req reconcile.Request, cm *clusterManager.Clu
 		cluster_client := cm.Cluster_genClients[cluster.Name]
 		err := cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 
-		omcplog.V(0).Info("**********************")
-		omcplog.V(0).Info(err)
-
 		if err != nil && errors.IsNotFound(err) {
 			for i, rule := range cluster_ing.Spec.Rules {
 				for _, paths := range rule.HTTP.Paths {
 					serviceName := paths.Backend.ServiceName
-					omcplog.V(0).Info("service name")
-					omcplog.V(0).Info(serviceName)
+					omcplog.V(5).Info("service name")
+					omcplog.V(5).Info(serviceName)
 					serviceErr := cluster_client.Get(context.TODO(), serviceFound, instance.Namespace, serviceName)
 					if serviceErr != nil && errors.IsNotFound(serviceErr) {
 						omcplog.V(0).Info("service not found")
@@ -337,7 +339,7 @@ func (r *reconciler) createIngress(req reconcile.Request, cm *clusterManager.Clu
 
 			}
 			if isService == true {
-				omcplog.V(0).Info("Create Ingress Resource - ", cluster.Name)
+				omcplog.V(3).Info("Create Ingress Resource - ", cluster.Name)
 				//err = cluster_client.Create(context.Background(), cluster_ing)
 				command := "create"
 				_, err = r.sendSync(cluster_ing, command, cluster.Name)
@@ -354,7 +356,9 @@ func (r *reconciler) createIngress(req reconcile.Request, cm *clusterManager.Clu
 	return err
 }
 
+
 func (r *reconciler) ingressForOpenMCPIngress(req reconcile.Request, m *ketiv1alpha1.OpenMCPIngress) (*extv1b1.Ingress, *extv1b1.Ingress) {
+	omcplog.V(4).Info("[OpenMCP Ingress Controller] Function Called ingressForOpenMCPIngress")
 	host_ing := &extv1b1.Ingress{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Ingress",
@@ -397,7 +401,9 @@ func (r *reconciler) ingressForOpenMCPIngress(req reconcile.Request, m *ketiv1al
 	return host_ing, ing
 }
 
-func (r *reconciler) DeleteIngress(cm *clusterManager.ClusterManager, name string, namespace string) error {
+
+func(r *reconciler) DeleteIngress(cm *clusterManager.ClusterManager, name string, namespace string) error {
+	omcplog.V(4).Info("[OpenMCP Ingress Controller] Function Called DeleteIngress")
 	ing := &extv1b1.Ingress{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Ingress",
@@ -416,26 +422,26 @@ func (r *reconciler) DeleteIngress(cm *clusterManager.ClusterManager, name strin
 	} else if err != nil && !errors.IsNotFound(err) {
 		return err
 	}
-	omcplog.V(0).Info("OpenMCP Delete Start")
+	omcplog.V(3).Info("OpenMCP Delete Start")
 	//command := "delete"
 	//_,err = r.sendSync(ing, command, "openmcp")
-	err = cm.Host_client.Delete(context.Background(), ing, namespace, name)
+	err = cm.Host_client.Delete(context.Background(), ing,  namespace, name)
 
 	if err != nil {
 		return err
 	}
-	omcplog.V(0).Info("OpenMCP Delete Complete")
+	omcplog.V(3).Info("OpenMCP Delete Complete")
 
 	for _, cluster := range cm.Cluster_list.Items {
 		cluster_client := cm.Cluster_genClients[cluster.Name]
 		omcplog.V(0).Info(namespace, name)
-		err := cluster_client.Get(context.Background(), ing, namespace, name)
+		err := cluster_client.Get(context.Background(), ing,  namespace, name)
 		if err != nil && errors.IsNotFound(err) {
 			// all good
 			omcplog.V(0).Info("Not Found")
 			continue
 		}
-		omcplog.V(0).Info(cluster.Name, " Delete Start")
+		omcplog.V(3).Info(cluster.Name, " Delete Start")
 		command := "delete"
 		omcplog.V(0).Info(name)
 		omcplog.V(0).Info(namespace)
@@ -450,13 +456,13 @@ func (r *reconciler) DeleteIngress(cm *clusterManager.ClusterManager, name strin
 				Namespace: namespace,
 			},
 		}
-		_, err = r.sendSync(ing, command, cluster.Name)
+		_,err = r.sendSync(ing, command, cluster.Name)
 
 		//err = cluster_client.Delete(context.Background(), ing,  namespace, name)
 		if err != nil {
 			return err
 		}
-		omcplog.V(0).Info(cluster.Name, "Delete Complete")
+		omcplog.V(3).Info(cluster.Name, "Delete Complete")
 	}
 	return nil
 
@@ -499,9 +505,8 @@ func (r *reconciler) DeleteIngress(cm *clusterManager.ClusterManager, name strin
 //}
 
 var syncIndex int = 0
-
 func (r *reconciler) sendSync(ingress *extv1b1.Ingress, command string, clusterName string) (string, error) {
-	omcplog.V(0).Info("[OpenMCP ConfigMap] Function Called sendSync")
+	omcplog.V(4).Info("[OpenMCP Ingress Controller] Function Called sendSync")
 	syncIndex += 1
 
 	s := &sync.Sync{
@@ -515,14 +520,14 @@ func (r *reconciler) sendSync(ingress *extv1b1.Ingress, command string, clusterN
 			Template:    *ingress,
 		},
 	}
-	omcplog.V(0).Info("Delete Check2 ", s.Spec.Template.(extv1b1.Ingress).Name, s.Spec.Template.(extv1b1.Ingress).Namespace)
+	omcplog.V(5).Info("Delete Check ", s.Spec.Template.(extv1b1.Ingress).Name, s.Spec.Template.(extv1b1.Ingress).Namespace)
 
 	err := r.live.Create(context.TODO(), s)
 
 	if err != nil {
-		omcplog.V(0).Info(err)
+		omcplog.V(1).Info(err)
 	}
 
-	omcplog.V(0).Info(s.Name)
 	return s.Name, err
 }
+

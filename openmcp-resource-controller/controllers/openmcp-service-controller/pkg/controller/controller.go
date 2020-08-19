@@ -47,7 +47,7 @@ import (
 )
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
-
+	omcplog.V(4).Info("Function Called NewController")
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
@@ -70,7 +70,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	fmt.Printf("%T, %s\n", live, live.GetClusterName())
 	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPService{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
@@ -81,7 +80,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	// add it to each cluster's scheme, which points to the same underlying scheme.
 
 	for _, ghost := range ghosts {
-		fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
 		if err := co.WatchResourceReconcileController(ghost, &corev1.Service{}, controller.WatchOptions{}); err != nil {
 			return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
 		}
@@ -99,34 +97,36 @@ type reconciler struct {
 var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
+	omcplog.V(4).Info("Function Called Reconcile")
 	i += 1
-	fmt.Println("********* [", i, "] *********")
-	fmt.Println(req.Context, " / ", req.Namespace, " / ", req.Name)
+	omcplog.V(5).Info("********* [", i, "] *********")
+	omcplog.V(3).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
 	cm := clusterManager.NewClusterManager()
 
 	// Fetch the OpenMCPService instance
 	instance := &ketiv1alpha1.OpenMCPService{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 
-	fmt.Println("instance Name: ", instance.Name)
-	fmt.Println("instance Namespace : ", instance.Namespace)
+	omcplog.V(3).Info("instance Name: ", instance.Name)
+	omcplog.V(3).Info("instance Namespace : ", instance.Namespace)
 
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// ...TODO: multicluster garbage collector
 			// Until then...
-			fmt.Println("Delete Services ..Cluster")
+			omcplog.V(3).Info("Delete Services ..Cluster")
 
 			err := r.DeleteServices(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
 			return reconcile.Result{}, err
 		}
-		fmt.Println("Error1")
+		omcplog.V(0).Info(err)
 		return reconcile.Result{}, err
 	}
 	if instance.Status.ClusterMaps == nil {
-		fmt.Println("Service Create Start")
+		omcplog.V(3).Info("Service Create Start")
 		err := r.createService(req, cm, instance)
 		if err != nil {
+			omcplog.V(0).Info(err)
 			return reconcile.Result{}, err
 		}
 
@@ -152,16 +152,18 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	}
 	if !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec) {
-		fmt.Println("Service Update Start")
+		omcplog.V(3).Info("Service Update Start")
+
 		err := r.updateService(req, cm, instance)
 		if err != nil {
+			omcplog.V(0).Info(err)
 			return reconcile.Result{}, err
 		}
 		return reconcile.Result{}, nil
 
 	}
 	if instance.Status.ChangeNeed {
-		fmt.Println("Receive notify from OpenMCP Deployment ")
+		omcplog.V(3).Info("Receive notify from OpenMCP Deployment ")
 
 		instance.Status.ChangeNeed = false
 		r.updateService(req, cm, instance)
@@ -220,6 +222,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 }
 
 func (r *reconciler) serviceForOpenMCPService(req reconcile.Request, m *ketiv1alpha1.OpenMCPService) *corev1.Service {
+	omcplog.V(4).Info("Function Called serviceForOpenMCPService")
 
 	svc := &corev1.Service{
 		TypeMeta: metav1.TypeMeta{
@@ -244,6 +247,7 @@ func (r *reconciler) serviceForOpenMCPService(req reconcile.Request, m *ketiv1al
 
 
 func(r *reconciler) DeleteServices(cm *clusterManager.ClusterManager, name string, namespace string) error {
+	omcplog.V(4).Info("Function Called DeleteServices")
 
 	//svc := &corev1.Service{
 	//	TypeMeta: metav1.TypeMeta{
@@ -262,13 +266,13 @@ func(r *reconciler) DeleteServices(cm *clusterManager.ClusterManager, name strin
 		err := cluster_client.Get(context.Background(), svc, namespace, name)
 		if err != nil && errors.IsNotFound(err) {
 			// all good
-			fmt.Println("Not Found")
+			omcplog.V(0).Info("Not Found")
 			continue
 		}
 		if !isInObject(svc, "OpenMCPService") {
 			continue
 		}
-		fmt.Println(cluster.Name, " Delete Start")
+		omcplog.V(3).Info(cluster.Name, " Delete Start")
 		svc = &corev1.Service{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Service",
@@ -285,7 +289,7 @@ func(r *reconciler) DeleteServices(cm *clusterManager.ClusterManager, name strin
 		if err != nil {
 			return err
 		}
-		fmt.Println(cluster.Name, "Delete Complate")
+		omcplog.V(3).Info(cluster.Name, "Delete Complate")
 	}
 	return nil
 }
@@ -314,6 +318,7 @@ func(r *reconciler) DeleteServices(cm *clusterManager.ClusterManager, name strin
 //}
 
 func isInObject(child *corev1.Service, parent string) bool {
+	omcplog.V(4).Info("Function Called isInObject")
 	refKind_str := child.ObjectMeta.Annotations["multicluster.admiralty.io/controller-reference"]
 	refKind_map := make(map[string]interface{})
 	err := json.Unmarshal([]byte(refKind_str), &refKind_map)
@@ -326,6 +331,7 @@ func isInObject(child *corev1.Service, parent string) bool {
 	return false
 }
 func unique(strSlice []string) []string {
+	omcplog.V(4).Info("Function Called unique")
 	keys := make(map[string]bool)
 	list := []string{}
 	for _, entry := range strSlice {
@@ -338,6 +344,7 @@ func unique(strSlice []string) []string {
 }
 
 func (r *reconciler) getClusterIncludeLabel(label_map map[string]string, namespace string) []string {
+	omcplog.V(4).Info("Function Called getClusterIncludeLabel")
 	result_cluster_list := []string{}
 
 	odeploy_list := &ketiv1alpha1.OpenMCPDeploymentList{}
@@ -345,11 +352,11 @@ func (r *reconciler) getClusterIncludeLabel(label_map map[string]string, namespa
 
 	r.live.List(context.TODO(), odeploy_list, listOptions)
 	for _, odeploy := range odeploy_list.Items {
-		fmt.Println("odeploy Name : ", odeploy.Name)
+		omcplog.V(5).Info("odeploy Name : ", odeploy.Name)
 		for k, v := range odeploy.Spec.Labels {
-			fmt.Println("label : ", k, " / ", v)
+			omcplog.V(5).Info("label : ", k, " / ", v)
 			if label_map[k] == v {
-				fmt.Println("Match!")
+				omcplog.V(5).Info("Match!")
 				for cluster_name, replica := range odeploy.Status.ClusterMaps {
 					fmt.Println(cluster_name, replica)
 					if replica != 0 {
@@ -361,10 +368,11 @@ func (r *reconciler) getClusterIncludeLabel(label_map map[string]string, namespa
 	}
 	result_cluster_list = unique(result_cluster_list)
 
-	fmt.Println(result_cluster_list)
+	omcplog.V(3).Info(result_cluster_list)
 	return result_cluster_list
 }
 func (r *reconciler) createService(req reconcile.Request, cm *clusterManager.ClusterManager, instance *ketiv1alpha1.OpenMCPService) error {
+	omcplog.V(4).Info("Function Called createService")
 	cluster_map := make(map[string]int32)
 
 	for _, cluster := range cm.Cluster_list.Items {
@@ -399,6 +407,7 @@ func (r *reconciler) createService(req reconcile.Request, cm *clusterManager.Clu
 
 }
 func contains(slice []string, item string) bool {
+	omcplog.V(4).Info("Function Called contains")
 	set := make(map[string]struct{}, len(slice))
 	for _, s := range slice {
 		set[s] = struct{}{}
@@ -408,6 +417,7 @@ func contains(slice []string, item string) bool {
 	return ok
 }
 func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.ClusterManager, instance *ketiv1alpha1.OpenMCPService) error {
+	omcplog.V(4).Info("Function Called updateService")
 	cluster_map := make(map[string]int32)
 
 	for _, cluster := range cm.Cluster_list.Items {
@@ -426,6 +436,7 @@ func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.Clu
 				svc := r.serviceForOpenMCPService(req, instance)
 				cluster_map[cluster.Name] = 1
 				command := "create"
+				omcplog.V(3).Info("Create Service")
 				_,err = r.sendSync(svc, command, cluster.Name)
 				//err = cluster_client.Create(context.TODO(), svc)
 				if err != nil {
@@ -439,6 +450,7 @@ func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.Clu
 
 				cluster_map[cluster.Name] = 1
 				command := "update"
+				omcplog.V(3).Info("Update Service")
 				_,err = r.sendSync(svc, command, cluster.Name)
 				//err = cluster_client.Update(context.TODO(), svc)
 				if err != nil {
@@ -460,6 +472,7 @@ func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.Clu
 					},
 				}
 				command := "delete"
+				omcplog.V(3).Info("Delete Service")
 				_,err = r.sendSync(svc, command, cluster.Name)
 				//err = cluster_client.Delete(context.TODO(), found, instance.Namespace, instance.Name)
 				if err != nil {
@@ -477,7 +490,7 @@ func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.Clu
 
 var syncIndex int = 0
 func (r *reconciler) sendSync(service *corev1.Service, command string, clusterName string) (string, error) {
-	omcplog.V(0).Info("[OpenMCP ConfigMap] Function Called sendSync")
+	omcplog.V(4).Info("Function Called sendSync")
 	syncIndex += 1
 
 	s := &sync.Sync{
@@ -491,7 +504,7 @@ func (r *reconciler) sendSync(service *corev1.Service, command string, clusterNa
 			Template:    *service,
 		},
 	}
-	omcplog.V(0).Info("Delete Check2 ", s.Spec.Template.(corev1.Service).Name, s.Spec.Template.(corev1.Service).Namespace)
+	omcplog.V(5).Info("Delete Check ", s.Spec.Template.(corev1.Service).Name, s.Spec.Template.(corev1.Service).Namespace)
 
 	err := r.live.Create(context.TODO(), s)
 

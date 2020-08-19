@@ -2,7 +2,8 @@ package countryregistry
 
 import (
 	"errors"
-	"fmt"
+	"openmcp/openmcp/omcplog"
+
 	//"strconv"
 	"sync"
 )
@@ -22,7 +23,7 @@ type Registry interface {
 type DefaultCountryInfo map[string]string
 
 func (c DefaultCountryInfo) Lookup(country string) (string, error) {
-	fmt.Println("----Country Lookup----")
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(CountryRegistry)] Function Lookup")
 	lock.RLock()
 	continent, ok := c[country]
 	lock.RUnlock()
