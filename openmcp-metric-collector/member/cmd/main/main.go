@@ -2,9 +2,12 @@
 package main
 
 import (
+	"admiralty.io/multicluster-controller/pkg/cluster"
+	"admiralty.io/multicluster-controller/pkg/manager"
 	"context"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/jinzhu/copier"
+	"log"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/customMetrics"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/kubeletClient"
@@ -12,6 +15,8 @@ import (
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/scrap"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/storage"
 	"openmcp/openmcp/util/clusterManager"
+	"openmcp/openmcp/util/controller/logLevel"
+	"openmcp/openmcp/util/controller/reshape"
 
 	//"github.com/jinzhu/copier"
 
@@ -107,7 +112,48 @@ func convert(data *storage.Collection) *protobuf.Collection{
 	return grpc_data
 
 }
-func main(){
+func main() {
+	logLevel.KetiLogInit()
+
+	go MemberMetricCollector()
+
+	for {
+		cm := clusterManager.NewClusterManager()
+
+		host_ctx := "openmcp"
+		namespace := "openmcp"
+
+		host_cfg := cm.Host_config
+		//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+		live := cluster.New(host_ctx, host_cfg, cluster.Options{})
+
+		ghosts := []*cluster.Cluster{}
+
+		for _, ghost_cluster := range cm.Cluster_list.Items {
+			ghost_ctx := ghost_cluster.Name
+			ghost_cfg := cm.Cluster_configs[ghost_ctx]
+
+			//ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
+			ghosts = append(ghosts, ghost)
+		}
+
+		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
+		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
+
+		m := manager.New()
+		m.AddController(reshape_cont)
+		m.AddController(loglevel_cont)
+
+		stop := reshape.SetupSignalHandler()
+
+		if err := m.Start(stop); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+}
+func MemberMetricCollector(){
 	SERVER_IP := os.Getenv("GRPC_SERVER")
 	SERVER_PORT := os.Getenv("GRPC_PORT")
 	omcplog.V(2).Info("ClusterMetricCollector Start")

@@ -9,9 +9,9 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/klog"
 	"log"
 	"net"
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-analytic-engine/pkg/Geo"
 	"openmcp/openmcp/openmcp-analytic-engine/pkg/influx"
 	"openmcp/openmcp/openmcp-analytic-engine/pkg/protobuf"
@@ -41,6 +41,7 @@ type NetworkInfo struct {
 }
 
 func NewAnalyticEngine(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD string) *AnalyticEngineStruct {
+	omcplog.V(4).Info("Func NewAnalyticEngine Called")
 	ae := &AnalyticEngineStruct{}
 	ae.Influx = *influx.NewInflux(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD)
 	ae.ResourceScore = make(map[string]float64)
@@ -48,6 +49,7 @@ func NewAnalyticEngine(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD 
 }
 
 func (ae *AnalyticEngineStruct) CalcResourceScore() {
+	omcplog.V(4).Info("Func CalcResourceScore Called")
 	cm := clusterManager.NewClusterManager()
 	ae.MetricsWeight = make(map[string]float64)
 	ae.ClusterGeo = map[string]map[string]string{}
@@ -57,18 +59,18 @@ func (ae *AnalyticEngineStruct) CalcResourceScore() {
 	openmcpPolicyInstance, target_cluster_policy_err := cm.Crd_client.OpenMCPPolicy("openmcp").Get("analytic-metrics-weight", metav1.GetOptions{})
 
 	if target_cluster_policy_err != nil {
-		fmt.Println(target_cluster_policy_err)
+		omcplog.V(0).Info(target_cluster_policy_err)
 	} else {
 		a := openmcpPolicyInstance.Spec.Template.Spec.Policies
 		for _, b := range a {
 			value, _ := strconv.ParseFloat(b.Value[0], 64)
 			ae.MetricsWeight[b.Type] = value
 		}
-		fmt.Println("metricsWeight : ", ae.MetricsWeight)
+		omcplog.V(3).Info("metricsWeight : ", ae.MetricsWeight)
 	}
 	//-------------------------------------------------------
 	for {
-		fmt.Println("Cluster들의 Metric Score를 갱신합니다.")
+		omcplog.V(2).Info("Cluster들의 Metric Score를 갱신합니다.")
 		for _, cluster := range cm.Cluster_list.Items {
 			ae.ResourceScore[cluster.Name] = ae.UpdateScore(cluster.Name)
 			config, _ := util.BuildClusterConfig(&cluster, cm.Host_client, cm.Fed_namespace)
@@ -96,7 +98,7 @@ func (ae *AnalyticEngineStruct) CalcResourceScore() {
 
 // Update Network data from InfluxDB
 func (ae *AnalyticEngineStruct) UpdateNetworkData(clusterName string, nodeList *corev1.NodeList) {
-
+	omcplog.V(4).Info("Func UpdateNetworkData Called")
 	// Initialize cluster's network data
 	_, exists := ae.NetworkInfos[clusterName]
 	if !exists {
@@ -141,6 +143,7 @@ func (ae *AnalyticEngineStruct) UpdateNetworkData(clusterName string, nodeList *
 }
 
 func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
+	omcplog.V(4).Info("Func UpdateScore Called")
 	var score float64 = 0
 	result := ae.Influx.GetClusterMetricsData(clusterName)
 
@@ -155,9 +158,9 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
 		nodeCapacity := &corev1.Node{}
 		err := cm.Cluster_genClients[ser.Tags["cluster"]].Get(context.TODO(), nodeCapacity, "", ser.Tags["node"])
 		if err != nil {
-			fmt.Println("nodelist err : ", err)
+			omcplog.V(0).Info("nodelist err : ", err)
 		} else {
-			fmt.Println("[CPU Capacity] ", ser.Tags["cluster"], "/", ser.Tags["node"], "/", nodeCapacity.Status.Capacity.Cpu().Value())
+			omcplog.V(2).Info("[CPU Capacity] ", ser.Tags["cluster"], "/", ser.Tags["node"], "/", nodeCapacity.Status.Capacity.Cpu().Value())
 		}
 
 		totalCpuCore = totalCpuCore + nodeCapacity.Status.Capacity.Cpu().Value()
@@ -195,15 +198,16 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
 
 	score = cpuScore*ae.MetricsWeight["CPU"] + memScore*ae.MetricsWeight["Memory"] + diskScore*ae.MetricsWeight["FS"]
 
-	fmt.Println("--------------------------------------------------------------------------------------------")
-	fmt.Println("totalScore : ", score)
-	fmt.Println("--------------------------------------------------------------------------------------------")
+	omcplog.V(2).Info("--------------------------------------------------------------------------------------------")
+	omcplog.V(2).Info("totalScore : ", score)
+	omcplog.V(2).Info("--------------------------------------------------------------------------------------------")
 
 	return score
 }
 
 func (ae *AnalyticEngineStruct) SendLBAnalysis(ctx context.Context, in *protobuf.LBInfo) (*protobuf.ResponseLB, error) {
-	fmt.Println("LB Requested")
+	omcplog.V(4).Info("Func SendLBAnalysis Called")
+
 	clusterNameList := in.ClusterNameList
 	clusterScoreMap := make(map[string]float64)
 
@@ -214,9 +218,9 @@ func (ae *AnalyticEngineStruct) SendLBAnalysis(ctx context.Context, in *protobuf
 		//clusterScoreMap[clusterName] = 100.0
 	}
 
-	fmt.Println(clusterScoreMap)
+	omcplog.V(5).Info(clusterScoreMap)
 
-	fmt.Println("Geo Score")
+	omcplog.V(2).Info("Geo Score")
 	clientIP := in.ClientIP
 	country := ae.getCountry(clientIP)
 	continent := ae.getContinent(country)
@@ -224,21 +228,22 @@ func (ae *AnalyticEngineStruct) SendLBAnalysis(ctx context.Context, in *protobuf
 	score := ae.geoScore(clusterNameList, country, continent)
 
 	for _, clusterName := range clusterNameList {
-		fmt.Println(clusterScoreMap[clusterName])
-		fmt.Println(score[clusterName])
+		omcplog.V(5).Info(clusterScoreMap[clusterName])
+		omcplog.V(5).Info(score[clusterName])
 		clusterScoreMap[clusterName] = clusterScoreMap[clusterName] + score[clusterName]
 	}
 
-	fmt.Println("LB Response")
-	fmt.Println(clusterScoreMap)
+	omcplog.V(2).Info("LB Response")
+	omcplog.V(3).Info(clusterScoreMap)
 	return &protobuf.ResponseLB{ScoreMap: clusterScoreMap}, nil
 }
 
 func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) []string {
+	omcplog.V(4).Info("Func SelectHPACluster Called")
 
 	scoreMap := map[float64]string{}
 	score := []float64{}
-	fmt.Println(ae.ResourceScore)
+	omcplog.V(5).Info(ae.ResourceScore)
 	for key, value := range ae.ResourceScore {
 		if key != data.ClusterName && value > 0 {
 			scoreMap[value] = key
@@ -261,11 +266,12 @@ func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) []strin
 }
 
 func (ae *AnalyticEngineStruct) CompareHPAMaxInfo(clusterList []string, data *protobuf.HASInfo) string {
+	omcplog.V(4).Info("Func CompareHPAMaxInfo Called")
 	replicasGap := map[string]int32{}
 	rebalancingCount := map[string]int32{}
 
 	for _, cluster := range clusterList {
-		fmt.Println(cluster, " hpa : ", data.HPAMinORMaxReplicas, " / ", data.HPACurrentReplicas)
+		omcplog.V(3).Info(cluster, " hpa : ", data.HPAMinORMaxReplicas, " / ", data.HPACurrentReplicas)
 		//calc := hpaInstance.Spec.MaxReplicas - hpaInstance.Status.CurrentReplicas
 		calc := data.HPAMinORMaxReplicas[cluster] - data.HPACurrentReplicas[cluster]
 		if calc > 0 {
@@ -277,8 +283,8 @@ func (ae *AnalyticEngineStruct) CompareHPAMaxInfo(clusterList []string, data *pr
 		rebalancingCount[cluster] = data.HASRebalancingCount[cluster]
 	}
 
-	fmt.Println("desiredReplicas : ", replicasGap)
-	fmt.Println("countRebalancing : ", rebalancingCount)
+	omcplog.V(3).Info("desiredReplicas : ", replicasGap)
+	omcplog.V(3).Info("countRebalancing : ", rebalancingCount)
 
 	result := ""
 
@@ -296,6 +302,7 @@ func (ae *AnalyticEngineStruct) CompareHPAMaxInfo(clusterList []string, data *pr
 }
 
 func (ae *AnalyticEngineStruct) CompareHPAMinInfo(clusterList []string, data *protobuf.HASInfo) string {
+	omcplog.V(4).Info("Func CompareHPAMinInfo Called")
 	replicasGap := map[string]int32{}
 	rebalancingCount := map[string]int32{}
 
@@ -310,7 +317,7 @@ func (ae *AnalyticEngineStruct) CompareHPAMinInfo(clusterList []string, data *pr
 
 	timeEnd_analysis := time.Since(timeStart_analysis)
 
-	fmt.Println("[2] GetHPAInfo \t\t\t", timeEnd_analysis)
+	omcplog.V(3).Info("[2] GetHPAInfo \t\t\t", timeEnd_analysis)
 
 	timeStart_analysis2 := time.Now()
 	for cluster, _ := range replicasGap {
@@ -318,7 +325,7 @@ func (ae *AnalyticEngineStruct) CompareHPAMinInfo(clusterList []string, data *pr
 	}
 
 	timeEnd_analysis2 := time.Since(timeStart_analysis2)
-	fmt.Println("[3] GetHASInfo \t\t\t", timeEnd_analysis2)
+	omcplog.V(3).Info("[3] GetHASInfo \t\t\t", timeEnd_analysis2)
 
 	result := ""
 	timeStart_analysis3 := time.Now()
@@ -333,18 +340,19 @@ func (ae *AnalyticEngineStruct) CompareHPAMinInfo(clusterList []string, data *pr
 	}
 
 	timeEnd_analysis3 := time.Since(timeStart_analysis3)
-	fmt.Println("[4] CompareQoSScore \t\t", timeEnd_analysis3)
+	omcplog.V(3).Info("[4] CompareQoSScore \t\t", timeEnd_analysis3)
 
 	return result
 }
 
 func (ae *AnalyticEngineStruct) SendHASMaxAnalysis(ctx context.Context, data *protobuf.HASInfo) (*protobuf.ResponseHAS, error) {
-	fmt.Println("\n******* [Start] HAS Rebalancing Analysis *******")
+	omcplog.V(4).Info("Func SendHASMaxAnalysis Called")
+
 	//fmt.Println(data)
 	timeStart_analysis := time.Now()
 	filteringCluster := ae.SelectHPACluster(data)
 	timeEnd_analysis := time.Since(timeStart_analysis)
-	fmt.Println("[1] SelectCandidateCluster \t", timeEnd_analysis)
+	omcplog.V(2).Info("[1] SelectCandidateCluster \t", timeEnd_analysis)
 
 	var result string
 	/*	if len(filteringCluster) == 1 {
@@ -355,23 +363,24 @@ func (ae *AnalyticEngineStruct) SendHASMaxAnalysis(ctx context.Context, data *pr
 	//	}
 
 	timeEnd_analysis4 := time.Since(timeStart_analysis)
-	fmt.Println("-----------------------------------------")
-	fmt.Println("==> Total Analysis time \t", timeEnd_analysis4)
-	fmt.Println("ResultCluster\t[", result, "]")
+	omcplog.V(2).Info("-----------------------------------------")
+	omcplog.V(2).Info("==> Total Analysis time \t", timeEnd_analysis4)
+	omcplog.V(2).Info("ResultCluster\t[", result, "]")
 
-	fmt.Println("*******  [End] HAS Rebalancing Analysis  ******* \n")
+	omcplog.V(2).Info("*******  [End] HAS Rebalancing Analysis  ******* \n")
 	//fmt.Println("---------HAS Response End---------")
 
 	return &protobuf.ResponseHAS{TargetCluster: result}, nil
 }
 
 func (ae *AnalyticEngineStruct) SendHASMinAnalysis(ctx context.Context, data *protobuf.HASInfo) (*protobuf.ResponseHAS, error) {
-	fmt.Println("\n******* [Start] HAS Rebalancing Analysis *******")
+	omcplog.V(4).Info("Func SendHASMinAnalysis Called")
+	//fmt.Println("\n******* [Start] HAS Rebalancing Analysis *******")
 
 	timeStart_analysis := time.Now()
 	filteringCluster := ae.SelectHPACluster(data)
 	timeEnd_analysis := time.Since(timeStart_analysis)
-	fmt.Println("[1] SelectCandidateCluster \t", timeEnd_analysis)
+	omcplog.V(2).Info("[1] SelectCandidateCluster \t", timeEnd_analysis)
 
 	var result string
 	//if len(filteringCluster) == 1 {
@@ -384,18 +393,18 @@ func (ae *AnalyticEngineStruct) SendHASMinAnalysis(ctx context.Context, data *pr
 	//}
 
 	timeEnd_analysis4 := time.Since(timeStart_analysis)
-	fmt.Println("-----------------------------------------")
-	fmt.Println("==> Total Analysis time \t", timeEnd_analysis4)
-	fmt.Println("ResultCluster\t[", result, "]")
+	omcplog.V(2).Info("-----------------------------------------")
+	omcplog.V(2).Info("==> Total Analysis time \t", timeEnd_analysis4)
+	omcplog.V(2).Info("ResultCluster\t[", result, "]")
 
-	fmt.Println("*******  [End] HAS Rebalancing Analysis  ******* \n")
+	omcplog.V(2).Info("*******  [End] HAS Rebalancing Analysis  ******* \n")
 
 	return &protobuf.ResponseHAS{TargetCluster: result}, nil
 }
 
 func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *protobuf.NodeInfo) (*protobuf.ReponseNetwork, error) {
-
-	klog.Info("***** [Start] Network Analysis *****")
+	omcplog.V(4).Info("Func SendNetworkAnalysis Called")
+	//klog.Info("***** [Start] Network Analysis *****")
 	startTime := time.Now()
 
 	// calculate difference between previous data and next data
@@ -403,13 +412,14 @@ func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *p
 	diff_tx := ae.NetworkInfos[data.ClusterName][data.NodeName].next_tx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_tx
 
 	elapsedTime := time.Since(startTime)
-	klog.V(0).Infof("%-30s [%v]", "=> Total Anlysis time", elapsedTime)
-	klog.Info("***** [End] Network Analysis *****")
+	omcplog.V(2).Info("%-30s [",elapsedTime,"]", "=> Total Anlysis time")
+	omcplog.V(2).Info("***** [End] Network Analysis *****")
 
 	return &protobuf.ReponseNetwork{RX: diff_rx, TX: diff_tx}, nil
 }
 
 func (ae *AnalyticEngineStruct) StartGRPC(GRPC_PORT string) {
+	omcplog.V(4).Info("Func StartGRPC Called")
 	log.Printf("Grpc Server Start at Port %s\n", GRPC_PORT)
 
 	l, err := net.Listen("tcp", ":"+GRPC_PORT)
@@ -427,12 +437,14 @@ func (ae *AnalyticEngineStruct) StartGRPC(GRPC_PORT string) {
 
 //LoadBalancing
 func (ae *AnalyticEngineStruct) geoScore(clusters []string, clientCountry, clientContinent string) map[string]float64 {
-	fmt.Println("*****Geo Score*****")
+	omcplog.V(4).Info("Func geoScore Called")
+
+//	fmt.Println("*****Geo Score*****")
 
 	midScore := 100.0
 	policy := ae.MetricsWeight["GeoRate"] * 100.0
 	//policy := 70.0
-	fmt.Println(ae.ClusterGeo)
+	omcplog.V(5).Info(ae.ClusterGeo)
 
 	score := map[string]float64{}
 	for _, cluster := range clusters {
@@ -447,12 +459,14 @@ func (ae *AnalyticEngineStruct) geoScore(clusters []string, clientCountry, clien
 			score[cluster] = midScore - (midScore * policy / 100.0)
 		}
 	}
-	fmt.Println(score)
+	omcplog.V(5).Info(score)
 	return score
 }
 
 func (ae *AnalyticEngineStruct) getCountry(clientip string) string {
-	fmt.Println("*****Extract Country*****")
+	omcplog.V(4).Info("Func getCountry Called")
+	//fmt.Println("*****Extract Country*****")
+	omcplog.V(2).Info("'/root/GeoLite2-City.mmdb' Open")
 	db, err := geoip2.Open("/root/GeoLite2-City.mmdb")
 	if err != nil {
 		log.Fatal(err)

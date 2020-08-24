@@ -1,108 +1,129 @@
+/*
+Copyright 2018 The Multicluster-Controller Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package main
 
 import (
 	"bytes"
-	"context"
+
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
-
 	"io"
+	"io/ioutil"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes/scheme"
+
+	restclient "k8s.io/client-go/rest"
 
 	"k8s.io/client-go/tools/remotecommand"
+	"net/http"
+	"openmcp/openmcp/omcplog"
 
+	"openmcp/openmcp/util/clusterManager"
 
-	//	corev1 "k8s.io/api/core/v1"
-	//	"k8s.io/client-go/kubernetes"
-	//	"k8s.io/client-go/tools/remotecommand"
 	"strings"
 	"time"
 
-	//"github.com/auth0/go-jwt-middleware"
-	//"github.com/dgrijalva/jwt-go"
-	//"google.golang.org/grpc"
-	//"io"
-	"io/ioutil"
-	"k8s.io/client-go/rest"
 	"log"
-	//"net"
-	"net/http"
-	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
-	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
-	"sigs.k8s.io/kubefed/pkg/controller/util"
-	//"time"
 
-	"k8s.io/client-go/kubernetes/scheme"
-	//"openmcp/openmcp/openmcp-apiserver/pkg/protobuf"
-	restclient "k8s.io/client-go/rest"
+	"admiralty.io/multicluster-controller/pkg/cluster"
+	"admiralty.io/multicluster-controller/pkg/manager"
+
+	"openmcp/openmcp/util/controller/logLevel"
+	"openmcp/openmcp/util/controller/reshape"
 )
+
+func APIServer() {
+	//HTTPServer_IP := "10.0.3.20"
+	HTTPServer_PORT := "8080"
+
+	cm := clusterManager.NewClusterManager()
+
+	httpManager := &HttpManager{
+		//HTTPServer_IP: HTTPServer_IP,
+		HTTPServer_PORT: HTTPServer_PORT,
+		ClusterManager:  cm,
+	}
+
+	handler := http.NewServeMux()
+
+	//handler.HandleFunc("/token", TokenHandler)
+	//handler.Handle("/", AuthMiddleware(http.HandlerFunc(httpManager.ExampleHandler)))
+	handler.HandleFunc("/", httpManager.ExampleHandler)
+
+	//handler.HandleFunc("/omcpexec", httpManager.ExampleHandler2)
+
+	server := &http.Server{Addr: ":" + HTTPServer_PORT, Handler: handler}
+
+	omcplog.V(2).Info("Start OpenMCP API Server")
+	err := server.ListenAndServe()
+	if err != nil {
+		omcplog.V(0).Info(err)
+	}
+}
+func main() {
+	logLevel.KetiLogInit()
+
+	go APIServer()
+
+	for {
+		cm := clusterManager.NewClusterManager()
+
+		host_ctx := "openmcp"
+		namespace := "openmcp"
+
+		host_cfg := cm.Host_config
+		//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+		live := cluster.New(host_ctx, host_cfg, cluster.Options{})
+
+		ghosts := []*cluster.Cluster{}
+
+		for _, ghost_cluster := range cm.Cluster_list.Items {
+			ghost_ctx := ghost_cluster.Name
+			ghost_cfg := cm.Cluster_configs[ghost_ctx]
+
+			//ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
+			ghosts = append(ghosts, ghost)
+		}
+
+		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
+		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
+
+		m := manager.New()
+		m.AddController(reshape_cont)
+		m.AddController(loglevel_cont)
+
+		stop := reshape.SetupSignalHandler()
+
+		if err := m.Start(stop); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+}
+
+
 
 const (
 	APP_KEY = "openmcp-apiserver"
 )
-
-type ClusterManager struct {
-	Fed_namespace   string
-	Host_config     *rest.Config
-	Host_client     genericclient.Client
-	Cluster_list    *fedv1b1.KubeFedClusterList
-	Cluster_configs map[string]*rest.Config
-	Cluster_clients map[string]genericclient.Client
-}
-
-func ListKubeFedClusters(client genericclient.Client, namespace string) *fedv1b1.KubeFedClusterList {
-	clusterList := &fedv1b1.KubeFedClusterList{}
-	err := client.List(context.TODO(), clusterList, namespace)
-	if err != nil {
-		fmt.Println("Error retrieving list of federated clusters: %+v", err)
-	}
-	if len(clusterList.Items) == 0 {
-		fmt.Println("No federated clusters found")
-	}
-	return clusterList
-}
-
-func KubeFedClusterConfigs(clusterList *fedv1b1.KubeFedClusterList, client genericclient.Client, fedNamespace string) map[string]*rest.Config {
-	clusterConfigs := make(map[string]*rest.Config)
-	for _, cluster := range clusterList.Items {
-		config, _ := util.BuildClusterConfig(&cluster, client, fedNamespace)
-		clusterConfigs[cluster.Name] = config
-	}
-	return clusterConfigs
-}
-func KubeFedClusterClients(clusterList *fedv1b1.KubeFedClusterList, cluster_configs map[string]*rest.Config) map[string]genericclient.Client {
-
-	cluster_clients := make(map[string]genericclient.Client)
-	for _, cluster := range clusterList.Items {
-		clusterName := cluster.Name
-		cluster_config := cluster_configs[clusterName]
-		cluster_client := genericclient.NewForConfigOrDie(cluster_config)
-		cluster_clients[clusterName] = cluster_client
-	}
-	return cluster_clients
-}
-
-func NewClusterManager() *ClusterManager {
-	fed_namespace := "kube-federation-system"
-	host_config, _ := rest.InClusterConfig()
-	host_client := genericclient.NewForConfigOrDie(host_config)
-	cluster_list := ListKubeFedClusters(host_client, fed_namespace)
-	cluster_configs := KubeFedClusterConfigs(cluster_list, host_client, fed_namespace)
-	cluster_clients := KubeFedClusterClients(cluster_list, cluster_configs)
-
-	cm := &ClusterManager{
-		Fed_namespace:   fed_namespace,
-		Host_config:     host_config,
-		Host_client:     host_client,
-		Cluster_list:    cluster_list,
-		Cluster_configs: cluster_configs,
-		Cluster_clients: cluster_clients,
-	}
-	return cm
-}
 
 /*func(h *HttpManager) SendOpenMCPAPIServer(ctx context.Context, r *protobuf.RequestInfo) (*protobuf.ResponseInfo, error) {
 
@@ -206,8 +227,8 @@ func NewClusterManager() *ClusterManager {
 
 func ExecCmdExample(restclient *restclient.RESTClient, config *restclient.Config, podName string, podNamespace string,
 	command []string, containerName string, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
-	fmt.Println(restclient)
-	fmt.Println(config)
+	omcplog.V(5).Info(restclient)
+	omcplog.V(5).Info(config)
 	req := restclient.Post().Resource("pods").Name(podName).
 		Namespace(podNamespace).SubResource("exec")
 	option := &corev1.PodExecOptions{
@@ -269,18 +290,18 @@ func (h *HttpManager) ExampleHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}*/
 
-		fmt.Println("host ", r.Host)
-		fmt.Println("url ", r.URL)
-		fmt.Println("url/host ", r.URL.Host)
-		fmt.Println("body ", r.Body)
-		fmt.Println(r.URL.Query()["containername"])
-		fmt.Println(r.URL.Query()["clustername"])
-		fmt.Println(r.URL.Query()["podname"])
-		fmt.Println(r.URL.Query()["podnamespace"])
-		fmt.Println(r.URL.Query()["stdin"])
-		fmt.Println(r.URL.Query()["tty"])
-		fmt.Println(r.URL.Query()["stdout"])
-		fmt.Println(r.URL.Query()["stderr"])
+		omcplog.V(3).Info("host ", r.Host)
+		omcplog.V(3).Info("url ", r.URL)
+		omcplog.V(3).Info("url/host ", r.URL.Host)
+		omcplog.V(3).Info("body ", r.Body)
+		omcplog.V(3).Info(r.URL.Query()["containername"])
+		omcplog.V(3).Info(r.URL.Query()["clustername"])
+		omcplog.V(3).Info(r.URL.Query()["podname"])
+		omcplog.V(3).Info(r.URL.Query()["podnamespace"])
+		omcplog.V(3).Info(r.URL.Query()["stdin"])
+		omcplog.V(3).Info(r.URL.Query()["tty"])
+		omcplog.V(3).Info(r.URL.Query()["stdout"])
+		omcplog.V(3).Info(r.URL.Query()["stderr"])
 
 		stdin := "false"
 		stdout := "true"
@@ -299,7 +320,7 @@ func (h *HttpManager) ExampleHandler(w http.ResponseWriter, r *http.Request) {
 		body, _ := ioutil.ReadAll(r.Body)
 		bodyString := string(body)
 
-		fmt.Println(bodyString)
+		omcplog.V(5).Info(bodyString)
 
 		stdin_io := bytes.NewBufferString(stdin)
 		stdout_io := bytes.NewBufferString(stdout)
@@ -310,8 +331,8 @@ func (h *HttpManager) ExampleHandler(w http.ResponseWriter, r *http.Request) {
 
 		a = strings.Split(bodyString, ",")
 
-		fmt.Println(a)
-		fmt.Println(a[0])
+		omcplog.V(5).Info(a)
+		omcplog.V(5).Info(a[0])
 		//fmt.Println(a[1])
 
 		restClient, _ := restclient.RESTClientFor(h.ClusterManager.Host_config)
@@ -322,12 +343,11 @@ func (h *HttpManager) ExampleHandler(w http.ResponseWriter, r *http.Request) {
 
 		clusterNames, ok := r.URL.Query()["clustername"]
 
-		fmt.Println(clusterNames, ok)
+		omcplog.V(5).Info(clusterNames, ok)
 		if !ok || len(clusterNames[0]) < 1 {
 			w.Write([]byte("Url Param 'clustername' is missing"))
 			return
 		}
-		fmt.Println()
 
 		APISERVER := ""
 		TOKEN := ""
@@ -344,6 +364,10 @@ func (h *HttpManager) ExampleHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+		omcplog.V(3).Info("APISERVER : " + APISERVER)
+		omcplog.V(3).Info("clusterName : " + clusterName)
+		omcplog.V(3).Info("Method : " + r.Method)
+		omcplog.V(3).Info("URLPath : " + r.URL.Path)
 
 		// Generated by curl-to-Go: https://mholt.github.io/curl-to-go
 		// TODO: This is insecure; use only in dev environments.
@@ -363,36 +387,43 @@ func (h *HttpManager) ExampleHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err != nil {
-			fmt.Println("Check1", err)
+			omcplog.V(0).Info(err)
 			// handle err
 		}
 
-		fmt.Println(r.Header.Get("Content-Type"))
+		omcplog.V(5).Info("Content-Type : ", r.Header.Get("Content-Type"))
+		omcplog.V(5).Info("Authorization", "Bearer "+TOKEN)
+
 		req.Header.Set("Content-Type", r.Header.Get("Content-Type"))
 		req.Header.Set("Authorization", "Bearer "+TOKEN)
 
+
 		resp, err := client.Do(req)
+		omcplog.V(3).Info("Request Done!")
 		if err != nil {
-			fmt.Println("Check2", err)
+			omcplog.V(0).Info(err)
 			// handle err
 		}
 		defer resp.Body.Close()
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Println("Check3", err)
+			omcplog.V(0).Info(err)
 			panic(err.Error())
 		}
 
 		var prettyJSON bytes.Buffer
 		err = json.Indent(&prettyJSON, body, "", "\t")
 		if err != nil {
-			fmt.Println("Check4", err)
+			omcplog.V(0).Info(err)
 			panic(err.Error())
 		}
 
-		//fmt.Printf("%s\n", prettyJSON.Bytes())
+		omcplog.V(5).Info(string(prettyJSON.Bytes()))
+
 		w.Write(body)
+		//omcplog.V(5).Info(string(body))
+
 		//w.Write(prettyJSON.Bytes())
 	}
 
@@ -450,56 +481,55 @@ func AuthMiddleware(next http.Handler) http.Handler {
 type HttpManager struct {
 	HTTPServer_IP   string
 	HTTPServer_PORT string
-	ClusterManager  *ClusterManager
+	ClusterManager  *clusterManager.ClusterManager
 }
 const (
 	GRPC_PORT = "8080"
 
 )
 
-func main() {
-
-	//HTTPServer_IP := "10.0.3.20"
-	HTTPServer_PORT := "8080"
-
-	cm := NewClusterManager()
-
-	httpManager := &HttpManager{
-		//HTTPServer_IP: HTTPServer_IP,
-		HTTPServer_PORT: HTTPServer_PORT,
-		ClusterManager:  cm,
-	}
-
-	handler := http.NewServeMux()
-
-	//handler.HandleFunc("/token", TokenHandler)
-	//handler.Handle("/", AuthMiddleware(http.HandlerFunc(httpManager.ExampleHandler)))
-	handler.HandleFunc("/", httpManager.ExampleHandler)
-
-	//handler.HandleFunc("/omcpexec", httpManager.ExampleHandler2)
-
-	server := &http.Server{Addr: ":" + HTTPServer_PORT, Handler: handler}
-
-	fmt.Println("Run OpenMCP API Server")
-	err := server.ListenAndServe()
-	if err != nil {
-		fmt.Println(err)
-	}
-
-/*	l, err := net.Listen("tcp", ":"+GRPC_PORT)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-	grpcServer := grpc.NewServer()
-	st := &HttpManager{
-		ClusterManager: NewClusterManager(),
-	}
-
-	protobuf.RegisterRequestAPIServerServer(grpcServer, st)
-	if err := grpcServer.Serve(l); err != nil {
-		log.Fatalf("fail to serve: %v", err)
-	}*/
-}
+//func main() {
+//	//HTTPServer_IP := "10.0.3.20"
+//	HTTPServer_PORT := "8080"
+//
+//	cm := NewClusterManager()
+//
+//	httpManager := &HttpManager{
+//		//HTTPServer_IP: HTTPServer_IP,
+//		HTTPServer_PORT: HTTPServer_PORT,
+//		ClusterManager:  cm,
+//	}
+//
+//	handler := http.NewServeMux()
+//
+//	//handler.HandleFunc("/token", TokenHandler)
+//	//handler.Handle("/", AuthMiddleware(http.HandlerFunc(httpManager.`ExampleHandler`)))
+//	handler.HandleFunc("/", httpManager.ExampleHandler)
+//
+//	//handler.HandleFunc("/omcpexec", httpManager.ExampleHandler2)
+//
+//	server := &http.Server{Addr: ":" + HTTPServer_PORT, Handler: handler}
+//
+//	fmt.Println("Run OpenMCP API Server")
+//	err := server.ListenAndServe()
+//	if err != nil {
+//		fmt.Println(err)
+//	}
+//
+///*	l, err := net.Listen("tcp", ":"+GRPC_PORT)
+//	if err != nil {
+//		log.Fatalf("failed to listen: %v", err)
+//	}
+//	grpcServer := grpc.NewServer()
+//	st := &HttpManager{
+//		ClusterManager: NewClusterManager(),
+//	}
+//
+//	protobuf.RegisterRequestAPIServerServer(grpcServer, st)
+//	if err := grpcServer.Serve(l); err != nil {
+//		log.Fatalf("fail to serve: %v", err)
+//	}*/
+//}
 
 // GET http://10.0.3.20:31635/token?username=openmcp&password=keti
 // Get the Token
