@@ -1,132 +1,107 @@
 package openmcpscheduler
 
 import (
-	"time"
+	"fmt"
 	"strings"
-	"k8s.io/klog"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
-	corev1 "k8s.io/api/core/v1"
+	"time"
+
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
+	"k8s.io/client-go/kubernetes"
+	"openmcp/openmcp/omcplog"
+	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
 	ketiframework "openmcp/openmcp/openmcp-scheduler/pkg/framework/v1alpha1"
-	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/openmcp-scheduler/pkg/protobuf"
+	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
+	"openmcp/openmcp/util/clusterManager"
 )
 
 type OpenMCPScheduler struct {
-	ClusterConfigs 	map[string]*rest.Config
-	ClusterClients	map[string]*kubernetes.Clientset
-	ClusterInfos	map[string]*ketiresource.Cluster
-	Framework		ketiframework.OpenmcpFramework
+	ClusterClients map[string]*kubernetes.Clientset
+	ClusterInfos   map[string]*ketiresource.Cluster
+	Framework      ketiframework.OpenmcpFramework
 }
 
-// Returns ketiresource.Resource if specified
-func newPodFromOpenMCPDeployment(dep *ketiv1alpha1.OpenMCPDeployment) *ketiresource.Pod {
-	res := ketiresource.NewResource()
-	needRes := make(map[string]bool)
-	affinities := make(map[string][]string)
-
-	for _, container := range dep.Spec.Template.Spec.Template.Spec.Containers {
-		for rName, rQuant := range container.Resources.Requests {
-			switch rName {
-			case corev1.ResourceCPU:
-				res.MilliCPU = rQuant.MilliValue()		
-			case corev1.ResourceMemory:
-				res.Memory = rQuant.Value()
-			case corev1.ResourceEphemeralStorage:
-				res.EphemeralStorage = rQuant.Value() 
-			default:
-				klog.V(0).Info("cannot use resource : ", rName.String())
-			}
-		}
-
-		for rName, rNeeded := range container.Resources.Needs {
-			val, exist := needRes[rName.String()]
-
-			if !exist {
-				needRes[rName.String()] = rNeeded
-			} else {
-				if val == false && rNeeded == true {
-					needRes[rName.String()] = true
-				}
-			}
-		}
-
-		for key, values := range dep.Spec.Affinity {
-			for _, value :=  range values {
-				affinities[key] = append(affinities[key], value)
-			}
-		}
+func NewScheduler(cm *clusterManager.ClusterManager, grpcClient protobuf.RequestAnalysisClient) *OpenMCPScheduler {
+	sched := &OpenMCPScheduler{
+		ClusterClients: make(map[string]*kubernetes.Clientset),
+		ClusterInfos:   make(map[string]*ketiresource.Cluster),
+		Framework:      ketiframework.NewFramework(grpcClient),
 	}
 
-	return &ketiresource.Pod {
-		Pod:				&corev1.Pod{
-			Spec:		openmcpPodSpecToPodSpec(dep.Spec.Template.Spec.Template.Spec),
-		},
-		RequestedResource: 	res,
-		Affinity: 			affinities,
-		IsNeedResourceMap:	needRes,
-	}
+	return sched
 }
 
-func Scheduling (cm *clusterManager.ClusterManager, dep *ketiv1alpha1.OpenMCPDeployment, grpcServer protobuf.RequestAnalysisClient) map[string]int32 {
-	depReplicas := dep.Spec.Replicas
+func (sched *OpenMCPScheduler) Scheduling(cm *clusterManager.ClusterManager, dep *ketiv1alpha1.OpenMCPDeployment) (map[string]int32, error) {
+	// Get CLusterClients from clusterManager
+	sched.ClusterClients = cm.Cluster_kubeClients
 
 	// Return scheduling result (ex. cluster1:2, cluster2:1)
 	totalSchedulingResult := map[string]int32{}
 
-	var sched *OpenMCPScheduler
-	sched = &OpenMCPScheduler {
-		ClusterConfigs:		cm.Cluster_configs,
-		ClusterClients:		make(map[string]*kubernetes.Clientset),
-		ClusterInfos:		make(map[string]*ketiresource.Cluster),
-		Framework:			ketiframework.NewFramework(grpcServer),
-	}
-
 	// Get Data from Node&Pod Spec
 	sched.SetupResources()
 
-	// Make resource to schedule pod into cluster
-	// startTime := time.Now()
-	newPod := newPodFromOpenMCPDeployment(dep)
-	// elapsedTime := time.Since(startTime)
-	// klog.Infof("*********** [TIME] %s ***********", elapsedTime)
+	depReplicas := dep.Spec.Replicas
 
-	klog.Infof("***** [Start] Scheduling *****")
+	// Make resource to schedule pod into cluster
+	newPod := newPodFromOpenMCPDeployment(dep)
+
+	omcplog.V(0).Infof("***** [Start] Scheduling for OpenmcpDeployment *****")
 	startTime := time.Now()
+
 	// Scheduling one pod
 	for i := int32(0); i < depReplicas; i++ {
-		startTime2 := time.Now()
-		// klog.Info("*********** [START SCHEDULING POD]  ***********")
-		schedulingResult := sched.ScheduleOne(newPod)
-		// klog.Infof("*********** [END SCHEDULING POD] ***********")
+
+		// If there is no proper cluster to deploy Pod,
+		// stop scheduling and return scheduling result
+		schedulingResult, err := sched.ScheduleOne(newPod)
+		if err != nil {
+			return totalSchedulingResult, fmt.Errorf("There is no proper cluster to deploy Pod(%d)~Pod(%d)", i, depReplicas)
+		}
 
 		_, exists := totalSchedulingResult[schedulingResult]
 		if !exists {
 			totalSchedulingResult[schedulingResult] = 1
-		} else{
+		} else {
 			totalSchedulingResult[schedulingResult] += 1
 		}
 
-		// sched.UpdateResources(newPod, schedulingResult)
-		elapsedTime2 := time.Since(startTime2)
-		klog.Infof("=> %d. Filtering & Scoring Time [%v] ", i, elapsedTime2)
+		sched.UpdateResources(newPod, schedulingResult)
 	}
 
 	elapsedTime := time.Since(startTime)
-	klog.Infof("=> Scheduling Result : ", totalSchedulingResult)
-	klog.Infof("=> Scheduling Time [%v]", elapsedTime)
-	klog.Infof("***** [End] Scheduling *****")
-	
-	return totalSchedulingResult
+	omcplog.V(0).Infof("=> Scheduling Result [%v]", totalSchedulingResult)
+	omcplog.V(0).Infof("=> Scheduling Time [%v]", elapsedTime)
+	omcplog.V(0).Infof("***** [End] Scheduling *****")
+
+	return totalSchedulingResult, nil
 }
 
-func (sched *OpenMCPScheduler) UpdateResources (newPod *ketiresource.Pod, schedulingResult string) {
-	// startTime := time.Now()
-	startTime := time.Now()
+func (sched *OpenMCPScheduler) ScheduleOne(newPod *ketiresource.Pod) (string, error) {
+	filterdResult := sched.Framework.RunFilterPluginsOnClusters(newPod, sched.ClusterInfos)
+
+	filteredCluster := make(map[string]*ketiresource.Cluster)
+
+	for clusterName, isfiltered := range filterdResult {
+		if isfiltered {
+			filteredCluster[clusterName] = sched.ClusterInfos[clusterName]
+		}
+	}
+
+	if len(filteredCluster) == 0 {
+		return "", fmt.Errorf("There is no Filtered Clusters")
+	}
+
+	scoreResult := sched.Framework.RunScorePluginsOnClusters(newPod, filteredCluster)
+
+	selectedCluster := selectCluster(scoreResult)
+
+	return selectedCluster, nil
+}
+
+func (sched *OpenMCPScheduler) UpdateResources(newPod *ketiresource.Pod, schedulingResult string) {
 
 	var maxScoreNode *ketiresource.NodeInfo
 	maxScore := int64(0)
@@ -139,45 +114,14 @@ func (sched *OpenMCPScheduler) UpdateResources (newPod *ketiresource.Pod, schedu
 	}
 
 	maxScoreNode.RequestedResource = ketiresource.AddResources(maxScoreNode.RequestedResource, newPod.RequestedResource)
+	maxScoreNode.AllocatableResource = ketiresource.GetAllocatable(maxScoreNode.CapacityResource, maxScoreNode.RequestedResource)
 
-	elapsedTime := time.Since(startTime)
-	klog.Infof("=> Total updateResource Time : %v", elapsedTime)
-
-	// elapsedTime := time.Since(startTime)
-	// klog.Infof("=> Update Resource time [%v]", elapsedTime)
+	omcplog.V(0).Infof("check: %v", maxScoreNode.AllocatableResource)
 }
 
-func (sched *OpenMCPScheduler) ScheduleOne (newPod *ketiresource.Pod) string {
-	// startTime := time.Now()
-	// klog.Infof("*********** [START FILTERING] ***********")
-	filterdResult := sched.Framework.RunFilterPluginsOnClusters(newPod, sched.ClusterInfos)
-	// elapsedTime := time.Since(startTime)
-	// klog.Infof("*********** [END FILTERING] %v ***********", elapsedTime)
-
-
-	filteredCluster := make(map[string]*ketiresource.Cluster)
-	for clusterName, isfiltered := range filterdResult {
-		if isfiltered {
-			filteredCluster[clusterName] = sched.ClusterInfos[clusterName]
-		}
-	}
-
-	// startTime = time.Now()
-	// klog.Infof("*********** [START SCORING] ***********")
-	scoreResult := sched.Framework.RunScorePluginsOnClusters(newPod, filteredCluster)
-	// elapsedTime = time.Since(startTime)
-	// klog.Infof("*********** [END SCORING] %v ***********", elapsedTime)
-
-	selectedCluster := selectCluster(scoreResult)
-
-	return selectedCluster
-}
-
-func selectCluster (scoreResult ketiframework.OpenmcpPluginToClusterScores) string{
+func selectCluster(scoreResult ketiframework.OpenmcpPluginToClusterScores) string {
 	var selectedCluster string
 	var maxScore int64
-
-	startTime := time.Now()
 
 	for clusterName, scoreList := range scoreResult {
 		var clusterScore int64
@@ -191,18 +135,49 @@ func selectCluster (scoreResult ketiframework.OpenmcpPluginToClusterScores) stri
 		}
 	}
 
-	elapsedTime := time.Since(startTime)
-	klog.Infof("=> Total selectCluster Time : %v", elapsedTime)
-
 	return selectedCluster
 }
 
-func (sched *OpenMCPScheduler)SetupResources() error {
-	// get ClusterClients
-	for clusterName, config := range sched.ClusterConfigs {
-		sched.ClusterClients[clusterName], _ = kubernetes.NewForConfig(config)
+// Returns ketiresource.Resource if specified
+func newPodFromOpenMCPDeployment(dep *ketiv1alpha1.OpenMCPDeployment) *ketiresource.Pod {
+	res := ketiresource.NewResource()
+	additionalResource := make([]string, 0)
+	affinities := make(map[string][]string)
+
+	for _, container := range dep.Spec.Template.Spec.Template.Spec.Containers {
+		for rName, rQuant := range container.Resources.Requests {
+			switch rName {
+			case corev1.ResourceCPU:
+				res.MilliCPU = rQuant.MilliValue()
+			case corev1.ResourceMemory:
+				res.Memory = rQuant.Value()
+			case corev1.ResourceEphemeralStorage:
+				res.EphemeralStorage = rQuant.Value()
+			default:
+				// Casting from ResourceName to stirng because rName is ResourceName type
+				resourceName := fmt.Sprintf("%s", rName)
+				additionalResource = append(additionalResource, resourceName)
+			}
+		}
+
+		for key, values := range dep.Spec.Affinity {
+			for _, value := range values {
+				affinities[key] = append(affinities[key], value)
+			}
+		}
 	}
 
+	return &ketiresource.Pod{
+		Pod: &corev1.Pod{
+			Spec: openmcpPodSpecToPodSpec(dep.Spec.Template.Spec.Template.Spec),
+		},
+		RequestedResource:  res,
+		AdditionalResource: additionalResource,
+		Affinity:           affinities,
+	}
+}
+
+func (sched *OpenMCPScheduler) SetupResources() error {
 	// Setup Clusters
 	for clusterName, _ := range sched.ClusterClients {
 		pods, _ := sched.ClusterClients[clusterName].CoreV1().Pods(metav1.NamespaceAll).List(metav1.ListOptions{})
@@ -216,23 +191,33 @@ func (sched *OpenMCPScheduler)SetupResources() error {
 		// Setup Pods
 		for _, pod := range pods.Items {
 			// add Stroage
-			var pod_requestMilliCpu, pod_requestMemory, pod_requestEStorage int64
+			pod_request := &ketiresource.Resource{0, 0, 0}
+			pod_additionalResource := make([]string, 0)
 
-			for _, ctn := range pod.Spec.Containers {
-				pod_requestMilliCpu += ctn.Resources.Requests.Cpu().MilliValue()
-				pod_requestMemory += ctn.Resources.Requests.Memory().Value()
-				pod_requestEStorage += ctn.Resources.Requests.StorageEphemeral().Value()
+			for _, container := range pod.Spec.Containers {
+				for rName, rQuant := range container.Resources.Requests {
+					switch rName {
+					case corev1.ResourceCPU:
+						pod_request.MilliCPU = rQuant.MilliValue()
+					case corev1.ResourceMemory:
+						pod_request.Memory = rQuant.Value()
+					case corev1.ResourceEphemeralStorage:
+						pod_request.EphemeralStorage = rQuant.Value()
+					default:
+						// Casting from ResourceName to stirng because rName is ResourceName type
+						resourceName := fmt.Sprintf("%s", rName)
+						pod_additionalResource = append(pod_additionalResource, resourceName)
+					}
+				}
 			}
 
-			newPod := &ketiresource.Pod {
-				Pod:					&pod,
-				PodName:           		pod.Name,
-				NodeName:       		pod.Spec.NodeName,
-				RequestedResource: 		&ketiresource.Resource {
-					MilliCPU:	pod_requestMilliCpu,
-					Memory:		pod_requestMemory,
-					EphemeralStorage:	pod_requestEStorage,
-				},
+			newPod := &ketiresource.Pod{
+				Pod:                &pod,
+				ClusterName:        clusterName,
+				NodeName:           pod.Spec.NodeName,
+				PodName:            pod.Name,
+				RequestedResource:  pod_request,
+				AdditionalResource: pod_additionalResource,
 			}
 			allPods = append(allPods, newPod)
 		}
@@ -240,37 +225,39 @@ func (sched *OpenMCPScheduler)SetupResources() error {
 		// Setup Nodes
 		nodes, _ := sched.ClusterClients[clusterName].CoreV1().Nodes().List(metav1.ListOptions{})
 		for _, node := range nodes.Items {
-			node_request := ketiresource.NewResource()
-			var node_usedPorts []*corev1.ContainerPort
 
-			// Get Pods belonging to this node
+			// Get v1.Pod, corev1.ContainerPort and RequestResource
 			podsInNode := make([]*ketiresource.Pod, 0)
+			node_request := ketiresource.NewResource()
+
 			for _, pod := range allPods {
 				if strings.Compare(pod.NodeName, node.Name) == 0 {
 					podsInNode = append(podsInNode, pod)
 					node_request = ketiresource.AddResources(node_request, pod.RequestedResource)
-					
-					for j := range pod.Pod.Spec.Containers {
-						container := &pod.Pod.Spec.Containers[j]
-						for k := range container.Ports {
-							node_usedPorts = append(node_usedPorts, &container.Ports[k])
-						}
-					}
 				}
 			}
 
-			// Get capacity From node Spec
-			node_capacity := &ketiresource.Resource {
-				MilliCPU:			node.Status.Capacity.Cpu().MilliValue(),
-				Memory:				node.Status.Capacity.Memory().Value(),
-				EphemeralStorage:	node.Status.Capacity.StorageEphemeral().Value(),
+			// Get capacity, Additional Resource from node Spec
+			node_additionalResource := make([]string, 0)
+			node_capacity := &ketiresource.Resource{}
+
+			for rName, rQuant := range node.Status.Capacity {
+				switch rName {
+				case corev1.ResourceCPU:
+					node_capacity.MilliCPU = rQuant.MilliValue()
+				case corev1.ResourceMemory:
+					node_capacity.Memory = rQuant.Value()
+				case corev1.ResourceEphemeralStorage:
+					node_capacity.EphemeralStorage = rQuant.Value()
+				default:
+					// Casting from ResourceName to stirng because rName is ResourceName type
+					resourceName := fmt.Sprintf("%s", rName)
+					node_additionalResource = append(node_additionalResource, resourceName)
+				}
 			}
 
 			// Get allocatable Resource based on capacity and request
 			node_allocatable := ketiresource.GetAllocatable(node_capacity, node_request)
-
-			// Get Hardware spec
-			node_needRes := make(map[string]bool)
 
 			// Get Affinity
 			node_affinity := make(map[string]string)
@@ -278,29 +265,30 @@ func (sched *OpenMCPScheduler)SetupResources() error {
 			for key, value := range node.Labels {
 				switch key {
 				case "failure-domain.beta.kubernetes.io/region":
-					if _, ok := node_affinity["region"]; !ok{
+					if _, ok := node_affinity["region"]; !ok {
 						node_affinity["region"] = value
 					}
 
 				case "failure-domain.beta.kubernetes.io/zone":
-					if _, ok := node_affinity["zone"]; !ok{
+					if _, ok := node_affinity["zone"]; !ok {
 						node_affinity["zone"] = value
 					}
 				}
 			}
 
-			// make new Node 
-			newNode := &ketiresource.NodeInfo {
-				Node:					&node,
-				NodeName:				node.Name,
-				Pods:					podsInNode,
-				UsedPorts:				node_usedPorts,
-				CapacityResource:		node_capacity,
-				RequestedResource:		node_request,
-				AllocatableResource:	node_allocatable,
-				IsNeedResourceMap:		node_needRes,
-				Affinity:				node_affinity,
-				NodeScore:				0,
+			// make new Node
+			newNode := &ketiresource.NodeInfo{
+				ClusterName: clusterName,
+				NodeName:    node.Name,
+				Node:        &node,
+				Pods:        podsInNode,
+				// UsedPorts:				node_usedPorts,
+				CapacityResource:    node_capacity,
+				RequestedResource:   node_request,
+				AllocatableResource: node_allocatable,
+				AdditionalResource:  node_additionalResource,
+				Affinity:            node_affinity,
+				NodeScore:           0,
 			}
 			allNodes = append(allNodes, newNode)
 			cluster_request = ketiresource.AddResources(cluster_request, node_request)
@@ -308,15 +296,13 @@ func (sched *OpenMCPScheduler)SetupResources() error {
 		}
 
 		// Setup Cluster
-		sched.ClusterInfos[clusterName] = &ketiresource.Cluster {
-			ClusterName:			clusterName,
-			Nodes:					allNodes,
-			RequestedResource: 		cluster_request,
-			AllocatableResource:	cluster_allocatable,
+		sched.ClusterInfos[clusterName] = &ketiresource.Cluster{
+			ClusterName:         clusterName,
+			Nodes:               allNodes,
+			RequestedResource:   cluster_request,
+			AllocatableResource: cluster_allocatable,
 		}
 	}
-
-	// klog.Infof("[CHECK INFORMATIONS] %v", sched.ClusterInfos)
 
 	return nil
 }
@@ -356,7 +342,6 @@ func openmcpContainersToContainers(containers []ketiv1alpha1.OpenMCPContainer) [
 
 	return newContainers
 }
-
 
 func openmcpPodSpecToPodSpec(spec ketiv1alpha1.OpenMCPPodSpec) corev1.PodSpec {
 	return corev1.PodSpec{
