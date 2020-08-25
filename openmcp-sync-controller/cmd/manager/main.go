@@ -17,15 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
 
 	//"flag"
 	"log"
-
-	//"strings"
-	//"context"
-	"fmt"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	//"admiralty.io/multicluster-controller/pkg/controller"
@@ -69,7 +66,7 @@ func main() {
 		}
 
 		for _, ghost := range ghosts {
-			fmt.Println(ghost.Name)
+			omcplog.V(4).Info(ghost.Name)
 		}
 		co, _ := sync.NewController(live, ghosts, namespace, cm)
 		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)

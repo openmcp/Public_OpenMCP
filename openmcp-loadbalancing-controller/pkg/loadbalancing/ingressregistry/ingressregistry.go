@@ -2,8 +2,8 @@ package ingressregistry
 
 import (
 	"errors"
-	"fmt"
 	"log"
+	"openmcp/openmcp/omcplog"
 	"sync"
 )
 
@@ -39,28 +39,24 @@ type DefaultRegistry map[string][]string
 // Lookup return the endpoint list for the given service name/version.
 
 func (r DefaultRegistry) Add(ingressName, url string) {
-	fmt.Println("*****Ingress Name Add*****")
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(IngressRegistry)] Function Add")
 	lock.Lock()
 	defer lock.Unlock()
 
-	fmt.Println(r)
-	fmt.Println(ingressName)
-	fmt.Println(url)
+	omcplog.V(5).Info("[OpenMCP Loadbalancing Controller(IngressRegistry)] " + ingressName)
 
 	service, ok := r[ingressName]
-	fmt.Println(service)
 	if !ok {
 		service = []string{}
 		r[ingressName] = service
 	}
 	service = append(service, url)
 	r[ingressName] = append(r[ingressName], url)
-	fmt.Println(service)
-	fmt.Println(r)
+	omcplog.V(5).Info(r)
 }
 
 func (r DefaultRegistry) Lookup(ingressName string) ([]string, error) {
-	fmt.Println("----Lookup----")
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(CountryRegistry)] Function Lookup")
 	lock.RLock()
 	targets, ok := r[ingressName]
 	lock.RUnlock()
@@ -71,15 +67,14 @@ func (r DefaultRegistry) Lookup(ingressName string) ([]string, error) {
 }
 
 func (r DefaultRegistry) CheckURL(url string) (bool, error) {
-	fmt.Println("----check url----")
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(CountryRegistry)] Function CheckURL")
 	lock.RLock()
 	targets := r
 	lock.RUnlock()
-	fmt.Println(url)
 
 	for _, ingressName := range targets {
 		for _, ingressURL := range ingressName {
-			fmt.Println(ingressURL)
+			omcplog.V(5).Info("[OpenMCP Loadbalancing Controller(CountryRegistry)] " + ingressURL)
 			if ingressURL == url {
 				return true, nil
 			}
@@ -89,13 +84,14 @@ func (r DefaultRegistry) CheckURL(url string) (bool, error) {
 }
 
 func (r DefaultRegistry) Failure(host, path, endpoint string, err error) {
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(CountryRegistry)] Function Failure")
 	// Would be used to remove an endpoint from the rotation, log the failure, etc.
 	//log.Printf("Error accessing %s/%s (%s): %s", path, endpoint, err)
 	log.Printf("Error accessing %s %s (%s): %s", host, path, endpoint, err)
 }
 
 func (r DefaultRegistry) Delete(ingressName string) {
-	fmt.Println("*****Delete*****")
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(CountryRegistry)] Function Delete")
 	lock.Lock()
 	defer lock.Unlock()
 

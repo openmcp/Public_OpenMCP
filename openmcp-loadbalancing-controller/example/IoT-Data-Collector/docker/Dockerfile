@@ -1,5 +1,5 @@
 FROM ubuntu:latest
-MAINTAINER kch2 "atyx300@keti.re.kr"
+MAINTAINER kch2 "openmcp@keti.re.kr"
 RUN apt-get update -y
 RUN apt-get install -y python-pip python-dev build-essential
 RUN apt-get install -y mosquitto
