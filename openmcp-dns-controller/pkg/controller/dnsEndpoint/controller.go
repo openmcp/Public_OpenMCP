@@ -34,6 +34,7 @@ import (
 var cm *clusterManager.ClusterManager
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
+	omcplog.V(4).Info( ">>> DNSEndpoint NewController()")
 	cm = myClusterManager
 
 	liveclient, err := live.GetDelegatingClient()
@@ -78,13 +79,16 @@ var i int = 0
 
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
+	omcplog.V(4).Info( "Function Called Reconcile")
 	i += 1
-	//omcplog.V(0).Info( "********* [ OpenMCP DNS Endpoint", i, "] *********")
-	//omcplog.V(0).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
+	omcplog.V(5).Info( "********* [ OpenMCP Domain", i, "] *********")
+	omcplog.V(5).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
 
 	// OpenMCPServiceDNSRecord 삭제 요청인 경우 종료
 	instanceServiceRecord := &ketiv1alpha1.OpenMCPServiceDNSRecord{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instanceServiceRecord)
+	omcplog.V(2).Info("[Get] OpenMCPServiceDNSRecord")
+
 	if err == nil {
 		//if instanceServiceRecord.Status.DNS == nil {
 		//	return reconcile.Result{}, nil
@@ -96,11 +100,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 		instanceEndpoint := &ketiv1alpha1.OpenMCPDNSEndpoint{}
 		err := r.live.Get(context.TODO(), nsn, instanceEndpoint)
+		omcplog.V(2).Info("[Get] OpenMCPDNSEndpoint")
 
 
 		if err == nil {
 			// Already Exist -> Update
-			omcplog.V(0).Info( "Try OpenMCPDNSEndpoint Update From OpenMCPServiceDNS")
+			omcplog.V(2).Info( "Try OpenMCPDNSEndpoint Update From OpenMCPServiceDNS")
 			instanceEndpoint := OpenMCPEndpointUpdateObjectFromServiceDNS(instanceEndpoint, instanceServiceRecord, req.Namespace,  req.Name)
 			err = r.live.Update(context.TODO(), instanceEndpoint)
 			if err != nil {
@@ -109,7 +114,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			}
 		} else if errors.IsNotFound(err) {
 			// Not Exist -> Create
-			omcplog.V(0).Info( "Try OpenMCPDNSEndpoint Create From OpenMCPServiceDNS")
+			omcplog.V(2).Info( "Try OpenMCPDNSEndpoint Create From OpenMCPServiceDNS")
 			instanceEndpoint := OpenMCPEndpointCreateObjectFromServiceDNS(instanceServiceRecord, req.Namespace,  req.Name)
 			err = r.live.Create(context.TODO(), instanceEndpoint)
 			if err != nil {
@@ -124,11 +129,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 	} else if errors.IsNotFound(err) {
 		// OpenMCPServiceDNSRecord Deleted -> Delete
-		omcplog.V(0).Info( "Try OpenMCPDNSEndpoint Delete From OpenMCPServiceDNS")
+		omcplog.V(2).Info( "Try OpenMCPDNSEndpoint Delete From OpenMCPServiceDNS")
 		instanceEndpoint := OpenMCPEndpointDeleteObjectFromServiceDNS(req.Namespace,  req.Name)
 		err :=r.live.Delete(context.TODO(), instanceEndpoint)
 		if err == nil {
-			omcplog.V(0).Info( "[OpenMCP DNS Endpoint Controller] : Deleted '", req.Name+"'")
+			omcplog.V(2).Info( "[OpenMCP DNS Endpoint Controller] : Deleted '", req.Name+"'")
 			//return reconcile.Result{}, nil
 		}
 	}
@@ -136,6 +141,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	// OpenMCPIngressDNSRecord 삭제 요청인 경우 종료
 	instanceIngressRecord := &ketiv1alpha1.OpenMCPIngressDNSRecord{}
 	err = r.live.Get(context.TODO(), req.NamespacedName, instanceIngressRecord)
+	omcplog.V(2).Info("[Get] OpenMCPIngressDNSRecord")
 	if err == nil {
 		//if instanceIngressRecord.Status.DNS == nil {
 		//	return reconcile.Result{}, nil
@@ -144,6 +150,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		// Ingress의 Domains을 구함
 		instanceOpenMCPIngress := &resketiv1alpha1.OpenMCPIngress{}
 		err = r.live.Get(context.TODO(), req.NamespacedName, instanceOpenMCPIngress)
+		omcplog.V(2).Info("[Get] OpenMCPIngress")
 		if err != nil {
 			omcplog.V(0).Info( "[OpenMCP DNS Endpoint Controller] : ",err)
 		}
@@ -159,10 +166,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 		instanceEndpoint := &ketiv1alpha1.OpenMCPDNSEndpoint{}
 		err := r.live.Get(context.TODO(), nsn, instanceEndpoint)
+		omcplog.V(2).Info("[Get] OpenMCPDNSEndpoint")
 
 		if err == nil {
 			// Already Exist -> Update
-			omcplog.V(0).Info( "Try OpenMCPDNSEndpoint Update From OpenMCPIngressDNS")
+			omcplog.V(2).Info( "Try OpenMCPDNSEndpoint Update From OpenMCPIngressDNS")
 			instanceEndpoint := OpenMCPEndpointUpdateObjectFromIngressDNS(instanceEndpoint, instanceIngressRecord, req.Namespace,  req.Name, domains)
 			err = r.live.Update(context.TODO(), instanceEndpoint)
 			if err != nil {
@@ -171,7 +179,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			}
 		} else if errors.IsNotFound(err) {
 			// Not Exist -> Create
-			omcplog.V(0).Info( "Try OpenMCPDNSEndpoint Create From OpenMCPIngressDNS")
+			omcplog.V(2).Info( "Try OpenMCPDNSEndpoint Create From OpenMCPIngressDNS")
 			instanceEndpoint := OpenMCPEndpointCreateObjectFromIngressDNS(instanceIngressRecord, req.Namespace,  req.Name, domains)
 			err = r.live.Create(context.TODO(), instanceEndpoint)
 			if err != nil {
@@ -186,7 +194,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 	} else if errors.IsNotFound(err) {
 		// OpenMCPIngressDNSRecord Deleted -> Delete
-		omcplog.V(0).Info( "Try OpenMCPDNSEndpoint Delete From OpenMCPIngressDNS")
+		omcplog.V(2).Info( "Try OpenMCPDNSEndpoint Delete From OpenMCPIngressDNS")
 		instanceEndpoint := OpenMCPEndpointDeleteObjectFromIngressDNS(req.Namespace,  req.Name)
 		err :=r.live.Delete(context.TODO(), instanceEndpoint)
 		if err == nil {
@@ -240,16 +248,29 @@ func CreateEndpointsFromServiceDNS(instanceServiceRecord *ketiv1alpha1.OpenMCPSe
 
 			// Region, Zone 둘다 존재하는 DNS
 			endpoint := CreateEndpoint(dnsName, recordTTL, recordType, targets)
+			omcplog.V(3).Info("DNSName : ", endpoint.DNSName)
+			omcplog.V(3).Info("RecordTTL : ", endpoint.RecordTTL)
+			omcplog.V(3).Info("RecordType : ", endpoint.RecordType)
+			omcplog.V(3).Info("Targets : ", endpoint.Targets)
 			endpoints = append(endpoints, endpoint)
 		}
 	}
 
 	// Region Zone 둘다 존재하지 않는 DNS
+
 	if domain != ""{
 		dnsName := name+"."+namespace+"."+domainRef+".svc." + domain
 		endpoint := CreateEndpoint(dnsName, recordTTL, recordType, targetsAll)
+		omcplog.V(3).Info("DNSName : ", endpoint.DNSName)
+		omcplog.V(3).Info("RecordTTL : ", endpoint.RecordTTL)
+		omcplog.V(3).Info("RecordType : ", endpoint.RecordType)
+		omcplog.V(3).Info("Targets : ", endpoint.Targets)
+
 		endpoints = append(endpoints, endpoint)
 	}
+
+
+
 	return endpoints
 
 }
@@ -308,6 +329,10 @@ func CreateEndpointsFromIngressDNS(instanceIngressRecord *ketiv1alpha1.OpenMCPIn
 				targets = append(targets, ingress.IP)
 			}
 			endpoint := CreateEndpoint(dnsName, recordTTL, recordType, targets)
+			omcplog.V(3).Info("DNSName : ", endpoint.DNSName)
+			omcplog.V(3).Info("RecordTTL : ", endpoint.RecordTTL)
+			omcplog.V(3).Info("RecordType : ", endpoint.RecordType)
+			omcplog.V(3).Info("Targets : ", endpoint.Targets)
 			endpoints = append(endpoints, endpoint)
 		}
 

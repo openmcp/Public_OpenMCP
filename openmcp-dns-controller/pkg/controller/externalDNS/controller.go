@@ -31,7 +31,7 @@ import (
 var cm *clusterManager.ClusterManager
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
-	omcplog.V(0).Info( ">>> externalDNS NewController()")
+	omcplog.V(4).Info( ">>> externalDNS NewController()")
 	cm = myClusterManager
 
 	liveclient, err := live.GetDelegatingClient()
@@ -81,23 +81,25 @@ type reconciler struct {
 var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
+	omcplog.V(4).Info( "Function Called Reconcile")
 	i += 1
-	//omcplog.V(0).Info( "********* [ OpenMCP External DNS", i, "] *********")
-	//omcplog.V(0).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
+	omcplog.V(5).Info( "********* [ OpenMCP Domain", i, "] *********")
+	omcplog.V(5).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
 	//	cm := clusterManager.NewClusterManager()
 
+	omcplog.V(2).Info("PdnsNewClient")
 	pdnsClient, err := mypdns.PdnsNewClient()
 	if err != nil {
-		omcplog.V(0).Info( err)
+		omcplog.V(0).Info(err)
 	}
 
 	// Fetch the Sync instance
 	instance := &ketiv1alpha1.OpenMCPDNSEndpoint{}
 	err = r.live.Get(context.TODO(), req.NamespacedName, instance)
-
+	omcplog.V(2).Info("[Get] OpenMCPDNSEndpoint")
 
 	if err != nil && errors.IsNotFound(err){
-		omcplog.V(0).Info( "DNSEndpoint 삭제 감지, PowerDNS 정보 삭제")
+		omcplog.V(2).Info( "DNSEndpoint 삭제 감지, PowerDNS 정보 삭제")
 		err = mypdns.DeleteZone(pdnsClient, r.live)
 		if err != nil {
 			omcplog.V(0).Info( "[OpenMCP External DNS Controller] : Delete?  ",err)
@@ -110,7 +112,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		if domain == ""{
 			continue
 		}
-		omcplog.V(0).Info( "DNSEndpoint 생성/업데이트 감지, PowerDNS 정보 갱신")
+		omcplog.V(2).Info( "DNSEndpoint 생성/업데이트 감지, PowerDNS 정보 갱신")
 		err = mypdns.SyncZone(pdnsClient, domain, instance.Spec.Endpoints)
 		if err != nil {
 			return reconcile.Result{}, err

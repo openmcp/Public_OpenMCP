@@ -1,7 +1,7 @@
 **Table of Contents**
 - [Introduction of OpenMCP&reg;](#introduction-of-openmcp)
 - [How To Install](#how-to-install)
-  - [1. ketikubecli를 이용한 OpenMCP 서버 등록](#1-ketikubecli를-이용한-openmcp-서버-등록)
+  - [1. omcpctl을 이용한 OpenMCP 서버 등록](#1-omcpctl을-이용한-openmcp-서버-등록)
     - [(1) `openmcp` namespaces 리소스 생성](#1-openmcp-namespaces-리소스-생성)
     - [(2) cluster 이름 변경](#2-cluster-이름-변경)
     - [(3) 외부 스토리지에 OpenMCP 서버 등록](#3-외부-스토리지에-openmcp-서버-등록)   
@@ -10,7 +10,8 @@
   - [1. (선택) cluster 이름 변경 [하위 클러스터에서 수행]](#1-선택-cluster-이름-변경-하위-클러스터에서-수행)
   - [2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]](#2-외부-스토리지에-join하고자-하는-클러스터-서버-등록-하위-클러스터에서-수행)
   - [3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]](#3-외부-스토리지에-등록된-하위-클러스터를-openmcp에-join-openmcp에서-수행)
-  - [4. 하위 클러스터 Master Node에 Region, Zone 등록](#4-하위-클러스터-master-node에-region-zone-등록)
+  - [4. 하위 클러스터 Master Node에 Region, Zone 등록[OpenMCP에서 수행]](#4-하위-클러스터-master-node에-region-zone-등록-openmcp에서-수행)
+  - [5. 하위 클러스터 MetalLB Config 생성 [OpenMCP에서 수행]](#5-하위-클러스터-metallb-config-생성-openmcp에서-수행)
 - [OpenMCP EXAMPLE](#openmcp-example)
   - [OpenMCPDeployment 배포](#openmcpdeployment-배포)
   - [OpenMCPService 배포](#openmcpservice-배포)
@@ -28,20 +29,22 @@
 
 ## Requirement
 
-OpenMCP 설치를 위해서는 먼저 `federation`, `ketikubecli` 그리고 nfs를 위한 `외부 서버`가 구축되어 있어야 합니다.
+OpenMCP 설치를 위해서는 먼저 `federation`, `omcpctl` 그리고 nfs를 위한 `외부 서버`가 구축되어 있어야 합니다.
 
 1. [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) 설치
-1. [omcpctl](https://github.com/openmcp/openmcp-cli) 설치
+1. [omcpctl](https://github.com/openmcp/openmcp/tree/master/omcpctl) 설치
 1. [nfs 서버](https://github.com/openmcp/external) 설치
 
 -----------------------------------------------------------------------------------------------
-
+실행 환경
+```
 OpenMCP   Master IP : 10.0.3.30  
 Cluster1  Master IP : 10.0.3.40  
 Cluster2  Master IP : 10.0.3.50  
 NFS       Server IP : 10.0.3.12  
+```
 
-## 1. ketikubecli를 이용한 OpenMCP 서버 등록
+## 1. omcpctl을 이용한 OpenMCP 서버 등록
 
 ### (1) `openmcp` namespaces 리소스 생성
 
@@ -80,8 +83,8 @@ users:
 ### (3) 외부 스토리지에 OpenMCP 서버 등록
 omcpctl 사용하여 nfs 서버에 OpenMCP 서버를 등록합니다.
 ```bash
-$ omcpctl regist openmcp 10.0.3.30
-Success OpenMCP Master Regist '10.0.3.30'
+$ omcpctl register openmcp
+Success OpenMCP Master Register '10.0.3.30'
 ```
 
 ## 2. OpenMCP 기본 모듈 배포  
@@ -90,14 +93,12 @@ Success OpenMCP Master Regist '10.0.3.30'
 ```bash
 $ cd ./install_openmcp
 $ ./SETTING.sh
-GRPC Server IP -> 10.0.3.30
-GRPC Server Port -> 32050
-InfluxDB Server IP -> 10.0.3.30
+OpenMCP Analytic Engine GRPC Server Port -> 32050
+OpenMCP Metric Collector GRPC Server Port -> 32051
 InfluxDB Server Port -> 31051
 InfluxDB User Name -> root
 InfluxDB User Password -> root
-NFS Server IP -> 10.0.3.12
-PowerDNS Server IP -> 10.0.3.12
+NFS & PowerDNS Server IP -> 10.0.3.12
 PowerDNS Server Port -> 8081
 PowerDNS Server API Key -> 1234
 OpenMCP MetalLB Address IP Range (FROM) -> 10.0.3.241
@@ -107,43 +108,47 @@ OpenMCP MetalLB Address IP Range (TO) -> 10.0.3.250
 OpenMCP 동작에 필요한 기본 모듈을 배포합니다.
 
 ```bash
-$ cd ./install_openmcp/master
+$ cd master/
 $ ./1.create.sh
 ```
 > 설치 항목
 > - Sync Controller
-> - Resource Controller (Deployment, HybridAutoScaler, Ingress, Service)
+> - Resource Controller (Deployment, HybridAutoScaler, Ingress, Service, Configmap, Secret)
 > - LoadBalancing Controller
 > - Scheduler
 > - Resource Manager (Analytic Engine, Metric Collector)
 > - Policy Engine
 > - DNS Controller
+> - API Server
 > - InfluxDB
 
 설치 확인
 ```bash
 $ kubectl get pods -n openmcp
-NAME                                                    READY   STATUS    RESTARTS   AGE
-influxdb-68bff77cbd-kdcs4                               1/1     Running   0          21h
-openmcp-analytic-engine-67dc4b7d9d-kxpb8                1/1     Running   0          21h
-openmcp-deployment-controller-747cf6d76-tvm64           1/1     Running   0          21h
-openmcp-dns-controller-78ff9bcdd5-lkcx8                 1/1     Running   0          21h
-openmcp-has-controller-8688867566-bklhw                 1/1     Running   0          21h
-openmcp-ingress-controller-7fc4489594-jmccz             1/1     Running   0          21h
-openmcp-loadbalancing-controller-bb7547df8-fpbbj        1/1     Running   0          21h
-openmcp-metric-collector-79dc4b466b-5h9wp               1/1     Running   0          21h
-openmcp-policy-engine-7c7b5fb7d5-4m4tl                  1/1     Running   0          21h
-openmcp-scheduler-65794548ff-92fql                      1/1     Running   0          21h
-openmcp-service-controller-776cc6574-xfd8c              1/1     Running   0          21h
-openmcp-sync-controller-67b4d858d9-4zwnk                1/1     Running   0          21h
+NAME                                                READY   STATUS    RESTARTS   AGE
+influxdb-68bff77cbd-f9p6k                           1/1     Running   0          3m11s
+openmcp-analytic-engine-cbbcfd7f4-fjrvb             1/1     Running   0          3m12s
+openmcp-apiserver-56bf4c7bd-7q4vw                   1/1     Running   0          3m12s
+openmcp-configmap-controller-6c97c8cd57-ww7x8       1/1     Running   0          3m11s
+openmcp-deployment-controller-747cf6d76-2xr52       1/1     Running   0          3m9s
+openmcp-dns-controller-78ff9bcdd5-5fkpq             1/1     Running   0          3m2s
+openmcp-has-controller-ccbcd86c4-bxtn8              1/1     Running   0          3m9s
+openmcp-ingress-controller-7fc4489594-zmcsl         1/1     Running   0          3m8s
+openmcp-loadbalancing-controller-867b79b8d6-bhrkk   1/1     Running   0          3m1s
+openmcp-metric-collector-77c5f94759-79tjq           1/1     Running   0          3m10s
+openmcp-policy-engine-7c7b5fb7d5-st5qs              1/1     Running   0          3m7s
+openmcp-scheduler-75f4bc655-4mzdl                   1/1     Running   0          3m8s
+openmcp-secret-controller-6d7c5bf4fc-5mlm2          1/1     Running   0          3m11s
+openmcp-service-controller-776cc6574-b8wsm          1/1     Running   0          3m8s
+openmcp-sync-controller-769b85d4b4-crnxc            1/1     Running   0          3m1s
 
 $ kubectl get openmcppolicy -n openmcp
 NAME                           AGE
-analytic-metrics-weight        2m1s
-hpa-minmax-distribution-mode   2m10s
-has-target-cluster             2m6s
-log-version                    2m3s
-metric-collector-period        2m3s
+analytic-metrics-weight        3m16s
+has-target-cluster             3m15s
+hpa-minmax-distribution-mode   3m15s
+log-version                    3m16s
+metric-collector-period        3m16s
 ```
 
 ### OpenMCP Architecture
@@ -180,21 +185,21 @@ users:
 ```
 
 ## 2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]
-omctl 사용하여 nfs 서버에 join 하고자 하는 클러스터를 등록합니다.
+각 클러스터에 [omctl](https://github.com/openmcp/openmcp-cli) 설치 후, omctl 사용하여 nfs 서버에 join 하고자 하는 클러스터를 등록합니다.
 ```bash
 $ OPENMCP_IP="10.0.3.30"
-$ omctl regist member ${OPENMCP_IP}
-Success Regist '10.0.3.40' in OpenMCP Master: 10.0.3.30
+$ omctl register member ${OPENMCP_IP}
+Success Register '10.0.3.40' in OpenMCP Master: 10.0.3.30
 ```
 
 ## 3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]
-OpenMCP 서버에서 ketikubecli를 사용하여 특정 클러스터를 join합니다.
+OpenMCP 서버에서 omcpctl 사용하여 특정 클러스터를 join합니다.
 ```bash
 $ CLUSTER_IP="10.0.3.40"
 $ omcpctl join cluster ${CLUSTER_IP}
 ```
 
-## 4. 하위 클러스터 Master Node에 Region, Zone 등록
+## 4. 하위 클러스터 Master Node에 Region, Zone 등록 [OpenMCP에서 수행]
 하위 클러스터의 Label에 Region과 Zone을 등록합니다.
 ```bash
 $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/region=<region> --context=<cluster-name>
@@ -212,11 +217,10 @@ $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> 
 > - https://ko.wikipedia.org/wiki/ISO_3166-1
 ---
 
-## 5. 하위 클러스터 MetalLB Config 생성 (LoadBalancer IP 할당)
-하위 클러스터 LoadBalancer의 할당 IP 범위를 설정합니다.
-
-> vim metallb_config.yaml 
+## 5. 하위 클러스터 MetalLB Config 생성 [OpenMCP에서 수행]
+'metallb_config.yaml' 파일을 새로 생성하여 하위 클러스터 LoadBalancer의 할당 IP 범위를 설정 후 각 클러스터에 배포합니다.
 ```
+$ vim metallb_config.yaml 
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -229,10 +233,9 @@ data:
      protocol: layer2
      addresses:
      - <<REPLACE_ADDRESS_FROM>>-<<REPLACE_ADDRESS_TO>>
-```
-> 위에서 만든 Metallb의 Loadbalancer IP 할당범위를 등록합니다.
-```  
-kubectl create -f metallb_config.yaml
+
+
+$ kubectl create -f metallb_config.yaml --context=<cluster-name>
 ```
 
 # OpenMCP EXAMPLE
@@ -242,6 +245,10 @@ $ kubectl get kubefedcluster -n kube-federation-system
 NAME       READY   AGE
 cluster1   True    23h
 cluster2   True    23h
+```
+각 클러스터에 'openmcp' namespaces를 생성합니다.
+```bash
+$ kubectl create ns openmcp --context=<cluster-name>
 ```
 
 ## OpenMCPDeployment 배포

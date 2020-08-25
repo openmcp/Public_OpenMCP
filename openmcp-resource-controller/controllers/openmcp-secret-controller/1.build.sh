@@ -1,5 +1,5 @@
 #!/bin/bash
-docker_id="atyx300"
+docker_id="openmcp"
 controller_name="openmcp-secret-controller"
 
 

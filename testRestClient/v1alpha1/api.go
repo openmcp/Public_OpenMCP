@@ -1,0 +1,71 @@
+package v1alpha1
+
+import (
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/kubernetes/scheme"
+	"openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
+	"openmcp/openmcp/openmcp-resource-controller/apis"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"openmcp/openmcp/testRestClient/rest"
+)
+
+type ExampleV1Alpha1Interface interface {
+	OpenMCPDeployment(namespace string) OpenMCPDeploymentInterface
+	OpenMCPHybridAutoScaler(namespace string) OpenMCPHybridAutoScalerInterface
+	OpenMCPPolicy(namespace string) OpenMCPPolicyInterface
+	OpenMCPService(namespace string) OpenMCPServiceInterface
+	OpenMCPIngress(namespace string) OpenMCPIngressInterface
+}
+
+type ExampleV1Alpha1Client struct {
+	restClient rest.Interface
+}
+
+func NewForConfig(c *rest.Config) (*ExampleV1Alpha1Client, error) {
+	apis.AddToScheme(scheme.Scheme)
+
+	config := *c
+	config.ContentConfig.GroupVersion = &schema.GroupVersion{Group: v1alpha1.GroupName, Version: v1alpha1.GroupVersion}
+	config.APIPath = "/apis"
+	//config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
+	config.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
+	config.UserAgent = rest.DefaultKubernetesUserAgent()
+
+	client, err := rest.RESTClientFor(&config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ExampleV1Alpha1Client{restClient: client}, nil
+}
+
+func (c *ExampleV1Alpha1Client) OpenMCPDeployment(namespace string) OpenMCPDeploymentInterface {
+	return &OpenMCPDeploymentClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPHybridAutoScaler(namespace string) OpenMCPHybridAutoScalerInterface {
+	return &OpenMCPHybridAutoScalerClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPPolicy(namespace string) OpenMCPPolicyInterface {
+	return &OpenMCPPolicyClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPService(namespace string) OpenMCPServiceInterface {
+	return &OpenMCPServiceClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPIngress(namespace string) OpenMCPIngressInterface {
+	return &OpenMCPIngressClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}

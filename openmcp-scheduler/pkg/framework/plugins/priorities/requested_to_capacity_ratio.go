@@ -1,8 +1,8 @@
 package priorities
 
 import (
-	"k8s.io/klog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
+	"openmcp/openmcp/omcplog"
 )
 
 type RequestedToCapacityRatio struct{}
@@ -92,32 +92,32 @@ func NewFunctionShape(points []FunctionShapePoint) FunctionShape {
 	n := len(points)
 
 	if n == 0 {
-		klog.Info("at least one point must be specified")
+		omcplog.V(0).Info("at least one point must be specified")
 		return nil
 	}
 
 	for i := 1; i < n; i++ {
 		if points[i-1].Utilization >= points[i].Utilization {
-			klog.Infof("utilization values must be sorted. Utilization[%v]==%v >= Utilization[%v]==%v", i-1, points[i-1].Utilization, i, points[i].Utilization)
+			omcplog.V(0).Infof("utilization values must be sorted. Utilization[%v]==%v >= Utilization[%v]==%v", i-1, points[i-1].Utilization, i, points[i].Utilization)
 			return nil
 		}
 	}
 
 	for i, point := range points {
 		if point.Utilization < minUtilization {
-			klog.Infof("utilization values must not be less than %v. Utilization[%v]==%v", minUtilization, i, point.Utilization)
+			omcplog.V(0).Infof("utilization values must not be less than %v. Utilization[%v]==%v", minUtilization, i, point.Utilization)
 			return nil
 		}
 		if point.Utilization > maxUtilization {
-			klog.Infof("utilization values must not be greater than %v. Utilization[%v]==%v", maxUtilization, i, point.Utilization)
+			omcplog.V(0).Infof("utilization values must not be greater than %v. Utilization[%v]==%v", maxUtilization, i, point.Utilization)
 			return nil
 		}
 		if point.Score < minScore {
-			klog.Infof("score values must not be less than %v. Score[%v]==%v", minScore, i, point.Score)
+			omcplog.V(0).Infof("score values must not be less than %v. Score[%v]==%v", minScore, i, point.Score)
 			return nil
 		}
 		if point.Score > maxScore {
-			klog.Infof("score valuses not be greater than %v. Score[%v]==%v", maxScore, i, point.Score)
+			omcplog.V(0).Infof("score valuses not be greater than %v. Score[%v]==%v", maxScore, i, point.Score)
 			return nil
 		}
 	}
