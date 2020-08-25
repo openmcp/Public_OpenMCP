@@ -21,7 +21,15 @@ spec:
           containers:
           - image: nginx
             name: nginx
+            ports:
+            - containerPort: 1234
             resources:
               requests:
                 memory: "100Mi"
                 cpu: "1"
+          - image: nginx
+            name: server
+            ports:
+            - containerPort: 5678
+          nodeSelector:
+            openmcp-scheduler: "yes"

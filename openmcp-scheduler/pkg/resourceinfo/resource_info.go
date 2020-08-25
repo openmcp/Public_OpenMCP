@@ -1,7 +1,7 @@
 package resourceinfo
 
 import (
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 var (
@@ -19,12 +19,11 @@ type Cluster struct {
 // NodeInfo is node level aggregated information.
 type NodeInfo struct {
 	// Overall node information.
-	Node				*v1.Node
-
-	NodeName			string
 	ClusterName			string
+	NodeName			string
+
+	Node				*corev1.Node
 	Pods				[]*Pod
-	UsedPorts			[]*v1.ContainerPort
 
 	// Capacity
 	CapacityResource	*Resource
@@ -32,9 +31,9 @@ type NodeInfo struct {
 	RequestedResource 	*Resource
 	// Total allocatable resource of all pods on this node
 	AllocatableResource	*Resource
-	// For Hardware spec
-	IsNeedResourceMap		map[string]bool
-	// Affinity -> will be change to GeoAffinity
+	// Additional resource like nvidia/gpu
+	AdditionalResource	[]string
+	// Affinity(Region/Zone)
 	Affinity			map[string]string
 	// Score to Update Resourcese
 	NodeScore			int64
@@ -42,25 +41,21 @@ type NodeInfo struct {
 
 type Pod struct {
 	// Overall pod informtation.
-	Pod					*v1.Pod
-	PodName				string
-	NodeName			string
 	ClusterName			string
+	NodeName			string
+	PodName				string
+
+	Pod					*corev1.Pod
+
 	RequestedResource 	*Resource
+	AdditionalResource	[]string
 	Affinity			map[string][]string
-	IsNeedResourceMap	map[string]bool
 }
 
 type Resource struct {
 	MilliCPU				int64
 	Memory					int64
 	EphemeralStorage		int64
-	Network					int64
-}
-
-type ProtocolPort struct {
-	Protocol	string
-	Port		int32
 }
 
 func NewResource() *Resource {
@@ -68,7 +63,6 @@ func NewResource() *Resource {
 		MilliCPU:				0,
 		Memory:					0,
 		EphemeralStorage:		0,
-		Network:				0,
 	}
 }
 
