@@ -136,7 +136,8 @@ func getDiffJoinIP() []string {
 }
 
 func joinCluster(memberIP string) {
-	start := time.Now()
+	totalStart := time.Now()
+	fmt.Println("***** [Start] Cluster Join Start : '", memberIP, "' *****")
 
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
@@ -145,7 +146,6 @@ func joinCluster(memberIP string) {
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
-	fmt.Println("Cluster Join Start")
 
 	openmcpIP := GetOutboundIP()
 	if !fileExists("/mnt/openmcp/" + openmcpIP) {
@@ -161,6 +161,9 @@ func joinCluster(memberIP string) {
 		return
 	}
 
+	start1 := time.Now()
+	fmt.Println("***** [Start] 1. Cluster Config Merge *****")
+
 	kc := cobrautil.GetKubeConfig("/mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP + "/config/config")
 	context := kc.Contexts[0]
 	cluster := kc.Clusters[0]
@@ -174,15 +177,35 @@ func joinCluster(memberIP string) {
 	//cobrautil.WriteKubeConfig(kc, "/root/.kube/config_2")
 
 	cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
+
+	elapsed1 := time.Since(start1)
+	log.Printf("Cluster Config Merge Time : %s", elapsed1)
+	fmt.Println("***** [End] 1. Cluster Config Merge ***** ")
+
+
+	start2 := time.Now()
+	fmt.Println("***** [Start] 2. Cluster Join *****")
 	util.CmdExec2("mv /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP + " /mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP)
 	util.CmdExec2("kubefedctl join " + cluster.Name + " --cluster-context " + cluster.Name + " --host-cluster-context openmcp --v=2")
 
+	elapsed2 := time.Since(start2)
+	log.Printf("Cluster Join Time : %s", elapsed2)
+	fmt.Println("***** [End] 2. Cluster Join ***** ")
+
+
+	start3 := time.Now()
+	fmt.Println("***** [Start] 3. Init Service Deployments *****")
+
 	installInitCluster(cluster.Name, c.OpenmcpDir)
 
-	fmt.Println("Cluster Join Completed - " + cluster.Name)
+	elapsed3 := time.Since(start3)
+	log.Printf("Init Service Deployments Time : %s", elapsed3)
+	fmt.Println("***** [End] 3. Init Service Deployments ***** ")
 
-	elapsed := time.Since(start)
-	log.Printf("Cluster Join Elapsed Time : %s", elapsed)
+
+	totalElapsed := time.Since(totalStart)
+	log.Printf("Cluster Join Total Elapsed Time : %s", totalElapsed)
+	fmt.Println("***** [End] Cluster Join Completed - " + cluster.Name, "*****")
 }
 
 func installInitCluster(clusterName, openmcpDir string) {

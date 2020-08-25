@@ -169,7 +169,8 @@ func removeInitCluster(clusterName, openmcpDir string) {
 }
 
 func unjoinCluster(memberIP string) {
-	start := time.Now()
+	totalStart := time.Now()
+	fmt.Println("***** [Start] Cluster UnJoin Start : '", memberIP, "' *****")
 
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
@@ -178,7 +179,6 @@ func unjoinCluster(memberIP string) {
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
-	fmt.Println("Cluster UnJoin Start")
 
 	openmcpIP := GetOutboundIP()
 	if !fileExists("/mnt/openmcp/" + openmcpIP) {
@@ -195,6 +195,9 @@ func unjoinCluster(memberIP string) {
 
 		return
 	}
+
+	start1 := time.Now()
+	fmt.Println("***** [Start] 1. Cluster Config Get *****")
 
 	kc := cobrautil.GetKubeConfig("/root/.kube/config")
 
@@ -224,20 +227,49 @@ func unjoinCluster(memberIP string) {
 			break
 		}
 	}
+	elapsed1 := time.Since(start1)
+	log.Printf("Cluster Config Get Time : %s", elapsed1)
+	fmt.Println("***** [End] 1. Cluster Config Get ***** ")
+
+	start2 := time.Now()
+	fmt.Println("***** [Start] 2. Init Service Remove *****")
 
 	removeInitCluster(target_name, c.OpenmcpDir)
 
+	elapsed2 := time.Since(start2)
+	log.Printf("Init Service Remove Time : %s", elapsed2)
+	fmt.Println("***** [End] 3. Init Service Remove ***** ")
+
+	start3 := time.Now()
+	fmt.Println("***** [Start] 3. Cluster UnJoin *****")
+
 	util.CmdExec2("kubefedctl unjoin " + target_name + " --cluster-context " + target_name + " --host-cluster-context openmcp --v=2")
+
+	elapsed3 := time.Since(start3)
+	log.Printf("Cluster Unjoin Time : %s", elapsed3)
+	fmt.Println("***** [End] 3. Cluster UnJoin ***** ")
+
+
+	start4 := time.Now()
+	fmt.Println("***** [Start] 4. Cluster Config Remove *****")
+
 	kc.Clusters = append(kc.Clusters[:target_name_index], kc.Clusters[target_name_index+1:]...)
 	kc.Contexts = append(kc.Contexts[:target_context_index], kc.Contexts[target_context_index+1:]...)
 	kc.Users = append(kc.Users[:target_user_index], kc.Users[target_user_index+1:]...)
 
 	cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
+
+	elapsed4 := time.Since(start4)
+	log.Printf("Cluster Config Remove Time : %s", elapsed4)
+	fmt.Println("***** [End] 4. Cluster Config Remove ***** ")
+
 	util.CmdExec2("mv /mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP + " /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP)
 
-	fmt.Println("Cluster Unjoin Completed - " + target_name)
+	totalElapsed := time.Since(totalStart)
+	log.Printf("Cluster UnJoin Total Elapsed Time : %s", totalElapsed)
+	fmt.Println("***** [End] Cluster UnJoin Completed - " + target_name, "*****")
 
-	elapsed := time.Since(start)
+	elapsed := time.Since(totalStart)
 	log.Printf("Cluster Join Elapsed Time : %s", elapsed)
 }
 func init() {
