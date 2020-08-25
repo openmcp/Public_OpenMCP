@@ -157,7 +157,14 @@ metric-collector-period        3m16s
 ---
 
 # How To Join Cluster
-## 1. (선택) cluster 이름 변경 [하위 클러스터에서 수행]
+
+1. Kubernetes Cluster 조인 방법
+2. GKE Cluster 조인 방법
+
+--------------------------------------------------------------------------------------------
+## 1. Kubernetes Cluster 조인 방법
+
+### (1) (선택) cluster 이름 변경 [하위 클러스터에서 수행]
 OpenMCP에 하위 클러스터를 join하기 전에 다른 클러스터와 이름이 겹치지 않도록 하위 클러스터의 이름을 변경합니다.
 > kubeconfig 기본 경로 : $HOME/.kube/config
 
@@ -184,7 +191,7 @@ users:
     client-key-data: ...
 ```
 
-## 2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]
+### (2) 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]
 각 클러스터에 [omctl](https://github.com/openmcp/openmcp-cli) 설치 후, omctl 사용하여 nfs 서버에 join 하고자 하는 클러스터를 등록합니다.
 ```bash
 $ OPENMCP_IP="10.0.3.30"
@@ -192,14 +199,14 @@ $ omctl register member ${OPENMCP_IP}
 Success Register '10.0.3.40' in OpenMCP Master: 10.0.3.30
 ```
 
-## 3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]
+### (3) 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]
 OpenMCP 서버에서 omcpctl 사용하여 특정 클러스터를 join합니다.
 ```bash
 $ CLUSTER_IP="10.0.3.40"
 $ omcpctl join cluster ${CLUSTER_IP}
 ```
 
-## 4. 하위 클러스터 Master Node에 Region, Zone 등록 [OpenMCP에서 수행]
+### (4) 하위 클러스터 Master Node에 Region, Zone 등록 [OpenMCP에서 수행]
 하위 클러스터의 Label에 Region과 Zone을 등록합니다.
 ```bash
 $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/region=<region> --context=<cluster-name>
@@ -217,7 +224,7 @@ $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> 
 > - https://ko.wikipedia.org/wiki/ISO_3166-1
 ---
 
-## 5. 하위 클러스터 MetalLB Config 생성 [OpenMCP에서 수행]
+### (5) 하위 클러스터 MetalLB Config 생성 [OpenMCP에서 수행]
 'metallb_config.yaml' 파일을 새로 생성하여 하위 클러스터 LoadBalancer의 할당 IP 범위를 설정 후 각 클러스터에 배포합니다.
 ```
 $ vim metallb_config.yaml 
@@ -237,6 +244,10 @@ data:
 
 $ kubectl create -f metallb_config.yaml --context=<cluster-name>
 ```
+
+## 2. GKE Cluster 조인 방법
+
+### (1) 
 
 # OpenMCP EXAMPLE
 OpenMCP에 cluster1, cluster2가 조인된 상태에서 EXAMPLE TEST를 진행합니다.
