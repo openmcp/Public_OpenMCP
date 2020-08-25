@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 
 	"crypto/tls"
 	"encoding/json"
@@ -49,41 +50,66 @@ import (
 	"openmcp/openmcp/util/controller/reshape"
 )
 
-func APIServer() {
-	//HTTPServer_IP := "10.0.3.20"
-	HTTPServer_PORT := "8080"
-
-	cm := clusterManager.NewClusterManager()
-
-	httpManager := &HttpManager{
-		//HTTPServer_IP: HTTPServer_IP,
-		HTTPServer_PORT: HTTPServer_PORT,
-		ClusterManager:  cm,
-	}
-
-	handler := http.NewServeMux()
-
-	//handler.HandleFunc("/token", TokenHandler)
-	//handler.Handle("/", AuthMiddleware(http.HandlerFunc(httpManager.ExampleHandler)))
-	handler.HandleFunc("/", httpManager.ExampleHandler)
-
-	//handler.HandleFunc("/omcpexec", httpManager.ExampleHandler2)
-
-	server := &http.Server{Addr: ":" + HTTPServer_PORT, Handler: handler}
-
-	omcplog.V(2).Info("Start OpenMCP API Server")
-	err := server.ListenAndServe()
-	if err != nil {
-		omcplog.V(0).Info(err)
-	}
-}
+//func APIServer(cm *clusterManager.ClusterManager) {
+//	//HTTPServer_IP := "10.0.3.20"
+//	HTTPServer_PORT := "8080"
+//
+//	httpManager := &HttpManager{
+//		//HTTPServer_IP: HTTPServer_IP,
+//		HTTPServer_PORT: HTTPServer_PORT,
+//		ClusterManager:  cm,
+//	}
+//
+//	handler := http.NewServeMux()
+//
+//	//handler.HandleFunc("/token", TokenHandler)
+//	//handler.Handle("/", AuthMiddleware(http.HandlerFunc(httpManager.ExampleHandler)))
+//	handler.HandleFunc("/", httpManager.ExampleHandler)
+//
+//	//handler.HandleFunc("/omcpexec", httpManager.ExampleHandler2)
+//
+//	server := &http.Server{Addr: ":" + HTTPServer_PORT, Handler: handler}
+//
+//	omcplog.V(2).Info("Start OpenMCP API Server")
+//	err := server.ListenAndServe()
+//	if err != nil {
+//		omcplog.V(0).Info(err)
+//	}
+//}
 func main() {
 	logLevel.KetiLogInit()
 
-	go APIServer()
 
 	for {
 		cm := clusterManager.NewClusterManager()
+
+		//HTTPServer_IP := "10.0.3.20"
+		HTTPServer_PORT := "8080"
+
+		httpManager := &HttpManager{
+			//HTTPServer_IP: HTTPServer_IP,
+			HTTPServer_PORT: HTTPServer_PORT,
+			ClusterManager:  cm,
+		}
+
+		handler := http.NewServeMux()
+
+		//handler.HandleFunc("/token", TokenHandler)
+		//handler.Handle("/", AuthMiddleware(http.HandlerFunc(httpManager.ExampleHandler)))
+		handler.HandleFunc("/", httpManager.ExampleHandler)
+
+		//handler.HandleFunc("/omcpexec", httpManager.ExampleHandler2)
+
+		server := &http.Server{Addr: ":" + HTTPServer_PORT, Handler: handler}
+
+		go func() {
+			omcplog.V(2).Info("Start OpenMCP API Server")
+			err := server.ListenAndServe()
+			if err != nil {
+				omcplog.V(0).Info(err)
+			}
+		}()
+
 
 		host_ctx := "openmcp"
 		namespace := "openmcp"
@@ -115,6 +141,11 @@ func main() {
 		if err := m.Start(stop); err != nil {
 			log.Fatal(err)
 		}
+
+		if err := server.Shutdown(context.Background()); err != nil {
+			log.Fatalf("OpenMCP API Server Shutdown Failed:%+v", err)
+		}
+		log.Print("OpenMCP API Server Exited Properly")
 	}
 
 }
