@@ -60,7 +60,7 @@ func main() {
 		//handler.HandleFunc("/token", TokenHandler)
 		//handler.Handle("/", AuthMiddleware(http.HandlerFunc(httpManager.ExampleHandler)))
 
-		handler.HandleFunc("/", httpManager.ApiHandler)
+		handler.HandleFunc("/", httpManager.RouteHandler)
 		//handler.HandleFunc("/metrics/{name:[a-z]+}", httpManager.MetricsHandler)
 
 		//handler.HandleFunc("/omcpexec", httpManager.ExampleHandler2)
