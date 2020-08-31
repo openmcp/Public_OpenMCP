@@ -21,19 +21,22 @@ type OpenMCPScheduler struct {
 	ClusterClients	map[string]*kubernetes.Clientset
 	ClusterInfos	map[string]*ketiresource.Cluster
 	Framework		ketiframework.OpenmcpFramework
+	ClusterManager 	*clusterManager.ClusterManager
 }
 
 func NewScheduler(cm *clusterManager.ClusterManager, grpcClient protobuf.RequestAnalysisClient) *OpenMCPScheduler{
-	sched := &OpenMCPScheduler {
-		ClusterClients:		make(map[string]*kubernetes.Clientset),
-		ClusterInfos:		make(map[string]*ketiresource.Cluster),
-		Framework:			ketiframework.NewFramework(grpcClient),
-	}
+	sched := &OpenMCPScheduler{}
+	sched.ClusterClients = make(map[string]*kubernetes.Clientset)
+	sched.ClusterInfos = make(map[string]*ketiresource.Cluster)
+	sched.Framework = ketiframework.NewFramework(grpcClient)
+	sched.ClusterManager = cm
 
 	return sched
 }
 
-func (sched *OpenMCPScheduler) Scheduling (cm *clusterManager.ClusterManager, dep *ketiv1alpha1.OpenMCPDeployment) (map[string]int32, error) {
+func (sched *OpenMCPScheduler) Scheduling (dep *ketiv1alpha1.OpenMCPDeployment) (map[string]int32, error) {
+	cm := sched.ClusterManager
+	
 	// Get CLusterClients from clusterManager
 	sched.ClusterClients = cm.Cluster_kubeClients
 
@@ -48,7 +51,7 @@ func (sched *OpenMCPScheduler) Scheduling (cm *clusterManager.ClusterManager, de
 	// Make resource to schedule pod into cluster
 	newPod := newPodFromOpenMCPDeployment(dep)
 
-	omcplog.V(0).Infof("***** [Start] Scheduling for OpenmcpDeployment *****")
+	// omcplog.V(0).Infof("***** [Start] Scheduling for OpenmcpDeployment *****")
 	startTime := time.Now()
 
 	// Scheduling one pod
@@ -73,8 +76,8 @@ func (sched *OpenMCPScheduler) Scheduling (cm *clusterManager.ClusterManager, de
 
 	elapsedTime := time.Since(startTime)
 	// omcplog.V(0).Infof("=> Scheduling Result [%v]", totalSchedulingResult)
-	omcplog.V(0).Infof("=> Scheduling Time [%v]", elapsedTime)
-	omcplog.V(0).Infof("***** [End] Scheduling *****")
+	omcplog.V(0).Infof("    => Scheduling Time [%v]", elapsedTime)
+	// omcplog.V(0).Infof("***** [End] Scheduling *****")
 	
 	return totalSchedulingResult, nil
 }

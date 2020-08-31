@@ -1,0 +1,1437 @@
+I0826 05:48:24.146588       1 main.go:38] Start OpenMCP Deployment Controller
+Reshape New Controller
+*cluster.Cluster, openmcp
+I0826 05:48:32.168269       1 logLevel.go:63] LogLevel Changed, Used LogLevel (0 -> 4)
+I0826 05:49:21.275298       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:21.275376       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:21.275415       1 controller.go:136] [Create Detect]
+I0826 05:49:21.275449       1 controller.go:137] Create Deployment Start
+I0826 05:49:21.275486       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 05:49:21.275536       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 05:49:21.315505       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:21.315584       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:21.315627       1 controller.go:136] [Create Detect]
+I0826 05:49:21.315658       1 controller.go:137] Create Deployment Start
+I0826 05:49:21.315690       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 05:49:21.315725       1 controller.go:173] Scheduling Wait
+I0826 05:49:25.393407       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:25.393471       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:25.393513       1 controller.go:136] [Create Detect]
+I0826 05:49:25.393545       1 controller.go:137] Create Deployment Start
+I0826 05:49:25.393575       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 05:49:25.393607       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 05:49:25.397380       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 05:49:25.397512       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 05:49:25.397528       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:49:25.405320       1 controller.go:205] Service Notify Send
+I0826 05:49:25.405354       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 05:49:25.405370       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 05:49:25.405417       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 05:49:25.505982       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 05:49:25.506032       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 05:49:25.506066       1 controller.go:211] sync_req_name : openmcp-deployment-sync-1
+I0826 05:49:25.506094       1 controller.go:214] Update Status
+I0826 05:49:25.513226       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:25.513287       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:25.613875       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:49:25.617099       1 controller.go:348] Cluster 'cluster1' ReDeployed => 1
+I0826 05:49:25.617129       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 05:49:25.617175       1 controller.go:351] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 05:49:25.617188       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:49:25.622097       1 controller.go:362] sync_req_name : openmcp-deployment-sync-2
+I0826 05:49:25.635561       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:25.635652       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:26.056221       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:26.056302       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:26.056418       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:49:26.089921       1 controller.go:362] sync_req_name : openmcp-deployment-sync-2
+I0826 05:49:26.097391       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:26.097466       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:26.097610       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:49:26.156550       1 controller.go:362] sync_req_name : openmcp-deployment-sync-2
+I0826 05:49:26.167146       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:26.167213       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:26.167373       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:49:26.209507       1 controller.go:362] sync_req_name : openmcp-deployment-sync-2
+I0826 05:49:26.216186       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:26.216264       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:26.216402       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:49:26.240024       1 controller.go:362] sync_req_name : openmcp-deployment-sync-2
+I0826 05:50:11.582820       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:50:11.582887       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 05:50:11.582922       1 controller.go:121] [Delete Detect]
+I0826 05:50:11.582953       1 controller.go:124] Delete Deployment of All Cluster
+I0826 05:50:11.582963       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 05:50:11.582972       1 controller.go:386] Delete Check example-openmcpdeployment-1openmcp
+I0826 05:50:11.582982       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:50:11.601489       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:50:11.607044       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:50:11.615324       1 controller.go:127] Service Notify Send
+I0826 05:50:11.615352       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 05:50:11.615414       1 controller.go:454] ->openmcp-service notify !
+I0826 05:50:11.625574       1 controller.go:454] ->openmcp-service-example notify !
+I0826 05:50:12.241451       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:50:12.241549       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 05:50:12.241631       1 controller.go:121] [Delete Detect]
+I0826 05:50:12.241702       1 controller.go:124] Delete Deployment of All Cluster
+I0826 05:50:12.241723       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 05:50:12.241734       1 controller.go:386] Delete Check example-openmcpdeployment-1openmcp
+I0826 05:50:12.241747       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:50:12.274564       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:50:12.326831       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:50:12.330717       1 controller.go:127] Service Notify Send
+I0826 05:50:12.330745       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 05:50:12.330811       1 controller.go:454] ->openmcp-service notify !
+I0826 05:50:12.340651       1 controller.go:454] ->openmcp-service-example notify !
+I0826 05:48:24.146588       1 main.go:38] Start OpenMCP Deployment Controller
+Reshape New Controller
+*cluster.Cluster, openmcp
+I0826 05:48:32.168269       1 logLevel.go:63] LogLevel Changed, Used LogLevel (0 -> 4)
+I0826 05:49:21.275298       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:21.275376       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:21.275415       1 controller.go:136] [Create Detect]
+I0826 05:49:21.275449       1 controller.go:137] Create Deployment Start
+I0826 05:49:21.275486       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 05:49:21.275536       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 05:49:21.315505       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:21.315584       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:21.315627       1 controller.go:136] [Create Detect]
+I0826 05:49:21.315658       1 controller.go:137] Create Deployment Start
+I0826 05:49:21.315690       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 05:49:21.315725       1 controller.go:173] Scheduling Wait
+I0826 05:49:25.393407       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:25.393471       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:25.393513       1 controller.go:136] [Create Detect]
+I0826 05:49:25.393545       1 controller.go:137] Create Deployment Start
+I0826 05:49:25.393575       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 05:49:25.393607       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 05:49:25.397380       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 05:49:25.397512       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 05:49:25.397528       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:49:25.405320       1 controller.go:205] Service Notify Send
+I0826 05:49:25.405354       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 05:49:25.405370       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 05:49:25.405417       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 05:49:25.505982       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 05:49:25.506032       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 05:49:25.506066       1 controller.go:211] sync_req_name : openmcp-deployment-sync-1
+I0826 05:49:25.506094       1 controller.go:214] Update Status
+I0826 05:49:25.513226       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:25.513287       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:25.613875       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:49:25.617099       1 controller.go:348] Cluster 'cluster1' ReDeployed => 1
+I0826 05:49:25.617129       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 05:49:25.617175       1 controller.go:351] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 05:49:25.617188       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:49:25.622097       1 controller.go:362] sync_req_name : openmcp-deployment-sync-2
+I0826 05:49:25.635561       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:25.635652       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:26.056221       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:26.056302       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:26.056418       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:49:26.089921       1 controller.go:362] sync_req_name : openmcp-deployment-sync-2
+I0826 05:49:26.097391       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:26.097466       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:26.097610       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:49:26.156550       1 controller.go:362] sync_req_name : openmcp-deployment-sync-2
+I0826 05:49:26.167146       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:26.167213       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:26.167373       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:49:26.209507       1 controller.go:362] sync_req_name : openmcp-deployment-sync-2
+I0826 05:49:26.216186       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:49:26.216264       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:49:26.216402       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:49:26.240024       1 controller.go:362] sync_req_name : openmcp-deployment-sync-2
+I0826 05:50:11.582820       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:50:11.582887       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 05:50:11.582922       1 controller.go:121] [Delete Detect]
+I0826 05:50:11.582953       1 controller.go:124] Delete Deployment of All Cluster
+I0826 05:50:11.582963       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 05:50:11.582972       1 controller.go:386] Delete Check example-openmcpdeployment-1openmcp
+I0826 05:50:11.582982       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:50:11.601489       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:50:11.607044       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:50:11.615324       1 controller.go:127] Service Notify Send
+I0826 05:50:11.615352       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 05:50:11.615414       1 controller.go:454] ->openmcp-service notify !
+I0826 05:50:11.625574       1 controller.go:454] ->openmcp-service-example notify !
+I0826 05:50:12.241451       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:50:12.241549       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 05:50:12.241631       1 controller.go:121] [Delete Detect]
+I0826 05:50:12.241702       1 controller.go:124] Delete Deployment of All Cluster
+I0826 05:50:12.241723       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 05:50:12.241734       1 controller.go:386] Delete Check example-openmcpdeployment-1openmcp
+I0826 05:50:12.241747       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:50:12.274564       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:50:12.326831       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:50:12.330717       1 controller.go:127] Service Notify Send
+I0826 05:50:12.330745       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 05:50:12.330811       1 controller.go:454] ->openmcp-service notify !
+I0826 05:50:12.340651       1 controller.go:454] ->openmcp-service-example notify !
+I0826 05:54:43.685422       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:54:43.685528       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:54:43.685571       1 controller.go:136] [Create Detect]
+I0826 05:54:43.685609       1 controller.go:137] Create Deployment Start
+I0826 05:54:43.685658       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 05:54:43.685706       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 05:54:43.715662       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:54:43.715730       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:54:43.715767       1 controller.go:136] [Create Detect]
+I0826 05:54:43.715800       1 controller.go:137] Create Deployment Start
+I0826 05:54:43.715832       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 05:54:43.715872       1 controller.go:173] Scheduling Wait
+I0826 05:54:47.715921       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:54:47.716000       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:54:47.716035       1 controller.go:136] [Create Detect]
+I0826 05:54:47.716065       1 controller.go:137] Create Deployment Start
+I0826 05:54:47.716095       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 05:54:47.716125       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 05:54:47.719843       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 05:54:47.719975       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 05:54:47.719997       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:54:47.746880       1 controller.go:205] Service Notify Send
+I0826 05:54:47.746908       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 05:54:47.746917       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 05:54:47.746997       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 05:54:47.747056       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 05:54:47.747076       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 05:54:47.747105       1 controller.go:211] sync_req_name : openmcp-deployment-sync-9
+I0826 05:54:47.747133       1 controller.go:214] Update Status
+I0826 05:54:47.755605       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:54:47.755679       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:54:48.420209       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:54:48.420315       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:54:48.420519       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:54:48.445736       1 controller.go:362] sync_req_name : openmcp-deployment-sync-9
+I0826 05:54:48.458238       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:54:48.458319       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:54:48.458435       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:54:48.525063       1 controller.go:362] sync_req_name : openmcp-deployment-sync-9
+I0826 05:54:48.531782       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:54:48.531874       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:54:48.532023       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:54:48.549179       1 controller.go:362] sync_req_name : openmcp-deployment-sync-9
+I0826 05:54:48.730241       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:54:48.730310       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:54:48.730438       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:54:48.740322       1 controller.go:362] sync_req_name : openmcp-deployment-sync-9
+I0826 05:59:15.565266       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:15.565369       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 05:59:15.565430       1 controller.go:121] [Delete Detect]
+I0826 05:59:15.565490       1 controller.go:124] Delete Deployment of All Cluster
+I0826 05:59:15.565551       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 05:59:15.565567       1 controller.go:386] Delete Check example-openmcpdeployment-1openmcp
+I0826 05:59:15.565579       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:59:15.572019       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:59:15.576814       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:59:15.630354       1 controller.go:127] Service Notify Send
+I0826 05:59:15.630384       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 05:59:15.630478       1 controller.go:454] ->openmcp-service-example notify !
+I0826 05:59:15.635403       1 controller.go:454] ->openmcp-service notify !
+I0826 05:59:16.247179       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:16.247253       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 05:59:16.247307       1 controller.go:121] [Delete Detect]
+I0826 05:59:16.247353       1 controller.go:124] Delete Deployment of All Cluster
+I0826 05:59:16.247365       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 05:59:16.247374       1 controller.go:386] Delete Check example-openmcpdeployment-1openmcp
+I0826 05:59:16.247383       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:59:16.252161       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:59:16.260417       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:59:16.297835       1 controller.go:127] Service Notify Send
+I0826 05:59:16.297868       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 05:59:16.297937       1 controller.go:454] ->openmcp-service notify !
+I0826 05:59:16.302644       1 controller.go:454] ->openmcp-service-example notify !
+I0826 05:59:43.846227       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:43.846340       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:59:43.846397       1 controller.go:136] [Create Detect]
+I0826 05:59:43.846446       1 controller.go:137] Create Deployment Start
+I0826 05:59:43.846496       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 05:59:43.846558       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 05:59:43.868827       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:43.868917       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:59:43.868984       1 controller.go:136] [Create Detect]
+I0826 05:59:43.869079       1 controller.go:137] Create Deployment Start
+I0826 05:59:43.869141       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 05:59:43.869205       1 controller.go:173] Scheduling Wait
+I0826 05:59:44.190753       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:44.190844       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 05:59:44.190889       1 controller.go:136] [Create Detect]
+I0826 05:59:44.190929       1 controller.go:137] Create Deployment Start
+I0826 05:59:44.190969       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 05:59:44.191022       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 05:59:44.210100       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:44.210173       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 05:59:44.210228       1 controller.go:136] [Create Detect]
+I0826 05:59:44.210283       1 controller.go:137] Create Deployment Start
+I0826 05:59:44.210315       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 05:59:44.210349       1 controller.go:173] Scheduling Wait
+I0826 05:59:44.444763       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:44.444839       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:59:44.444876       1 controller.go:136] [Create Detect]
+I0826 05:59:44.444909       1 controller.go:137] Create Deployment Start
+I0826 05:59:44.444944       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 05:59:44.444978       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 05:59:44.448595       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 05:59:44.448746       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 05:59:44.448781       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:59:44.476638       1 controller.go:205] Service Notify Send
+I0826 05:59:44.476673       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 05:59:44.476689       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 05:59:44.476721       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 05:59:44.476799       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 05:59:44.476824       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 05:59:44.476869       1 controller.go:211] sync_req_name : openmcp-deployment-sync-16
+I0826 05:59:44.476912       1 controller.go:214] Update Status
+I0826 05:59:44.563365       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:44.563458       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:59:44.599911       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:44.600002       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 05:59:44.600050       1 controller.go:136] [Create Detect]
+I0826 05:59:44.600093       1 controller.go:137] Create Deployment Start
+I0826 05:59:44.600136       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 05:59:44.600189       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 05:59:44.618194       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:44.618248       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 05:59:44.618280       1 controller.go:136] [Create Detect]
+I0826 05:59:44.618309       1 controller.go:137] Create Deployment Start
+I0826 05:59:44.618349       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 05:59:44.618388       1 controller.go:173] Scheduling Wait
+I0826 05:59:44.970285       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:44.970386       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 05:59:44.970427       1 controller.go:136] [Create Detect]
+I0826 05:59:44.970468       1 controller.go:137] Create Deployment Start
+I0826 05:59:44.970506       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 05:59:44.970557       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 05:59:45.011795       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:45.011863       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 05:59:45.011961       1 controller.go:136] [Create Detect]
+I0826 05:59:45.012014       1 controller.go:137] Create Deployment Start
+I0826 05:59:45.012052       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 05:59:45.012104       1 controller.go:173] Scheduling Wait
+I0826 05:59:45.179227       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:45.179323       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:59:45.179482       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:59:45.221691       1 controller.go:362] sync_req_name : openmcp-deployment-sync-16
+I0826 05:59:45.270764       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:45.270861       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:59:45.271080       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:59:45.313718       1 controller.go:362] sync_req_name : openmcp-deployment-sync-16
+I0826 05:59:45.320245       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:45.320327       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:59:45.320512       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:59:45.361405       1 controller.go:362] sync_req_name : openmcp-deployment-sync-16
+I0826 05:59:45.368029       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:45.368121       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 05:59:45.368302       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:59:45.418642       1 controller.go:362] sync_req_name : openmcp-deployment-sync-16
+I0826 05:59:45.425082       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:45.425164       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 05:59:45.425197       1 controller.go:136] [Create Detect]
+I0826 05:59:45.425228       1 controller.go:137] Create Deployment Start
+I0826 05:59:45.425263       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 05:59:45.425304       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 05:59:45.431452       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:45.431510       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 05:59:45.431550       1 controller.go:136] [Create Detect]
+I0826 05:59:45.431585       1 controller.go:137] Create Deployment Start
+I0826 05:59:45.431619       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 05:59:45.431669       1 controller.go:173] Scheduling Wait
+I0826 05:59:48.591259       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:48.591333       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 05:59:48.591372       1 controller.go:136] [Create Detect]
+I0826 05:59:48.591413       1 controller.go:137] Create Deployment Start
+I0826 05:59:48.591445       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 05:59:48.591476       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 05:59:48.594768       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 05:59:48.594895       1 controller.go:197] SyncResource Create (ClusterName : cluster2, Command : create, Replicas :1 / 1)
+I0826 05:59:48.594920       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:59:48.604214       1 controller.go:205] Service Notify Send
+I0826 05:59:48.604237       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 05:59:48.604245       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 05:59:48.604263       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 05:59:48.604320       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 05:59:48.604338       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 05:59:48.604372       1 controller.go:211] sync_req_name : openmcp-deployment-sync-17
+I0826 05:59:48.604403       1 controller.go:214] Update Status
+I0826 05:59:48.627389       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:48.627457       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 05:59:49.246361       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:49.246459       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 05:59:49.246640       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:59:49.327500       1 controller.go:362] sync_req_name : openmcp-deployment-sync-17
+I0826 05:59:49.336804       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:49.336875       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 05:59:49.336994       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:59:49.353543       1 controller.go:362] sync_req_name : openmcp-deployment-sync-17
+I0826 05:59:49.363934       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:49.363981       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 05:59:49.364086       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:59:49.403742       1 controller.go:362] sync_req_name : openmcp-deployment-sync-17
+I0826 05:59:49.498933       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:49.499010       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 05:59:49.499161       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:59:49.520753       1 controller.go:362] sync_req_name : openmcp-deployment-sync-17
+I0826 05:59:56.591802       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:56.591895       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 05:59:56.591958       1 controller.go:136] [Create Detect]
+I0826 05:59:56.592006       1 controller.go:137] Create Deployment Start
+I0826 05:59:56.592058       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 05:59:56.592109       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 05:59:56.595095       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 05:59:56.595225       1 controller.go:197] SyncResource Create (ClusterName : cluster3, Command : create, Replicas :1 / 1)
+I0826 05:59:56.595255       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 05:59:56.617939       1 controller.go:205] Service Notify Send
+I0826 05:59:56.617979       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 05:59:56.617989       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 05:59:56.618015       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 05:59:56.618086       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 05:59:56.618103       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 05:59:56.618134       1 controller.go:211] sync_req_name : openmcp-deployment-sync-18
+I0826 05:59:56.618160       1 controller.go:214] Update Status
+I0826 05:59:56.626179       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:56.626246       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 05:59:59.362617       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:59.362713       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 05:59:59.362895       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:59:59.376500       1 controller.go:362] sync_req_name : openmcp-deployment-sync-18
+I0826 05:59:59.383306       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:59.383366       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 05:59:59.383481       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:59:59.404979       1 controller.go:362] sync_req_name : openmcp-deployment-sync-18
+I0826 05:59:59.427503       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:59.427575       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 05:59:59.427704       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:59:59.514187       1 controller.go:362] sync_req_name : openmcp-deployment-sync-18
+I0826 05:59:59.527532       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 05:59:59.527588       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 05:59:59.527699       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 05:59:59.534699       1 controller.go:362] sync_req_name : openmcp-deployment-sync-18
+I0826 06:00:00.676420       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:00:00.676512       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:00:00.676565       1 controller.go:136] [Create Detect]
+I0826 06:00:00.676607       1 controller.go:137] Create Deployment Start
+I0826 06:00:00.676657       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:00:00.676709       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:00:00.680104       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:00:00.680189       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 06:00:00.680205       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:00:00.701471       1 controller.go:205] Service Notify Send
+I0826 06:00:00.701509       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:00:00.701520       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:00:00.701553       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:00:00.701623       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:00:00.701640       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:00:00.701686       1 controller.go:211] sync_req_name : openmcp-deployment-sync-19
+I0826 06:00:00.701717       1 controller.go:214] Update Status
+I0826 06:00:00.709211       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:00:00.709269       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:00:01.345310       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:00:01.345389       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:00:01.345530       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:00:01.438219       1 controller.go:362] sync_req_name : openmcp-deployment-sync-19
+I0826 06:00:01.445174       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:00:01.445243       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:00:01.445362       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:00:01.479663       1 controller.go:362] sync_req_name : openmcp-deployment-sync-19
+I0826 06:00:01.486087       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:00:01.486154       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:00:01.486271       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:00:01.513464       1 controller.go:362] sync_req_name : openmcp-deployment-sync-19
+I0826 06:00:04.733595       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:00:04.733682       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:00:04.733732       1 controller.go:136] [Create Detect]
+I0826 06:00:04.733772       1 controller.go:137] Create Deployment Start
+I0826 06:00:04.733812       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:00:04.733851       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:00:04.737365       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:00:04.737503       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 06:00:04.737532       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:00:04.764234       1 controller.go:205] Service Notify Send
+I0826 06:00:04.764262       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:00:04.764271       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:00:04.764293       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:00:04.764358       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:00:04.764373       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:00:04.764400       1 controller.go:211] sync_req_name : openmcp-deployment-sync-20
+I0826 06:00:04.764428       1 controller.go:214] Update Status
+I0826 06:00:04.776131       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:00:04.776192       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:00:05.439326       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:00:05.439429       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:00:05.439611       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:00:05.443478       1 controller.go:362] sync_req_name : openmcp-deployment-sync-20
+I0826 06:00:05.510005       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:00:05.510108       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:00:05.510261       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:00:05.513312       1 controller.go:362] sync_req_name : openmcp-deployment-sync-20
+I0826 06:00:05.560934       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:00:05.560996       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:00:05.561124       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:00:05.601947       1 controller.go:362] sync_req_name : openmcp-deployment-sync-20
+I0826 06:00:05.691823       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:00:05.691902       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:00:05.692036       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:00:05.702289       1 controller.go:362] sync_req_name : openmcp-deployment-sync-20
+I0826 06:05:50.454544       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:05:50.454632       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:05:50.454699       1 controller.go:121] [Delete Detect]
+I0826 06:05:50.454761       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:05:50.454830       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:05:50.454845       1 controller.go:386] Delete Check example-openmcpdeployment-1openmcp
+I0826 06:05:50.454857       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:50.497561       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:50.507320       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:50.545155       1 controller.go:127] Service Notify Send
+I0826 06:05:50.545185       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:05:50.545260       1 controller.go:454] ->openmcp-service notify !
+I0826 06:05:50.550433       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:05:50.622394       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:05:50.622464       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:05:50.622527       1 controller.go:121] [Delete Detect]
+I0826 06:05:50.622588       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:05:50.622609       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:05:50.622628       1 controller.go:386] Delete Check example-openmcpdeployment-2openmcp
+I0826 06:05:50.622650       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:50.662848       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:50.670465       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:50.681990       1 controller.go:127] Service Notify Send
+I0826 06:05:50.682021       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:05:50.682093       1 controller.go:454] ->openmcp-service notify !
+I0826 06:05:50.690390       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:05:50.799916       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:05:50.800012       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:05:50.800091       1 controller.go:121] [Delete Detect]
+I0826 06:05:50.800164       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:05:50.800184       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:05:50.800204       1 controller.go:386] Delete Check example-openmcpdeployment-3openmcp
+I0826 06:05:50.800226       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:50.806736       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:50.829734       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:50.833883       1 controller.go:127] Service Notify Send
+I0826 06:05:50.833903       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:05:50.833958       1 controller.go:454] ->openmcp-service notify !
+I0826 06:05:50.840483       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:05:50.923263       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:05:50.923346       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:05:50.923419       1 controller.go:121] [Delete Detect]
+I0826 06:05:50.923487       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:05:50.923506       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:05:50.923524       1 controller.go:386] Delete Check example-openmcpdeployment-4openmcp
+I0826 06:05:50.923544       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:50.927469       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:50.932059       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:50.940642       1 controller.go:127] Service Notify Send
+I0826 06:05:50.940675       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:05:50.940741       1 controller.go:454] ->openmcp-service notify !
+I0826 06:05:50.962854       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:05:51.048692       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:05:51.048790       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:05:51.048851       1 controller.go:121] [Delete Detect]
+I0826 06:05:51.048929       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:05:51.048947       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:05:51.048961       1 controller.go:386] Delete Check example-openmcpdeployment-5openmcp
+I0826 06:05:51.048980       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:51.058809       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:51.259875       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:51.459564       1 controller.go:127] Service Notify Send
+I0826 06:05:51.459592       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:05:51.459670       1 controller.go:454] ->openmcp-service notify !
+I0826 06:05:51.479833       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:05:51.484721       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:05:51.484800       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:05:51.484877       1 controller.go:121] [Delete Detect]
+I0826 06:05:51.484945       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:05:51.484965       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:05:51.484983       1 controller.go:386] Delete Check example-openmcpdeployment-1openmcp
+I0826 06:05:51.485051       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:51.659474       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:51.879257       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:52.059566       1 controller.go:127] Service Notify Send
+I0826 06:05:52.059602       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:05:52.059694       1 controller.go:454] ->openmcp-service notify !
+I0826 06:05:52.088336       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:05:55.733037       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:05:55.733125       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:05:55.733182       1 controller.go:121] [Delete Detect]
+I0826 06:05:55.733235       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:05:55.733249       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:05:55.733258       1 controller.go:386] Delete Check example-openmcpdeployment-2openmcp
+I0826 06:05:55.733268       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:55.737772       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:55.748557       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:05:55.756579       1 controller.go:127] Service Notify Send
+I0826 06:05:55.756611       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:05:55.756675       1 controller.go:454] ->openmcp-service notify !
+I0826 06:05:55.804222       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:06:02.897491       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:02.897610       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:06:02.897696       1 controller.go:121] [Delete Detect]
+I0826 06:06:02.897801       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:06:02.897821       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:06:02.897831       1 controller.go:386] Delete Check example-openmcpdeployment-3openmcp
+I0826 06:06:02.897841       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:02.903428       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:02.915008       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:02.945529       1 controller.go:127] Service Notify Send
+I0826 06:06:02.945561       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:06:02.945622       1 controller.go:454] ->openmcp-service notify !
+I0826 06:06:02.963775       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:06:03.532721       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:03.532806       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:06:03.532860       1 controller.go:121] [Delete Detect]
+I0826 06:06:03.532914       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:06:03.532927       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:06:03.532937       1 controller.go:386] Delete Check example-openmcpdeployment-4openmcp
+I0826 06:06:03.532951       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:03.537737       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:03.548507       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:03.578962       1 controller.go:127] Service Notify Send
+I0826 06:06:03.578996       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:06:03.579057       1 controller.go:454] ->openmcp-service notify !
+I0826 06:06:03.589902       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:06:07.735697       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:07.735781       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:06:07.735841       1 controller.go:121] [Delete Detect]
+I0826 06:06:07.735899       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:06:07.735914       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:06:07.735924       1 controller.go:386] Delete Check example-openmcpdeployment-5openmcp
+I0826 06:06:07.735935       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:07.756118       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:07.781730       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:07.789341       1 controller.go:127] Service Notify Send
+I0826 06:06:07.789377       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:06:07.789472       1 controller.go:454] ->openmcp-service notify !
+I0826 06:06:07.797880       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:06:19.051750       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:19.051837       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 06:06:19.051876       1 controller.go:136] [Create Detect]
+I0826 06:06:19.051915       1 controller.go:137] Create Deployment Start
+I0826 06:06:19.051956       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 06:06:19.052007       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 06:06:19.079390       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:19.079443       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 06:06:19.079470       1 controller.go:136] [Create Detect]
+I0826 06:06:19.079494       1 controller.go:137] Create Deployment Start
+I0826 06:06:19.079541       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 06:06:19.079600       1 controller.go:173] Scheduling Wait
+I0826 06:06:19.303251       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:19.303327       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 06:06:19.303373       1 controller.go:136] [Create Detect]
+I0826 06:06:19.303411       1 controller.go:137] Create Deployment Start
+I0826 06:06:19.303451       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:06:19.303490       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:06:19.307132       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:06:19.307255       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 06:06:19.307273       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:19.371489       1 controller.go:205] Service Notify Send
+I0826 06:06:19.371543       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:06:19.371553       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:06:19.371578       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:06:19.371656       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:06:19.371670       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:06:19.371693       1 controller.go:211] sync_req_name : openmcp-deployment-sync-51
+I0826 06:06:19.371714       1 controller.go:214] Update Status
+I0826 06:06:19.381589       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:19.381643       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 06:06:19.521803       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:19.521898       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 06:06:19.521941       1 controller.go:136] [Create Detect]
+I0826 06:06:19.521980       1 controller.go:137] Create Deployment Start
+I0826 06:06:19.522019       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 06:06:19.522074       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 06:06:19.560707       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:19.560790       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 06:06:19.560826       1 controller.go:136] [Create Detect]
+I0826 06:06:19.560857       1 controller.go:137] Create Deployment Start
+I0826 06:06:19.560887       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 06:06:19.560936       1 controller.go:173] Scheduling Wait
+I0826 06:06:19.928249       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:19.928325       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 06:06:19.928363       1 controller.go:136] [Create Detect]
+I0826 06:06:19.928395       1 controller.go:137] Create Deployment Start
+I0826 06:06:19.928426       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 06:06:19.928469       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 06:06:19.962799       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:19.962866       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 06:06:19.962931       1 controller.go:136] [Create Detect]
+I0826 06:06:19.962981       1 controller.go:137] Create Deployment Start
+I0826 06:06:19.963027       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 06:06:19.963080       1 controller.go:173] Scheduling Wait
+I0826 06:06:20.339029       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:20.339126       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:06:20.339172       1 controller.go:136] [Create Detect]
+I0826 06:06:20.339219       1 controller.go:137] Create Deployment Start
+I0826 06:06:20.339257       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 06:06:20.339314       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 06:06:20.347473       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:20.347524       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:06:20.347558       1 controller.go:136] [Create Detect]
+I0826 06:06:20.347588       1 controller.go:137] Create Deployment Start
+I0826 06:06:20.347618       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 06:06:20.347652       1 controller.go:173] Scheduling Wait
+I0826 06:06:20.711085       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:20.711160       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:06:20.711202       1 controller.go:136] [Create Detect]
+I0826 06:06:20.711235       1 controller.go:137] Create Deployment Start
+I0826 06:06:20.711270       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 06:06:20.711319       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 06:06:20.722665       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:20.722714       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:06:20.722744       1 controller.go:136] [Create Detect]
+I0826 06:06:20.722771       1 controller.go:137] Create Deployment Start
+I0826 06:06:20.722797       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 06:06:20.722828       1 controller.go:173] Scheduling Wait
+I0826 06:06:23.421829       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:23.421928       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 06:06:23.421977       1 controller.go:136] [Create Detect]
+I0826 06:06:23.422028       1 controller.go:137] Create Deployment Start
+I0826 06:06:23.422069       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:06:23.422116       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:06:23.425229       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:06:23.425350       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 06:06:23.425373       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:23.448974       1 controller.go:205] Service Notify Send
+I0826 06:06:23.449049       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:06:23.449062       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:06:23.449093       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:06:23.449149       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:06:23.449168       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:06:23.449191       1 controller.go:211] sync_req_name : openmcp-deployment-sync-52
+I0826 06:06:23.449213       1 controller.go:214] Update Status
+I0826 06:06:23.502939       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:23.503000       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 06:06:27.507850       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:27.507961       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 06:06:27.508013       1 controller.go:136] [Create Detect]
+I0826 06:06:27.508070       1 controller.go:137] Create Deployment Start
+I0826 06:06:27.508114       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:06:27.508153       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:06:27.511637       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:06:27.511790       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 06:06:27.511825       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:27.517248       1 controller.go:205] Service Notify Send
+I0826 06:06:27.517280       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:06:27.517292       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:06:27.517319       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:06:27.517381       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:06:27.517401       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:06:27.517437       1 controller.go:211] sync_req_name : openmcp-deployment-sync-53
+I0826 06:06:27.517474       1 controller.go:214] Update Status
+I0826 06:06:27.540991       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:27.541091       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 06:06:31.593688       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:31.593780       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:06:31.593827       1 controller.go:136] [Create Detect]
+I0826 06:06:31.593860       1 controller.go:137] Create Deployment Start
+I0826 06:06:31.593908       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:06:31.593962       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:06:31.601968       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:06:31.602076       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 06:06:31.602097       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:31.626087       1 controller.go:205] Service Notify Send
+I0826 06:06:31.626117       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:06:31.626128       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:06:31.626155       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:06:31.626240       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:06:31.626259       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:06:31.626289       1 controller.go:211] sync_req_name : openmcp-deployment-sync-54
+I0826 06:06:31.626318       1 controller.go:214] Update Status
+I0826 06:06:31.637948       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:31.638025       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:06:32.912185       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:32.912282       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 06:06:32.912448       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:06:32.916401       1 controller.go:362] sync_req_name : openmcp-deployment-sync-51
+I0826 06:06:32.941280       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:32.941350       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 06:06:32.941428       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:06:32.949340       1 controller.go:362] sync_req_name : openmcp-deployment-sync-51
+I0826 06:06:32.956163       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:32.956222       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 06:06:32.956317       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:06:32.982159       1 controller.go:362] sync_req_name : openmcp-deployment-sync-51
+I0826 06:06:33.058402       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:33.058492       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 06:06:33.058609       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:06:33.092136       1 controller.go:362] sync_req_name : openmcp-deployment-sync-51
+I0826 06:06:35.206812       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:35.206907       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 06:06:35.207066       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:06:35.233993       1 controller.go:362] sync_req_name : openmcp-deployment-sync-52
+I0826 06:06:35.242903       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:35.242978       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 06:06:35.243110       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:06:35.304434       1 controller.go:362] sync_req_name : openmcp-deployment-sync-52
+I0826 06:06:35.326866       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:35.326943       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 06:06:35.327066       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:06:35.375681       1 controller.go:362] sync_req_name : openmcp-deployment-sync-52
+I0826 06:06:35.382741       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:35.382828       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 06:06:35.382973       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:06:35.445726       1 controller.go:362] sync_req_name : openmcp-deployment-sync-52
+I0826 06:06:35.700491       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:35.700574       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:06:35.700612       1 controller.go:136] [Create Detect]
+I0826 06:06:35.700642       1 controller.go:137] Create Deployment Start
+I0826 06:06:35.700672       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:06:35.700702       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:06:35.703726       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:06:35.703836       1 controller.go:197] SyncResource Create (ClusterName : cluster2, Command : create, Replicas :1 / 1)
+I0826 06:06:35.703856       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:35.723372       1 controller.go:205] Service Notify Send
+I0826 06:06:35.723415       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:06:35.723425       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:06:35.723454       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:06:35.723553       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:06:35.723574       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:06:35.723614       1 controller.go:211] sync_req_name : openmcp-deployment-sync-55
+I0826 06:06:35.723656       1 controller.go:214] Update Status
+I0826 06:06:35.730735       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:35.730800       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:06:36.372101       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:36.372329       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:06:36.372493       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:06:36.470521       1 controller.go:362] sync_req_name : openmcp-deployment-sync-55
+I0826 06:06:36.478138       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:36.478186       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:06:36.478274       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:06:36.495467       1 controller.go:362] sync_req_name : openmcp-deployment-sync-55
+I0826 06:06:36.504744       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:36.504804       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:06:36.504912       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:06:36.538028       1 controller.go:362] sync_req_name : openmcp-deployment-sync-55
+I0826 06:06:36.621427       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:36.621521       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:06:36.621657       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:06:36.662494       1 controller.go:362] sync_req_name : openmcp-deployment-sync-55
+I0826 06:06:37.208586       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:37.208667       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 06:06:37.208819       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:06:37.296666       1 controller.go:362] sync_req_name : openmcp-deployment-sync-53
+I0826 06:06:37.303164       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:37.303234       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 06:06:37.303370       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:06:37.360277       1 controller.go:362] sync_req_name : openmcp-deployment-sync-53
+I0826 06:06:37.366883       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:37.366972       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 06:06:37.367142       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:06:37.393520       1 controller.go:362] sync_req_name : openmcp-deployment-sync-53
+I0826 06:06:37.399720       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:37.399808       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 06:06:37.399929       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:06:37.429707       1 controller.go:362] sync_req_name : openmcp-deployment-sync-53
+I0826 06:06:38.243737       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:38.243825       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:06:38.243881       1 controller.go:121] [Delete Detect]
+I0826 06:06:38.243949       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:06:38.243970       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:06:38.243986       1 controller.go:386] Delete Check example-openmcpdeployment-1openmcp
+I0826 06:06:38.244002       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:38.248594       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:38.303292       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:38.311335       1 controller.go:127] Service Notify Send
+I0826 06:06:38.311366       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:06:38.311429       1 controller.go:454] ->openmcp-service notify !
+I0826 06:06:38.366889       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:06:38.377861       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:38.377933       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:06:38.377987       1 controller.go:121] [Delete Detect]
+I0826 06:06:38.378037       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:06:38.378048       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:06:38.378057       1 controller.go:386] Delete Check example-openmcpdeployment-2openmcp
+I0826 06:06:38.378069       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:38.382280       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:38.386108       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:38.394555       1 controller.go:127] Service Notify Send
+I0826 06:06:38.394587       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:06:38.394640       1 controller.go:454] ->openmcp-service notify !
+I0826 06:06:38.403193       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:06:38.512784       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:38.512872       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:06:38.512954       1 controller.go:121] [Delete Detect]
+I0826 06:06:38.513066       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:06:38.513090       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:06:38.513106       1 controller.go:386] Delete Check example-openmcpdeployment-3openmcp
+I0826 06:06:38.513136       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:38.519269       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:38.528212       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:38.536111       1 controller.go:127] Service Notify Send
+I0826 06:06:38.536141       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:06:38.536239       1 controller.go:454] ->openmcp-service notify !
+I0826 06:06:38.544452       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:06:38.636124       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:38.636205       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:06:38.636261       1 controller.go:121] [Delete Detect]
+I0826 06:06:38.636316       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:06:38.636330       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:06:38.636343       1 controller.go:386] Delete Check example-openmcpdeployment-4openmcp
+I0826 06:06:38.636357       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:38.644387       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:38.673419       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:38.686085       1 controller.go:127] Service Notify Send
+I0826 06:06:38.686114       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:06:38.686201       1 controller.go:454] ->openmcp-service notify !
+I0826 06:06:38.694625       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:06:38.763063       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:38.763128       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:06:38.763186       1 controller.go:121] [Delete Detect]
+I0826 06:06:38.763244       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:06:38.763257       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:06:38.763267       1 controller.go:386] Delete Check example-openmcpdeployment-5openmcp
+I0826 06:06:38.763277       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:38.848865       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:39.049142       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:39.248772       1 controller.go:127] Service Notify Send
+I0826 06:06:39.248810       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:06:39.248911       1 controller.go:454] ->openmcp-service notify !
+I0826 06:06:39.261392       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:06:39.266243       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:39.266323       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:06:39.266385       1 controller.go:121] [Delete Detect]
+I0826 06:06:39.266443       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:06:39.266455       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:06:39.266466       1 controller.go:386] Delete Check example-openmcpdeployment-4openmcp
+I0826 06:06:39.266480       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:39.448868       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:39.649440       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:39.849410       1 controller.go:127] Service Notify Send
+I0826 06:06:39.849448       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:06:39.849523       1 controller.go:454] ->openmcp-service notify !
+I0826 06:06:39.883732       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:06:39.888461       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:39.888540       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:06:39.888603       1 controller.go:121] [Delete Detect]
+I0826 06:06:39.888660       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:06:39.888673       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:06:39.888684       1 controller.go:386] Delete Check example-openmcpdeployment-4openmcp
+I0826 06:06:39.888713       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:40.048623       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:40.248565       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:40.449286       1 controller.go:127] Service Notify Send
+I0826 06:06:40.449333       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:06:40.449456       1 controller.go:454] ->openmcp-service notify !
+I0826 06:06:40.461514       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:06:41.313259       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:41.313352       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:06:41.313429       1 controller.go:121] [Delete Detect]
+I0826 06:06:41.313494       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:06:41.313517       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:06:41.313534       1 controller.go:386] Delete Check example-openmcpdeployment-1openmcp
+I0826 06:06:41.313546       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:41.319794       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:41.328119       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:41.336378       1 controller.go:127] Service Notify Send
+I0826 06:06:41.336402       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:06:41.336493       1 controller.go:454] ->openmcp-service notify !
+I0826 06:06:41.365395       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:06:45.276462       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:45.276550       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:06:45.276608       1 controller.go:121] [Delete Detect]
+I0826 06:06:45.276665       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:06:45.276681       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:06:45.276692       1 controller.go:386] Delete Check example-openmcpdeployment-2openmcp
+I0826 06:06:45.276704       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:45.281549       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:45.294281       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:45.302720       1 controller.go:127] Service Notify Send
+I0826 06:06:45.302745       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:06:45.302804       1 controller.go:454] ->openmcp-service notify !
+I0826 06:06:45.330492       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:06:49.476849       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:49.476936       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:06:49.477033       1 controller.go:121] [Delete Detect]
+I0826 06:06:49.477081       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:06:49.477093       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:06:49.477101       1 controller.go:386] Delete Check example-openmcpdeployment-3openmcp
+I0826 06:06:49.477113       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:49.482137       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:49.541107       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:49.545364       1 controller.go:127] Service Notify Send
+I0826 06:06:49.545395       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:06:49.545470       1 controller.go:454] ->openmcp-service notify !
+I0826 06:06:49.561178       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:06:53.678268       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:53.678353       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:06:53.678412       1 controller.go:121] [Delete Detect]
+I0826 06:06:53.678470       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:06:53.678484       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:06:53.678495       1 controller.go:386] Delete Check example-openmcpdeployment-4openmcp
+I0826 06:06:53.678509       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:53.686159       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:53.693458       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:53.723948       1 controller.go:127] Service Notify Send
+I0826 06:06:53.723979       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:06:53.724047       1 controller.go:454] ->openmcp-service notify !
+I0826 06:06:53.729416       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:06:58.490164       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:06:58.490255       1 controller.go:116] Resource Get => [Name] :  [Namespace]  : 
+I0826 06:06:58.490315       1 controller.go:121] [Delete Detect]
+I0826 06:06:58.490373       1 controller.go:124] Delete Deployment of All Cluster
+I0826 06:06:58.490387       1 controller.go:373] [OpenMCP Deployment] Function Called DeleteDeploys
+I0826 06:06:58.490399       1 controller.go:386] Delete Check example-openmcpdeployment-5openmcp
+I0826 06:06:58.490414       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:58.495038       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:58.510275       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:06:58.538731       1 controller.go:127] Service Notify Send
+I0826 06:06:58.538768       1 controller.go:446] [OpenMCP Deployment] Function Called ServiceNotifyAll
+I0826 06:06:58.538841       1 controller.go:454] ->openmcp-service notify !
+I0826 06:06:58.543616       1 controller.go:454] ->openmcp-service-example notify !
+I0826 06:14:57.198062       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:14:57.198164       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 06:14:57.198207       1 controller.go:136] [Create Detect]
+I0826 06:14:57.198244       1 controller.go:137] Create Deployment Start
+I0826 06:14:57.198297       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 06:14:57.198351       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 06:14:57.219117       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:14:57.219184       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 06:14:57.219223       1 controller.go:136] [Create Detect]
+I0826 06:14:57.219261       1 controller.go:137] Create Deployment Start
+I0826 06:14:57.219297       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 06:14:57.219340       1 controller.go:173] Scheduling Wait
+I0826 06:15:01.278067       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:01.278170       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 06:15:01.278241       1 controller.go:136] [Create Detect]
+I0826 06:15:01.278283       1 controller.go:137] Create Deployment Start
+I0826 06:15:01.278338       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:15:01.278373       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:15:01.281463       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:15:01.281552       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 06:15:01.281568       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:15:01.379111       1 controller.go:205] Service Notify Send
+I0826 06:15:01.379152       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:15:01.379166       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:15:01.379199       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:15:01.379281       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:15:01.379303       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:15:01.379344       1 controller.go:211] sync_req_name : openmcp-deployment-sync-92
+I0826 06:15:01.379380       1 controller.go:214] Update Status
+I0826 06:15:01.386554       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:01.386622       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 06:15:02.026575       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:02.026646       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 06:15:02.026817       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:02.030462       1 controller.go:362] sync_req_name : openmcp-deployment-sync-92
+I0826 06:15:02.039897       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:02.039985       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 06:15:02.040136       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:02.121726       1 controller.go:362] sync_req_name : openmcp-deployment-sync-92
+I0826 06:15:02.145888       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:02.145960       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 06:15:02.145998       1 controller.go:136] [Create Detect]
+I0826 06:15:02.146034       1 controller.go:137] Create Deployment Start
+I0826 06:15:02.146079       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 06:15:02.146139       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 06:15:02.151172       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:02.151232       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 06:15:02.151378       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:02.154267       1 controller.go:362] sync_req_name : openmcp-deployment-sync-92
+I0826 06:15:02.187746       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:02.187831       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 06:15:02.187888       1 controller.go:136] [Create Detect]
+I0826 06:15:02.187954       1 controller.go:137] Create Deployment Start
+I0826 06:15:02.188004       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 06:15:02.188057       1 controller.go:173] Scheduling Wait
+I0826 06:15:02.486720       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:02.486777       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-1 [Namespace]  : openmcp
+I0826 06:15:02.486905       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:02.497853       1 controller.go:362] sync_req_name : openmcp-deployment-sync-92
+I0826 06:15:08.440977       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:08.441099       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 06:15:08.441147       1 controller.go:136] [Create Detect]
+I0826 06:15:08.441187       1 controller.go:137] Create Deployment Start
+I0826 06:15:08.441227       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 06:15:08.441280       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 06:15:08.481529       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:08.481606       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 06:15:08.481664       1 controller.go:136] [Create Detect]
+I0826 06:15:08.481725       1 controller.go:137] Create Deployment Start
+I0826 06:15:08.481770       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 06:15:08.481823       1 controller.go:173] Scheduling Wait
+I0826 06:15:09.362190       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:09.362275       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 06:15:09.362313       1 controller.go:136] [Create Detect]
+I0826 06:15:09.362346       1 controller.go:137] Create Deployment Start
+I0826 06:15:09.362379       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:15:09.362410       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:15:09.365431       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:15:09.365515       1 controller.go:197] SyncResource Create (ClusterName : cluster2, Command : create, Replicas :1 / 1)
+I0826 06:15:09.365532       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:15:09.389675       1 controller.go:205] Service Notify Send
+I0826 06:15:09.389702       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:15:09.389720       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:15:09.389744       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:15:09.389799       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:15:09.389815       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:15:09.389842       1 controller.go:211] sync_req_name : openmcp-deployment-sync-93
+I0826 06:15:09.389870       1 controller.go:214] Update Status
+I0826 06:15:09.396961       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:09.397066       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 06:15:10.029105       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:10.029213       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 06:15:10.029437       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:10.050419       1 controller.go:362] sync_req_name : openmcp-deployment-sync-93
+I0826 06:15:10.057479       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:10.057551       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 06:15:10.057667       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:10.100882       1 controller.go:362] sync_req_name : openmcp-deployment-sync-93
+I0826 06:15:10.172177       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:10.172244       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 06:15:10.172365       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:10.200722       1 controller.go:362] sync_req_name : openmcp-deployment-sync-93
+I0826 06:15:10.211524       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:10.211625       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-2 [Namespace]  : openmcp
+I0826 06:15:10.211762       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:10.235836       1 controller.go:362] sync_req_name : openmcp-deployment-sync-93
+I0826 06:15:17.391929       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:17.392029       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 06:15:17.392073       1 controller.go:136] [Create Detect]
+I0826 06:15:17.392110       1 controller.go:137] Create Deployment Start
+I0826 06:15:17.392146       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:15:17.392182       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:15:17.395071       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:15:17.395186       1 controller.go:197] SyncResource Create (ClusterName : cluster3, Command : create, Replicas :1 / 1)
+I0826 06:15:17.395210       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:15:17.401234       1 controller.go:205] Service Notify Send
+I0826 06:15:17.401269       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:15:17.401282       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:15:17.401326       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:15:17.401412       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:15:17.401436       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:15:17.401490       1 controller.go:211] sync_req_name : openmcp-deployment-sync-94
+I0826 06:15:17.401540       1 controller.go:214] Update Status
+I0826 06:15:17.422847       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:17.422913       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 06:15:18.234557       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:18.234641       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:15:18.234682       1 controller.go:136] [Create Detect]
+I0826 06:15:18.234723       1 controller.go:137] Create Deployment Start
+I0826 06:15:18.234764       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 06:15:18.234818       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 06:15:18.249128       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:18.249197       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:15:18.249243       1 controller.go:136] [Create Detect]
+I0826 06:15:18.249286       1 controller.go:137] Create Deployment Start
+I0826 06:15:18.249326       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 06:15:18.249373       1 controller.go:173] Scheduling Wait
+I0826 06:15:20.135566       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:20.135630       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 06:15:20.135758       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:20.165909       1 controller.go:362] sync_req_name : openmcp-deployment-sync-94
+I0826 06:15:20.174826       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:20.174890       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 06:15:20.175019       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:20.219008       1 controller.go:362] sync_req_name : openmcp-deployment-sync-94
+I0826 06:15:20.225308       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:20.225368       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 06:15:20.225489       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:20.272371       1 controller.go:362] sync_req_name : openmcp-deployment-sync-94
+I0826 06:15:20.278969       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:20.279034       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-3 [Namespace]  : openmcp
+I0826 06:15:20.279146       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:20.283240       1 controller.go:362] sync_req_name : openmcp-deployment-sync-94
+I0826 06:15:27.683304       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:27.683407       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:15:27.683447       1 controller.go:136] [Create Detect]
+I0826 06:15:27.683502       1 controller.go:137] Create Deployment Start
+I0826 06:15:27.683537       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 06:15:27.683585       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 06:15:27.705349       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:27.705412       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:15:27.705453       1 controller.go:136] [Create Detect]
+I0826 06:15:27.705499       1 controller.go:137] Create Deployment Start
+I0826 06:15:27.705538       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 06:15:27.705584       1 controller.go:173] Scheduling Wait
+I0826 06:15:29.327365       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:29.327418       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:15:29.327448       1 controller.go:136] [Create Detect]
+I0826 06:15:29.327479       1 controller.go:137] Create Deployment Start
+I0826 06:15:29.327505       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:15:29.327539       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:15:29.330816       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:15:29.330881       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 06:15:29.330895       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:15:29.339492       1 controller.go:205] Service Notify Send
+I0826 06:15:29.339511       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:15:29.339519       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:15:29.339544       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:15:29.339587       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:15:29.339599       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:15:29.339620       1 controller.go:211] sync_req_name : openmcp-deployment-sync-95
+I0826 06:15:29.339641       1 controller.go:214] Update Status
+I0826 06:15:29.348911       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:29.348950       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:15:29.983938       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:29.984021       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:15:29.984168       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:30.006933       1 controller.go:362] sync_req_name : openmcp-deployment-sync-95
+I0826 06:15:30.017517       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:30.017582       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:15:30.017696       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:30.108460       1 controller.go:362] sync_req_name : openmcp-deployment-sync-95
+I0826 06:15:30.115563       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:30.115637       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:15:30.115752       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:30.125070       1 controller.go:362] sync_req_name : openmcp-deployment-sync-95
+I0826 06:15:30.149981       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:30.150058       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-4 [Namespace]  : openmcp
+I0826 06:15:30.150201       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:30.158279       1 controller.go:362] sync_req_name : openmcp-deployment-sync-95
+I0826 06:15:32.461212       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:32.461306       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-6 [Namespace]  : openmcp
+I0826 06:15:32.461345       1 controller.go:136] [Create Detect]
+I0826 06:15:32.461379       1 controller.go:137] Create Deployment Start
+I0826 06:15:32.461417       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 06:15:32.461467       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 06:15:32.467925       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:32.468024       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-6 [Namespace]  : openmcp
+I0826 06:15:32.468113       1 controller.go:136] [Create Detect]
+I0826 06:15:32.468176       1 controller.go:137] Create Deployment Start
+I0826 06:15:32.468238       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 06:15:32.468332       1 controller.go:173] Scheduling Wait
+I0826 06:15:33.393496       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:33.393575       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:15:33.393609       1 controller.go:136] [Create Detect]
+I0826 06:15:33.393642       1 controller.go:137] Create Deployment Start
+I0826 06:15:33.393674       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:15:33.393706       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:15:33.397032       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:15:33.397192       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 06:15:33.397224       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:15:33.413363       1 controller.go:205] Service Notify Send
+I0826 06:15:33.413388       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:15:33.413397       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:15:33.413418       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:15:33.413474       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:15:33.413490       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:15:33.413523       1 controller.go:211] sync_req_name : openmcp-deployment-sync-96
+I0826 06:15:33.413554       1 controller.go:214] Update Status
+I0826 06:15:33.423951       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:33.424022       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:15:34.062972       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:34.063052       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:15:34.063198       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:34.093597       1 controller.go:362] sync_req_name : openmcp-deployment-sync-96
+I0826 06:15:34.150953       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:34.151015       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:15:34.151118       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:34.154427       1 controller.go:362] sync_req_name : openmcp-deployment-sync-96
+I0826 06:15:34.195098       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:34.195144       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:15:34.195238       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:34.217259       1 controller.go:362] sync_req_name : openmcp-deployment-sync-96
+I0826 06:15:34.236096       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:34.236151       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-5 [Namespace]  : openmcp
+I0826 06:15:34.236275       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:34.283905       1 controller.go:362] sync_req_name : openmcp-deployment-sync-96
+I0826 06:15:39.007804       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:39.007871       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-7 [Namespace]  : openmcp
+I0826 06:15:39.007903       1 controller.go:136] [Create Detect]
+I0826 06:15:39.007931       1 controller.go:137] Create Deployment Start
+I0826 06:15:39.007961       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 06:15:39.008003       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 06:15:39.022983       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:39.023041       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-7 [Namespace]  : openmcp
+I0826 06:15:39.023076       1 controller.go:136] [Create Detect]
+I0826 06:15:39.023111       1 controller.go:137] Create Deployment Start
+I0826 06:15:39.023145       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 06:15:39.023184       1 controller.go:173] Scheduling Wait
+I0826 06:15:41.431177       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:41.431263       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-6 [Namespace]  : openmcp
+I0826 06:15:41.431307       1 controller.go:136] [Create Detect]
+I0826 06:15:41.431350       1 controller.go:137] Create Deployment Start
+I0826 06:15:41.431384       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:15:41.431419       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:15:41.434812       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:15:41.434906       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 06:15:41.434933       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:15:41.458754       1 controller.go:205] Service Notify Send
+I0826 06:15:41.458785       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:15:41.458793       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:15:41.458814       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:15:41.458866       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:15:41.458879       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:15:41.458905       1 controller.go:211] sync_req_name : openmcp-deployment-sync-97
+I0826 06:15:41.458927       1 controller.go:214] Update Status
+I0826 06:15:41.465215       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:41.465267       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-6 [Namespace]  : openmcp
+I0826 06:15:42.084357       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:42.084459       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-6 [Namespace]  : openmcp
+I0826 06:15:42.084641       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:42.105046       1 controller.go:362] sync_req_name : openmcp-deployment-sync-97
+I0826 06:15:42.114365       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:42.114444       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-6 [Namespace]  : openmcp
+I0826 06:15:42.114601       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:42.203781       1 controller.go:362] sync_req_name : openmcp-deployment-sync-97
+I0826 06:15:42.226028       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:42.226093       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-6 [Namespace]  : openmcp
+I0826 06:15:42.226209       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:42.246451       1 controller.go:362] sync_req_name : openmcp-deployment-sync-97
+I0826 06:15:42.252463       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:42.252510       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-6 [Namespace]  : openmcp
+I0826 06:15:42.252581       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:42.255728       1 controller.go:362] sync_req_name : openmcp-deployment-sync-97
+I0826 06:15:46.293656       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:46.293750       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-8 [Namespace]  : openmcp
+I0826 06:15:46.293792       1 controller.go:136] [Create Detect]
+I0826 06:15:46.293833       1 controller.go:137] Create Deployment Start
+I0826 06:15:46.293873       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 06:15:46.293928       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 06:15:46.300167       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:46.300234       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-8 [Namespace]  : openmcp
+I0826 06:15:46.300285       1 controller.go:136] [Create Detect]
+I0826 06:15:46.300325       1 controller.go:137] Create Deployment Start
+I0826 06:15:46.300364       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 06:15:46.300410       1 controller.go:173] Scheduling Wait
+I0826 06:15:49.424867       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:49.424959       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-7 [Namespace]  : openmcp
+I0826 06:15:49.425031       1 controller.go:136] [Create Detect]
+I0826 06:15:49.425085       1 controller.go:137] Create Deployment Start
+I0826 06:15:49.425123       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:15:49.425176       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:15:49.427927       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:15:49.428019       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 06:15:49.428038       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:15:49.442480       1 controller.go:205] Service Notify Send
+I0826 06:15:49.442519       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:15:49.442532       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:15:49.442564       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:15:49.442628       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:15:49.442648       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:15:49.442680       1 controller.go:211] sync_req_name : openmcp-deployment-sync-98
+I0826 06:15:49.442714       1 controller.go:214] Update Status
+I0826 06:15:49.501635       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:49.501704       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-7 [Namespace]  : openmcp
+I0826 06:15:50.112267       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:50.112399       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-7 [Namespace]  : openmcp
+I0826 06:15:50.112608       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:50.133889       1 controller.go:362] sync_req_name : openmcp-deployment-sync-98
+I0826 06:15:50.159999       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:50.160068       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-7 [Namespace]  : openmcp
+I0826 06:15:50.160172       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:50.192084       1 controller.go:362] sync_req_name : openmcp-deployment-sync-98
+I0826 06:15:50.249204       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:50.249279       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-7 [Namespace]  : openmcp
+I0826 06:15:50.249412       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:50.252641       1 controller.go:362] sync_req_name : openmcp-deployment-sync-98
+I0826 06:15:57.466768       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:57.466848       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-8 [Namespace]  : openmcp
+I0826 06:15:57.466886       1 controller.go:136] [Create Detect]
+I0826 06:15:57.466920       1 controller.go:137] Create Deployment Start
+I0826 06:15:57.466952       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:15:57.466984       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:15:57.470083       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:15:57.470192       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 06:15:57.470219       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:15:57.498638       1 controller.go:205] Service Notify Send
+I0826 06:15:57.498662       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:15:57.498672       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:15:57.498696       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:15:57.498757       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:15:57.498772       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:15:57.498800       1 controller.go:211] sync_req_name : openmcp-deployment-sync-99
+I0826 06:15:57.498827       1 controller.go:214] Update Status
+I0826 06:15:57.550283       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:57.550343       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-8 [Namespace]  : openmcp
+I0826 06:15:58.186591       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:58.186674       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-8 [Namespace]  : openmcp
+I0826 06:15:58.186819       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:58.212846       1 controller.go:362] sync_req_name : openmcp-deployment-sync-99
+I0826 06:15:58.228995       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:58.229066       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-8 [Namespace]  : openmcp
+I0826 06:15:58.229170       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:58.255359       1 controller.go:362] sync_req_name : openmcp-deployment-sync-99
+I0826 06:15:58.323933       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:15:58.324001       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-8 [Namespace]  : openmcp
+I0826 06:15:58.324120       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:15:58.354607       1 controller.go:362] sync_req_name : openmcp-deployment-sync-99
+I0826 06:16:01.223121       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:16:01.223208       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-9 [Namespace]  : openmcp
+I0826 06:16:01.223249       1 controller.go:136] [Create Detect]
+I0826 06:16:01.223290       1 controller.go:137] Create Deployment Start
+I0826 06:16:01.223326       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 06:16:01.223381       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 06:16:01.282748       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:16:01.282810       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-9 [Namespace]  : openmcp
+I0826 06:16:01.282844       1 controller.go:136] [Create Detect]
+I0826 06:16:01.282883       1 controller.go:137] Create Deployment Start
+I0826 06:16:01.282915       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 06:16:01.282960       1 controller.go:173] Scheduling Wait
+I0826 06:16:07.442209       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:16:07.442296       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-10 [Namespace]  : openmcp
+I0826 06:16:07.442341       1 controller.go:136] [Create Detect]
+I0826 06:16:07.442381       1 controller.go:137] Create Deployment Start
+I0826 06:16:07.442421       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : false
+I0826 06:16:07.442475       1 controller.go:140] Scheduling 요청 (SchedulingNeed false => true)
+I0826 06:16:07.489705       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:16:07.489764       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-10 [Namespace]  : openmcp
+I0826 06:16:07.489818       1 controller.go:136] [Create Detect]
+I0826 06:16:07.489858       1 controller.go:137] Create Deployment Start
+I0826 06:16:07.489901       1 controller.go:138] SchedulingNeed : true, SchedulingComplete : false
+I0826 06:16:07.489948       1 controller.go:173] Scheduling Wait
+I0826 06:16:09.496705       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:16:09.496777       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-9 [Namespace]  : openmcp
+I0826 06:16:09.496814       1 controller.go:136] [Create Detect]
+I0826 06:16:09.496847       1 controller.go:137] Create Deployment Start
+I0826 06:16:09.496878       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:16:09.496910       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:16:09.500163       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:16:09.500242       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 06:16:09.500255       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:16:09.524119       1 controller.go:205] Service Notify Send
+I0826 06:16:09.524153       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:16:09.524168       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:16:09.524212       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:16:09.524299       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:16:09.524323       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:16:09.524368       1 controller.go:211] sync_req_name : openmcp-deployment-sync-100
+I0826 06:16:09.524417       1 controller.go:214] Update Status
+I0826 06:16:09.538838       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:16:09.538875       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-9 [Namespace]  : openmcp
+I0826 06:16:10.196734       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:16:10.196810       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-9 [Namespace]  : openmcp
+I0826 06:16:10.196922       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:16:10.289835       1 controller.go:362] sync_req_name : openmcp-deployment-sync-100
+I0826 06:16:10.296848       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:16:10.296938       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-9 [Namespace]  : openmcp
+I0826 06:16:10.297142       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:16:10.316197       1 controller.go:362] sync_req_name : openmcp-deployment-sync-100
+I0826 06:16:10.346327       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:16:10.346415       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-9 [Namespace]  : openmcp
+I0826 06:16:10.346569       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:16:10.452692       1 controller.go:362] sync_req_name : openmcp-deployment-sync-100
+I0826 06:16:10.459658       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:16:10.459745       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-9 [Namespace]  : openmcp
+I0826 06:16:10.459874       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:16:10.465992       1 controller.go:362] sync_req_name : openmcp-deployment-sync-100
+I0826 06:16:13.605175       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:16:13.605249       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-10 [Namespace]  : openmcp
+I0826 06:16:13.605276       1 controller.go:136] [Create Detect]
+I0826 06:16:13.605299       1 controller.go:137] Create Deployment Start
+I0826 06:16:13.605322       1 controller.go:138] SchedulingNeed : false, SchedulingComplete : true
+I0826 06:16:13.605346       1 controller.go:178] Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.
+I0826 06:16:13.608396       1 controller.go:465] [CHECK] deploymentForOpenMCPDeployment
+I0826 06:16:13.608476       1 controller.go:197] SyncResource Create (ClusterName : cluster1, Command : create, Replicas :1 / 1)
+I0826 06:16:13.608493       1 controller.go:397] [OpenMCP Deployment] Function Called sendSync
+I0826 06:16:13.614382       1 controller.go:205] Service Notify Send
+I0826 06:16:13.614417       1 controller.go:419] [OpenMCP Deployment] Function Called ServiceNotify
+I0826 06:16:13.614428       1 controller.go:420] [OpenMCP Deployment] label_map : map[test:yes]
+I0826 06:16:13.614454       1 controller.go:425] [OpenMCP Deployment] find Notify Target Service
+I0826 06:16:13.614517       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / openmcp-nginx
+I0826 06:16:13.614535       1 controller.go:429] [OpenMCP Deployment] find Notify Target Label : app / nginx
+I0826 06:16:13.614569       1 controller.go:211] sync_req_name : openmcp-deployment-sync-101
+I0826 06:16:13.614603       1 controller.go:214] Update Status
+I0826 06:16:13.642183       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:16:13.642251       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-10 [Namespace]  : openmcp
+I0826 06:16:14.264223       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:16:14.264316       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-10 [Namespace]  : openmcp
+I0826 06:16:14.264456       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:16:14.284407       1 controller.go:362] sync_req_name : openmcp-deployment-sync-101
+I0826 06:16:14.291769       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:16:14.291858       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-10 [Namespace]  : openmcp
+I0826 06:16:14.292080       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:16:14.346170       1 controller.go:362] sync_req_name : openmcp-deployment-sync-101
+I0826 06:16:14.408087       1 controller.go:110] [OpenMCP Deployment] Function Called Reconcile
+I0826 06:16:14.408155       1 controller.go:116] Resource Get => [Name] : example-openmcpdeployment-10 [Namespace]  : openmcp
+I0826 06:16:14.408274       1 controller.go:333] [Member Cluster Check Deployment]
+I0826 06:16:14.411471       1 controller.go:362] sync_req_name : openmcp-deployment-sync-101
