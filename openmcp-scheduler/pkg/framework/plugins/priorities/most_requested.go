@@ -17,7 +17,7 @@ func (pl *MostRequested) Score(pod *ketiresource.Pod, clusterInfo *ketiresource.
 		nodeScore := mostRequestedScore(pod.RequestedResource.MilliCPU, node.AllocatableResource.MilliCPU)
 		nodeScore += mostRequestedScore(pod.RequestedResource.Memory, node.AllocatableResource.Memory)
 		nodeScore += mostRequestedScore(pod.RequestedResource.EphemeralStorage, node.AllocatableResource.EphemeralStorage)
-
+	
 		node.NodeScore = nodeScore
 		clusterScore += nodeScore
 	}

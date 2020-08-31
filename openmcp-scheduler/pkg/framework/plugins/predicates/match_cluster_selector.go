@@ -1,9 +1,9 @@
 package predicates
 
 import (
+	"strings"
 	"k8s.io/klog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
-	"strings"
 )
 
 type MatchClusterSelector struct{}
@@ -13,7 +13,7 @@ func (pl *MatchClusterSelector) Name() string {
 }
 
 func (pl *MatchClusterSelector) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
-
+	
 	// Node must have labels correspoinding to new Pod's NodeSelector
 	// Example of *.yaml for a new OpenMCPDeployemt as folllow:
 	//  spec:
@@ -35,7 +35,7 @@ func (pl *MatchClusterSelector) Filter(newPod *ketiresource.Pod, clusterInfo *ke
 
 			klog.Infof("pod_value:%v", pod_value)
 
-			if node_value, ok := node.Node.Labels[key]; !ok {
+			if node_value, ok := node.Node.Labels[key]; !ok{
 				klog.Infof("node_value:%v", node_value)
 				node_result = false
 			} else {
@@ -56,6 +56,6 @@ func (pl *MatchClusterSelector) Filter(newPod *ketiresource.Pod, clusterInfo *ke
 			return true
 		}
 	}
-
+	
 	return false
 }

@@ -1,8 +1,8 @@
 package predicates
 
 import (
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
+	v1 "k8s.io/api/core/v1"
 	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
 )
@@ -33,7 +33,7 @@ func (pl *PodFitsHostPorts) Filter(newPod *ketiresource.Pod, clusterInfo *ketire
 	// if there is not requested Ports, PodFitHostPorts return true
 	wantPorts := getContainerPorts(newPod.Pod)
 
-	if len(wantPorts) == 0 {
+	if len(wantPorts) == 0{
 		return true
 	}
 
@@ -52,6 +52,7 @@ func (pl *PodFitsHostPorts) Filter(newPod *ketiresource.Pod, clusterInfo *ketire
 
 func fitsPorts(wantPorts []*v1.ContainerPort, nodeInfo *ketiresource.NodeInfo) bool {
 
+
 	for _, wantPort := range wantPorts {
 
 		// Checks if the wantPort conflict with the existing ones in HostPortInfo
@@ -62,7 +63,7 @@ func fitsPorts(wantPorts []*v1.ContainerPort, nodeInfo *ketiresource.NodeInfo) b
 		for i := range nodeInfo.Pods {
 			pod := nodeInfo.Pods[i]
 
-			for j := range pod.Pod.Spec.Containers {
+			for j := range pod.Pod.Spec.Containers{
 				container := &pod.Pod.Spec.Containers[j]
 
 				for k := range container.Ports {

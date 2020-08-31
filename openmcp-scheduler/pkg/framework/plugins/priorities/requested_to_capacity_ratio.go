@@ -1,8 +1,8 @@
 package priorities
 
 import (
-	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
+	"openmcp/openmcp/omcplog"
 )
 
 type RequestedToCapacityRatio struct{}
@@ -57,7 +57,7 @@ func (pl *RequestedToCapacityRatio) Score(pod *ketiresource.Pod, clusterInfo *ke
 	return clusterScore
 }
 
-func RunRequestedToCapacityRatioScorerFunction(capacity, requested int64) int64 {
+func RunRequestedToCapacityRatioScorerFunction (capacity, requested int64) int64 {
 	scoringFunctionShape := defaultFunctionShape
 	rawScoringFunction := buildBrokenLinearFunction(scoringFunctionShape)
 
@@ -71,6 +71,7 @@ func RunRequestedToCapacityRatioScorerFunction(capacity, requested int64) int64 
 
 	return int64(resourceScoringFunction(requested, capacity))
 }
+
 
 func buildBrokenLinearFunction(shape FunctionShape) func(int64) int64 {
 	n := len(shape)

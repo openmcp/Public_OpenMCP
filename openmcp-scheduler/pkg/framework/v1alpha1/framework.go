@@ -1,23 +1,23 @@
 package v1alpha1
 
 import (
-	"openmcp/openmcp/omcplog"
+	// "openmcp/openmcp/omcplog"
+	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
 	"openmcp/openmcp/openmcp-scheduler/pkg/framework/plugins/predicates"
 	"openmcp/openmcp/openmcp-scheduler/pkg/framework/plugins/priorities"
 	"openmcp/openmcp/openmcp-scheduler/pkg/protobuf"
-	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
 )
 
 type openmcpFramework struct {
-	filterPlugins []OpenmcpFilterPlugin
-	scorePlugins  []OpenmcpScorePlugin
+	filterPlugins		[]OpenmcpFilterPlugin
+	scorePlugins		[]OpenmcpScorePlugin
 }
 
-// The appearance of the blank identifier in this construct indicates
+// The appearance of the blank identifier in this construct indicates 
 // that the declaration exists only for the type checking, not to create a variable.
 var _ OpenmcpFramework = &openmcpFramework{}
 
-func NewFramework(grpcClient protobuf.RequestAnalysisClient) OpenmcpFramework {
+func NewFramework(grpcClient protobuf.RequestAnalysisClient) OpenmcpFramework{
 
 	f := &openmcpFramework{
 		filterPlugins: []OpenmcpFilterPlugin{
@@ -40,10 +40,10 @@ func NewFramework(grpcClient protobuf.RequestAnalysisClient) OpenmcpFramework {
 	return f
 }
 
-func (f *openmcpFramework) RunFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster) OpenmcpClusterFilteredStatus {
+func (f *openmcpFramework) RunFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster) OpenmcpClusterFilteredStatus{
 	result := make(map[string]bool)
 
-	if clusters == nil {
+	if clusters == nil{
 		return nil
 	}
 
@@ -53,11 +53,11 @@ func (f *openmcpFramework) RunFilterPluginsOnClusters(pod *ketiresource.Pod, clu
 		for _, pl := range f.filterPlugins {
 			isFiltered := pl.Filter(pod, cluster)
 
-			omcplog.V(0).Infof("[%v] %-22v%5v", cluster.ClusterName, pl.Name(), isFiltered)
+			// omcplog.V(0).Infof("[%v] %-22v%5v", cluster.ClusterName, pl.Name(), isFiltered)
 
 			// Update the result of this cluster
 			result[cluster.ClusterName] = result[cluster.ClusterName] && isFiltered
-			if !result[cluster.ClusterName] {
+			if !result[cluster.ClusterName]{
 				break
 			}
 		}
@@ -65,7 +65,7 @@ func (f *openmcpFramework) RunFilterPluginsOnClusters(pod *ketiresource.Pod, clu
 	return result
 }
 
-func (f *openmcpFramework) RunScorePluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster) OpenmcpPluginToClusterScores {
+func (f *openmcpFramework) RunScorePluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster) OpenmcpPluginToClusterScores{
 	result := make(map[string]OpenmcpPluginScoreList)
 
 	for _, cluster := range clusters {
@@ -74,12 +74,12 @@ func (f *openmcpFramework) RunScorePluginsOnClusters(pod *ketiresource.Pod, clus
 		for _, pl := range f.scorePlugins {
 
 			plScore := OpenmcpPluginScore{
-				Name:  pl.Name(),
-				Score: pl.Score(pod, cluster),
+				Name:	pl.Name(),
+				Score:	pl.Score(pod, cluster),
 			}
 
-			omcplog.V(0).Infof("[%v] %-22vScore:%5v", cluster.ClusterName, pl.Name(), plScore.Score)
-
+			// omcplog.V(0).Infof("[%v] %-22vScore:%5v", cluster.ClusterName, pl.Name(), plScore.Score)
+			
 			// Update the result of this cluster
 			result[cluster.ClusterName] = append(result[cluster.ClusterName], plScore)
 		}

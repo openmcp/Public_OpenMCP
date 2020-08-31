@@ -2,13 +2,13 @@ package priorities
 
 import (
 	"context"
-	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-scheduler/pkg/protobuf"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
+	"openmcp/openmcp/openmcp-scheduler/pkg/protobuf"
+	"openmcp/openmcp/omcplog"
 )
 
-type BalancedNetworkAllocation struct {
-	GRPC_Client protobuf.RequestAnalysisClient
+type BalancedNetworkAllocation struct{
+	GRPC_Client		protobuf.RequestAnalysisClient
 }
 
 func (pl *BalancedNetworkAllocation) Name() string {
@@ -35,8 +35,8 @@ func (pl *BalancedNetworkAllocation) Score(pod *ketiresource.Pod, clusterInfo *k
 
 		if rx == 0 && tx == 0 {
 			nodeScore = maxScore
-		} else {
-			nodeScore = int64((1 / float64(rx+tx)) * float64(maxScore))
+		}else {
+			nodeScore = int64((1 / float64(rx + tx)) * float64(maxScore))
 		}
 		node.NodeScore = nodeScore
 		clutserScore += nodeScore

@@ -1,7 +1,6 @@
 package predicates
 
 import (
-	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
 )
 
@@ -13,7 +12,7 @@ func (pl *PodFitsResources) Name() string {
 
 func (pl *PodFitsResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
 
-	for _, node := range clusterInfo.Nodes {
+	for _, node := range clusterInfo.Nodes{
 		node_result := true
 
 		// check if node has enough CPU
@@ -29,7 +28,7 @@ func (pl *PodFitsResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketire
 			node_result = false
 		}
 
-		if node_result == true {
+		if node_result == true{
 			return true
 		}
 	}

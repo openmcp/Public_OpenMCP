@@ -17,9 +17,9 @@ limitations under the License.
 package main
 
 import (
+	"os"
 	"google.golang.org/grpc"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"os"
 
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-scheduler/pkg"
@@ -41,17 +41,17 @@ func main() {
 	conn, err := grpc.Dial(host, grpc.WithInsecure())
 	if err != nil {
 		omcplog.V(0).Info("did not connect: %v", err)
-	}
+	} 
 	defer conn.Close()
 	grpcClient := protobuf.NewRequestAnalysisClient(conn)
 
 	// Start Openmcp-Scheduler
-	for {
+	for{
 		omcplog.V(0).Info("***** [START] OpenMCP Scheduler *****")
-
+		
 		// Get Federated Cluster Information
-		cm := clusterManager.NewClusterManager()
-
+		cm := clusterManager.NewClusterManager()		
+		
 		// Init openmcp-scheduler
 		scheduler := openmcpscheduler.NewScheduler(cm, grpcClient)
 

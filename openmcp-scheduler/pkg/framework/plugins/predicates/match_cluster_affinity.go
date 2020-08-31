@@ -11,13 +11,13 @@ func (pl *MatchClusterAffinity) Name() string {
 }
 
 func (pl *MatchClusterAffinity) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
-
+	
 	// Node must have all of the additional resource
 	// Examples of *.yaml for a new OpenMCPDeployemt as folllow:
 	// # Example 01 #
 	//   spec:
 	//     affinity:
-	//       region:
+	//       region: 
 	//         -AS
 	//         -EU
 	//       zone:
@@ -41,13 +41,13 @@ func (pl *MatchClusterAffinity) Filter(newPod *ketiresource.Pod, clusterInfo *ke
 	for _, node := range clusterInfo.Nodes {
 		node_result := true
 
-		for key, pod_values := range newPod.Affinity {
+		for key, pod_values := range newPod.Affinity{
 
 			// compare Node's Affinity and Pod's Affinity
-			if node_value, ok := node.Affinity[key]; ok {
+			if node_value, ok := node.Affinity[key]; ok{
 
 				// if node's affinity has pod's affinity, new deployment can be deploymented
-				if contains(pod_values, node_value) == false {
+				if contains(pod_values, node_value) == false{
 					node_result = false
 				}
 
@@ -60,7 +60,7 @@ func (pl *MatchClusterAffinity) Filter(newPod *ketiresource.Pod, clusterInfo *ke
 			}
 		}
 
-		if node_result == true {
+		if node_result == true{
 			return true
 		}
 	}

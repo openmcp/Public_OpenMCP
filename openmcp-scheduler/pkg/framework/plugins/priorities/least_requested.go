@@ -22,6 +22,7 @@ func (pl *LeastRequested) Score(pod *ketiresource.Pod, clusterInfo *ketiresource
 		clusterScore += nodeScore
 	}
 
+
 	return clusterScore
 }
 
