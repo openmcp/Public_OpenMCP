@@ -21,8 +21,6 @@ import (
 	"openmcp/openmcp/omcplog"
 	syncapis "openmcp/openmcp/openmcp-sync-controller/pkg/apis"
 	"openmcp/openmcp/util/clusterManager"
-	"strings"
-
 	//"github.com/getlantern/deepcopy"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"math/rand"
@@ -137,44 +135,45 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		omcplog.V(2).Info("Create Deployment Start")
 		omcplog.V(3).Info("SchedulingNeed : ", instance.Status.SchedulingNeed, ", SchedulingComplete : ", instance.Status.SchedulingComplete)
 		if instance.Status.SchedulingNeed == false && instance.Status.SchedulingComplete == false {
-			omcplog.V(3).Info("Scheduling 요청 (SchedulingNeed false => true)")
-			instance.Status.SchedulingNeed = true
-
-			err := r.live.Status().Update(context.TODO(), instance)
-			if err != nil {
-				omcplog.V(0).Info("Failed to update instance status", err)
-				return reconcile.Result{}, err
-			}
+			//omcplog.V(3).Info("Scheduling 요청 (SchedulingNeed false => true)")
+			//instance.Status.SchedulingNeed = true
+			//
+			//err := r.live.Status().Update(context.TODO(), instance)
+			//if err != nil {
+			//	omcplog.V(0).Info("Failed to update instance status", err)
+			//	return reconcile.Result{}, err
+			//}
 			return reconcile.Result{}, err
 
 			//} else if instance.Status.SchedulingNeed == true && instance.Status.SchedulingComplete == false {
 		} else if instance.Status.SchedulingNeed == true && instance.Status.SchedulingComplete == false {
-			if strings.Compare(instance.Spec.Labels["test"], "yes") != 0 {
-
-				omcplog.V(2).Info("Local Scheduling을 시작합니다.(랜덤 스케줄링)")
-				omcplog.V(2).Info("Scheduling Controller와 연계하려면 Labels의 test항목을 no로 변경해주세요")
-				replicas := instance.Spec.Replicas
-				
-				//instance.Status.ClusterMaps = RandomScheduling(cm, replicas)
-				instance.Status.ClusterMaps = RRScheduling(cm, replicas)
-				instance.Status.Replicas = replicas
-				
-				instance.Status.SchedulingNeed = false
-				instance.Status.SchedulingComplete = true
-				omcplog.V(2).Info("Scheduling 완료")
-				err := r.live.Status().Update(context.TODO(), instance)
-				if err != nil {
-					omcplog.V(0).Info("Failed to update instance status", err)
-					return reconcile.Result{}, err
-				}
-				return reconcile.Result{}, err
-
-			} else if strings.Compare(instance.Spec.Labels["test"], "yes") == 0 {
+			//if strings.Compare(instance.Spec.Labels["test"], "yes") != 0 {
+			//
+			//	omcplog.V(2).Info("Local Scheduling을 시작합니다.(랜덤 스케줄링)")
+			//	omcplog.V(2).Info("Scheduling Controller와 연계하려면 Labels의 test항목을 no로 변경해주세요")
+			//	replicas := instance.Spec.Replicas
+			//
+			//	//instance.Status.ClusterMaps = RandomScheduling(cm, replicas)
+			//	instance.Status.ClusterMaps = RRScheduling(cm, replicas)
+			//	instance.Status.Replicas = replicas
+			//
+			//	instance.Status.SchedulingNeed = false
+			//	instance.Status.SchedulingComplete = true
+			//	omcplog.V(2).Info("Scheduling 완료")
+			//	err := r.live.Status().Update(context.TODO(), instance)
+			//	if err != nil {
+			//		omcplog.V(0).Info("Failed to update instance status", err)
+			//		return reconcile.Result{}, err
+			//	}
+			//	return reconcile.Result{}, err
+			//
+			//} else if strings.Compare(instance.Spec.Labels["test"], "yes") == 0 {
 				omcplog.V(2).Info("Scheduling Wait")
 				return reconcile.Result{}, err
-			}
+			//}
 
 		} else if instance.Status.SchedulingNeed == false && instance.Status.SchedulingComplete == true {
+		//if instance.Status.SchedulingNeed == false && instance.Status.SchedulingComplete == true {
 			omcplog.V(2).Info("Scheduling 결과를 통해 Deployment의 Sync Resource를 생성합니다.")
 
 			sync_req_name := instance.Status.SyncRequestName
@@ -408,10 +407,8 @@ func (r *reconciler) sendSync(dep *appsv1.Deployment, command string, clusterNam
 			Template:    *dep,
 		},
 	}
-	//klog.V(0).Info("Delete Check2 ", s.Spec.Template.(appsv1.Deployment).Name, s.Spec.Template.(appsv1.Deployment).Namespace)
 
 	err := r.live.Create(context.TODO(), s)
-	//klog.V(0).Info(s.Name)
 	return s.Name, err
 
 }

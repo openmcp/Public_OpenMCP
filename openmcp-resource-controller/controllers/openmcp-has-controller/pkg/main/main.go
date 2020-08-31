@@ -22,6 +22,7 @@ import (
 
 	//"flag"
 	"log"
+	openmcphas "openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-has-controller/pkg/controller"
 	"openmcp/openmcp/util/controller/logLevel"
 
 	//"os"
@@ -37,7 +38,6 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	//"k8s.io/sample-controller/pkg/signals"
 
-	"openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-has-controller/pkg/controller"
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/reshape"
 	//"k8s.io/client-go/rest"
@@ -73,7 +73,7 @@ func main() {
 		for _, ghost := range ghosts {
 			fmt.Println(ghost.Name)
 		}
-		co, _ := controller.NewController(live, ghosts, namespace)
+		co, _ := openmcphas.NewController(live, ghosts, namespace, cm)
 		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 		//fmt.Println(live)

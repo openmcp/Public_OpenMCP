@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package openmcphas
 
 import (
 	"admiralty.io/multicluster-controller/pkg/reference"
@@ -54,10 +54,12 @@ import (
 	sync "openmcp/openmcp/openmcp-sync-controller/pkg/apis/keti/v1alpha1"
 )
 
+var cm *clusterManager.ClusterManager
 var log = logf.Log.WithName("controller_openmcphybridautoscaler")
 
-func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
+func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
 	//fmt.Println("Step 1.	NewController()")
+	cm = myClusterManager
 	liveClient, err := live.GetDelegatingClient()
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
@@ -178,11 +180,15 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	omcplog.V(3).Info("********* [", i, "] *********")
 	omcplog.V(3).Info("Namespace : ", request.Namespace, " | Name : ", request.Name, " | Context : ", request.Context)
 
-	cm := clusterManager.NewClusterManager()
+	totalHASTimeStart1 := time.Now()
+
+	//cm := clusterManager.NewClusterManager()
+
 	type ObjectKey = types.NamespacedName
 
 	hasInstance := &ketiv1alpha1.OpenMCPHybridAutoScaler{}
 	err := r.live.Get(context.TODO(), request.NamespacedName, hasInstance)
+
 
 	//OpenMCPHAS 리소스 삭제
 	if err != nil {
@@ -203,6 +209,10 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		//"has-target-cluster" 정책 적용
 		clusterListItems, hasInstance := r.UpdateTargetClusterPolicy(cm, hasInstance)
 
+		totalHASTimeEnd1 := time.Since(totalHASTimeStart1)
+		omcplog.V(4).Info("------ Check HAS Time (1) : ", totalHASTimeEnd1)
+		totalHASTimeStart1_1 := time.Now()
+
 		target_cluster_policy_err := r.live.Status().Update(context.TODO(), hasInstance)
 		if target_cluster_policy_err != nil {
 			omcplog.V(0).Info("!!! Policy Status Update Error")
@@ -211,11 +221,19 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			omcplog.V(3).Info(">>> Policy Status UPDATE Success")
 		}
 
+		totalHASTimeEnd1_1 := time.Since(totalHASTimeStart1_1)
+		omcplog.V(4).Info("------ Check HAS Time (1_1) : ", totalHASTimeEnd1_1)
+		totalHASTimeStart2 := time.Now()
+
 		//타겟 OpenMCPDeployment Get
 		openmcpDep := &ketiv1alpha1.OpenMCPDeployment{}
 		openmcpDep_err := r.live.Get(context.TODO(), ObjectKey{Namespace: hasInstance.Namespace, Name: hasInstance.Spec.HpaTemplate.Spec.ScaleTargetRef.Name}, openmcpDep)
 
 		omcplog.V(3).Info(">>> Target OpenMCPDeployment [", openmcpDep.Name, " | ", openmcpDep.Namespace, "]")
+
+		totalHASTimeEnd2 := time.Since(totalHASTimeStart2)
+		omcplog.V(4).Info("------ Check HAS Time (2) : ", totalHASTimeEnd2)
+		totalHASTimeStart3 := time.Now()
 
 		if openmcpDep_err == nil {
 
@@ -275,6 +293,10 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 			omcplog.V(3).Info(">>> Target Clusters ", dep_list_for_hpa, " except ", dep_list_except)
 
+			totalHASTimeEnd3 := time.Since(totalHASTimeStart3)
+			omcplog.V(4).Info("------ Check HAS Time (3) : ", totalHASTimeEnd3)
+			totalHASTimeStart4 := time.Now()
+
 			if dep_list_for_hpa != nil {
 				// min,max 분배
 				cluster_min_map, cluster_max_map, min_max_err := r.UpdateMinMaxDistributionPolicy(hasInstance, cluster_dep_request, dep_list_for_hpa, cluster_dep_replicas)
@@ -282,6 +304,11 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 					omcplog.V(0).Info(min_max_err)
 					return reconcile.Result{}, min_max_err
 				}
+
+				totalHASTimeEnd4 := time.Since(totalHASTimeStart4)
+				omcplog.V(4).Info("------ Check HAS Time (4) : ", totalHASTimeEnd4)
+				totalHASTimeStart5 := time.Now()
+
 				var sync_name string
 				for _, clustername := range dep_list_for_hpa {
 					// case 1) HPA 생성
@@ -479,6 +506,9 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 					}
 				}
 
+				totalHASTimeEnd5 := time.Since(totalHASTimeStart5)
+				omcplog.V(4).Info("------ Check HAS Time (5) : ", totalHASTimeEnd5)
+
 				//OpenMCPHPA 리소스 변경 여부 확인을 위한 변수 저장
 				hasInstance.Status.LastSpec = hasInstance.Spec
 
@@ -500,6 +530,10 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			return reconcile.Result{}, err
 		}
 
+		totalHASTimeEnd0 := time.Since(totalHASTimeStart1)
+
+		omcplog.V(4).Info("------ ToTal HAS Time : ", totalHASTimeEnd0, " ------")
+
 		return reconcile.Result{}, nil
 	}
 
@@ -513,6 +547,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		// 아직 Sync에서 처리되지 않음
 		return reconcile.Result{}, nil
 	}*/
+
+	rebalancingTimeStart := time.Now()
 
 	//타겟 OpenMCPDeployment Get
 	openmcpDep := &ketiv1alpha1.OpenMCPDeployment{}
@@ -550,39 +586,50 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		cluster_client := cm.Cluster_genClients[clustername]
 		err = cluster_client.Get(context.TODO(), foundHPA, hasInstance.Namespace, hasInstance.Name)
 
-		//UPDATE HPA (Rebalancing 수행 시 or min/max 수정 시)
-		if foundHPA.Spec.MaxReplicas == foundHPA.Status.CurrentReplicas && foundHPA.Status.CurrentReplicas == foundHPA.Status.DesiredReplicas {
-			if lastTimeRebalancing.IsZero() || (!lastTimeRebalancing.IsZero() && time.Since(lastTimeRebalancing) > time.Second*180) {
-				omcplog.V(2).Info(">>> " + clustername + " max rebalancing")
+		if foundHPA.Spec.MinReplicas != nil  {
 
-				hasInstance = r.MaxRebalancing(cm, hasInstance, dep_list_for_hpa, clustername, foundHPA)
+			//UPDATE HPA (Rebalancing 수행 시 or min/max 수정 시)
+			if foundHPA.Spec.MaxReplicas == foundHPA.Status.CurrentReplicas && foundHPA.Status.CurrentReplicas == foundHPA.Status.DesiredReplicas {
+				if lastTimeRebalancing.IsZero() || (!lastTimeRebalancing.IsZero() && time.Since(lastTimeRebalancing) > time.Second*180) {
+					omcplog.V(2).Info(">>> " + clustername + " max rebalancing")
 
-				err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
-				if err_openmcp != nil {
-					omcplog.V(0).Info("!!! Failed to update instance status \"RebalancingCount\"", err_openmcp)
-					return reconcile.Result{}, err_openmcp
-				} else {
-					omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
+					hasInstance = r.MaxRebalancing(cm, hasInstance, dep_list_for_hpa, clustername, foundHPA)
+
+					err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
+					if err_openmcp != nil {
+						omcplog.V(0).Info("!!! Failed to update instance status \"RebalancingCount\"", err_openmcp)
+						return reconcile.Result{}, err_openmcp
+					} else {
+						omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
+					}
+
+					rebalancingTimeEnd := time.Since(rebalancingTimeStart)
+					omcplog.V(4).Info("------ Check Rebalancing Time : ", rebalancingTimeEnd, " ------")
+
 				}
+			} else if *foundHPA.Spec.MinReplicas > 1 && *foundHPA.Spec.MinReplicas == foundHPA.Status.CurrentReplicas && foundHPA.Status.CurrentReplicas == foundHPA.Status.DesiredReplicas {
+				if lastTimeRebalancing.IsZero() || (!lastTimeRebalancing.IsZero() && time.Since(lastTimeRebalancing) > time.Second*180) {
+					omcplog.V(2).Info(">>> " + clustername + " min rebalancing")
 
-			}
-		} else if *foundHPA.Spec.MinReplicas > 1 && *foundHPA.Spec.MinReplicas == foundHPA.Status.CurrentReplicas && foundHPA.Status.CurrentReplicas == foundHPA.Status.DesiredReplicas {
-			if lastTimeRebalancing.IsZero() || (!lastTimeRebalancing.IsZero() && time.Since(lastTimeRebalancing) > time.Second*180) {
-				omcplog.V(2).Info(">>> " + clustername + " min rebalancing")
+					hasInstance = r.MinRebalancing(cm, hasInstance, dep_list_for_hpa, clustername, foundHPA)
 
-				hasInstance = r.MinRebalancing(cm, hasInstance, dep_list_for_hpa, clustername, foundHPA)
+					err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
+					if err_openmcp != nil {
+						omcplog.V(0).Info("!!! Failed to update instance status \"RebalancingCount\"", err_openmcp)
+						return reconcile.Result{}, err_openmcp
+					} else {
+						omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
+					}
 
-				err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
-				if err_openmcp != nil {
-					omcplog.V(0).Info("!!! Failed to update instance status \"RebalancingCount\"", err_openmcp)
-					return reconcile.Result{}, err_openmcp
-				} else {
-					omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
+					rebalancingTimeEnd := time.Since(rebalancingTimeStart)
+					omcplog.V(4).Info("------ Check Rebalancing Time : ", rebalancingTimeEnd, " ------")
+
 				}
-
 			}
+
 		}
 	}
+
 
 
 	return reconcile.Result{}, nil
@@ -971,6 +1018,8 @@ func (r *reconciler) MaxRebalancing(cm *clusterManager.ClusterManager, hasInstan
 				omcplog.V(3).Info(">>> "+clustername+" Rollback HPA [ min:", *foundHPA.Spec.MinReplicas, " / max:", foundHPA.Spec.MaxReplicas, " ]")
 				omcplog.V(3).Info(">>> "+qosCluster+" Rollback HPA [ min:", *foundQosHPA.Spec.MinReplicas, " / max:", foundQosHPA.Spec.MaxReplicas, " ]")
 			} else if current_err == nil && qos_err == nil {
+				omcplog.V(4).Info("foundHPA : ", foundHPA)
+				omcplog.V(4).Info("updateHPA : ", updateHPA)
 				omcplog.V(3).Info(">>> "+clustername+" Update HPA [ min:", *updateHPA.Spec.MinReplicas, " / max:", updateHPA.Spec.MaxReplicas, " ]")
 				omcplog.V(3).Info(">>> "+qosCluster+" Update HPA [ min:", *updateQosHPA.Spec.MinReplicas, " / max:", updateQosHPA.Spec.MaxReplicas, " ]")
 
