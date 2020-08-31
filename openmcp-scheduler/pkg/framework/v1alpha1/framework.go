@@ -1,7 +1,7 @@
 package v1alpha1
 
 import (
-	"openmcp/openmcp/omcplog"
+	// "openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
 	"openmcp/openmcp/openmcp-scheduler/pkg/framework/plugins/predicates"
 	"openmcp/openmcp/openmcp-scheduler/pkg/framework/plugins/priorities"
@@ -53,7 +53,7 @@ func (f *openmcpFramework) RunFilterPluginsOnClusters(pod *ketiresource.Pod, clu
 		for _, pl := range f.filterPlugins {
 			isFiltered := pl.Filter(pod, cluster)
 
-			omcplog.V(0).Infof("[%v] %-22v%5v", cluster.ClusterName, pl.Name(), isFiltered)
+			// omcplog.V(0).Infof("[%v] %-22v%5v", cluster.ClusterName, pl.Name(), isFiltered)
 
 			// Update the result of this cluster
 			result[cluster.ClusterName] = result[cluster.ClusterName] && isFiltered
@@ -78,7 +78,7 @@ func (f *openmcpFramework) RunScorePluginsOnClusters(pod *ketiresource.Pod, clus
 				Score:	pl.Score(pod, cluster),
 			}
 
-			omcplog.V(0).Infof("[%v] %-22vScore:%5v", cluster.ClusterName, pl.Name(), plScore.Score)
+			// omcplog.V(0).Infof("[%v] %-22vScore:%5v", cluster.ClusterName, pl.Name(), plScore.Score)
 			
 			// Update the result of this cluster
 			result[cluster.ClusterName] = append(result[cluster.ClusterName], plScore)
