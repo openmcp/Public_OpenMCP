@@ -17,7 +17,7 @@ spec:
       containers:
         - name: openmcp-policy-engine
           # Replace this with the built image name
-          image: atyx300/openmcp-policy-engine:v0.0.1
+          image: openmcp/openmcp-policy-engine:v0.0.1
           command:
           - openmcp-policy-engine
           imagePullPolicy: Always

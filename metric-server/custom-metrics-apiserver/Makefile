@@ -1,4 +1,4 @@
-REGISTRY?=atyx300
+REGISTRY?=openmcp
 IMAGE?=k8s-test-metrics-adapter
 TEMP_DIR:=$(shell mktemp -d)
 ARCH?=amd64
