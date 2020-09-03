@@ -3,11 +3,10 @@ package customMetrics
 import (
 	"bytes"
 	"crypto/tls"
+	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"net/http"
-	"openmcp/openmcp/omcplog"
-
 	//"bytes"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/storage"
 	//url1 "net/url"
@@ -17,14 +16,14 @@ import (
 )
 
 func AddToDeployCustomMetricServer(data *storage.Collection, token string, host string, cluster_client *kubernetes.Clientset) {
-	omcplog.V(4).Info("AddToDeployCustomMetricServer Called")
+	fmt.Println("AddToDeployCustomMetricServer Called")
 	podList := make([]storage.PodMetricsPoint, 0)
 	for i := 0; i < len(data.Matricsbatchs); i++ {
 		podList = append(podList, data.Matricsbatchs[i].Pods...)
 	}
 
 	rs, err := cluster_client.AppsV1().ReplicaSets(metav1.NamespaceAll).List(metav1.ListOptions{})
-	omcplog.V(2).Info("[List] ReplicaSets")
+	fmt.Println("[List] ReplicaSets")
 	if err == nil {
 		for _, replicaset := range rs.Items {
 			check_exist := 0
@@ -38,7 +37,7 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 				for _, value := range podList {
 					if value.Name != "" {
 						if strings.HasPrefix(value.Name, replicaset.Name) {
-							//omcplog.V(0).Info(value.Name, "  ", replicaset.Name)
+							//fmt.Println(value.Name, "  ", replicaset.Name)
 							check_exist += 1
 
 							tmp_cpu, _ := strconv.Atoi(value.CPUUsageNanoCores.String()[:len(value.CPUUsageNanoCores.String())-1])
@@ -58,11 +57,11 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 						}
 
 					} else {
-						omcplog.V(0).Info("err : value.Name nil")
+						fmt.Println("err : value.Name nil")
 					}
 				}
 			} else {
-				omcplog.V(0).Info("Fail : Cannot load podList")
+				fmt.Println("Fail : Cannot load podList")
 			}
 
 			tr := &http.Transport{
@@ -73,32 +72,32 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 			if check_exist > 0 {
 				namespace := replicaset.Namespace
 				name := replicaset.Name[:strings.LastIndexAny(replicaset.Name, "-")]
-				//omcplog.V(0).Info(name, " ",sum_cpuusage," ",sum_cpuusage/check_exist, " ", strconv.Itoa(sum_cpuusage/check_exist))
+				//fmt.Println(name, " ",sum_cpuusage," ",sum_cpuusage/check_exist, " ", strconv.Itoa(sum_cpuusage/check_exist))
 
-				omcplog.V(3).Info("Post CpuUsage :", strconv.Itoa(sum_cpuusage/check_exist)+"n")
+				fmt.Println("Post CpuUsage :", strconv.Itoa(sum_cpuusage/check_exist)+"n")
 				PostData(host, token, client, namespace, name, "CpuUsage", strconv.Itoa(sum_cpuusage/check_exist)+"n")
 
-				omcplog.V(3).Info("Post MemoryUsage :", strconv.Itoa(sum_memoryusage/check_exist)+"Ki")
+				fmt.Println("Post MemoryUsage :", strconv.Itoa(sum_memoryusage/check_exist)+"Ki")
 				PostData(host, token, client, namespace, name, "MemoryUsage", strconv.Itoa(sum_memoryusage/check_exist)+"Ki")
 
-				omcplog.V(3).Info("Post NetworkRxUsage :", strconv.Itoa(sum_networkrxusage/check_exist))
+				fmt.Println("Post NetworkRxUsage :", strconv.Itoa(sum_networkrxusage/check_exist))
 				PostData(host, token, client, namespace, name, "NetworkRxUsage", strconv.Itoa(sum_networkrxusage/check_exist))
 
-				omcplog.V(3).Info("Post NetworkTxUsage :", strconv.Itoa(sum_networktxusage/check_exist))
+				fmt.Println("Post NetworkTxUsage :", strconv.Itoa(sum_networktxusage/check_exist))
 				PostData(host, token, client, namespace, name, "NetworkTxUsage", strconv.Itoa(sum_networktxusage/check_exist))
 
-				omcplog.V(3).Info("Post FsUsage :", strconv.Itoa(sum_fsusage/check_exist)+"Ki")
+				fmt.Println("Post FsUsage :", strconv.Itoa(sum_fsusage/check_exist)+"Ki")
 				PostData(host, token, client, namespace, name, "FsUsage", strconv.Itoa(sum_fsusage/check_exist)+"Ki")
 			}
 
 		}
 	} else {
-		omcplog.V(0).Info("Fail : Cannot load RS ", err)
+		fmt.Println("Fail : Cannot load RS ", err)
 	}
 }
 
 func AddToPodCustomMetricServer(data *storage.Collection, token string, host string) {
-	omcplog.V(4).Info("AddToPodCustomMetricServer Called")
+	fmt.Println("AddToPodCustomMetricServer Called")
 	for i := 0; i < len(data.Matricsbatchs); i++ {
 		podList := data.Matricsbatchs[i].Pods
 		if podList != nil {
@@ -111,67 +110,67 @@ func AddToPodCustomMetricServer(data *storage.Collection, token string, host str
 					namespace := value.Namespace
 					name := value.Name
 
-					omcplog.V(3).Info("Post CpuUsage :", value.CPUUsageNanoCores.String())
+					fmt.Println("Post CpuUsage :", value.CPUUsageNanoCores.String())
 					PostData(host, token, client, namespace, name, "CpuUsage", value.CPUUsageNanoCores.String())
 
-					omcplog.V(3).Info("Post MemoryUsage :", value.MemoryUsageBytes.String())
+					fmt.Println("Post MemoryUsage :", value.MemoryUsageBytes.String())
 					PostData(host, token, client, namespace, name, "MemoryUsage", value.MemoryUsageBytes.String())
 
-					omcplog.V(3).Info("Post NetworkRxUsage :", value.NetworkRxBytes.String())
+					fmt.Println("Post NetworkRxUsage :", value.NetworkRxBytes.String())
 					PostData(host, token, client, namespace, name, "NetworkRxUsage", value.NetworkRxBytes.String())
 
-					omcplog.V(3).Info("Post NetworkTxUsage :", value.NetworkTxBytes.String())
+					fmt.Println("Post NetworkTxUsage :", value.NetworkTxBytes.String())
 					PostData(host, token, client, namespace, name, "NetworkTxUsage", value.NetworkTxBytes.String())
 
-					omcplog.V(3).Info("Post FsUsage :", value.FsUsedBytes.String())
+					fmt.Println("Post FsUsage :", value.FsUsedBytes.String())
 					PostData(host, token, client, namespace, name, "FsUsage", value.FsUsedBytes.String())
 
 				} else {
-					omcplog.V(0).Info("Fail : Cannot load resources")
+					fmt.Println("Fail : Cannot load resources")
 				}
 			}
 		} else {
-			omcplog.V(0).Info("Fail : Cannot load Pod list")
+			fmt.Println("Fail : Cannot load Pod list")
 		}
 	}
 }
 
 func PostData(host string, token string, client *http.Client, resourceNamespace string, resourceName string, resourceMetricName string, resourceMetricValue string) {
-	omcplog.V(4).Info("PostData Called")
+	fmt.Println("PostData Called")
 	apiserver := host
 	baselink := "/api/v1/namespaces/custom-metrics/services/custom-metrics-apiserver:http/proxy/"
 	basepath := "write-metrics"
 	resourceKind := "pods"
-	//omcplog.V(0).Info(resourceMetricValue)
+	//fmt.Println(resourceMetricValue)
 	//valueString := strconv.FormatFloat(resourceMetricValue, 'e', 4, 64)
 
 	url := "" + apiserver + baselink + basepath + "/namespaces/" + resourceNamespace + "/" + resourceKind + "/" + resourceName + "/" + resourceMetricName
 	buff := bytes.NewBufferString(resourceMetricValue)
 
-	//omcplog.V(0).Info("value : ",buff)
+	//fmt.Println("value : ",buff)
 
 	/*data := url1.Values{}
 	data.Set("metrics", "111111")
-	omcplog.V(0).Info("value : ",strings.NewReader(data.Encode()))*/
+	fmt.Println("value : ",strings.NewReader(data.Encode()))*/
 
 	req, err := http.NewRequest("POST", os.ExpandEnv(url), buff)
 
 	if err != nil {
 		// handle err
-		omcplog.V(0).Info("Fail NewRequest")
+		fmt.Println("Fail NewRequest")
 	}
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", os.ExpandEnv("Bearer "+token))
 
-	//omcplog.V(0).Info("req", req)
+	//fmt.Println("req", req)
 
 	resp, err := client.Do(req)
 	if err != nil {
 		// handle err
-		omcplog.V(0).Info("Fail POST")
+		fmt.Println("Fail POST")
 	} else {
-		//omcplog.V(0).Info("Success POST")
+		//fmt.Println("Success POST")
 	}
 	defer resp.Body.Close()
 }

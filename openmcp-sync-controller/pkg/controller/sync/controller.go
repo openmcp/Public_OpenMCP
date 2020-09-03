@@ -32,7 +32,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/restmapper"
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
 	"openmcp/openmcp/openmcp-sync-controller/pkg/apis"
 	ketiv1alpha1 "openmcp/openmcp/openmcp-sync-controller/pkg/apis/keti/v1alpha1"
 	"openmcp/openmcp/util/clusterManager"
@@ -58,8 +57,8 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		}
 		ghostclients = append(ghostclients, ghostclient)
 	}
-
 	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{})
+
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
@@ -89,146 +88,9 @@ type reconciler struct {
 	ghostNamespace string
 }
 
+
 var i int = 0
 
-func do(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured, clusterName string, command string) {
-
-	jsonbody, err := json.Marshal(obj)
-	if err != nil {
-		// do error check
-		fmt.Println(err)
-		return
-	}
-	genClient := cm.Cluster_genClients[clusterName]
-
-	if obj.GetKind() == "OpenMCPDeployment"{
-		instance := &v1alpha1.OpenMCPDeployment{}
-		if err := json.Unmarshal(jsonbody, &instance); err != nil {
-			// do error check
-			fmt.Println(err)
-			return
-		}
-		if command == "create"{
-			err = genClient.Create(context.TODO(), instance)
-			if err != nil {
-				omcplog.V(2).Info("Created Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : " + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
-			}
-		} else if command == "delete"{
-			err = genClient.Delete(context.TODO(), instance, obj.GetNamespace(), obj.GetName())
-			if err != nil {
-				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : " + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
-			}
-		} else if command == "update" {
-			err = genClient.Update(context.TODO(), instance)
-			if err != nil {
-				omcplog.V(2).Info("Updated Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : " + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
-			}
-		}
-
-
-	} else if obj.GetKind() == "OpenMCPService"{
-		instance := &v1alpha1.OpenMCPService{}
-		if err := json.Unmarshal(jsonbody, &instance); err != nil {
-			// do error check
-			fmt.Println(err)
-			return
-		}
-		if command == "create"{
-			err = genClient.Create(context.TODO(), instance)
-			if err != nil {
-				omcplog.V(2).Info("Created Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : " + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
-			}
-		} else if command == "delete"{
-			err = genClient.Delete(context.TODO(), instance, obj.GetNamespace(), obj.GetName())
-			if err != nil {
-				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : " + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
-			}
-		} else if command == "update" {
-			err = genClient.Update(context.TODO(), instance)
-			if err != nil {
-				omcplog.V(2).Info("Updated Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : " + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
-			}
-		}
-
-	} else if obj.GetKind() == "OpenMCPIngress"{
-		instance := &v1alpha1.OpenMCPIngress{}
-		if err := json.Unmarshal(jsonbody, &instance); err != nil {
-			// do error check
-			fmt.Println(err)
-			return
-		}
-		if command == "create"{
-			err = genClient.Create(context.TODO(), instance)
-			if err != nil {
-				omcplog.V(2).Info("Created Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : " + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
-			}
-		} else if command == "delete"{
-			err = genClient.Delete(context.TODO(), instance, obj.GetNamespace(), obj.GetName())
-			if err != nil {
-				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : " + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
-			}
-		} else if command == "update" {
-			err = genClient.Update(context.TODO(), instance)
-			if err != nil {
-				omcplog.V(2).Info("Updated Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : " + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
-			}
-		}
-
-	} else if obj.GetKind() == "OpenMCPHybridAutoScaler"{
-		instance := &v1alpha1.OpenMCPHybridAutoScaler{}
-		if err := json.Unmarshal(jsonbody, &instance); err != nil {
-			// do error check
-			fmt.Println(err)
-			return
-		}
-		if command == "create"{
-			err = genClient.Create(context.TODO(), instance)
-			if err != nil {
-				omcplog.V(2).Info("Created Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : " + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
-			}
-		} else if command == "delete"{
-			err = genClient.Delete(context.TODO(), instance, obj.GetNamespace(), obj.GetName())
-			if err != nil {
-				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : " + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
-			}
-		} else if command == "update" {
-			err = genClient.Update(context.TODO(), instance)
-			if err != nil {
-				omcplog.V(2).Info("Updated Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : " + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
-			}
-		}
-
-	} else if obj.GetKind() == "OpenMCPHybridAutoScaler"{
-		instance := &v1alpha1.OpenMCPHybridAutoScaler{}
-		if err := json.Unmarshal(jsonbody, &instance); err != nil {
-			// do error check
-			fmt.Println(err)
-			return
-		}
-		if command == "create"{
-			err = genClient.Create(context.TODO(), instance)
-			if err != nil {
-				omcplog.V(2).Info("Created Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : " + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
-			}
-		} else if command == "delete"{
-			err = genClient.Delete(context.TODO(), instance, obj.GetNamespace(), obj.GetName())
-			if err != nil {
-				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : " + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
-			}
-		} else if command == "update" {
-			err = genClient.Update(context.TODO(), instance)
-			if err != nil {
-				omcplog.V(2).Info("Updated Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : " + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
-			}
-		}
-
-	}
-
-}
-
-type A interface {
-
-}
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	omcplog.V(4).Info("[OpenMCP Sync] Function Called Reconcile")
 	i += 1
@@ -498,13 +360,13 @@ func (r *reconciler) resourceForSync(instance *ketiv1alpha1.Sync) (*unstructured
 	u := &unstructured.Unstructured{}
 
 
-	omcplog.V(2).Info("[Parsing Sync] ClusterName : ", clusterName, "command : ",command)
+	omcplog.V(2).Info("[Parsing Sync] ClusterName : ", clusterName, ", command : ",command)
 	var err error
 	u.Object, err = runtime.DefaultUnstructuredConverter.ToUnstructured(&instance.Spec.Template)
 	if err != nil {
 		omcplog.V(0).Info(err)
 	}
-	omcplog.V(4).Info(u.GetName(), u.GetNamespace())
+	omcplog.V(4).Info(u.GetName()," / ", u.GetNamespace())
 
 	return u, clusterName, command
 }
