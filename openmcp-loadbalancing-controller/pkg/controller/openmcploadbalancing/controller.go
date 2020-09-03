@@ -365,18 +365,18 @@ func initRegistry() {
 		country := node.Labels["failure-domain.beta.kubernetes.io/zone"]
 		continent := node.Labels["failure-domain.beta.kubernetes.io/region"]
 
-		//iso 적용 전 디버깅용 정의
-		//******************
-		if country == "korea" {
-			country = "KR"
-		} else if country == "" {
-			country = "JP"
-		}
-		if continent == "asia" {
-			continent = "AS"
-		} else if continent == "" {
-			continent = "AS"
-		}
+		////iso 적용 전 디버깅용 정의
+		////******************
+		//if country == "korea" {
+		//	country = "KR"
+		//} else if country == "" {
+		//	country = "JP"
+		//}
+		//if continent == "asia" {
+		//	continent = "AS"
+		//} else if continent == "" {
+		//	continent = "AS"
+		//}
 		//********************
 
 		loadbalancing.ClusterRegistry[cluster.Name]["Country"] = country
@@ -390,7 +390,9 @@ func initRegistry() {
 		} else {
 			if found.Spec.Type == "LoadBalancer" {
 				omcplog.V(5).Info("[OpenMCP Loadbalancing Controller] Service Type LoadBalancer")
-				loadbalancing.ClusterRegistry[cluster.Name]["IngressIP"] = found.Status.LoadBalancer.Ingress[0].IP
+				if len (found.Status.LoadBalancer.Ingress) > 0 {
+					loadbalancing.ClusterRegistry[cluster.Name]["IngressIP"] = found.Status.LoadBalancer.Ingress[0].IP
+				}
 			} else {
 				omcplog.V(5).Info("[OpenMCP Loadbalancing Controller] Service Type NodePort")
 				port := fmt.Sprint(found.Spec.Ports[0].NodePort)
@@ -441,8 +443,8 @@ func initRegistry() {
 	//		}
 	//	}
 	//}
-	loadbalancing.CountryRegistry["KR"] = "AS"
-	loadbalancing.CountryRegistry["JP"] = "AS"
+	//loadbalancing.CountryRegistry["KR"] = "AS"
+	//loadbalancing.CountryRegistry["JP"] = "AS"
 
 	//fmt.Println(found.Spec.Rules[0].Host)
 	//fmt.Println(found.Spec.Rules[1].Host)
