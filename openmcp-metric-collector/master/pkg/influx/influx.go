@@ -98,11 +98,13 @@ func (in *Influx) SaveMetrics(clusterName string, data *protobuf.Collection) {
 
 		for _, pod := range batch.Pods {
 			podName := pod.Name
+			podNamespace := pod.Namespace
 
 			tags2 := map[string]string{
 				"cluster": clusterName,
 				"node":    nodeName,
 				"pod":     podName,
+				"namespace": podNamespace,
 				//"region": regions[rand.Intn(len(regions))],
 			}
 			fields2 := map[string]interface{}{
