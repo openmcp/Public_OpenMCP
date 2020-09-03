@@ -7,6 +7,7 @@ spec:
   replicas: 2
   labels:
       app: openmcp-nginx
+      test: "yes"
   template:
     spec:
       template:
