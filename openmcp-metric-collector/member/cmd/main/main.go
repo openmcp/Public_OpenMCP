@@ -2,22 +2,15 @@
 package main
 
 import (
-	"admiralty.io/multicluster-controller/pkg/cluster"
-	"admiralty.io/multicluster-controller/pkg/manager"
 	"context"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/jinzhu/copier"
-	"log"
-	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/customMetrics"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/kubeletClient"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/protobuf"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/scrap"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/storage"
 	"openmcp/openmcp/util/clusterManager"
-	"openmcp/openmcp/util/controller/logLevel"
-	"openmcp/openmcp/util/controller/reshape"
-
 	//"github.com/jinzhu/copier"
 
 	//"github.com/golang/protobuf/ptypes"
@@ -113,75 +106,38 @@ func convert(data *storage.Collection) *protobuf.Collection{
 
 }
 func main() {
-	logLevel.KetiLogInit()
-
-	go MemberMetricCollector()
-
-	for {
-		cm := clusterManager.NewClusterManager()
-
-		host_ctx := "openmcp"
-		namespace := "openmcp"
-
-		host_cfg := cm.Host_config
-		//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
-		live := cluster.New(host_ctx, host_cfg, cluster.Options{})
-
-		ghosts := []*cluster.Cluster{}
-
-		for _, ghost_cluster := range cm.Cluster_list.Items {
-			ghost_ctx := ghost_cluster.Name
-			ghost_cfg := cm.Cluster_configs[ghost_ctx]
-
-			//ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
-			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
-			ghosts = append(ghosts, ghost)
-		}
-
-		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
-		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
-
-		m := manager.New()
-		m.AddController(reshape_cont)
-		m.AddController(loglevel_cont)
-
-		stop := reshape.SetupSignalHandler()
-
-		if err := m.Start(stop); err != nil {
-			log.Fatal(err)
-		}
-	}
-
+	MemberMetricCollector()
 }
+
 func MemberMetricCollector(){
 	SERVER_IP := os.Getenv("GRPC_SERVER")
 	SERVER_PORT := os.Getenv("GRPC_PORT")
-	omcplog.V(2).Info("ClusterMetricCollector Start")
+	fmt.Println("ClusterMetricCollector Start")
 	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
 	for {
 		cm := clusterManager.NewClusterManager()
 		nodes := cm.Node_list.Items
-		omcplog.V(2).Info("Get Metric Data From Kubelet")
+		fmt.Println("Get Metric Data From Kubelet")
 		kubeletClient, _ := kubeletClient.NewKubeletClient()
 		data, errs := scrap.Scrap(cm.Host_config, kubeletClient, nodes)
 		if errs != nil {
-			omcplog.V(0).Info(errs)
+			fmt.Println(errs)
 		}
-		omcplog.V(2).Info("Convert Metric Data For gRPC")
+		fmt.Println("Convert Metric Data For gRPC")
 		grpc_data := convert(data)
 
 		//fmt.Println("GRPC Data Send")
-		omcplog.V(2).Info("[gRPC Start] Send Metric Data")
+		fmt.Println("[gRPC Start] Send Metric Data")
 		r, err := grpcClient.SendMetrics(context.TODO(), grpc_data)
 		if err != nil {
 			fmt.Printf("could not connect : %v", err)
 		}
-		omcplog.V(2).Info("[gRPC End] Send Metric Data")
+		fmt.Println("[gRPC End] Send Metric Data")
 		//period_int64 := r.Tick
 		_ = data
 
-		omcplog.V(2).Info("[http Start] Post Metric Data to Custom Metric Server")
+		fmt.Println("[http Start] Post Metric Data to Custom Metric Server")
 		token := cm.Host_config.BearerToken
 		host := cm.Host_config.Host
 		client := cm.Host_kubeClient
@@ -191,17 +147,17 @@ func MemberMetricCollector(){
 
 		customMetrics.AddToPodCustomMetricServer(data, token, host)
 		customMetrics.AddToDeployCustomMetricServer(data, token, host, client)
-		omcplog.V(2).Info("[http End] Post Metric Data to Custom Metric Server")
+		fmt.Println("[http End] Post Metric Data to Custom Metric Server")
 
 		period_int64 := r.Tick
 
 		if period_int64 > 0 && err == nil {
 
 			//fmt.Println("period : ",time.Duration(period_int64))
-			omcplog.V(2).Info("Wait ", time.Duration(period_int64)* time.Second, "...")
+			fmt.Println("Wait ", time.Duration(period_int64)* time.Second, "...")
 			time.Sleep(time.Duration(period_int64) * time.Second)
 		}else {
-			omcplog.V(2).Info("--- Fail to get period")
+			fmt.Println("--- Fail to get period")
 			time.Sleep(5 * time.Second)
 		}
 	}
