@@ -180,6 +180,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 			sync_req_name := instance.Status.SyncRequestName
 
+			omcplog.V(5).Info("Cluster Count : ", len(cm.Cluster_list.Items))
 			for _, myCluster := range cm.Cluster_list.Items {
 				if instance.Status.ClusterMaps[myCluster.Name] == 0 {
 					continue
