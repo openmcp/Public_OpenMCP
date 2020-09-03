@@ -13,14 +13,14 @@ require (
 	github.com/go-logr/logr v0.1.0
 	github.com/go-logr/zapr v0.1.1 // indirect
 	github.com/go-openapi/spec v0.19.8
-	github.com/golang/mock v1.3.1
+	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
+	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2
 	github.com/google/gofuzz v1.1.0
 	github.com/googleapis/gnostic v0.4.0
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/influxdata/influxdb v1.8.0
-	github.com/influxdata/influxdb1-client v0.0.0-20200515024757-02f0bf5dbca3 // indirect
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/kr/pty v1.1.5 // indirect
 	github.com/kubernetes-incubator/custom-metrics-apiserver v0.0.0-20200618121405-54026617ec44
@@ -33,10 +33,11 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.4.0
-	github.com/valyala/fasthttp v1.15.1 // indirect
-	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
+	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6 // indirect
+	golang.org/x/net v0.0.0-20200707034311-ab3426394381
 	gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e // indirect
-	google.golang.org/grpc v1.30.0
+	google.golang.org/grpc v1.31.0
+	google.golang.org/grpc/examples v0.0.0-20200902210233-8630cac324bf // indirect
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.18.6
@@ -50,7 +51,6 @@ require (
 	k8s.io/kube-aggregator v0.18.6
 	k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6
 	k8s.io/metrics v0.18.2
-	k8s.io/sample-controller v0.18.4 // indirect
 	k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89
 	sigs.k8s.io/controller-runtime v0.6.0
 	sigs.k8s.io/kubefed v0.3.0
