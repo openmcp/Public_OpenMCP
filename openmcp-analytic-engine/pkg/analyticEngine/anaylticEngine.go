@@ -208,30 +208,28 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
 func (ae *AnalyticEngineStruct) SendLBAnalysis(ctx context.Context, in *protobuf.LBInfo) (*protobuf.ResponseLB, error) {
 	omcplog.V(4).Info("Func SendLBAnalysis Called")
 
-	clusterNameList := in.ClusterNameList
+	//clusterNameList := in.ClusterNameList
 	clusterScoreMap := make(map[string]float64)
 
-	for _, clusterName := range clusterNameList {
-		//*****************************
-		//얘가 값을 제대로 못받아옴
-		clusterScoreMap[clusterName] = ae.ResourceScore[clusterName]
-		//clusterScoreMap[clusterName] = 100.0
-	}
-
-	omcplog.V(5).Info(clusterScoreMap)
-
-	omcplog.V(2).Info("Geo Score")
-	clientIP := in.ClientIP
-	country := ae.getCountry(clientIP)
-	continent := ae.getContinent(country)
-
-	score := ae.geoScore(clusterNameList, country, continent)
-
-	for _, clusterName := range clusterNameList {
-		omcplog.V(5).Info(clusterScoreMap[clusterName])
-		omcplog.V(5).Info(score[clusterName])
-		clusterScoreMap[clusterName] = clusterScoreMap[clusterName] + score[clusterName]
-	}
+	//for _, clusterName := range clusterNameList {
+	//	clusterScoreMap[clusterName] = ae.ResourceScore[clusterName]
+	//}
+	//
+	//omcplog.V(5).Info(clusterScoreMap)
+	//
+	//omcplog.V(2).Info("Geo Score")
+	//clientIP := in.ClientIP
+	//country := ae.getCountry(clientIP)
+	//continent := ae.getContinent(country)
+	//
+	//score := ae.geoScore(clusterNameList, country, continent)
+	//
+	//for _, clusterName := range clusterNameList {
+	//	omcplog.V(5).Info(clusterScoreMap[clusterName])
+	//	omcplog.V(5).Info(score[clusterName])
+	//	clusterScoreMap[clusterName] = clusterScoreMap[clusterName] + score[clusterName]
+	//}
+	clusterScoreMap = ae.ResourceScore
 
 	omcplog.V(2).Info("LB Response")
 	omcplog.V(3).Info(clusterScoreMap)

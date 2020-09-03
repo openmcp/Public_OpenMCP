@@ -27,6 +27,7 @@ import (
 
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/controller/openmcploadbalancing"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/controller/service"
+	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing"
 
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/reshape"
@@ -389,6 +390,9 @@ func main() {
 		m.AddController(reshape_cont)
 		m.AddController(loglevel_cont)
 		go openmcploadbalancing.Loadbalancer(SERVER_IP)
+		tempCluster := []string {}
+		go loadbalancing.RequestResourceScore(tempCluster,SERVER_IP)
+		go loadbalancing.GetPolicy()
 
 		stop := reshape.SetupSignalHandler()
 
