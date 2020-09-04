@@ -3,11 +3,16 @@ package loadbalancing
 import (
 	//"container/list"
 	"context"
+	"log"
 	"errors"
 	"fmt"
+	"github.com/oschwald/geoip2-golang"
 	"net"
 	"net/http/httputil"
+	"openmcp/openmcp/util/clusterManager"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
+	"strconv"
 	"sync"
 
 	//"github.com/abh/geoip"
@@ -22,8 +27,9 @@ import (
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/ingressregistry"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/loadbalancingregistry"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/serviceregistry"
+	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/geo"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/protobuf"
-	//"github.com/oschwald/geoip2-golang"
+
 	"net/url"
 	"strings"
 	"time"
@@ -50,7 +56,7 @@ var ExtractIP = extractIP
 var RR = map[string]int{}
 
 func extractPath(target *url.URL) (string, error) {
-	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Function Called ExtractPath")
+	omcplog.V(4).Info("Function Called ExtractPath")
 	path := target.Path
 	if len(path) > 1 && path[0] == '/' {
 		path = path[1:]
@@ -64,10 +70,11 @@ func extractPath(target *url.URL) (string, error) {
 }
 
 func extractIP(target string) (string, error) {
-	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Function Called ExtractIP")
+	omcplog.V(4).Info("Function Called ExtractIP")
 	tmp := strings.Split(target, ":")
 	ip, _ := tmp[0], tmp[1]
-	omcplog.V(5).Info("[OpenMCP Loadbalancing Controller] IP : " + ip)
+	ip = "8.8.8.8"
+	omcplog.V(5).Info("IP : " + ip)
 	return ip, nil
 }
 
@@ -75,50 +82,83 @@ var SERVER_IP = os.Getenv("GRPC_SERVER")
 var SERVER_PORT = os.Getenv("GRPC_PORT")
 var grpcClient = protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
+var ResourceScore = map[string]float64{}
 
-func Score(clusters []string, tip string, openmcpIP string) map[string]float64 {
-	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Function Called Score")
 
-	lbInfo := &protobuf.LBInfo{
-		ClusterNameList: clusters,
-		ClientIP:        tip,
+func RequestResourceScore(clusters []string, clientIP string) {
+	for {
+		omcplog.V(5).Info("Function Called RequestResourceScore")
+
+		lbInfo := &protobuf.LBInfo{
+			ClusterNameList: clusters,
+			ClientIP:        clientIP,
+		}
+
+		response, err := grpcClient.SendLBAnalysis(context.TODO(), lbInfo)
+		if err != nil {
+			omcplog.V(0).Info(err)
+		} else {
+			ResourceScore = response.ScoreMap
+		}
+		omcplog.V(5).Info(ResourceScore)
+		time.Sleep(time.Second * time.Duration(Policy["Period"]))
+	}
+}
+
+func Score(clusters []string, clientIP string, creg clusterregistry.Registry) map[string]float64 {
+
+	omcplog.V(4).Info("Function Called Score")
+
+	GeoScore := geoScore(clusters, creg, clientIP)
+	omcplog.V(0).Info("Geo Score")
+	omcplog.V(0).Info(GeoScore)
+
+	var sumScore = map[string]float64{}
+
+	for _, cluster := range clusters {
+		sumScore[cluster] = GeoScore[cluster] + ResourceScore[cluster]
 	}
 
-	omcplog.V(5).Info("[OpenMCP Loadbalancing Controller] Request Geo, Resource Score")
-	response, err := grpcClient.SendLBAnalysis(context.TODO(), lbInfo)
-	if err != nil {
-		omcplog.V(0).Info(err)
-	}
+	//lbInfo := &protobuf.LBInfo{
+	//	ClusterNameList: clusters,
+	//	ClientIP:        clientIP,
+	//}
+	//
+	//omcplog.V(5).Info("Request Geo, Resource Score")
+	//
+	//response, err := grpcClient.SendLBAnalysis(context.TODO(), lbInfo)
+	//if err != nil {
+	//	omcplog.V(0).Info(err)
+	//}
+	//
+	omcplog.V(3).Info("Response Geo, Resource Score")
+	omcplog.V(3).Info(sumScore)
 
-	omcplog.V(3).Info("[OpenMCP Loadbalancing Controller] Response Geo, Resource Score")
-	omcplog.V(3).Info(response.ScoreMap)
-
-	return response.ScoreMap
+	return sumScore
 }
 
 
-var test_score = map[string]float64 {}
+var score = map[string]float64 {}
 
-func scoring(clusters []string, tip string, openmcpIP string) string {
-	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Function Called scoring")
+
+func scoring(clusters []string, tip string, creg clusterregistry.Registry) string {
+
+	omcplog.V(4).Info("Function Called scoring")
 	if len(clusters) == 1 {
 		return clusters[0]
 	}
-	//gscore := geoScore(clusters, tcountry, tcontinent, creg)
-	if len(test_score) == 0 {
-		//score := Score(clusters, tip, openmcpIP)
-		test_score = Score(clusters, tip, openmcpIP)
-	}
-	//score := Score(clusters, tip, openmcpIP)
-	//cluster := endpointCluster(score)
-	cluster := endpointCluster(test_score)
+
+	score = Score(clusters, tip, creg)
+
+	cluster := endpointCluster(score)
 	return cluster
 }
+
 
 //geo score, resource score, hop score를 합쳐서 비율 계산
 //난수를 생성하여 비율에 속하는 클러스터를 엔드포인트로 선정
 func endpointCluster(score map[string]float64) string {
-	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Function Called EnpointCluster")
+	omcplog.V(4).Info("Function Called EnpointCluster")
 
 	totalScore := 0.0
 	endpoint := ""
@@ -182,24 +222,104 @@ func proxy_lb(host, tip, network, path string, reg loadbalancingregistry.Registr
 	return nil, fmt.Errorf("Error")
 }
 
+func getCountry(clientIP string) string {
+	omcplog.V(4).Info("Function Called getCountry")
+
+	db, err := geoip2.Open("/root/GeoLite2-City.mmdb")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	ip := net.ParseIP(clientIP)
+
+	record, err := db.City(ip)
+	if err != nil {
+		log.Fatal(err)
+	}
+	omcplog.V(5).Info("ISO country code: %v\n", record.Country.IsoCode)
+	return record.Country.IsoCode
+}
+
+func getContinent(country string) string {
+	return Geo.Geo[country]
+}
+
+
+var Policy = map[string]float64 {}
+
+func GetPolicy() {
+	for {
+		omcplog.V(4).Info("Function Called GetPolicy")
+		cm := clusterManager.NewClusterManager()
+		openmcpPolicyInstance, target_cluster_policy_err := cm.Crd_client.OpenMCPPolicy("openmcp").Get("loadbalancing-controller-policy", metav1.GetOptions{})
+
+		if target_cluster_policy_err != nil {
+			omcplog.V(4).Info(target_cluster_policy_err)
+		} else {
+			a := openmcpPolicyInstance.Spec.Template.Spec.Policies
+			for _, b := range a {
+				value, _ := strconv.ParseFloat(b.Value[0], 64)
+				Policy[b.Type] = value
+			}
+			omcplog.V(4).Info("metricsWeight : ", Policy)
+		}
+		time.Sleep(time.Second * 3)
+	}
+}
+
+
+
+
+func geoScore(clusters []string, creg clusterregistry.Registry, clientIP string) map[string]float64 {
+	omcplog.V(4).Info("Function Called geoScore")
+
+	baseScore := 100.0
+	policy := Policy["GeoRate"]
+
+	clientCountry := getCountry(clientIP)
+	clientContinent := getContinent(clientCountry)
+
+	score := map[string]float64{}
+	for _, cluster := range clusters {
+
+		clustercountry, err := creg.Country(cluster)
+		if err != nil {
+			omcplog.V(0).Info(cluster + " Not set Country")
+		}
+
+		clustercontinent, err := creg.Continent(cluster)
+		if err != nil {
+			omcplog.V(0).Info(cluster + " Not set Continent")
+		}
+
+		if clientCountry == clustercountry {
+			score[cluster] = baseScore + (baseScore * policy)
+		} else if clientContinent == clustercontinent {
+			score[cluster] = baseScore
+		} else {
+			score[cluster] = baseScore - (baseScore * policy)
+		}
+	}
+	omcplog.V(5).Info(score)
+	return score
+}
 
 func loadbalancing(host, tip, path string, reg loadbalancingregistry.Registry, creg clusterregistry.Registry, countryreg countryregistry.Registry, sreg serviceregistry.Registry, openmcpIP string) (string, error) {
-	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Function Called loadbalancing")
+	omcplog.V(4).Info("Function Called loadbalancing")
 
 	serviceName, err := reg.Lookup(host, path)
 	endpoints, err := sreg.Lookup(serviceName)
-	omcplog.V(5).Info("[OpenMCP Loadbalancing Controller] Check Service, Endpoint(Cluster)")
+	omcplog.V(5).Info("Check Service, Endpoint(Cluster)")
 
 	if err != nil {
 		return "", err
 	}
-	//tcountry, tcontinent := extractGeo(tip, countryreg)
 
 	lb := os.Getenv("LB")
 
 	var endpoint string
 	if lb == "RR" {
-		omcplog.V(5).Info("[OpenMCP Loadbalancing Controller] Apply Algorithm : Round Robin")
+		omcplog.V(5).Info("Apply Algorithm : Round Robin")
 		lock.Lock()
 		index := RR[host+path] % len(endpoints)
 		endpoint = endpoints[index]
@@ -207,25 +327,24 @@ func loadbalancing(host, tip, path string, reg loadbalancingregistry.Registry, c
 		defer lock.Unlock()
 
 	} else {
-		omcplog.V(5).Info("[OpenMCP Loadbalancing Controller] Apply Algorithm : Geo, Resource Score")
-		endpoint = scoring(endpoints, tip, openmcpIP)
+		omcplog.V(5).Info("Apply Algorithm : Geo, Resource Score")
+		endpoint = scoring(endpoints, tip, creg)
 	}
-	//fmt.Println("*****End Point*****")
-	//fmt.Println(endpoint)
-	omcplog.V(3).Info("[OpenMCP Loadbalancing Controller] Select Endpoint : " + endpoint)
+
+	omcplog.V(3).Info("Select Endpoint : " + endpoint)
 	return endpoint, err
 }
 
 
 
 func NewMultipleHostReverseProxy(reg loadbalancingregistry.Registry, creg clusterregistry.Registry, countryreg countryregistry.Registry, sreg serviceregistry.Registry, openmcpIP string) http.HandlerFunc {
-	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] NewMultipleHostReversProxy")
+	omcplog.V(4).Info("NewMultipleHostReversProxy")
 
 	return func(w http.ResponseWriter, req *http.Request) {
 		host := req.Host
 		ip, _ := ExtractIP(req.RemoteAddr)
 		path, err := ExtractPath(req.URL)
-		omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Extract Host, IP, Path")
+		omcplog.V(4).Info("Extract Host, IP, Path")
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -236,14 +355,14 @@ func NewMultipleHostReverseProxy(reg loadbalancingregistry.Registry, creg cluste
 		if path == "/" {
 			path = ""
 		}
-		omcplog.V(3).Info("[OpenMCP Loadbalancing Controller] Exec Redirect (Code : 307)")
+		omcplog.V(3).Info("Exec Redirect (Code : 307)")
 		url := "http://" + endpoint + "." + host + "/" + path
 		http.Redirect(w, req, url, 307)
 	}
 }
 
 func NewMultipleHostReverseProxyRR(reg loadbalancingregistry.Registry, creg clusterregistry.Registry, countryreg countryregistry.Registry, sreg serviceregistry.Registry, openmcpIP string) http.HandlerFunc {
-	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] NewMultipleHostReversProxyRR")
+	omcplog.V(4).Info("NewMultipleHostReversProxyRR")
 
 	return func(w http.ResponseWriter, req *http.Request) {
 
@@ -254,11 +373,6 @@ func NewMultipleHostReverseProxyRR(reg loadbalancingregistry.Registry, creg clus
 		transport := &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
 			Dial: func(network, addr string) (net.Conn, error) {
-				//addr = strings.Split(addr, ":")[0]
-				//tmp := strings.Split(addr, "/")
-				//if len(tmp) != 2 {
-				//	return nil, ErrInvalidService
-				//}
 				return proxy_lb(host, ip, network, path, reg , sreg, openmcpIP , creg)
 			},
 			TLSHandshakeTimeout: 10 * time.Second,

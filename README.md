@@ -158,8 +158,9 @@ metric-collector-period        3m16s
 
 # How To Join Cluster
 
-1. Kubernetes Cluster 조인 방법
-2. GKE Cluster 조인 방법
+1. Kubernetes Cluster 조인
+2. GKE Cluster 조인
+3. EKS Cluster 조인
 
 --------------------------------------------------------------------------------------------
 ## 1. Kubernetes Cluster 조인 방법
@@ -247,7 +248,29 @@ $ kubectl create -f metallb_config.yaml --context=<cluster-name>
 
 ## 2. GKE Cluster 조인 방법
 
-### (1) 
+### (1) Cloud SDK 설치
+
+### (2) gcloud init
+
+### (3) gcloud container clusters get-credentials {cluster_name}
+
+### (4) KUBECONFIG 파일에서 Cluster 이름 수정
+
+### (5) OpenMCP 조인
+
+
+## 3. EKS Cluster 조인 방법
+
+### (1) AWS CLI 설치
+
+### (2) aws configure
+
+### (3) aws eks --region {region_name} update-kubeconfig --name {cluster_name}
+
+### (4) KUBECONFIG 파일에서 Cluster 이름 수정
+
+### (5) OpenMCP 조인
+
 
 # OpenMCP EXAMPLE
 OpenMCP에 cluster1, cluster2가 조인된 상태에서 EXAMPLE TEST를 진행합니다.

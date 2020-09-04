@@ -1,0 +1,18 @@
+apiVersion: keti.example.com/v1alpha1
+kind: OpenMCPPolicy
+metadata:
+  name: loadbalancing-controller-policy
+  namespace: openmcp
+spec:
+  template:
+    spec:
+      targetController:
+        kind: OpenMCPLoadbalancingController
+      policies:
+        - type: GeoRate
+          value:
+            - "0.5"
+        - type: Period
+          value:
+            - "5.0"
+  policyStatus: Enabled
