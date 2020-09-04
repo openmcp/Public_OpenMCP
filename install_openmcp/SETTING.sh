@@ -56,15 +56,19 @@ sed -i 's|REPLACE_GRPCPORT|'\"$OME_GRPC_PORT\"'|g' member/metric-collector/opera
 
 sed -i 's|REPLACE_INFLUXDBIP|'\"$MYIP\"'|g' master/openmcp-analytic-engine/operator.yaml
 sed -i 's|REPLACE_INFLUXDBIP|'\"$MYIP\"'|g' master/openmcp-metric-collector/operator.yaml
+sed -i 's|REPLACE_INFLUXDBIP|'\"$MYIP\"'|g' master/openmcp-apiserver/operator.yaml
 
 sed -i 's|REPLACE_INFLUXDBPORT|'\"$INFLUXDB_PORT\"'|g' master/openmcp-analytic-engine/operator.yaml
 sed -i 's|REPLACE_INFLUXDBPORT|'\"$INFLUXDB_PORT\"'|g' master/openmcp-metric-collector/operator.yaml
+sed -i 's|REPLACE_INFLUXDBPORT|'\"$INFLUXDB_PORT\"'|g' master/openmcp-apiserver/operator.yaml
 
 sed -i 's|REPLACE_INFLUXDBUSERNAME|'\"$INFLUXDB_USERNAME\"'|g' master/openmcp-analytic-engine/operator.yaml
 sed -i 's|REPLACE_INFLUXDBUSERNAME|'\"$INFLUXDB_USERNAME\"'|g' master/openmcp-metric-collector/operator.yaml
+sed -i 's|REPLACE_INFLUXDBUSERNAME|'\"$INFLUXDB_USERNAME\"'|g' master/openmcp-apiserver/operator.yaml
 
 sed -i 's|REPLACE_INFLUXDBUSERPWD|'\"$INFLUXDB_USERPWD\"'|g' master/openmcp-analytic-engine/operator.yaml
 sed -i 's|REPLACE_INFLUXDBUSERPWD|'\"$INFLUXDB_USERPWD\"'|g' master/openmcp-metric-collector/operator.yaml
+sed -i 's|REPLACE_INFLUXDBUSERPWD|'\"$INFLUXDB_USERPWD\"'|g' master/openmcp-apiserver/operator.yaml
 
 sed -i 's|REPLACE_NFSIP|'\"$NFS_PDNS_IP\"'|g' master/influxdb/pv.yaml
 
