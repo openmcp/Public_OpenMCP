@@ -40,11 +40,15 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 							//fmt.Println(value.Name, "  ", replicaset.Name)
 							check_exist += 1
 
-							tmp_cpu, _ := strconv.Atoi(value.CPUUsageNanoCores.String()[:len(value.CPUUsageNanoCores.String())-1])
-							sum_cpuusage += tmp_cpu
+							if len(value.CPUUsageNanoCores.String()) > 1 {
+								tmp_cpu, _ := strconv.Atoi(value.CPUUsageNanoCores.String()[:len(value.CPUUsageNanoCores.String())-1])
+								sum_cpuusage += tmp_cpu
+							}
 
-							tmp_mem, _ := strconv.Atoi(value.MemoryUsageBytes.String()[:len(value.MemoryUsageBytes.String())-2])
-							sum_memoryusage += tmp_mem
+							if len(value.MemoryUsageBytes.String()) > 1 {
+								tmp_mem, _ := strconv.Atoi(value.MemoryUsageBytes.String()[:len(value.MemoryUsageBytes.String())-2])
+								sum_memoryusage += tmp_mem
+							}
 
 							tmp_rx, _ := strconv.Atoi(value.NetworkRxBytes.String())
 							sum_networkrxusage += tmp_rx
@@ -52,8 +56,10 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 							tmp_tx, _ := strconv.Atoi(value.NetworkTxBytes.String())
 							sum_networktxusage += tmp_tx
 
-							tmp_fs, _ := strconv.Atoi(value.FsUsedBytes.String()[:len(value.FsUsedBytes.String())-2])
-							sum_fsusage += tmp_fs
+							if len(value.FsUsedBytes.String()) > 1 {
+								tmp_fs, _ := strconv.Atoi(value.FsUsedBytes.String()[:len(value.FsUsedBytes.String())-2])
+								sum_fsusage += tmp_fs
+							}
 						}
 
 					} else {
