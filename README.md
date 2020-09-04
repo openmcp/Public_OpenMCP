@@ -248,7 +248,7 @@ $ kubectl create -f metallb_config.yaml --context=<cluster-name>
 
 ## 2. GKE Cluster 조인 방법
 
-### (1) Clound SDK 설치
+### (1) Cloud SDK 설치
 
 ### (2) gcloud init
 
