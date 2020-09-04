@@ -267,9 +267,9 @@ $ kubectl create -f metallb_config.yaml --context=<cluster-name>
 
 ### (3) aws eks --region {region_name} update-kubeconfig --name {cluster_name}
 
-### (3) KUBECONFIG 파일에서 Cluster 이름 수정
+### (4) KUBECONFIG 파일에서 Cluster 이름 수정
 
-### (4) OpenMCP 조인
+### (5) OpenMCP 조인
 
 
 # OpenMCP EXAMPLE
