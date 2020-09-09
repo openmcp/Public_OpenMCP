@@ -44,7 +44,10 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.
 
 openmcpctl unjoin list
-openmcpctl unjoin cluster <CLUSTERIP>`,
+openmcpctl unjoin cluster <CLUSTERIP>
+openmcpctl unjoin gke-cluster <CLUSTERNAME>
+openmcpctl unjoin eks-cluster <CLUSTERNAME>`,
+
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 0 && args[0] == "cluster" {
 			if args[1] == "" {
@@ -71,6 +74,12 @@ openmcpctl unjoin cluster <CLUSTERIP>`,
 				joinCluster(clusterIp)
 			}
 			GetUnjoinClusterList()
+		} else if len(args) != 0 && (args[0] == "gke-cluster"|| args[0] == "eks-cluster") {
+			if args[1] == "" {
+				fmt.Println("You Must Provide Cluster Name")
+			} else {
+				unjoinCloudCluster(args[1])
+			}
 		}
 	},
 }
@@ -161,11 +170,15 @@ func removeInitCluster(clusterName, openmcpDir string) {
 
 	for _, initYaml := range initYamls {
 		util.CmdExec2("kubectl delete -f " + install_dir + "/" + initYaml + " --context " + clusterName)
+		fmt.Println(initYamls)
 	}
 
 	util.CmdExec2("chmod 755 " + install_dir + "/vertical-pod-autoscaler/hack/*")
+
 	util.CmdExec2(install_dir + "/vertical-pod-autoscaler/hack/vpa-down.sh " + clusterName)
+
 	util.CmdExec2("kubectl delete ns openmcp --context " + clusterName)
+
 }
 
 func unjoinCluster(memberIP string) {
@@ -238,7 +251,7 @@ func unjoinCluster(memberIP string) {
 
 	elapsed2 := time.Since(start2)
 	log.Printf("Init Service Remove Time : %s", elapsed2)
-	fmt.Println("***** [End] 3. Init Service Remove ***** ")
+	fmt.Println("***** [End] 2. Init Service Remove ***** ")
 
 	start3 := time.Now()
 	fmt.Println("***** [Start] 3. Cluster UnJoin *****")
@@ -272,6 +285,117 @@ func unjoinCluster(memberIP string) {
 	elapsed := time.Since(totalStart)
 	log.Printf("Cluster Join Elapsed Time : %s", elapsed)
 }
+
+func unjoinCloudCluster(memberName string) {
+	totalStart := time.Now()
+	fmt.Println("***** [Start] Cluster UnJoin Start : '", memberName, "' *****")
+
+	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
+
+	util.CmdExec("umount -l /mnt")
+	defer util.CmdExec("umount -l /mnt")
+
+	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
+
+
+	openmcpIP := GetOutboundIP()
+	if !fileExists("/mnt/openmcp/" + openmcpIP) {
+		fmt.Println("Failed UnJoin Cluster '" + memberName + "' in OpenMCP Master: " + openmcpIP)
+		fmt.Println("=> Not Yet Register OpenMCP.")
+		fmt.Println("=> First You Must be Input the Next Command in 'OpenMCP Master Server(" + openmcpIP + ")' : ompcpctl register openmcp")
+
+		return
+	}
+
+	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
+	genClient := genericclient.NewForConfigOrDie(kubeconfig)
+	clusterList := clusterManager.ListKubeFedClusters(genClient, "kube-federation-system")
+
+	checkJoin := 0
+
+	for _, cluster := range clusterList.Items {
+		//fmt.Println("kubefed cluster name : ", cluster.Name)
+		if memberName == cluster.Name {
+			checkJoin = 1
+			break
+		}
+	}
+
+	if checkJoin == 0 {
+		fmt.Println("ERROR - Fail to find cluster")
+		return
+	}
+
+	start1 := time.Now()
+	fmt.Println("***** [Start] 1. Init Service Remove *****")
+
+	removeInitCluster(memberName, c.OpenmcpDir)
+
+	elapsed1 := time.Since(start1)
+	log.Printf("Init Service Remove Time : %s", elapsed1)
+	fmt.Println("***** [End] 1. Init Service Remove ***** ")
+
+	start2 := time.Now()
+	fmt.Println("***** [Start] 2. Cluster UnJoin *****")
+
+	util.CmdExec2("kubefedctl unjoin " + memberName + " --cluster-context " + memberName + " --host-cluster-context openmcp --v=2")
+
+	elapsed2 := time.Since(start2)
+	log.Printf("Cluster Unjoin Time : %s", elapsed2)
+	fmt.Println("***** [End] 2. Cluster UnJoin ***** ")
+
+	//config 형식....
+
+	/*start3 := time.Now()
+	fmt.Println("***** [Start] 3. Cluster Config Remove *****")
+
+	kc := cobrautil.GetKubeConfig("/root/.kube/config")
+
+	target_name := ""
+	target_user := ""
+	var target_name_index int
+	var target_context_index int
+	var target_user_index int
+
+	for i, cluster := range kc.Clusters {
+		if memberName == cluster.Name {
+			target_name = memberName
+			target_name_index = i
+			break
+		}
+	}
+	for j, context := range kc.Contexts {
+		if target_name == context.Context.Cluster {
+			target_user = context.Context.User
+			target_context_index = j
+			break
+		}
+	}
+	for k, user := range kc.Users {
+		if target_user == user.Name {
+			target_user_index = k
+			break
+		}
+	}
+
+	kc.Clusters = append(kc.Clusters[:target_name_index], kc.Clusters[target_name_index+1:]...)
+	kc.Contexts = append(kc.Contexts[:target_context_index], kc.Contexts[target_context_index+1:]...)
+	kc.Users = append(kc.Users[:target_user_index], kc.Users[target_user_index+1:]...)
+
+	cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
+
+	elapsed3 := time.Since(start3)
+	log.Printf("Cluster Config Remove Time : %s", elapsed3)
+	fmt.Println("***** [End] 3. Cluster Config Remove ***** ")
+*/
+	totalElapsed := time.Since(totalStart)
+	log.Printf("Cluster UnJoin Total Elapsed Time : %s", totalElapsed)
+	fmt.Println("***** [End] Cluster UnJoin Completed - " + memberName, "*****")
+
+	elapsed := time.Since(totalStart)
+	log.Printf("Cluster Join Elapsed Time : %s", elapsed)
+}
+
 func init() {
 	rootCmd.AddCommand(unjoinCmd)
 }

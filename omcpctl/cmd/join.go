@@ -46,7 +46,9 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.
 
 openmcpctl join list
-openmcpctl join cluster <CLUSTERIP>`,
+openmcpctl join cluster <CLUSTERIP>
+openmcpctl join gke-cluster <CLUSTERNAME>
+openmcpctl join eks-cluster <CLUSTERNAME>`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 0 && args[0] == "cluster" {
@@ -75,6 +77,18 @@ openmcpctl join cluster <CLUSTERIP>`,
 				joinCluster(clusterIp)
 			}
 			resource.GetClusterList()
+		} else if len(args) != 0 && args[0] == "gke-cluster" {
+			if args[1] == "" {
+				fmt.Println("You Must Provide Cluster Name")
+			} else {
+				joinGKECluster(args[1])
+			}
+		} else if len(args) != 0 && args[0] == "eks-cluster" {
+			if args[1] == "" {
+				fmt.Println("You Must Provide Cluster Name")
+			} else {
+				joinEKSCluster(args[1])
+			}
 		}
 	},
 }
@@ -83,8 +97,8 @@ func moveToUnjoin(memberIP string) {
 
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
-	util.CmdExec2("umount -l /mnt")
-	defer util.CmdExec2("umount -l /mnt")
+	util.CmdExec("umount -l /mnt")
+	defer util.CmdExec("umount -l /mnt")
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
@@ -101,8 +115,8 @@ func getDiffJoinIP() []string {
 
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
-	util.CmdExec2("umount -l /mnt")
-	defer util.CmdExec2("umount -l /mnt")
+	util.CmdExec("umount -l /mnt")
+	defer util.CmdExec("umount -l /mnt")
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 	openmcpIP := GetOutboundIP()
@@ -208,10 +222,150 @@ func joinCluster(memberIP string) {
 	fmt.Println("***** [End] Cluster Join Completed - " + cluster.Name, "*****")
 }
 
+func joinGKECluster(memberName string) {
+	fmt.Println("gke cluster name : ", memberName)
+	totalStart := time.Now()
+	fmt.Println("***** [Start] Cluster Join Start : '", memberName, "' *****")
+
+	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
+
+	util.CmdExec("umount -l /mnt")
+	defer util.CmdExec("umount -l /mnt")
+
+	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
+
+	openmcpIP := GetOutboundIP()
+	if !fileExists("/mnt/openmcp/" + openmcpIP) {
+		fmt.Println("Failed Join List in OpenMCP Master: " + openmcpIP)
+		fmt.Println("=> Not Yet Register OpenMCP.")
+		fmt.Println("=> First You Must be Input the Next Command in 'OpenMCP Master Server(" + openmcpIP + ")' : omcpctl register openmcp")
+		return
+	}
+
+	start2 := time.Now()
+	fmt.Println("***** [Start] 1. Cluster Join *****")
+	util.CmdExec2("kubefedctl join " + memberName + " --cluster-context " + memberName + " --host-cluster-context openmcp --v=2")
+
+	elapsed2 := time.Since(start2)
+	log.Printf("Cluster Join Time : %s", elapsed2)
+	fmt.Println("***** [End] 1. Cluster Join ***** ")
+
+	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
+	genClient := genericclient.NewForConfigOrDie(kubeconfig)
+	clusterList := clusterManager.ListKubeFedClusters(genClient, "kube-federation-system")
+
+	checkJoin := 0
+
+	for _, cluster := range clusterList.Items {
+		//fmt.Println("kubefed cluster name : ", cluster.Name)
+		if memberName == cluster.Name {
+			checkJoin = 1
+			break
+		}
+	}
+
+	if checkJoin == 0 {
+		fmt.Println("ERROR - Fail to find cluster")
+		return
+	}
+
+
+	start3 := time.Now()
+	fmt.Println("***** [Start] 2. Init Service Deployments *****")
+
+	installInitCluster(memberName, c.OpenmcpDir)
+
+	elapsed3 := time.Since(start3)
+	log.Printf("Init Service Deployments Time : %s", elapsed3)
+	fmt.Println("***** [End] 2. Init Service Deployments ***** ")
+
+
+	totalElapsed := time.Since(totalStart)
+	log.Printf("Cluster Join Total Elapsed Time : %s", totalElapsed)
+	fmt.Println("***** [End] Cluster Join Completed - " + memberName, "*****")
+}
+
+func joinEKSCluster(memberName string) {
+	totalStart := time.Now()
+	fmt.Println("***** [Start] Cluster Join Start : '", memberName, "' *****")
+
+	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
+
+	util.CmdExec("umount -l /mnt")
+	defer util.CmdExec("umount -l /mnt")
+
+	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
+
+	openmcpIP := GetOutboundIP()
+	if !fileExists("/mnt/openmcp/" + openmcpIP) {
+		fmt.Println("Failed Join List in OpenMCP Master: " + openmcpIP)
+		fmt.Println("=> Not Yet Register OpenMCP.")
+		fmt.Println("=> First You Must be Input the Next Command in 'OpenMCP Master Server(" + openmcpIP + ")' : omcpctl register openmcp")
+		return
+	}
+
+	start2 := time.Now()
+	fmt.Println("***** [Start] 1. Cluster Join *****")
+	util.CmdExec2("kubefedctl join " + memberName + " --cluster-context " + memberName + " --host-cluster-context openmcp --v=2")
+
+	elapsed2 := time.Since(start2)
+	log.Printf("Cluster Join Time : %s", elapsed2)
+	fmt.Println("***** [End] 1. Cluster Join ***** ")
+
+	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
+	genClient := genericclient.NewForConfigOrDie(kubeconfig)
+	clusterList := clusterManager.ListKubeFedClusters(genClient, "kube-federation-system")
+
+	checkJoin := 0
+
+	for _, cluster := range clusterList.Items {
+		if memberName == cluster.Name {
+			//gke, eks - config 파일 형식 안맞음
+			/*//cluster
+			kc := cobrautil.GetKubeConfig("/root/.kube/config")
+
+			for i, cluster := range kc.Clusters {
+				if memberName == cluster.Name {
+					a := cluster.Cluster.Server
+					lower_a := strings.ToLower(a)
+					fmt.Println(a , " => ", lower_a)
+
+					kc.Clusters[i].Cluster.Server = lower_a
+					cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
+				}
+			}
+			*/
+			checkJoin = 1
+			break
+		}
+	}
+
+	if checkJoin == 0 {
+		fmt.Println("ERROR - Fail to find cluster")
+		return
+	}
+
+
+	start3 := time.Now()
+	fmt.Println("***** [Start] 2. Init Service Deployments *****")
+
+	installInitCluster(memberName, c.OpenmcpDir)
+
+	elapsed3 := time.Since(start3)
+	log.Printf("Init Service Deployments Time : %s", elapsed3)
+	fmt.Println("***** [End] 2. Init Service Deployments ***** ")
+
+
+	totalElapsed := time.Since(totalStart)
+	log.Printf("Cluster Join Total Elapsed Time : %s", totalElapsed)
+	fmt.Println("***** [End] Cluster Join Completed - " + memberName, "*****")
+}
+
 func installInitCluster(clusterName, openmcpDir string) {
 	fmt.Println("Init Module Deployment Start - " + clusterName)
 	install_dir := filepath.Join(openmcpDir, "install_openmcp/member")
-	initYamls := []string{"custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller"}
+	//initYamls := []string{"custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller"}
+	initYamls := []string{"custom-metrics-apiserver", "metallb", "metric-collector", "nginx-ingress-controller"}
 
 	util.CmdExec2("kubectl create ns openmcp --context " + clusterName)
 	for _, initYaml := range initYamls {
