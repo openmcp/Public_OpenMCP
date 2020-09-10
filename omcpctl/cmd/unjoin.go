@@ -41,6 +41,8 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.
 
+openmcpctl unjoin list
+>>>>>>> f86db70316573435f704a0caa51e86c90410b458
 openmcpctl unjoin cluster <CLUSTERIP>
 openmcpctl unjoin gke-cluster <CLUSTERNAME>
 openmcpctl unjoin eks-cluster <CLUSTERNAME>`,
@@ -77,6 +79,7 @@ openmcpctl unjoin eks-cluster <CLUSTERNAME>`,
 			} else {
 				unjoinCloudCluster(args[1])
 			}
+
 		}
 	},
 }
@@ -309,8 +312,6 @@ func unjoinCloudCluster(memberName string) {
 	elapsed2 := time.Since(start2)
 	log.Printf("Cluster Unjoin Time : %s", elapsed2)
 	fmt.Println("***** [End] 2. Cluster UnJoin ***** ")
-
-	//config 형식....
 
 	start3 := time.Now()
 	fmt.Println("***** [Start] 3. Cluster Config Remove *****")

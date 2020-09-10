@@ -108,7 +108,7 @@ func DrawClusterTable(datas [][]string){
 //		fmt.Println(res)
 //	}
 //}
-//
+
 //func GetClusterList(){
 //	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
 //	genClient := genericclient.NewForConfigOrDie(kubeconfig)
@@ -134,4 +134,3 @@ func DrawClusterTable(datas [][]string){
 //		fmt.Println(res)
 //	}
 //}
-
