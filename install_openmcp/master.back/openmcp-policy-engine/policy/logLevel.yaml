@@ -1,7 +1,7 @@
 apiVersion: keti.example.com/v1alpha1
 kind: OpenMCPPolicy
 metadata:
-  name: log-version
+  name: log-level
   namespace: openmcp
 spec:
   template:
@@ -9,7 +9,7 @@ spec:
       targetController:
         kind: All-OpenMCP-Resource-Controller
       policies:
-        - type: Version
+        - type: Level
           value:
             - "2"
   policyStatus: Enabled

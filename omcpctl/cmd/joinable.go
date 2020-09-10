@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/olekukonko/tablewriter"
 	"k8s.io/client-go/tools/clientcmd"
@@ -67,13 +68,18 @@ func GetJoinableClusterList() {
 	for i := range nfsClusterJoinList {
 		kc := cobrautil.GetKubeConfig("/mnt/openmcp/" + openmcpIP + "/members/unjoin/" + nfsClusterJoinList[i] + "/config/config")
 
-		data := []string{kc.Clusters[0].Name, kc.Clusters[0].Cluster.Server, ""}
+		data := []string{kc.Clusters[0].Name, "https://"+kc.Clusters[0].Cluster.Server, ""}
 		datas = append(datas, data)
 	}
 
 	gke_datas := getGKEClusterData()
 	for _, gke_data := range gke_datas {
 		datas = append(datas, gke_data)
+	}
+
+	eks_datas := getEKSClusterData()
+	for _, eks_data := range eks_datas {
+		datas = append(datas, eks_data)
 	}
 
 
@@ -103,7 +109,7 @@ func getGKEClusterData() [][]string{
 		ss := strings.Fields(gkeClusterInfo[i])
 
 		clusterName := ss[0]
-		masterIP := ss[3]
+		masterIP := "https://"+ss[3]
 		platform := "gke"
 
 		isAlreadyJoined := false
@@ -122,6 +128,59 @@ func getGKEClusterData() [][]string{
 
 	}
 
+
+	return datas
+}
+
+func getEKSClusterData() [][]string{
+
+	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
+	genClient := genericclient.NewForConfigOrDie(kubeconfig)
+
+	clusterList := clusterManager.ListKubeFedClusters(genClient, "kube-federation-system")
+
+	datas := [][]string{}
+	s, err := util.CmdExec("aws eks list-clusters")
+	if err != nil {
+		fmt.Println(err)
+	}
+	//fmt.Println(s)
+	jsonData := make(map[string]interface{})
+	err = json.Unmarshal([]byte(s), &jsonData)
+	if err != nil {
+		fmt.Println(err)
+	}
+	eksClusterNamesInteface := jsonData["clusters"].([]interface{})
+	for _, clusterNameInteface := range eksClusterNamesInteface{
+		clusterName := clusterNameInteface.(string)
+		ss, err := util.CmdExec("aws eks describe-cluster --name "+clusterName+" | cat")
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = json.Unmarshal([]byte(ss), &jsonData)
+		if err != nil {
+			fmt.Println(err)
+		}
+		clusterInfo := jsonData["cluster"].(map[string]interface{})
+		//fmt.Println(clusterName)
+		apiEndpoint := clusterInfo["endpoint"].(string)
+		apiEndpoint = strings.ToLower(apiEndpoint)
+		//fmt.Println(apiEndpoint)
+		platform := "eks"
+
+		isAlreadyJoined := false
+		for _, joinedCluster := range clusterList.Items{
+			if clusterName == joinedCluster.Name && strings.Contains(joinedCluster.Spec.APIEndpoint, apiEndpoint){
+				isAlreadyJoined = true
+				break
+			}
+		}
+		if !isAlreadyJoined {
+			data := []string{clusterName, apiEndpoint, platform}
+			datas = append(datas, data)
+		}
+
+	}
 
 	return datas
 }
