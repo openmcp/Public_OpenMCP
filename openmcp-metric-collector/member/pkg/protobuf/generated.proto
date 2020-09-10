@@ -12,6 +12,7 @@ service SendMetrics {
 
 message Collection {
     repeated MetricsBatch Matricsbatchs = 1;
+    string ClusterName = 2;
 }
 
 message MetricsBatch {
