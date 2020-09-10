@@ -265,7 +265,7 @@ gke-cluster     asia-east1-a   1.16.13-gke.1   35.201.135.105  e2-medium     1.1
 ```
 $ gcloud container clusters get-credentials gke-cluster
 Fetching cluster endpoint and auth data.
-kubeconfig entry generated for cluster3.
+kubeconfig entry generated for gke-cluster.
 ```
 
 ### (4) KUBECONFIG 파일에서 Cluster 이름 수정
