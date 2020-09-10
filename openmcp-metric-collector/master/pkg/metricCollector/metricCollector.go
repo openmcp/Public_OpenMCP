@@ -11,9 +11,6 @@ import (
 	"openmcp/openmcp/openmcp-metric-collector/master/pkg/protobuf"
 	"openmcp/openmcp/util/clusterManager"
 	"strconv"
-
-	//"strconv"
-	"strings"
 )
 
 type MetricCollector struct {
@@ -36,21 +33,21 @@ func (mc *MetricCollector) FindClusterName(data *protobuf.Collection) string {
 		omcplog.V(2).Info("[Recieved Data] NodeName: ", Matricsbatch.Node.Name, ", IP: "+ Matricsbatch.IP)
 		IpList = append(IpList, Matricsbatch.IP)
 	}
-
-	find := false
-	clusterName := ""
-	for _, cluster := range mc.ClusterManager.Cluster_list.Items {
-		for _, Ip := range IpList {
-			if strings.Contains(cluster.Spec.APIEndpoint, Ip) {
-				clusterName = cluster.Name
-				find = true
-				break
-			}
-		}
-		if find {
-			break
-		}
-	}
+	clusterName := data.ClusterName
+	//find := false
+	//clusterName := ""
+	//for _, cluster := range mc.ClusterManager.Cluster_list.Items {
+	//	for _, Ip := range IpList {
+	//		if strings.Contains(cluster.Spec.APIEndpoint, Ip) {
+	//			clusterName = cluster.Name
+	//			find = true
+	//			break
+	//		}
+	//	}
+	//	if find {
+	//		break
+	//	}
+	//}
 	klog.V(2).Info("=> Recieved Metric Data From '", clusterName,"'")
 	return clusterName
 }
