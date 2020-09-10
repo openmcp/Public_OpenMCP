@@ -147,7 +147,7 @@ NAME                           AGE
 analytic-metrics-weight        3m16s
 has-target-cluster             3m15s
 hpa-minmax-distribution-mode   3m15s
-log-version                    3m16s
+log-level                    3m16s
 metric-collector-period        3m16s
 ```
 
@@ -256,49 +256,7 @@ $ kubectl create -f metallb_config.yaml --context=<cluster-name>
 $ gcloud init
 ```
 
-### (3) gcloud container clusters get-credentials {gke_cluster_name}
-```
-$ gcloud container clusters list
-NAME            LOCATION       MASTER_VERSION  MASTER_IP       MACHINE_TYPE  NODE_VERSION   NUM_NODES  STATUS
-gke-cluster     asia-east1-a   1.16.13-gke.1   35.201.135.105  e2-medium     1.16.13-gke.1  2          RUNNING
-```
-```
-$ gcloud container clusters get-credentials gke-cluster
-Fetching cluster endpoint and auth data.
-kubeconfig entry generated for cluster3.
-```
-
-### (4) KUBECONFIG 파일에서 Cluster 이름 수정
-```bash
-$ vi $HOME/.kube/config
-apiVersion: v1
-clusters:
-- cluster:
-    certificate-authority-data: ...
-    server: https://35.201.135.105
-  name: cluster3
-contexts:
-- context:
-    cluster: cluster3
-    user: cluster3-admin
-  name: cluster3
-current-context: openmcp
-kind: Config
-preferences: {}
-users:
-- name: cluster3-admin
-  user:
-    auth-provider:
-      config:
-        access-token: ya29.a0AfH6SMAhUVakRB1Yq-ZscqYwh32iOs4nvd-r3BiHuXQOBJHVHfsQw8pxZn0aexYXgzpgqlKSl8qkpCIApS7LoCjxmlg1Vg_zf73sliJrEx6kl3TvWr56j_I92yiRu6hpanCiOuHPOw_U-AC783Y9jG104g4ofVz5xtK8j-5M9Z8F
-        cmd-args: config config-helper --format=json
-        cmd-path: /usr/lib/google-cloud-sdk/bin/gcloud
-        expiry: "2020-09-07T07:52:08Z"
-        expiry-key: '{.credential.token_expiry}'
-        token-key: '{.credential.access_token}'
-      name: gcp
-```
-### (5) OpenMCP 조인
+### (3) OpenMCP 조인
 ```
 $ omcpctl join gke-cluster cluster3
 ...
@@ -325,46 +283,8 @@ AWS Secret Access Key [****************PivT]: a3jJN+zLu5NBVDALTpSbqSDj7iUGCeOItd
 Default region name [us-east-2]: us-east-2
 Default output format [json]: json
 ```
-### (3) aws eks --region {region_name} update-kubeconfig --name {eks_cluster_name}
-```
-$ aws eks update-kubeconfig --name eks-cluster
-Added new context arn:aws:eks:us-east-2:627135710314:cluster/eks-cluster to /root/.kube/config
-```
 
-### (4) KUBECONFIG 파일에서 Cluster 이름 수정
-```bash
-$ vi $HOME/.kube/config
-apiVersion: v1
-clusters:
-- cluster:
-    certificate-authority-data: ...
-    server: https://fa2e8bee9a2168ec0f822ca0dbafef40.gr7.us-east-2.eks.amazonaws.com/
-  name: cluster4
-contexts:
-- context:
-    cluster: cluster4
-    user: cluster4-admin
-  name: cluster4
-current-context: openmcp
-kind: Config
-preferences: {}
-users:
-- name: cluster4-admin
-  user:
-    exec:
-      apiVersion: client.authentication.k8s.io/v1alpha1
-      args:
-      - --region
-      - us-east-2
-      - eks
-      - get-token
-      - --cluster-name
-      - eks-cluster
-      command: aws
-      env: null
-```
-
-### (5) OpenMCP 조인
+### (3) OpenMCP 조인
 ```
 $ omcpctl join eks-cluster cluster4
 ...

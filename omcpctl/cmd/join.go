@@ -16,12 +16,14 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 	"log"
 	"openmcp/openmcp/util/clusterManager"
 	"path/filepath"
+	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 	"strings"
 	"time"
@@ -243,22 +245,41 @@ func joinGKECluster(memberName string) {
 		return
 	}
 
+	_, err := util.CmdExec("gcloud container clusters get-credentials " + memberName)
+	if err != nil {
+		fmt.Println("[",err, "] No cluster found for name: " + memberName)
+		return
+	}
+
 
 	kc := cobrautil.GetKubeConfig("/root/.kube/config")
 
-	checkJoin := 0
 
-	for _, cluster := range kc.Clusters {
-		if memberName == cluster.Name {
-			checkJoin = 1
+	for i, c := range kc.Clusters {
+		if strings.Contains(c.Name, memberName){
+			kc.Clusters[i].Name = memberName
 			break
 		}
-	}
 
-	if checkJoin == 0 {
-		fmt.Println("ERROR - Fail to find cluster")
-		return
 	}
+	for i, c := range kc.Contexts {
+		if strings.Contains(c.Name, memberName){
+			kc.Contexts[i].Name = memberName
+			kc.Contexts[i].Context.User = memberName+"-admin"
+			kc.Contexts[i].Context.Cluster = memberName
+			break
+
+		}
+	}
+	for i, c := range kc.Users {
+		if strings.Contains(c.Name, memberName){
+			kc.Users[i].Name = memberName+"-admin"
+			break
+
+		}
+	}
+	kc.CurrentContext = "openmcp"
+	cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
 
 	start2 := time.Now()
 	fmt.Println("***** [Start] 1. Cluster Join *****")
@@ -277,6 +298,26 @@ func joinGKECluster(memberName string) {
 	elapsed3 := time.Since(start3)
 	log.Printf("Init Service Deployments Time : %s", elapsed3)
 	fmt.Println("***** [End] 2. Init Service Deployments ***** ")
+
+
+	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
+	genClient := genericclient.NewForConfigOrDie(kubeconfig)
+
+	kubefedcluster := &fedv1b1.KubeFedCluster{}
+	err = genClient.Get(context.TODO(), kubefedcluster, "kube-federation-system", memberName)
+	if err != nil {
+		fmt.Println(err)
+	}
+	labels := make(map[string]string)
+	labels["platform"] = "gke"
+	kubefedcluster.Labels = labels
+
+
+	err = genClient.Update(context.TODO(), kubefedcluster)
+	if err != nil {
+		fmt.Println(err)
+	}
+
 
 
 	totalElapsed := time.Since(totalStart)
@@ -303,27 +344,50 @@ func joinEKSCluster(memberName string) {
 		return
 	}
 
-	checkJoin := 0
+
+	_, err := util.CmdExec("aws eks update-kubeconfig --name " + memberName)
+	if err != nil {
+		fmt.Println("[",err, "] No cluster found for name: " + memberName)
+		return
+	}
 
 	kc := cobrautil.GetKubeConfig("/root/.kube/config")
 
+
 	for i, c := range kc.Clusters {
-		if memberName == c.Name {
+		if strings.Contains(c.Name, memberName){
+			kc.Clusters[i].Name = memberName
+
 			a := c.Cluster.Server
 			lower_a := strings.ToLower(a)
 			fmt.Println(a , " => ", lower_a)
 
 			kc.Clusters[i].Cluster.Server = lower_a
-			cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
-			checkJoin = 1
+
 			break
 		}
-	}
 
-	if checkJoin == 0 {
-		fmt.Println("ERROR - Fail to find cluster")
-		return
 	}
+	for i, c := range kc.Contexts {
+		if strings.Contains(c.Name, memberName){
+			kc.Contexts[i].Name = memberName
+			kc.Contexts[i].Context.User = memberName+"-admin"
+			kc.Contexts[i].Context.Cluster = memberName
+			break
+
+		}
+	}
+	for i, c := range kc.Users {
+		if strings.Contains(c.Name, memberName){
+			kc.Users[i].Name = memberName+"-admin"
+			break
+
+		}
+	}
+	kc.CurrentContext = "openmcp"
+	cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
+
+
 
 
 	start2 := time.Now()
@@ -343,6 +407,25 @@ func joinEKSCluster(memberName string) {
 	elapsed3 := time.Since(start3)
 	log.Printf("Init Service Deployments Time : %s", elapsed3)
 	fmt.Println("***** [End] 2. Init Service Deployments ***** ")
+
+
+	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
+	genClient := genericclient.NewForConfigOrDie(kubeconfig)
+
+	kubefedcluster := &fedv1b1.KubeFedCluster{}
+	err = genClient.Get(context.TODO(), kubefedcluster, "kube-federation-system", memberName)
+	if err != nil {
+		fmt.Println(err)
+	}
+	labels := make(map[string]string)
+	labels["platform"] = "eks"
+	kubefedcluster.Labels = labels
+
+
+	err = genClient.Update(context.TODO(), kubefedcluster)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 
 	totalElapsed := time.Since(totalStart)
