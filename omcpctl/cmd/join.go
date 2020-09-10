@@ -242,22 +242,11 @@ func joinGKECluster(memberName string) {
 		return
 	}
 
-	start2 := time.Now()
-	fmt.Println("***** [Start] 1. Cluster Join *****")
-	util.CmdExec2("kubefedctl join " + memberName + " --cluster-context " + memberName + " --host-cluster-context openmcp --v=2")
-
-	elapsed2 := time.Since(start2)
-	log.Printf("Cluster Join Time : %s", elapsed2)
-	fmt.Println("***** [End] 1. Cluster Join ***** ")
-
-	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
-	genClient := genericclient.NewForConfigOrDie(kubeconfig)
-	clusterList := clusterManager.ListKubeFedClusters(genClient, "kube-federation-system")
+	kc := cobrautil.GetKubeConfig("/root/.kube/config")
 
 	checkJoin := 0
 
-	for _, cluster := range clusterList.Items {
-		//fmt.Println("kubefed cluster name : ", cluster.Name)
+	for _, cluster := range kc.Clusters {
 		if memberName == cluster.Name {
 			checkJoin = 1
 			break
@@ -269,6 +258,13 @@ func joinGKECluster(memberName string) {
 		return
 	}
 
+	start2 := time.Now()
+	fmt.Println("***** [Start] 1. Cluster Join *****")
+	util.CmdExec2("kubefedctl join " + memberName + " --cluster-context " + memberName + " --host-cluster-context openmcp --v=2")
+
+	elapsed2 := time.Since(start2)
+	log.Printf("Cluster Join Time : %s", elapsed2)
+	fmt.Println("***** [End] 1. Cluster Join ***** ")
 
 	start3 := time.Now()
 	fmt.Println("***** [Start] 2. Init Service Deployments *****")
