@@ -304,37 +304,18 @@ func joinEKSCluster(memberName string) {
 		return
 	}
 
-	start2 := time.Now()
-	fmt.Println("***** [Start] 1. Cluster Join *****")
-	util.CmdExec2("kubefedctl join " + memberName + " --cluster-context " + memberName + " --host-cluster-context openmcp --v=2")
-
-	elapsed2 := time.Since(start2)
-	log.Printf("Cluster Join Time : %s", elapsed2)
-	fmt.Println("***** [End] 1. Cluster Join ***** ")
-
-	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
-	genClient := genericclient.NewForConfigOrDie(kubeconfig)
-	clusterList := clusterManager.ListKubeFedClusters(genClient, "kube-federation-system")
-
 	checkJoin := 0
 
-	for _, cluster := range clusterList.Items {
-		if memberName == cluster.Name {
-			//gke, eks - config 파일 형식 안맞음
-			/*//cluster
-			kc := cobrautil.GetKubeConfig("/root/.kube/config")
+	kc := cobrautil.GetKubeConfig("/root/.kube/config")
 
-			for i, cluster := range kc.Clusters {
-				if memberName == cluster.Name {
-					a := cluster.Cluster.Server
-					lower_a := strings.ToLower(a)
-					fmt.Println(a , " => ", lower_a)
+	for i, c := range kc.Clusters {
+		if memberName == c.Name {
+			a := c.Cluster.Server
+			lower_a := strings.ToLower(a)
+			fmt.Println(a , " => ", lower_a)
 
-					kc.Clusters[i].Cluster.Server = lower_a
-					cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
-				}
-			}
-			*/
+			kc.Clusters[i].Cluster.Server = lower_a
+			cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
 			checkJoin = 1
 			break
 		}
@@ -344,6 +325,14 @@ func joinEKSCluster(memberName string) {
 		fmt.Println("ERROR - Fail to find cluster")
 		return
 	}
+
+	start2 := time.Now()
+	fmt.Println("***** [Start] 1. Cluster Join *****")
+	util.CmdExec2("kubefedctl join " + memberName + " --cluster-context " + memberName + " --host-cluster-context openmcp --v=2")
+
+	elapsed2 := time.Since(start2)
+	log.Printf("Cluster Join Time : %s", elapsed2)
+	fmt.Println("***** [End] 1. Cluster Join ***** ")
 
 
 	start3 := time.Now()
@@ -364,8 +353,10 @@ func joinEKSCluster(memberName string) {
 func installInitCluster(clusterName, openmcpDir string) {
 	fmt.Println("Init Module Deployment Start - " + clusterName)
 	install_dir := filepath.Join(openmcpDir, "install_openmcp/member")
-	//initYamls := []string{"custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller"}
-	initYamls := []string{"custom-metrics-apiserver", "metallb", "metric-collector", "nginx-ingress-controller"}
+
+	util.CmdExec2("cp "+install_dir+"/metric-collector/operator/operator.yaml "+install_dir+"/metric-collector/operator.yaml")
+	util.CmdExec2("sed -i 's|REPLACE_CLUSTER_NAME|"+clusterName+"|g' "+install_dir+"/metric-collector/operator.yaml")
+	initYamls := []string{"custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller"}
 
 	util.CmdExec2("kubectl create ns openmcp --context " + clusterName)
 	for _, initYaml := range initYamls {

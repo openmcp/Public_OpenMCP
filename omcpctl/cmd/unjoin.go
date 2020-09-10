@@ -344,9 +344,7 @@ func unjoinCloudCluster(memberName string) {
 	log.Printf("Cluster Unjoin Time : %s", elapsed2)
 	fmt.Println("***** [End] 2. Cluster UnJoin ***** ")
 
-	//config 형식....
-
-	/*start3 := time.Now()
+	start3 := time.Now()
 	fmt.Println("***** [Start] 3. Cluster Config Remove *****")
 
 	kc := cobrautil.GetKubeConfig("/root/.kube/config")
@@ -387,7 +385,7 @@ func unjoinCloudCluster(memberName string) {
 	elapsed3 := time.Since(start3)
 	log.Printf("Cluster Config Remove Time : %s", elapsed3)
 	fmt.Println("***** [End] 3. Cluster Config Remove ***** ")
-*/
+
 	totalElapsed := time.Since(totalStart)
 	log.Printf("Cluster UnJoin Total Elapsed Time : %s", totalElapsed)
 	fmt.Println("***** [End] Cluster UnJoin Completed - " + memberName, "*****")
