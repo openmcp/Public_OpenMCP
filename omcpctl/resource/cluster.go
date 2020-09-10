@@ -117,12 +117,13 @@ func GetClusterList(){
 	if cobrautil.Option_filetype == ""{
 		datas := [][]string{}
 		for _, Cluster := range clusterList.Items {
-			data := []string{Cluster.Name, string(Cluster.Status.Conditions[0].Status), *Cluster.Status.Region, strings.Join(Cluster.Status.Zones, ","), Cluster.Spec.APIEndpoint, Cluster.GenerateName }
+			age := cobrautil.GetAge(Cluster.CreationTimestamp.Time)
+			data := []string{Cluster.Name, string(Cluster.Status.Conditions[0].Status), *Cluster.Status.Region, strings.Join(Cluster.Status.Zones, ","), Cluster.Spec.APIEndpoint, "", age}
 			datas = append(datas, data)
 
 		}
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"ClusterName", "Status", "Region", "Zones", "apiEndpoint", "AGE"})
+		table.SetHeader([]string{"ClusterName", "Status", "Region", "Zones", "apiEndpoint", "Platform", "AGE"})
 		table.SetBorder(false)
 		table.AppendBulk(datas)
 		table.Render()
