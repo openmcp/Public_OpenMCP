@@ -256,7 +256,14 @@ $ kubectl create -f metallb_config.yaml --context=<cluster-name>
 $ gcloud init
 ```
 
-### (3) OpenMCP 조인
+### (3) gcloud container clusters list
+```
+$ gcloud container clusters list
+NAME         LOCATION       MASTER_VERSION  MASTER_IP       MACHINE_TYPE  NODE_VERSION   NUM_NODES  STATUS
+cluster3     asia-east1-a   1.16.13-gke.1   35.201.135.105  e2-medium     1.16.13-gke.1  2          RUNNING
+```
+
+### (4) OpenMCP 조인
 ```
 $ omcpctl join gke-cluster cluster3
 ...
@@ -284,7 +291,16 @@ Default region name [us-east-2]: us-east-2
 Default output format [json]: json
 ```
 
-### (3) OpenMCP 조인
+### (3) aws eks list-clusters
+```
+{
+    "clusters": [
+        "cluster4"
+    ]
+}
+```
+
+### (4) OpenMCP 조인
 ```
 $ omcpctl join eks-cluster cluster4
 ...
