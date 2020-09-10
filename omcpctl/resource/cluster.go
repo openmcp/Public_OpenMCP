@@ -5,13 +5,9 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
 
-	"k8s.io/client-go/tools/clientcmd"
 	cobrautil "openmcp/openmcp/omcpctl/util"
-	"openmcp/openmcp/util"
-	"openmcp/openmcp/util/clusterManager"
 	"os"
 	"sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
-	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 	"strings"
 )
 
@@ -25,10 +21,15 @@ func ClusterInfo(kfc *v1beta1.KubeFedCluster) []string{
 	ClusterZone := strings.Join(kfc.Status.Zones, ",")
 	ClusterAPIEndpoint := kfc.Spec.APIEndpoint
 
-	//ClusterClusterName := kubecontext.Context.Cluster
+	//ClusterClusterName := kubecontext.Context.Cluster\
+	platform := ""
+	if val, ok := kfc.Labels["platform"]; ok {
+		platform = val
+	}
+
 	age := cobrautil.GetAge(kfc.CreationTimestamp.Time)
 
-	data := []string{ClusterNamespace, ClusterName, ClusterStatus, ClusterRegion, ClusterZone, ClusterAPIEndpoint, age}
+	data := []string{ClusterNamespace, ClusterName, ClusterStatus, ClusterRegion, ClusterZone, ClusterAPIEndpoint, platform, age}
 
 	return data
 }
@@ -77,7 +78,7 @@ func PrintKubeFedClusterList(body []byte) {
 
 func DrawClusterTable(datas [][]string){
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"NS", "ClusterName", "Status", "Region", "Zones", "APIEndpoint", "AGE"})
+	table.SetHeader([]string{"NS", "ClusterName", "Status", "Region", "Zones", "APIEndpoint", "Platform", "AGE"})
 	table.SetBorder(false)
 	table.AppendBulk(datas)
 	table.Render()
@@ -107,30 +108,29 @@ func DrawClusterTable(datas [][]string){
 //		fmt.Println(res)
 //	}
 //}
+
+//func GetClusterList(){
+//	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
+//	genClient := genericclient.NewForConfigOrDie(kubeconfig)
 //
-func GetClusterList(){
-	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
-	genClient := genericclient.NewForConfigOrDie(kubeconfig)
-
-	clusterList := clusterManager.ListKubeFedClusters(genClient, "kube-federation-system")
-
-	if cobrautil.Option_filetype == ""{
-		datas := [][]string{}
-		for _, Cluster := range clusterList.Items {
-			age := cobrautil.GetAge(Cluster.CreationTimestamp.Time)
-			data := []string{Cluster.Name, string(Cluster.Status.Conditions[0].Status), *Cluster.Status.Region, strings.Join(Cluster.Status.Zones, ","), Cluster.Spec.APIEndpoint, "", age}
-			datas = append(datas, data)
-
-		}
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"ClusterName", "Status", "Region", "Zones", "apiEndpoint", "Platform", "AGE"})
-		table.SetBorder(false)
-		table.AppendBulk(datas)
-		table.Render()
-
-	} else if cobrautil.Option_filetype == "yaml"{
-		res, _ := util.CmdExec("kubectl get kubefedclusters -n kube-federation-system -o yaml")
-		fmt.Println(res)
-	}
-}
-
+//	clusterList := clusterManager.ListKubeFedClusters(genClient, "kube-federation-system")
+//
+//	if cobrautil.Option_filetype == ""{
+//		datas := [][]string{}
+//		for _, Cluster := range clusterList.Items {
+//			age := cobrautil.GetAge(Cluster.CreationTimestamp.Time)
+//			data := []string{Cluster.Name, string(Cluster.Status.Conditions[0].Status), *Cluster.Status.Region, strings.Join(Cluster.Status.Zones, ","), Cluster.Spec.APIEndpoint, "", age}
+//			datas = append(datas, data)
+//
+//		}
+//		table := tablewriter.NewWriter(os.Stdout)
+//		table.SetHeader([]string{"ClusterName", "Status", "Region", "Zones", "apiEndpoint", "Platform", "AGE"})
+//		table.SetBorder(false)
+//		table.AppendBulk(datas)
+//		table.Render()
+//
+//	} else if cobrautil.Option_filetype == "yaml"{
+//		res, _ := util.CmdExec("kubectl get kubefedclusters -n kube-federation-system -o yaml")
+//		fmt.Println(res)
+//	}
+//}

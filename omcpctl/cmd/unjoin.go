@@ -17,13 +17,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"k8s.io/client-go/tools/clientcmd"
 	"log"
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"openmcp/openmcp/util"
 	"openmcp/openmcp/util/clusterManager"
-	"os"
 	"path/filepath"
 	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 	"strings"
@@ -44,6 +42,7 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.
 
 openmcpctl unjoin list
+>>>>>>> f86db70316573435f704a0caa51e86c90410b458
 openmcpctl unjoin cluster <CLUSTERIP>
 openmcpctl unjoin gke-cluster <CLUSTERNAME>
 openmcpctl unjoin eks-cluster <CLUSTERNAME>`,
@@ -56,30 +55,31 @@ openmcpctl unjoin eks-cluster <CLUSTERNAME>`,
 				unjoinCluster(args[1])
 			}
 		} else if len(args) != 0 && args[0] == "list" {
-			fmt.Println("[ cluster list (unjoin) ]")
-			//실제로 조인되어 있지 않은 클러스터 정보가 join 디렉토리에 들어가 있는 경우
-			// => unjoin
-			clusterIps := getDiffJoinIP()
-			for _, clusterIp := range clusterIps {
-				fmt.Println("Not Correct - ", clusterIp)
-				moveToUnjoin(clusterIp)
-				unjoinCluster(clusterIp)
-			}
-			//실제로 조인된 클러스터 정보가 unjoin 디렉토리에 들어가 있는 경우
-			// => join
-			clusterIps = getDiffUnjoinIP()
-			for _, clusterIp := range clusterIps {
-				fmt.Println("Not Correct - ", clusterIp)
-				moveToJoin(clusterIp)
-				joinCluster(clusterIp)
-			}
-			GetUnjoinClusterList()
+			//fmt.Println("[ cluster list (unjoin) ]")
+			////실제로 조인되어 있지 않은 클러스터 정보가 join 디렉토리에 들어가 있는 경우
+			//// => unjoin
+			//clusterIps := getDiffJoinIP()
+			//for _, clusterIp := range clusterIps {
+			//	fmt.Println("Not Correct - ", clusterIp)
+			//	moveToUnjoin(clusterIp)
+			//	unjoinCluster(clusterIp)
+			//}
+			////실제로 조인된 클러스터 정보가 unjoin 디렉토리에 들어가 있는 경우
+			//// => join
+			//clusterIps = getDiffUnjoinIP()
+			//for _, clusterIp := range clusterIps {
+			//	fmt.Println("Not Correct - ", clusterIp)
+			//	moveToJoin(clusterIp)
+			//	joinCluster(clusterIp)
+			//}
+			//GetUnjoinClusterList()
 		} else if len(args) != 0 && (args[0] == "gke-cluster"|| args[0] == "eks-cluster") {
 			if args[1] == "" {
 				fmt.Println("You Must Provide Cluster Name")
 			} else {
 				unjoinCloudCluster(args[1])
 			}
+
 		}
 	},
 }
@@ -131,37 +131,6 @@ func moveToJoin(memberIP string) {
 
 	util.CmdExec2("mv /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP + " /mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP)
 
-}
-
-func GetUnjoinClusterList() {
-	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
-
-	util.CmdExec("umount -l /mnt")
-	defer util.CmdExec("umount -l /mnt")
-
-	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
-	openmcpIP := GetOutboundIP()
-	nfsClusterJoinStr, err := util.CmdExec("ls /mnt/openmcp/" + openmcpIP + "/members/unjoin")
-	nfsClusterJoinList := strings.Split(nfsClusterJoinStr, "\n")
-	nfsClusterJoinList = nfsClusterJoinList[:len(nfsClusterJoinList)-1]
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	datas := [][]string{}
-
-	for i := range nfsClusterJoinList {
-		kc := cobrautil.GetKubeConfig("/mnt/openmcp/" + openmcpIP + "/members/unjoin/" + nfsClusterJoinList[i] + "/config/config")
-
-		data := []string{kc.Clusters[0].Name, kc.Clusters[0].Cluster.Server}
-		datas = append(datas, data)
-	}
-
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ClusterName", "apiEndpoint"})
-	table.SetBorder(false)
-	table.AppendBulk(datas)
-	table.Render()
 }
 
 func removeInitCluster(clusterName, openmcpDir string) {

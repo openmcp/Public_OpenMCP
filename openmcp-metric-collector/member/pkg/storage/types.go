@@ -22,6 +22,7 @@ import (
 
 type Collection struct {
 	Matricsbatchs []MetricsBatch
+	ClusterName string
 }
 
 // MetricsBatch is a single batch of pod, container, and node metrics from some source.

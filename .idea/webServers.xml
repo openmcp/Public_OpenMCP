@@ -10,6 +10,14 @@
           <option name="port" value="22" />
         </fileTransfer>
       </webServer>
+      <webServer id="6d0986c5-a9b4-44ce-964e-f42cbc98009a" name="openmcp" url="http://10.0.3.20">
+        <fileTransfer host="10.0.3.20" port="22" rootFolder="/root/workspace/openmcp/openmcp" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>

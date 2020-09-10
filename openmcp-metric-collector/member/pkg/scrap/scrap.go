@@ -10,6 +10,7 @@ import (
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/decode"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/kubeletClient"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/storage"
+	"os"
 )
 
 func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nodes []corev1.Node) (*storage.Collection, error) {
@@ -62,6 +63,8 @@ func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nod
 		nodeNum += 1
 		podNum += len(srcBatch.Pods)
 	}
+	res.ClusterName = os.Getenv("CLUSTER_NAME")
+
 	omcplog.V(3).Infof("ScrapeMetrics: time: ",clock.MyClock.Since(startTime), "nodes: ", nodeNum, "pods: ", podNum)
 	return res, utilerrors.NewAggregate(errs)
 }

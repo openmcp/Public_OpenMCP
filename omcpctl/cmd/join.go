@@ -20,7 +20,6 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 	"log"
-	"openmcp/openmcp/omcpctl/resource"
 	"openmcp/openmcp/util/clusterManager"
 	"path/filepath"
 	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
@@ -58,25 +57,26 @@ openmcpctl join eks-cluster <CLUSTERNAME>`,
 				joinCluster(args[1])
 			}
 
-		} else if len(args) != 0 && args[0] == "list" {
-			fmt.Println("[ cluster list (join) ]")
-			//실제로 조인되어 있지 않은 클러스터 정보가 join 디렉토리에 들어가 있는 경우
-			// => unjoin
-			clusterIps := getDiffJoinIP()
-			for _, clusterIp := range clusterIps {
-				fmt.Println("Not Correct - ", clusterIp)
-				moveToUnjoin(clusterIp)
-				unjoinCluster(clusterIp)
-			}
-			//실제로 조인된 클러스터 정보가 unjoin 디렉토리에 들어가 있는 경우
-			// => join
-			clusterIps = getDiffUnjoinIP()
-			for _, clusterIp := range clusterIps {
-				fmt.Println("Not Correct - ", clusterIp)
-				moveToJoin(clusterIp)
-				joinCluster(clusterIp)
-			}
-			resource.GetClusterList()
+			// }
+			///else if len(args) != 0 && args[0] == "list" {
+			//fmt.Println("[ cluster list (join) ]")
+			////실제로 조인되어 있지 않은 클러스터 정보가 join 디렉토리에 들어가 있는 경우
+			//// => unjoin
+			//clusterIps := getDiffJoinIP()
+			//for _, clusterIp := range clusterIps {
+			//	fmt.Println("Not Correct - ", clusterIp)
+			//	moveToUnjoin(clusterIp)
+			//	unjoinCluster(clusterIp)
+			//}
+			////실제로 조인된 클러스터 정보가 unjoin 디렉토리에 들어가 있는 경우
+			//// => join
+			//clusterIps = getDiffUnjoinIP()
+			//for _, clusterIp := range clusterIps {
+			//	fmt.Println("Not Correct - ", clusterIp)
+			//	moveToJoin(clusterIp)
+			//	joinCluster(clusterIp)
+			//}
+			//resource.GetClusterList()
 		} else if len(args) != 0 && args[0] == "gke-cluster" {
 			if args[1] == "" {
 				fmt.Println("You Must Provide Cluster Name")
@@ -89,6 +89,7 @@ openmcpctl join eks-cluster <CLUSTERNAME>`,
 			} else {
 				joinEKSCluster(args[1])
 			}
+
 		}
 	},
 }
@@ -242,6 +243,7 @@ func joinGKECluster(memberName string) {
 		return
 	}
 
+
 	kc := cobrautil.GetKubeConfig("/root/.kube/config")
 
 	checkJoin := 0
@@ -265,6 +267,7 @@ func joinGKECluster(memberName string) {
 	elapsed2 := time.Since(start2)
 	log.Printf("Cluster Join Time : %s", elapsed2)
 	fmt.Println("***** [End] 1. Cluster Join ***** ")
+
 
 	start3 := time.Now()
 	fmt.Println("***** [Start] 2. Init Service Deployments *****")
@@ -321,6 +324,7 @@ func joinEKSCluster(memberName string) {
 		fmt.Println("ERROR - Fail to find cluster")
 		return
 	}
+
 
 	start2 := time.Now()
 	fmt.Println("***** [Start] 1. Cluster Join *****")
