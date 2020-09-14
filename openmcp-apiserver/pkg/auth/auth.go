@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/dgrijalva/jwt-go"
 	"io"
@@ -18,12 +19,14 @@ const (
 func TokenHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Content-Type", "application/json")
-	r.ParseForm()
+	_ = r.ParseForm()
 
 	// Check the credentials provided - if you store these in a database then
 	// this is where your query would go to check.
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
+
+	fmt.Println(username, password)
 	if username != "openmcp" || password != "keti" {
 		w.WriteHeader(http.StatusUnauthorized)
 		io.WriteString(w, `{"error":"invalid_credentials"}`)
@@ -35,6 +38,7 @@ func TokenHandler(w http.ResponseWriter, r *http.Request) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user": username,
 		"exp":  time.Now().Add(time.Hour * time.Duration(1)).Unix(),
+		//"exp":  time.Now().Add(time.Second * time.Duration(10)).Unix(),
 		"iat":  time.Now().Unix(),
 	})
 	tokenString, err := token.SignedString([]byte(APP_KEY))
