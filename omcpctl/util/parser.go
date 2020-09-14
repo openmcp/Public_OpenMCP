@@ -97,6 +97,10 @@ var (
 		"horizontalpodautoscaler": "horizontalpodautoscalers",
 		"horizontalpodautoscalers": "horizontalpodautoscalers",
 
+		"vpa": "verticalpodautoscalers",
+		"verticalpodautoscaler": "verticalpodautoscalers",
+		"verticalpodautoscalers": "verticalpodautoscalers",
+
 		"pdb": "poddisruptionbudgets",
 		"poddisruptionbudget": "poddisruptionbudgets",
 		"poddisruptionbudgets": "poddisruptionbudgets",
@@ -197,6 +201,7 @@ var (
 		"customresourcedefinitions": "/apis/apiextensions.k8s.io/v1",
 		"events": "/api/v1",
 		"horizontalpodautoscalers": "/apis/autoscaling/v1",
+		"verticalpodautoscalers": "/apis/autoscaling.k8s.io/v1beta2",
 		"poddisruptionbudgets": "/apis/policy/v1beta1",
 
 		// CLUSTER APIS
@@ -249,6 +254,7 @@ var (
 		"CustomResourceDefinition": "customresourcedefinitions",
 		"Event": "events",
 		"HorizontalPodAutoscaler": "horizontalpodautoscalers",
+		"VerticalPodAutoscaler": "verticalpodautoscalers",
 		"PodDisruptionBudget": "poddisruptionbudgets",
 
 		// CLUSTER APIS

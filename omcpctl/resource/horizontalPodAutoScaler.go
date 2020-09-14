@@ -146,7 +146,7 @@ func HorizontalPodAutoscalerInfo(hpa *autov1.HorizontalPodAutoscaler) []string{
 		}
 	}
 
-	reference := hpa.Spec.ScaleTargetRef.Kind
+	reference := hpa.Spec.ScaleTargetRef.Name + "("+hpa.Spec.ScaleTargetRef.Kind+")"
 	minpods := strconv.Itoa(int(*hpa.Spec.MinReplicas))
 	maxpods := strconv.Itoa(int(hpa.Spec.MaxReplicas))
 	replicas := strconv.Itoa(int(hpa.Status.CurrentReplicas))

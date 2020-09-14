@@ -79,6 +79,7 @@ openmcpctl get ohas <OHASNAME> -o yaml`,
 	},
 }
 
+
 func getMetaInfo(body []byte) (cobrautil.MetaInfo, error){
 	var metainfo cobrautil.MetaInfo
 	err := yaml.Unmarshal(body, &metainfo)
@@ -276,6 +277,10 @@ func getCore(resourceKind, resourceName, clusterContext string) error{
 			resource.PrintHorizontalPodAutoscaler(body)
 		} else if  metainfo.Kind == "HorizontalPodAutoscalerList"{
 			resource.PrintHorizontalPodAutoscalerList(body)
+		} else if  metainfo.Kind == "VerticalPodAutoscaler"{
+			resource.PrintVerticalPodAutoscaler(body)
+		} else if  metainfo.Kind == "VerticalPodAutoscalerList"{
+			resource.PrintVerticalPodAutoscalerList(body)
 		} else if  metainfo.Kind == "PodDisruptionBudget"{
 			resource.PrintPodDisruptionBudget(body)
 		} else if  metainfo.Kind == "PodDisruptionBudgetList"{
