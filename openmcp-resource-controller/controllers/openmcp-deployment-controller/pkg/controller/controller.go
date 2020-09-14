@@ -343,6 +343,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 		found := &appsv1.Deployment{}
 		cluster_client := cm.Cluster_genClients[cluster_name]
+		fmt.Println("check : ", cluster_name, instance.Name, instance.Namespace)
 		err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 
 		if err != nil && errors.IsNotFound(err) {
