@@ -31,8 +31,11 @@ func saveTokenToFile(token string) {
 	}
 }
 func getTokenWithFile() (string, error){
+	// 토큰파일
 	filename := "/var/lib/omcpctl/token"
 
+	// 토큰파일이 없는경우
+	// 아직 한번도 토큰발급을 하지 않은 경우 새로토큰을 발급받는다.
 	_, err := os.Stat(filename)
 	if os.IsNotExist(err){
 		fmt.Println(filename+ " file is not")
@@ -50,11 +53,13 @@ func getTokenWithFile() (string, error){
 		log.Fatalf("Unmarshal: %v", err)
 	}
 
-
+	// 파일은 있지만 토큰이 없는경우
+	// 새로운 토큰을 발급받는다.
 	if _, ok := tokenMap["token"]; !ok {
 		return "", cobrautil.NewError("token not exist")
 	}
 
+	// 토큰이 있는경우 토큰의 유효기간을 검사한다.
 	tokenString := tokenMap["token"]
 	//tokenString := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDAwNzEyODgsImlhdCI6MTYwMDA3MTI4MywidXNlciI6Im9wZW5tY3AifQ.koZwjMM3TOE8g4ygjDxqgOrulQ6xoGoNnKfc9O0Nq6Y"
 	claims := jwt.MapClaims{}
@@ -65,6 +70,7 @@ func getTokenWithFile() (string, error){
 	_ = token
 
 	// do something with decoded claims
+	// exp는 토큰의 유효기간을 나타내는 값
 	exp := time.Duration(claims["exp"].(float64)) * time.Nanosecond
 	//lat := time.Duration(claims["iat"].(float64)) * time.Nanosecond
 
@@ -74,14 +80,16 @@ func getTokenWithFile() (string, error){
 
 
 	// 만료시간 300초 전이면 새로 토큰을 발급받는다.
-	if exp_sec - cur_sec < 3 {
+	if exp_sec - cur_sec < 300 {
 		return "", cobrautil.NewError("Token is expired")
 	}
 
 	return tokenString, nil
 }
 func getToken() (string, error) {
-
+	// 이전에 발급 받은 토큰 액세스
+	// 만료시간을 검사하여 만료되지 않은경우면 해당 토큰 사용
+	// 만료 5분전인 경우 새로운 토큰을 발급받음
 	token, err := getTokenWithFile()
 	if err == nil {
 		return token, nil
