@@ -108,10 +108,17 @@ func getGKEClusterData() [][]string{
 
 		ss := strings.Fields(gkeClusterInfo[i])
 
+		if len(ss) < 8 {
+			continue
+		}
 		clusterName := ss[0]
 		masterIP := "https://"+ss[3]
 		platform := "gke"
+		status := ss[7]
 
+		if status != "RUNNING"{
+			continue
+		}
 		isAlreadyJoined := false
 		for _, joinedCluster := range clusterList.Items{
 			if clusterName == joinedCluster.Name && strings.Contains(joinedCluster.Spec.APIEndpoint, masterIP){
@@ -154,6 +161,7 @@ func getEKSClusterData() [][]string{
 	for _, clusterNameInteface := range eksClusterNamesInteface{
 		clusterName := clusterNameInteface.(string)
 		ss, err := util.CmdExec("aws eks describe-cluster --name "+clusterName+" | cat")
+
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -163,7 +171,13 @@ func getEKSClusterData() [][]string{
 		}
 		clusterInfo := jsonData["cluster"].(map[string]interface{})
 		//fmt.Println(clusterName)
-		apiEndpoint := clusterInfo["endpoint"].(string)
+		apiEndpoint := ""
+		if _, ok := clusterInfo["endpoint"]; ok {
+			apiEndpoint = clusterInfo["endpoint"].(string)
+		} else {
+			continue
+		}
+
 		apiEndpoint = strings.ToLower(apiEndpoint)
 		//fmt.Println(apiEndpoint)
 		platform := "eks"
