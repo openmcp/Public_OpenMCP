@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"net"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/apis"
 	ketiv1alpha1 "openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
@@ -234,8 +235,30 @@ func CreateEndpointsFromServiceDNS(instanceServiceRecord *ketiv1alpha1.OpenMCPSe
 
 		targets := []string{}
 		for _, ingress := range dns.LoadBalancer.Ingress {
-			targets = append(targets, ingress.IP)
-			targetsAll = append(targetsAll, ingress.IP)
+
+			// ip가 없는경우 (EKS는 ip대신 domain 사용)
+			// domaind에 해당하는 ip를 조회하여 넣는다.
+			if ingress.IP == ""{
+				//target = ingress.Hostname
+
+				addrs, err := net.LookupIP(ingress.Hostname)
+				if err != nil {
+					fmt.Println("Unknown host: ", ingress.Hostname)
+					continue
+				} else {
+					fmt.Println(addrs)
+					for _, addr := range addrs {
+						target := addr.String()
+						targets = append(targets, target)
+						targetsAll = append(targetsAll, target)
+					}
+				}
+			} else { // ingress ip가 있는경우 그대로 ip사용 (EKS가 아닌경우)
+				target := ingress.IP
+				targets = append(targets, target)
+				targetsAll = append(targetsAll, target)
+			}
+
 		}
 
 
@@ -321,12 +344,17 @@ func CreateEndpointsFromIngressDNS(instanceIngressRecord *ketiv1alpha1.OpenMCPIn
 	recordTTL := instanceIngressRecord.Spec.RecordTTL
 	recordType := "A"
 
+
 	for _, dns := range instanceIngressRecord.Status.DNS {
 		for _, host := range dns.Hosts {
 			dnsName := host
 			targets := []string{}
 			for _, ingress := range dns.LoadBalancer.Ingress {
-				targets = append(targets, ingress.IP)
+				target := ingress.IP
+				if target == ""{
+					target = ingress.Hostname
+				}
+				targets = append(targets, target)
 			}
 			endpoint := CreateEndpoint(dnsName, recordTTL, recordType, targets)
 			omcplog.V(3).Info("DNSName : ", endpoint.DNSName)

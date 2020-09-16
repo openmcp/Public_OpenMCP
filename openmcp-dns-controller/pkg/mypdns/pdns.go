@@ -101,6 +101,7 @@ func GetResourceRecordSets(domainName string, Endpoints []*ketiv1alpha1.Endpoint
 		records := []zones.Record{}
 
 		for _, target := range endpoint.Targets {
+
 			record := zones.Record{
 				Content:  target,
 				Disabled: false,
