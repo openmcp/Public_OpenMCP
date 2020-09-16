@@ -189,14 +189,12 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	hasInstance := &ketiv1alpha1.OpenMCPHybridAutoScaler{}
 	err := r.live.Get(context.TODO(), request.NamespacedName, hasInstance)
 
-
 	//OpenMCPHAS 리소스 삭제
 	if err != nil {
 		if errors.IsNotFound(err) {
-			//var sync_name string
-			for _, cluster := range cm.Cluster_list.Items {
-				_ = r.DeleteHPAVPA(cm, cluster.Name, request.Namespace, request.Name)
-			}
+
+			r.DeleteAllHPAVPA(cm, request.Namespace, request.Name)
+
 			return reconcile.Result{}, nil
 		}
 		omcplog.V(0).Info("!!! Failed to get hasInstance")
@@ -209,9 +207,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		//"has-target-cluster" 정책 적용
 		clusterListItems, hasInstance := r.UpdateTargetClusterPolicy(cm, hasInstance)
 
-		totalHASTimeEnd1 := time.Since(totalHASTimeStart1)
-		omcplog.V(4).Info("------ Check HAS Time (1) : ", totalHASTimeEnd1)
-		totalHASTimeStart1_1 := time.Now()
+
+		//totalHASTimeStart1_1 := time.Now()
 
 		target_cluster_policy_err := r.live.Status().Update(context.TODO(), hasInstance)
 		if target_cluster_policy_err != nil {
@@ -221,8 +218,10 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			omcplog.V(3).Info(">>> Policy Status UPDATE Success")
 		}
 
-		totalHASTimeEnd1_1 := time.Since(totalHASTimeStart1_1)
-		omcplog.V(4).Info("------ Check HAS Time (1_1) : ", totalHASTimeEnd1_1)
+		totalHASTimeEnd1 := time.Since(totalHASTimeStart1)
+		omcplog.V(4).Info("------ Check HAS Time (1) : ", totalHASTimeEnd1)
+		//totalHASTimeEnd1_1 := time.Since(totalHASTimeStart1_1)
+		//omcplog.V(4).Info("------ Check HAS Time (1_1) : ", totalHASTimeEnd1_1)
 		totalHASTimeStart2 := time.Now()
 
 		//타겟 OpenMCPDeployment Get
@@ -590,40 +589,42 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 			//UPDATE HPA (Rebalancing 수행 시 or min/max 수정 시)
 			if foundHPA.Spec.MaxReplicas == foundHPA.Status.CurrentReplicas && foundHPA.Status.CurrentReplicas == foundHPA.Status.DesiredReplicas {
-				if lastTimeRebalancing.IsZero() || (!lastTimeRebalancing.IsZero() && time.Since(lastTimeRebalancing) > time.Second*180) {
-					omcplog.V(2).Info(">>> " + clustername + " max rebalancing")
+				if lastTimeRebalancing.IsZero() || (!lastTimeRebalancing.IsZero() && time.Since(lastTimeRebalancing) > time.Second*100) {
 
-					hasInstance = r.MaxRebalancing(cm, hasInstance, dep_list_for_hpa, clustername, foundHPA)
+					hasInstance, check := r.MaxRebalancing(cm, hasInstance, dep_list_for_hpa, clustername, foundHPA)
 
-					err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
-					if err_openmcp != nil {
-						omcplog.V(0).Info("!!! Failed to update instance status \"RebalancingCount\"", err_openmcp)
-						return reconcile.Result{}, err_openmcp
-					} else {
-						omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
+					if check == "Success" {
+						err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
+						if err_openmcp != nil {
+							omcplog.V(0).Info("!!! Failed to update instance status \"RebalancingCount\"", err_openmcp)
+							return reconcile.Result{}, err_openmcp
+						} else {
+							omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
+						}
+
+						rebalancingTimeEnd := time.Since(rebalancingTimeStart)
+						omcplog.V(4).Info("------ Check Rebalancing Time : ", rebalancingTimeEnd, " ------")
 					}
-
-					rebalancingTimeEnd := time.Since(rebalancingTimeStart)
-					omcplog.V(4).Info("------ Check Rebalancing Time : ", rebalancingTimeEnd, " ------")
 
 				}
 			} else if *foundHPA.Spec.MinReplicas > 1 && *foundHPA.Spec.MinReplicas == foundHPA.Status.CurrentReplicas && foundHPA.Status.CurrentReplicas == foundHPA.Status.DesiredReplicas {
-				if lastTimeRebalancing.IsZero() || (!lastTimeRebalancing.IsZero() && time.Since(lastTimeRebalancing) > time.Second*180) {
-					omcplog.V(2).Info(">>> " + clustername + " min rebalancing")
+				if lastTimeRebalancing.IsZero() || (!lastTimeRebalancing.IsZero() && time.Since(lastTimeRebalancing) > time.Second*100) {
 
-					hasInstance = r.MinRebalancing(cm, hasInstance, dep_list_for_hpa, clustername, foundHPA)
+					hasInstance, check := r.MinRebalancing(cm, hasInstance, dep_list_for_hpa, clustername, foundHPA)
 
-					err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
-					if err_openmcp != nil {
-						omcplog.V(0).Info("!!! Failed to update instance status \"RebalancingCount\"", err_openmcp)
-						return reconcile.Result{}, err_openmcp
-					} else {
-						omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
+					if check == "Success" {
+
+						err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
+						if err_openmcp != nil {
+							omcplog.V(0).Info("!!! Failed to update instance status \"RebalancingCount\"", err_openmcp)
+							return reconcile.Result{}, err_openmcp
+						} else {
+							omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
+						}
+
+						rebalancingTimeEnd := time.Since(rebalancingTimeStart)
+						omcplog.V(4).Info("------ Check Rebalancing Time : ", rebalancingTimeEnd, " ------")
 					}
-
-					rebalancingTimeEnd := time.Since(rebalancingTimeStart)
-					omcplog.V(4).Info("------ Check Rebalancing Time : ", rebalancingTimeEnd, " ------")
-
 				}
 			}
 
@@ -826,7 +827,7 @@ func (r *reconciler) CreateMinMaxMap(hasInstance *ketiv1alpha1.OpenMCPHybridAuto
 	return cluster_min_map, cluster_max_map, hasInstance, err
 }
 
-func (r *reconciler) MinRebalancing(cm *clusterManager.ClusterManager, hasInstance *ketiv1alpha1.OpenMCPHybridAutoScaler, dep_list_for_hpa []string, clustername string, foundHPA *hpav2beta2.HorizontalPodAutoscaler) *ketiv1alpha1.OpenMCPHybridAutoScaler {
+func (r *reconciler) MinRebalancing(cm *clusterManager.ClusterManager, hasInstance *ketiv1alpha1.OpenMCPHybridAutoScaler, dep_list_for_hpa []string, clustername string, foundHPA *hpav2beta2.HorizontalPodAutoscaler) (*ketiv1alpha1.OpenMCPHybridAutoScaler, string) {
 
 	var dep_list_for_analysis []string
 
@@ -850,7 +851,9 @@ func (r *reconciler) MinRebalancing(cm *clusterManager.ClusterManager, hasInstan
 
 	//후보 클러스터가 없을 때
 	if len(dep_list_for_analysis) == 0 {
-		omcplog.V(0).Info("!!! Failed Rebalancing : There is no candidate cluster")
+		omcplog.V(4).Info("!!! Failed Rebalancing : There is no candidate cluster")
+
+		return hasInstance, "Fail"
 	} else {
 		//timeStart_mixmaxrebal := time.Now()
 		//분석 엔진을 통해 얻은 결과 (gRPC 통신)
@@ -868,12 +871,13 @@ func (r *reconciler) MinRebalancing(cm *clusterManager.ClusterManager, hasInstan
 			if gRPCerr != nil {
 				omcplog.V(0).Info("could not connect : %v", gRPCerr)
 			}
-			omcplog.V(0).Info("!!! Failed Rebalacing : Failed to get Analysis Result :(")
+			omcplog.V(0).Info("!!! Failed Min Rebalacing : Failed to get Analysis Result :(")
 		} else {
 			//---------------------------------------------------------------------------------------------------
 			qosCluster := result.TargetCluster
-			omcplog.V(3).Info("     => Anlysis Result [", qosCluster, "]")
+			omcplog.V(2).Info(">>> " + clustername + " min rebalancing")
 
+			omcplog.V(3).Info("     => Anlysis Result [", qosCluster, "]")
 
 			omcplog.V(4).Info("     => Total Rebalancing Time [", timeEnd_mixmaxrebal, "] (Analysis + gRPC)")
 			//fmt.Println("-------------------- Min rebalancing result 분석 시간 : ", timeEnd_mixmaxrebal,"------------------")
@@ -927,10 +931,10 @@ func (r *reconciler) MinRebalancing(cm *clusterManager.ClusterManager, hasInstan
 		}
 	}
 
-	return hasInstance
+	return hasInstance, "Success"
 }
 
-func (r *reconciler) MaxRebalancing(cm *clusterManager.ClusterManager, hasInstance *ketiv1alpha1.OpenMCPHybridAutoScaler, dep_list_for_hpa []string, clustername string, foundHPA *hpav2beta2.HorizontalPodAutoscaler) *ketiv1alpha1.OpenMCPHybridAutoScaler {
+func (r *reconciler) MaxRebalancing(cm *clusterManager.ClusterManager, hasInstance *ketiv1alpha1.OpenMCPHybridAutoScaler, dep_list_for_hpa []string, clustername string, foundHPA *hpav2beta2.HorizontalPodAutoscaler) (*ketiv1alpha1.OpenMCPHybridAutoScaler, string) {
 
 	var dep_list_for_analysis []string
 
@@ -954,7 +958,8 @@ func (r *reconciler) MaxRebalancing(cm *clusterManager.ClusterManager, hasInstan
 
 	//후보 클러스터가 없을 때
 	if len(dep_list_for_analysis) == 0 {
-		omcplog.V(0).Info("!!! Failed Rebalancing : There is no candidate cluster")
+		omcplog.V(4).Info("!!! Failed Max Rebalancing : There is no candidate cluster")
+		return hasInstance, "Fail"
 	} else {
 
 		//분석 엔진을 통해 얻은 결과 (gRPC 통신)
@@ -976,6 +981,7 @@ func (r *reconciler) MaxRebalancing(cm *clusterManager.ClusterManager, hasInstan
 		} else {
 			//---------------------------------------------------------------------------------------------------
 			qosCluster := result.TargetCluster
+			omcplog.V(2).Info(">>> " + clustername + " max rebalancing")
 			omcplog.V(3).Info("     => Anlysis Result [", qosCluster, "]")
 
 
@@ -1018,8 +1024,8 @@ func (r *reconciler) MaxRebalancing(cm *clusterManager.ClusterManager, hasInstan
 				omcplog.V(3).Info(">>> "+clustername+" Rollback HPA [ min:", *foundHPA.Spec.MinReplicas, " / max:", foundHPA.Spec.MaxReplicas, " ]")
 				omcplog.V(3).Info(">>> "+qosCluster+" Rollback HPA [ min:", *foundQosHPA.Spec.MinReplicas, " / max:", foundQosHPA.Spec.MaxReplicas, " ]")
 			} else if current_err == nil && qos_err == nil {
-				omcplog.V(4).Info("foundHPA : ", foundHPA)
-				omcplog.V(4).Info("updateHPA : ", updateHPA)
+			//	omcplog.V(4).Info("foundHPA : ", foundHPA)
+			//	omcplog.V(4).Info("updateHPA : ", updateHPA)
 				omcplog.V(3).Info(">>> "+clustername+" Update HPA [ min:", *updateHPA.Spec.MinReplicas, " / max:", updateHPA.Spec.MaxReplicas, " ]")
 				omcplog.V(3).Info(">>> "+qosCluster+" Update HPA [ min:", *updateQosHPA.Spec.MinReplicas, " / max:", updateQosHPA.Spec.MaxReplicas, " ]")
 
@@ -1033,7 +1039,7 @@ func (r *reconciler) MaxRebalancing(cm *clusterManager.ClusterManager, hasInstan
 		}
 	}
 
-	return hasInstance
+	return hasInstance, "Success"
 
 }
 
@@ -1097,7 +1103,6 @@ func (r *reconciler) UpdateVerticalPodAutoscaler(req reconcile.Request, m *ketiv
 	//controllerutil.SetControllerReference(m, vpa, r.scheme)
 	return vpa
 }
-
 func (r *reconciler) DeleteHPAVPA(cm *clusterManager.ClusterManager, cluster string, namespace string, name string) string{
 	hpa := &hpav2beta2.HorizontalPodAutoscaler{}
 
@@ -1161,6 +1166,70 @@ func (r *reconciler) DeleteHPAVPA(cm *clusterManager.ClusterManager, cluster str
 	}
 
 	return sync_name
+
+}
+func (r *reconciler) DeleteAllHPAVPA(cm *clusterManager.ClusterManager, namespace string, name string) {
+	hpa := &hpav2beta2.HorizontalPodAutoscaler{}
+
+	vpa := &vpav1beta2.VerticalPodAutoscaler{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "VerticalPodAutoscaler",
+			APIVersion: "autoscaling.k8s.io/v1beta2",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+	}
+	type ObjectKey = types.NamespacedName
+
+	for _, cluster := range cm.Cluster_list.Items {
+		cluster_client := cm.Cluster_genClients[cluster.Name]
+
+		err1 := cluster_client.Get(context.TODO(), hpa, namespace, name)
+
+		if err1 != nil && errors.IsNotFound(err1) {
+			//fmt.Println("Fail to Delete HPA - ", err1)
+		} else if err1 != nil {
+			omcplog.V(0).Info("!!! Fail to Delete HPA - ", err1)
+		} else if err1 == nil {
+			var sync_err1 error
+
+			hpa.TypeMeta.Kind = "HorizontalPodAutoscaler"
+			hpa.TypeMeta.APIVersion = "autoscaling/v2beta2"
+
+			command := "delete"
+			_, sync_err1 = r.sendSyncHPA(hpa, command, cluster.Name)
+
+			if sync_err1 != nil && errors.IsNotFound(sync_err1) {
+				//klog.V(0).Info("Fail to Delete HPA - ", err3)
+			} else if sync_err1 != nil {
+				omcplog.V(0).Info("!!! Fail to Delete HPA - ", sync_err1)
+			} else if sync_err1 == nil {
+				omcplog.V(2).Info(">>> " + cluster.Name + " Delete HPA")
+			}
+		}
+
+		err2 := r.ghosts[cluster.Name].Get(context.TODO(), ObjectKey{Namespace: namespace, Name: name}, vpa)
+		if err2 != nil && errors.IsNotFound(err2) {
+			//fmt.Println("Fail to Get VPA - ", err2)
+		} else if err2 != nil {
+			omcplog.V(0).Info("!!! Fail to Get VPA - ", err2)
+		} else if err2 == nil {
+			var sync_err2 error
+
+			command := "delete"
+			_, sync_err2 = r.sendSyncVPA(vpa, command, cluster.Name)
+
+			if sync_err2 != nil && errors.IsNotFound(sync_err2) {
+				//klog.V(0).Info("Fail to Delete VPA - ", err3)
+			} else if sync_err2 != nil {
+				omcplog.V(0).Info("!!! Fail to Delete VPA - ", sync_err2)
+			} else if sync_err2 == nil {
+				omcplog.V(2).Info(">>> " + cluster.Name + " Delete VPA")
+			}
+		}
+	}
 
 }
 
