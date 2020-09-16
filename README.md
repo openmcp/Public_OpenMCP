@@ -1,53 +1,42 @@
 **Table of Contents**
 - [Introduction of OpenMCP&reg;](#introduction-of-openmcp)
 - [How To Install](#how-to-install)
-  - [1. Register OpenMCP server with omcpctl](#1-Register-OpenMCP-server-with-omcpctl)
-    - [(1) Create `openmcp` namespace resource](#1-Create-openmcp-namespace-resource)
-    - [(2) Rename cluster name](#2-Rename-cluster-name)
-    - [(3) Register OpenMCP server on external storage](#3-Register-OpenMCP-server-on-external-storage)   
-  - [2. Deploy init modules for OpenMCP](#2-Deploy-init-modules-for-OpenMCP)
+  - [1. omcpctl을 이용한 OpenMCP 서버 등록](#1-omcpctl을-이용한-openmcp-서버-등록)
+    - [(1) `openmcp` namespaces 리소스 생성](#1-openmcp-namespaces-리소스-생성)
+    - [(2) cluster 이름 변경](#2-cluster-이름-변경)
+    - [(3) 외부 스토리지에 OpenMCP 서버 등록](#3-외부-스토리지에-openmcp-서버-등록)   
+  - [2. OpenMCP 기본 모듈 배포](#2-openmcp-기본-모듈-배포)
 - [How To Join Cluster](#how-to-join-cluster)
-  - [1. How to join Kubernetes Cluster to OpenMCP](#1-How-to-join-Kubernetes-Cluster-to-OpenMCP)
-    - [(1) (option) Rename cluster name [In sub-cluster]](#1-option-Rename-cluster-name-In-sub-cluster)
-    - [(2) Register sub-cluster to external storage [In sub-cluster]](#2-Register-sub-cluster-to-external-storage-In-sub-cluster)
-    - [(3) Join sub-cluster to OpenMCP [In OpenMCP]](#3-Join-sub-cluster-to-OpenMCP-In-OpenMCP)
-    - [(4) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]](#4-Register-Region-and-Zone-to-Master-Node-of-sub-cluster-In-OpenMCP)
-    - [(5) Create MetalLB Config in sub-cluster [In OpenMCP]](#5-Create-MetalLB-Config-in-sub-cluster-In-OpenMCP)
-  - [2. How to join GKE Cluster to OpenMCP](#2-How-to-join-GKE-Cluster-to-OpenMCP)
-    - [(1) Install Cloud SDK](#1-Install-Cloud-SDK)
-    - [(2) gcloud init](#2-gcloud-init)
-    - [(3) gcloud container clusters list](#3-gcloud-container-clusters-list)
-    - [(4) Join GKE cluster to OpenMCP](#4-Join-GKE-cluster-to-OpenMCP)
-  - [3. How to join EKS Cluster to OpenMCP](#3-How-to-join-EKS-Cluster-to-OpenMCP)
-    - [(1) Install AWS CLI](#1-Install-AWS-CLI)
-    - [(2) aws configure](#2-aws-configure)
-    - [(3) aws eks list-clusters](#3-aws-eks-list-clusters)
-    - [(4) Join EKS cluster to OpenMCP](#4-Join-EKS-cluster-to-OpenMCP)
+  - [1. (선택) cluster 이름 변경 [하위 클러스터에서 수행]](#1-선택-cluster-이름-변경-하위-클러스터에서-수행)
+  - [2. 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]](#2-외부-스토리지에-join하고자-하는-클러스터-서버-등록-하위-클러스터에서-수행)
+  - [3. 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]](#3-외부-스토리지에-등록된-하위-클러스터를-openmcp에-join-openmcp에서-수행)
+  - [4. 하위 클러스터 Master Node에 Region, Zone 등록[OpenMCP에서 수행]](#4-하위-클러스터-master-node에-region-zone-등록-openmcp에서-수행)
+  - [5. 하위 클러스터 MetalLB Config 생성 [OpenMCP에서 수행]](#5-하위-클러스터-metallb-config-생성-openmcp에서-수행)
 - [OpenMCP EXAMPLE](#openmcp-example)
-  - [Deploy OpenMCPDeployment resource](#Deploy-OpenMCPDeployment-resource)
-  - [Deploy OpenMCPService resource](#Deploy-OpenMCPService-resource)
-  - [Deploy OpenMCPIngress resource](#Deplo-OpenMCPIngress-resource)
-  - [Deploy OpenMCPDomain,OpenMCPServiceDNSRecord,OpenMCPIngressDNSRecord resource](#Deploy-OpenMCPDomainOpenMCPServiceDNSRecordOpenMCPIngressDNSRecord-resource)
-  - [Deploy OpenMCPHybridAutoScaler resource](#Deploy-OpenMCPHybridAutoScaler-resource)
+  - [OpenMCPDeployment 배포](#openmcpdeployment-배포)
+  - [OpenMCPService 배포](#openmcpservice-배포)
+  - [OpenMCPIngress 배포](#openmcpingress-배포)
+  - [OpenMCPDomain,OpenMCPServiceDNSRecord,OpenMCPIngressDNSRecord 배포](#openmcpdomainopenmcpservicednsrecordopenmcpingressdnsrecord-배포)
+  - [OpenMCPHybridAutoScaler 배포](#openmcphybridautoscaler-배포)
 
 # Introduction of OpenMCP&reg;
 
-> Container control and management platform that provides flexible service movement and seamless automatic scaling of computing resources through mutual collaboration between locally isolated containers
+> 지역적(Region/Zone)으로 격리된 컨테이너 간 상호협업하여 유연한 서비스 이동(Migration) 및 컴퓨팅 자원의 끊김없이 자동 확장(Seamless Auto Scaling) 기능을 제공하는 컨테이너 제어·관리 플랫폼
 
-![Architecture of the openmcp](/images/openmcp_architecture_eng.png)
+![Architecture of the openmcp](/images/openmcp_architecture.png)
 
 # How To Install
 
 ## Requirement
 
-Before you install OpenMCP, 'federation', 'omcptl' and 'external server' as NFS server are required.
+OpenMCP 설치를 위해서는 먼저 `federation`, `omcpctl` 그리고 nfs를 위한 `외부 서버`가 구축되어 있어야 합니다.
 
-1. Install [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md)
-1. Install [omcpctl](https://github.com/openmcp/openmcp/tree/master/omcpctl)
-1. Install [nfs server](https://github.com/openmcp/external)
+1. [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) 설치
+1. [omcpctl](https://github.com/openmcp/openmcp/tree/master/omcpctl) 설치
+1. [nfs 서버](https://github.com/openmcp/external) 설치
 
 -----------------------------------------------------------------------------------------------
-[ Test Environment ]
+실행 환경
 ```
 OpenMCP   Master IP : 10.0.3.30  
 Cluster1  Master IP : 10.0.3.40  
@@ -55,19 +44,18 @@ Cluster2  Master IP : 10.0.3.50
 NFS       Server IP : 10.0.3.12  
 ```
 
-## 1. Register OpenMCP server with omcpctl
+## 1. omcpctl을 이용한 OpenMCP 서버 등록
 
-### (1) Create `openmcp` namespace resource
+### (1) `openmcp` namespaces 리소스 생성
 
 ```bash
 $ kubectl create ns openmcp
 ```
 
-### (2) Rename cluster name
+### (2) cluster 이름 변경
 
-Rename cluster name to 'openmcp' in kubeconfig file.
-
-> Default directory of kubeconfig file : $HOME/.kube/config
+kubeconfig 파일에서 클러스터 이름을 `opemncp`로 수정합니다.
+> kubeconfig 기본 경로 : $HOME/.kube/config
 
 ```bash
 $ vi $HOME/.kube/config
@@ -92,18 +80,16 @@ users:
     client-key-data: ...
 ```
 
-### (3) Register OpenMCP server on external storage
-
-Using Omcptl, register OpenMCP server on NFS server.
-
+### (3) 외부 스토리지에 OpenMCP 서버 등록
+omcpctl 사용하여 nfs 서버에 OpenMCP 서버를 등록합니다.
 ```bash
 $ omcpctl register openmcp
 Success OpenMCP Master Register '10.0.3.30'
 ```
 
-## 2. Deploy init modules for OpenMCP
+## 2. OpenMCP 기본 모듈 배포  
 
-Before you deploy modules, set environment variables first.
+모듈을 배포하기 전 환경변수 설정을 해줍니다.
 ```bash
 $ cd ./install_openmcp
 $ ./SETTING.sh
@@ -119,14 +105,13 @@ OpenMCP MetalLB Address IP Range (FROM) -> 10.0.3.241
 OpenMCP MetalLB Address IP Range (TO) -> 10.0.3.250
 ```
 
-Deploy all init modules for OpenMCP.
+OpenMCP 동작에 필요한 기본 모듈을 배포합니다.
 
 ```bash
 $ cd master/
 $ ./1.create.sh
 ```
-> list of installed Deployment
-
+> 설치 항목
 > - Sync Controller
 > - Resource Controller (Deployment, HybridAutoScaler, Ingress, Service, Configmap, Secret)
 > - LoadBalancing Controller
@@ -137,7 +122,7 @@ $ ./1.create.sh
 > - API Server
 > - InfluxDB
 
-Check state of pods.
+설치 확인
 ```bash
 $ kubectl get pods -n openmcp
 NAME                                                READY   STATUS    RESTARTS   AGE
@@ -173,18 +158,16 @@ metric-collector-period        3m16s
 
 # How To Join Cluster
 
-1. How to join Kubernetes Cluster to OpenMCP
-2. How to join GKE Cluster to OpenMCP
-3. How to join EKS Cluster to OpenMCP
+1. Kubernetes Cluster 조인
+2. GKE Cluster 조인
+3. EKS Cluster 조인
 
 --------------------------------------------------------------------------------------------
-## 1. How to join Kubernetes Cluster to OpenMCP
+## 1. Kubernetes Cluster 조인 방법
 
-### (1) (option) Rename cluster name [In sub-cluster]
-
-Before you join the sub-cluster to OpenMCP, check for duplicate cluster names so it does not overlap.
-
-> Default directory of kubeconfig file : $HOME/.kube/config
+### (1) (선택) cluster 이름 변경 [하위 클러스터에서 수행]
+OpenMCP에 하위 클러스터를 join하기 전에 다른 클러스터와 이름이 겹치지 않도록 하위 클러스터의 이름을 변경합니다.
+> kubeconfig 기본 경로 : $HOME/.kube/config
 
 ```bash
 $ vi $HOME/.kube/config
@@ -209,27 +192,23 @@ users:
     client-key-data: ...
 ```
 
-### (2) Register sub-cluster to external storage [In sub-cluster]
-
-After installing [omctl](https://github.com/openmcp/openmcp-cli) on each cluster, use omctl to register sub-cluster to nfs server.
-
+### (2) 외부 스토리지에 Join하고자 하는 클러스터 서버 등록 [하위 클러스터에서 수행]
+각 클러스터에 [omctl](https://github.com/openmcp/openmcp-cli) 설치 후, omctl 사용하여 nfs 서버에 join 하고자 하는 클러스터를 등록합니다.
 ```bash
 $ OPENMCP_IP="10.0.3.30"
 $ omctl register member ${OPENMCP_IP}
 Success Register '10.0.3.40' in OpenMCP Master: 10.0.3.30
 ```
 
-### (3) Join sub-cluster to OpenMCP [In OpenMCP]
-
-From OpenMPC server, use omcptl to join sub-cluster you want to use.
+### (3) 외부 스토리지에 등록된 하위 클러스터를 OpenMCP에 Join [OpenMCP에서 수행]
+OpenMCP 서버에서 omcpctl 사용하여 특정 클러스터를 join합니다.
 ```bash
 $ CLUSTER_IP="10.0.3.40"
 $ omcpctl join cluster ${CLUSTER_IP}
 ```
 
-### (4) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]
-
-Tag labels(Region, Zone) on sub-cluster.
+### (4) 하위 클러스터 Master Node에 Region, Zone 등록 [OpenMCP에서 수행]
+하위 클러스터의 Label에 Region과 Zone을 등록합니다.
 ```bash
 $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/region=<region> --context=<cluster-name>
 $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> --context=<cluster-name>
@@ -246,10 +225,8 @@ $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> 
 > - https://ko.wikipedia.org/wiki/ISO_3166-1
 ---
 
-### (5) Create MetalLB Config in sub-cluster [In OpenMCP]
-
-Create a new file 'metallb_config.yaml' to set the assigned IP range for the LoadBalancer of sub-cluster, and deploy it to the sub-cluster.
-
+### (5) 하위 클러스터 MetalLB Config 생성 [OpenMCP에서 수행]
+'metallb_config.yaml' 파일을 새로 생성하여 하위 클러스터 LoadBalancer의 할당 IP 범위를 설정 후 각 클러스터에 배포합니다.
 ```
 $ vim metallb_config.yaml 
 apiVersion: v1
@@ -269,9 +246,9 @@ data:
 $ kubectl create -f metallb_config.yaml --context=<cluster-name>
 ```
 
-## 2. How to join GKE Cluster to OpenMCP
+## 2. GKE Cluster 조인 방법
 
-### (1) Install Cloud SDK
+### (1) Cloud SDK 설치
 [https://cloud.google.com/sdk/docs/downloads-apt-get?hl=ko](https://cloud.google.com/sdk/docs/downloads-apt-get?hl=ko)
 
 ### (2) gcloud init
@@ -286,7 +263,7 @@ NAME         LOCATION       MASTER_VERSION  MASTER_IP       MACHINE_TYPE  NODE_V
 cluster3     asia-east1-a   1.16.13-gke.1   35.201.135.105  e2-medium     1.16.13-gke.1  2          RUNNING
 ```
 
-### (4) Join GKE cluster to OpenMCP
+### (4) OpenMCP 조인
 ```
 $ omcpctl join gke-cluster cluster3
 ...
@@ -300,9 +277,9 @@ cluster3   True    10s
 ```
 
 
-## 3. How to join EKS Cluster to OpenMCP
+## 3. EKS Cluster 조인 방법
 
-### (1) Install AWS CLI
+### (1) AWS CLI 설치
 [https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/getting-started-console.html](https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/getting-started-console.html)
 
 ### (2) aws configure
@@ -323,7 +300,7 @@ Default output format [json]: json
 }
 ```
 
-### (4) Join EKS cluster to OpenMCP
+### (4) OpenMCP 조인
 ```
 $ omcpctl join eks-cluster cluster4
 ...
@@ -339,25 +316,20 @@ cluster4   True    11s
 
 
 # OpenMCP EXAMPLE
-
-Execute 'EXAMPLE TEST' with cluster1, cluster2 joined to OpenMCP.
-
+OpenMCP에 cluster1, cluster2가 조인된 상태에서 EXAMPLE TEST를 진행합니다.
 ```bash
 $ kubectl get kubefedcluster -n kube-federation-system
 NAME       READY   AGE
 cluster1   True    23h
 cluster2   True    23h
 ```
-
-Create 'openmcp' namespaces to each clusters.
+각 클러스터에 'openmcp' namespaces를 생성합니다.
 ```bash
 $ kubectl create ns openmcp --context=<cluster-name>
 ```
 
-## Deploy OpenMCPDeployment resource
-
-As you deploy OpenMCPDeployment resource, pods will be scheduled to cluster1, cluster2 as Deployment resource.
-
+## OpenMCPDeployment 배포
+OpenMCPDeployment를 배포하면 Pod는 스케줄링 되어 Deployment 리소스로 cluster1, cluster2에 배포됩니다.
 ```bash
 $ kubectl create -f sample/openmcpdeployment/.
 ```
@@ -375,9 +347,8 @@ NAME                  READY   UP-TO-DATE   AVAILABLE   AGE
 openmcp-deployment    2/2     2            2           80s
 ```
 
-## Deploy OpenMCPService resource
-
-As you deploy OpenMCPService, service resource will be deployed to cluster1, cluster2.
+## OpenMCPService 배포
+OpenMCPService를 배포하면 Service 리소스가 cluster1, cluster2에 배포됩니다.
 ```bash
 $ kubectl create -f sample/openmcpservice/.
 ```
@@ -395,9 +366,8 @@ NAME                    TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)   
 openmcp-service         LoadBalancer   10.103.151.112   10.0.3.180    80:30569/TCP     34s
 ```
 
-## Deploy OpenMCPIngress resource
-
-When you deploy OpenMCPIngress, it will search for cluster with Target Service and deploy Ingress resource to the cluster.
+## OpenMCPIngress 배포
+OpenMCPIngress를 배포하면 Target Service가 있는 클러스터를 탐색하여 해당 클러스터에 Ingress 리소스를 배포합니다.
 ```bash
 $ kubectl create -f sample/openmcpingress/.
 ```
@@ -415,7 +385,7 @@ NAME              HOSTS                                ADDRESS   PORTS   AGE
 openmcp-ingress   cluster2.loadbalancing.openmcp.org             80      18s
 ```
 
-## Deploy OpenMCPDomain,OpenMCPServiceDNSRecord,OpenMCPIngressDNSRecord resource
+## OpenMCPDomain,OpenMCPServiceDNSRecord,OpenMCPIngressDNSRecord 배포
 ```bash
 $ kubectl create -f sample/openmcpdns/.
 ```
@@ -443,11 +413,8 @@ service-openmcp-service   16h
 ```bash
 $ curl -L http://openmcp.service.org
 ```
-## Deploy OpenMCPHybridAutoScaler resource
-
-When you deploy OpenMCPHybridAutoScaler, it will search for cluster with Target Deployment and 
-deploy HorizontalPodAutoscaler, VerticalPodAutoscaler resource to the cluster.
-
+## OpenMCPHybridAutoScaler 배포
+OpenMCPHybridAutoScaler를 배포하면 Target Deployment가 있는 클러스터를 탐색하여 해당 클러스터에 HorizontalPodAutoscaler, VerticalPodAutoscaler 리소스를 배포합니다.
 ```bash
 $ kubectl create -f sample/openmcphybridautoscaler/.
 ```
@@ -473,5 +440,4 @@ verticalpodautoscaler.autoscaling.k8s.io/openmcp-has   11m
 
 # Governance
 
-This project was supported by Institute of Information & communications Technology Planning & evaluation (IITP) grant funded by the Korea government (MSIT)
-(No.2019-0-00052, Development of Distributed and Collaborative Container Platform enabling Auto Scaling and Service Mobility)
+본 프로젝트는 정보통신기술진흥센터(IITP)에서 지원하는 '19년 정보통신방송연구개발사업으로, "컴퓨팅 자원의 유연한 확장 및 서비스 이동을 제공하는 분산·협업형 컨테이너 플랫폼 기술 개발 과제" 임.
