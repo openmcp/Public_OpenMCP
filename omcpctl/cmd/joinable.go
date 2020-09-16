@@ -149,13 +149,18 @@ func getEKSClusterData() [][]string{
 	datas := [][]string{}
 	s, err := util.CmdExec("aws eks list-clusters")
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
+		return datas
 	}
 	//fmt.Println(s)
 	jsonData := make(map[string]interface{})
 	err = json.Unmarshal([]byte(s), &jsonData)
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
+		return datas
+	}
+	if _, ok := jsonData["clusters"]; !ok {
+		return datas
 	}
 	eksClusterNamesInteface := jsonData["clusters"].([]interface{})
 	for _, clusterNameInteface := range eksClusterNamesInteface{
