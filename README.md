@@ -34,7 +34,7 @@
 
 > Container control and management platform that provides flexible service movement and seamless automatic scaling of computing resources through mutual collaboration between locally isolated containers
 
-![Architecture of the openmcp](/images/openmcp_architecture.png)
+![Architecture of the openmcp](/images/openmcp_architecture_eng.png)
 
 # How To Install
 
