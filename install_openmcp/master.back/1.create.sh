@@ -40,3 +40,6 @@ echo "--- openmcp-sync-controller"
 kubectl create -f openmcp-sync-controller/.
 echo "--- metallb"
 kubectl create -f metallb/.
+echo "--- configmap"
+kubectl apply -f configmap/coredns/.
+

@@ -3,6 +3,7 @@ package mypdns
 import (
 	"context"
 	"openmcp/openmcp/omcplog"
+
 	//"database/sql"
 	//"github.com/dmportella/powerdns"
 	"os"
@@ -154,6 +155,7 @@ func CreateZoneWithRecords(client pdns.Client, domainName string, resourceRecord
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
