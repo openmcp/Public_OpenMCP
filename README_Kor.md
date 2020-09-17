@@ -104,6 +104,7 @@ PowerDNS Server API Key -> 1234
 OpenMCP MetalLB Address IP Range (FROM) -> 10.0.3.241
 OpenMCP MetalLB Address IP Range (TO) -> 10.0.3.250
 ```
+> 퍼블릭 클라우드 클러스터인 경우, core-dns configmap yaml을 이용하여 PowerDNS Server IP를 포트포워딩한 IP로 수정한다.
 
 OpenMCP 동작에 필요한 기본 모듈을 배포합니다.
 
