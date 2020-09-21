@@ -105,7 +105,7 @@ func moveToUnjoin(memberIP string) {
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
-	openmcpIP := GetOutboundIP()
+	openmcpIP := cobrautil.GetOutboundIP()
 
 	util.CmdExec2("mv /mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP + " /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP)
 
@@ -122,7 +122,7 @@ func getDiffJoinIP() []string {
 	defer util.CmdExec("umount -l /mnt")
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
-	openmcpIP := GetOutboundIP()
+	openmcpIP := cobrautil.GetOutboundIP()
 	nfsClusterJoinStr, err := util.CmdExec("ls /mnt/openmcp/" + openmcpIP + "/members/join")
 	nfsClusterJoinList := strings.Split(nfsClusterJoinStr, "\n")
 	nfsClusterJoinList = nfsClusterJoinList[:len(nfsClusterJoinList)-1]
@@ -164,7 +164,7 @@ func joinCluster(memberIP string) {
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
 
-	openmcpIP := GetOutboundIP()
+	openmcpIP := cobrautil.GetOutboundIP()
 	if !fileExists("/mnt/openmcp/" + openmcpIP) {
 		fmt.Println("Failed Join List in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Not Yet Register OpenMCP.")
@@ -175,6 +175,16 @@ func joinCluster(memberIP string) {
 	if !fileExists("/mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP) {
 		fmt.Println("Failed UnJoin Cluster '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> '" + memberIP + "' is Not Joinable Cluster in OpenMCP.")
+		return
+	}
+
+	alreadyJoined, err := cobrautil.CheckAlreadyJoinClusterWithIP(memberIP)
+	if err != nil {
+		fmt.Println("CheckAlreadyJoinClusterWithIP Error : ", err)
+		return
+	}
+
+	if alreadyJoined {
 		return
 	}
 
@@ -242,7 +252,7 @@ func joinGKECluster(memberName string) {
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
-	openmcpIP := GetOutboundIP()
+	openmcpIP := cobrautil.GetOutboundIP()
 	if !fileExists("/mnt/openmcp/" + openmcpIP) {
 		fmt.Println("Failed Join List in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Not Yet Register OpenMCP.")
@@ -250,7 +260,19 @@ func joinGKECluster(memberName string) {
 		return
 	}
 
-	_, err := util.CmdExec("gcloud container clusters get-credentials " + memberName)
+	alreadyJoined, err := cobrautil.CheckAlreadyJoinClusterWithPublicClusterName(memberName, "gke")
+	if err != nil {
+		fmt.Println("CheckAlreadyJoinClusterWithPublicClusterName Error : ", err)
+		return
+	}
+
+	if alreadyJoined {
+		return
+	}
+
+
+
+	_, err = util.CmdExec("gcloud container clusters get-credentials " + memberName)
 	if err != nil {
 		fmt.Println("[",err, "] No cluster found for name: " + memberName)
 		return
@@ -346,7 +368,7 @@ func joinEKSCluster(memberName string) {
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
-	openmcpIP := GetOutboundIP()
+	openmcpIP := cobrautil.GetOutboundIP()
 	if !fileExists("/mnt/openmcp/" + openmcpIP) {
 		fmt.Println("Failed Join List in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Not Yet Register OpenMCP.")
@@ -358,6 +380,16 @@ func joinEKSCluster(memberName string) {
 	_, err := util.CmdExec("aws eks update-kubeconfig --name " + memberName)
 	if err != nil {
 		fmt.Println("[",err, "] No cluster found for name: " + memberName)
+		return
+	}
+
+	alreadyJoined, err := cobrautil.CheckAlreadyJoinClusterWithPublicClusterName(memberName, "eks")
+	if err != nil {
+		fmt.Println("CheckAlreadyJoinClusterWithPublicClusterName Error : ", err)
+		return
+	}
+
+	if alreadyJoined {
 		return
 	}
 

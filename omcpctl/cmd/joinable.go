@@ -55,7 +55,7 @@ func GetJoinableClusterList() {
 	defer util.CmdExec("umount -l /mnt")
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
-	openmcpIP := GetOutboundIP()
+	openmcpIP := cobrautil.GetOutboundIP()
 	nfsClusterJoinStr, err := util.CmdExec("ls /mnt/openmcp/" + openmcpIP + "/members/unjoin")
 	nfsClusterJoinList := strings.Split(nfsClusterJoinStr, "\n")
 	nfsClusterJoinList = nfsClusterJoinList[:len(nfsClusterJoinList)-1]
