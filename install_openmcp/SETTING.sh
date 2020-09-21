@@ -73,9 +73,8 @@ sed -i 's|REPLACE_INFLUXDBUSERPWD|'\"$INFLUXDB_USERPWD\"'|g' master/openmcp-apis
 sed -i 's|REPLACE_NFSIP|'\"$NFS_PDNS_IP\"'|g' master/influxdb/pv.yaml
 
 sed -i 's|REPLACE_PDNSIP|'\"$NFS_PDNS_IP\"'|g' master/configmap/coredns/coredns-cm.yaml
-sed -i 's|REPLACE_PDNSIP|'\"$NFS_PDNS_IP\"'|g' member/configmap/coredns/coredns-cm.yaml
 
-sed -i 's|REPLACE_PDNSIP|'\"$NFS_PDNS_IP\"'|g' master/configmap/kubedns/kube-dns-cm.yaml
+sed -i 's|REPLACE_PDNSIP|'\"$NFS_PDNS_IP\"'|g' member/configmap/coredns/coredns-cm.yaml
 sed -i 's|REPLACE_PDNSIP|'\"$NFS_PDNS_IP\"'|g' member/configmap/kubedns/kube-dns-cm.yaml
 
 sed -i 's|REPLACE_PDNSIP|'\"$NFS_PDNS_IP\"'|g' master/openmcp-dns-controller/operator.yaml
