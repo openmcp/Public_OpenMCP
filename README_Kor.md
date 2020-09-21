@@ -107,10 +107,33 @@ OpenMCP MetalLB Address IP Range (TO) -> 10.0.3.250
 > PowerDNS 서버 IP가 퍼블릭이 아닌 경우 외부 클러스터에서 접근이 불가하므로 kubedns 또는 coredns configmap을 edit하여   
 > forward 값을 포트포워딩한 IP로 수정해야 한다.  
 ```
-$kubectl edit configmap kube-dns -n kube-system --context gke-cluster1
+$ kubectl edit configmap kube-dns -n kube-system --context cluster3
+
+apiVersion: v1
+data:
+  upstreamNameservers: |
+    ["REPLACE_PDNSIP"]
+kind: ConfigMap
+metadata:
+  ...
 ```
 ```
-$kubectl edit configmap coredns -n kube-system --context eks-cluster1
+$ kubectl edit configmap coredns -n kube-system --context cluster4
+
+apiVersion: v1
+data:
+  Corefile: |
+    cluster.local:53 {
+      ...
+    }
+    .:53 {
+      errors
+      cache 30
+      forward . REPLACE_PDNSIP
+    }
+kind: ConfigMap
+metadata:
+  ...
 ```
 
 OpenMCP 동작에 필요한 기본 모듈을 배포합니다.
