@@ -104,7 +104,7 @@ PowerDNS Server API Key -> 1234
 OpenMCP MetalLB Address IP Range (FROM) -> 10.0.3.241
 OpenMCP MetalLB Address IP Range (TO) -> 10.0.3.250
 ```
-> PowerDNS 서버 IP가 퍼블릭이 아닌 경우 외부 클러스터에서 접근이 불가하므로 coredns configmap yaml파일은 edit하여 forward 값을 포트포워딩한 IP로 수정해야 한다.
+> PowerDNS 서버 IP가 퍼블릭이 아닌 경우 외부 클러스터에서 접근이 불가하므로 kubedns 또는 coredns configmap 파일을 edit하여 forward 값을 포트포워딩한 IP로 수정해야 한다.
 ```
 $kubectl edit configmap kube-dns -n kube-system --context gke-cluster1
 ```
