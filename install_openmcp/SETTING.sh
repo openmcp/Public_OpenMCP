@@ -5,7 +5,7 @@ fi
 
 if [ -d "member" ]; then
   # Control will enter here if $DIRECTORY exists.
-  rm -r master
+  rm -r member
 fi
 
 cp -r master.back master

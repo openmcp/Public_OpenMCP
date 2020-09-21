@@ -195,6 +195,11 @@ func joinCluster(memberIP string) {
 
 	cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
 
+	// namespace terminating stuck force delete
+	util.CmdExec2("kubectl get namespace kube-federation-system --context "+ cluster.Name+" -o json |jq '.spec = {\"finalizers\":[]}' >temp.json")
+	util.CmdExec2("kubectl replace --raw \"/api/v1/namespaces/kube-federation-system/finalize\" -f ./temp.json --context "+ cluster.Name)
+	util.CmdExec2("rm temp.json")
+
 	elapsed1 := time.Since(start1)
 	log.Printf("Cluster Config Merge Time : %s", elapsed1)
 	fmt.Println("***** [End] 1. Cluster Config Merge ***** ")
@@ -280,6 +285,11 @@ func joinGKECluster(memberName string) {
 	}
 	kc.CurrentContext = "openmcp"
 	cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
+
+	// namespace terminating stuck force delete
+	util.CmdExec2("kubectl get namespace kube-federation-system --context "+ memberName+" -o json |jq '.spec = {\"finalizers\":[]}' >temp.json")
+	util.CmdExec2("kubectl replace --raw \"/api/v1/namespaces/kube-federation-system/finalize\" -f ./temp.json --context "+ memberName)
+	util.CmdExec2("rm temp.json")
 
 	start2 := time.Now()
 	fmt.Println("***** [Start] 1. Cluster Join *****")
@@ -388,7 +398,10 @@ func joinEKSCluster(memberName string) {
 	cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
 
 
-
+	// namespace terminating stuck force delete
+	util.CmdExec2("kubectl get namespace kube-federation-system --context "+ memberName+" -o json |jq '.spec = {\"finalizers\":[]}' >temp.json")
+	util.CmdExec2("kubectl replace --raw \"/api/v1/namespaces/kube-federation-system/finalize\" -f ./temp.json --context "+ memberName)
+	util.CmdExec2("rm temp.json")
 
 	start2 := time.Now()
 	fmt.Println("***** [Start] 1. Cluster Join *****")

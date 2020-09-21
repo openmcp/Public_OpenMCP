@@ -138,15 +138,15 @@ func removeInitCluster(clusterName, openmcpDir string) {
 	initYamls := []string{"custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller"}
 
 	for _, initYaml := range initYamls {
+		fmt.Println(initYaml)
 		util.CmdExec2("kubectl delete -f " + install_dir + "/" + initYaml + " --context " + clusterName)
-		fmt.Println(initYamls)
 	}
 
 	util.CmdExec2("chmod 755 " + install_dir + "/vertical-pod-autoscaler/hack/*")
 
 	util.CmdExec2(install_dir + "/vertical-pod-autoscaler/hack/vpa-down.sh " + clusterName)
 
-	util.CmdExec2("kubectl delete ns openmcp --context " + clusterName)
+	//util.CmdExec2("kubectl delete ns openmcp --context " + clusterName)
 
 }
 
