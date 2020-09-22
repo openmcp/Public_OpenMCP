@@ -55,7 +55,7 @@ func GetJoinableClusterList() {
 	defer util.CmdExec("umount -l /mnt")
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
-	openmcpIP := GetOutboundIP()
+	openmcpIP := cobrautil.GetOutboundIP()
 	nfsClusterJoinStr, err := util.CmdExec("ls /mnt/openmcp/" + openmcpIP + "/members/unjoin")
 	nfsClusterJoinList := strings.Split(nfsClusterJoinStr, "\n")
 	nfsClusterJoinList = nfsClusterJoinList[:len(nfsClusterJoinList)-1]
@@ -108,10 +108,17 @@ func getGKEClusterData() [][]string{
 
 		ss := strings.Fields(gkeClusterInfo[i])
 
+		if len(ss) < 8 {
+			continue
+		}
 		clusterName := ss[0]
 		masterIP := "https://"+ss[3]
 		platform := "gke"
+		status := ss[7]
 
+		if status != "RUNNING"{
+			continue
+		}
 		isAlreadyJoined := false
 		for _, joinedCluster := range clusterList.Items{
 			if clusterName == joinedCluster.Name && strings.Contains(joinedCluster.Spec.APIEndpoint, masterIP){
@@ -142,18 +149,24 @@ func getEKSClusterData() [][]string{
 	datas := [][]string{}
 	s, err := util.CmdExec("aws eks list-clusters")
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
+		return datas
 	}
 	//fmt.Println(s)
 	jsonData := make(map[string]interface{})
 	err = json.Unmarshal([]byte(s), &jsonData)
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
+		return datas
+	}
+	if _, ok := jsonData["clusters"]; !ok {
+		return datas
 	}
 	eksClusterNamesInteface := jsonData["clusters"].([]interface{})
 	for _, clusterNameInteface := range eksClusterNamesInteface{
 		clusterName := clusterNameInteface.(string)
 		ss, err := util.CmdExec("aws eks describe-cluster --name "+clusterName+" | cat")
+
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -163,7 +176,13 @@ func getEKSClusterData() [][]string{
 		}
 		clusterInfo := jsonData["cluster"].(map[string]interface{})
 		//fmt.Println(clusterName)
-		apiEndpoint := clusterInfo["endpoint"].(string)
+		apiEndpoint := ""
+		if _, ok := clusterInfo["endpoint"]; ok {
+			apiEndpoint = clusterInfo["endpoint"].(string)
+		} else {
+			continue
+		}
+
 		apiEndpoint = strings.ToLower(apiEndpoint)
 		//fmt.Println(apiEndpoint)
 		platform := "eks"

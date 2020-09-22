@@ -5,7 +5,7 @@ fi
 
 if [ -d "member" ]; then
   # Control will enter here if $DIRECTORY exists.
-  rm -r master
+  rm -r member
 fi
 
 cp -r master.back master
@@ -71,6 +71,11 @@ sed -i 's|REPLACE_INFLUXDBUSERPWD|'\"$INFLUXDB_USERPWD\"'|g' master/openmcp-metr
 sed -i 's|REPLACE_INFLUXDBUSERPWD|'\"$INFLUXDB_USERPWD\"'|g' master/openmcp-apiserver/operator.yaml
 
 sed -i 's|REPLACE_NFSIP|'\"$NFS_PDNS_IP\"'|g' master/influxdb/pv.yaml
+
+sed -i 's|REPLACE_PDNSIP|'\"$NFS_PDNS_IP\"'|g' master/configmap/coredns/coredns-cm.yaml
+
+sed -i 's|REPLACE_PDNSIP|'\"$NFS_PDNS_IP\"'|g' member/configmap/coredns/coredns-cm.yaml
+sed -i 's|REPLACE_PDNSIP|'\"$NFS_PDNS_IP\"'|g' member/configmap/kubedns/kube-dns-cm.yaml
 
 sed -i 's|REPLACE_PDNSIP|'\"$NFS_PDNS_IP\"'|g' master/openmcp-dns-controller/operator.yaml
 sed -i 's|REPLACE_PDNSPORT|'\"$PDNS_PORT\"'|g' master/openmcp-dns-controller/operator.yaml

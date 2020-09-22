@@ -3,6 +3,7 @@ package mypdns
 import (
 	"context"
 	"openmcp/openmcp/omcplog"
+
 	//"database/sql"
 	//"github.com/dmportella/powerdns"
 	"os"
@@ -101,6 +102,7 @@ func GetResourceRecordSets(domainName string, Endpoints []*ketiv1alpha1.Endpoint
 		records := []zones.Record{}
 
 		for _, target := range endpoint.Targets {
+
 			record := zones.Record{
 				Content:  target,
 				Disabled: false,
@@ -153,6 +155,7 @@ func CreateZoneWithRecords(client pdns.Client, domainName string, resourceRecord
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
