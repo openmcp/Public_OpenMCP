@@ -11,6 +11,8 @@
 
 [2. OpenMCP 플랫폼 설치](https://github.com/openmcp/openmcp)
 
+3. nfs-common 설치 (apt-get install nfs-common)
+
 ## How to Install
 1.build.sh 에서 환경변수 설정 후 빌드
 ```
