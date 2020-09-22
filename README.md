@@ -42,7 +42,7 @@
 
 Before you install OpenMCP, 'federation', 'omcptl' and 'external server' as NFS server are required.
 
-1. Install [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md)
+1. Install [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) (Version: 0.1.0-rc6)
 1. Install [omcpctl](https://github.com/openmcp/openmcp/tree/master/omcpctl)
 1. Install [nfs server](https://github.com/openmcp/external)
 
