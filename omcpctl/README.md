@@ -4,7 +4,7 @@
 
 > KETI에서 개발한 OpenMCP 플랫폼의 연합클러스터 제어를 위한 Master Cluster용 명령어 인터페이스
 >
->OpenMCP API Server에 데이터를 요청하여 
+> OpenMCP API Server에 데이터를 요청하여 Join / Create / Delete / Update 등의 명령어 처리
 
 ## Requirement
 [1_클러스터 정보를 저장할 External 서버](https://github.com/openmcp/external)
