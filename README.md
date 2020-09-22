@@ -104,17 +104,26 @@ Success OpenMCP Master Register '10.0.3.30'
 ## 2. Deploy init modules for OpenMCP
 
 Before you deploy modules, set environment variables first.
+
+If you are using a private network, enter the IP and Port through port forwarding for the Public input box.
+
+If you are not using a private network, enter the IP of the OpenMCP Cluster Node in the Public input box.
+
+Enter the IP of the OpenMCP Master Cluster Node in the non-public IP text box except NFS. (It doesn't matter if it's not Public)
 ```bash
 $ cd ./install_openmcp
 $ ./SETTING.sh
+OpenMCP Analytic Engine GRPC Server IP -> 10.0.3.20
 OpenMCP Analytic Engine GRPC Server Port -> 32050
-OpenMCP Metric Collector GRPC Server Port -> 32051
+OpenMCP Metric Collector GRPC Server IP(Public) -> 119.65.195.180
+OpenMCP Metric Collector GRPC Server Port(Public) -> 32051
+InfluxDB Server IP -> 10.0.3.20
 InfluxDB Server Port -> 31051
 InfluxDB User Name -> root
 InfluxDB User Password -> root
 NFS & PowerDNS Server IP -> 10.0.3.12
-PowerDNS Server Port -> 8081
-PowerDNS Server API Key -> 1234
+PowerDNS Server IP(Public) -> 119.65.195.180
+PowerDNS Server Port(Public) -> 5353
 OpenMCP MetalLB Address IP Range (FROM) -> 10.0.3.241
 OpenMCP MetalLB Address IP Range (TO) -> 10.0.3.250
 ```
