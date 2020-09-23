@@ -68,7 +68,7 @@ func GetJoinableClusterList() {
 	for i := range nfsClusterJoinList {
 		kc := cobrautil.GetKubeConfig("/mnt/openmcp/" + openmcpIP + "/members/unjoin/" + nfsClusterJoinList[i] + "/config/config")
 
-		data := []string{kc.Clusters[0].Name, "https://"+kc.Clusters[0].Cluster.Server, ""}
+		data := []string{kc.Clusters[0].Name, kc.Clusters[0].Cluster.Server, ""}
 		datas = append(datas, data)
 	}
 
@@ -112,7 +112,7 @@ func getGKEClusterData() [][]string{
 			continue
 		}
 		clusterName := ss[0]
-		masterIP := "https://"+ss[3]
+		masterIP := ss[3]
 		platform := "gke"
 		status := ss[7]
 
