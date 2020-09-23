@@ -36,32 +36,32 @@ $ ./1.build.sh
   Member) omcpctl register member <OpenMCP_Master_IP>
 
 3. 현재 OpenMCP Join된 클러스터 조회
-  Master) omcpctl join list
-
-   CLUSTERNAME | STATUS | REGION | ZONES |       APIENDPOINT        | AGE  
- +-------------+--------+--------+-------+--------------------------+-----+
-   cluster1    | True   | AS     | CN,KR | https://CLUSTER1_IP:6443 |      
-   cluster2    | True   | AS     | CN,KR | https://CLUSTER2_IP:6443 |      
-
-
+  Master) omcpctl get cluster -n kube-federation-system
+            NS           | CLUSTERNAME  | STATUS |   REGION    |     ZONES     |      APIENDPOINT         | PLATFORM |  AGE   
++------------------------+--------------+--------+-------------+---------------+--------------------------+----------+-------+
+  kube-federation-system | cluster1     | True   | AS          | CN,KR         | https://CLUSTER1_IP:6443 |          |     
+  kube-federation-system | cluster2     | True   | AS          | CN,KR         | https://CLUSTER2_IP:6443 |          | 
+  
 4. 현재 OpenMCP Unjoin(조인가능한) 클러스터 조회 
-  Master) omcpctl unjoin list
+  Master) omcpctl joinable list
 
-  CLUSTERNAME |        APIENDPOINT        
-+-------------+--------------------------+
-  cluster3    | https://CLUSTERIP3_IP:6443  
+  CLUSTERNAME  |                               APIENDPOINT                                | PLATFORM  
++--------------+--------------------------------------------------------------------------+----------+
+  cluster3     | https://CLUSTERIP3_IP:6443                                               |           
+  eks-cluster1 | https://EKS_CLUSTERIP_IP                                                 | eks       
 
 5. Cluster Join 및 기본 모듈 배포
   Master) omcpctl join cluster <OpenMCP_Member_IP>
 
 6. 현재 OpenMCP Join된 클러스터 조회
-  Master) omcpctl join list
-
-   CLUSTERNAME | STATUS | REGION | ZONES |       APIENDPOINT        | AGE  
- +-------------+--------+--------+-------+--------------------------+-----+
-   cluster1    | True   | AS     | CN,KR | https://CLUSTER1_IP:6443 |      
-   cluster2    | True   | AS     | CN,KR | https://CLUSTER2_IP:6443 |      
-   cluster3    | True   | AS     | KR    | https://CLUSTER3_IP:6443 |      
+  Master) omcpctl get cluster -n kube-federation-system
+   
+            NS           | CLUSTERNAME  | STATUS |   REGION    |     ZONES     |      APIENDPOINT         | PLATFORM |  AGE   
++------------------------+--------------+--------+-------------+---------------+--------------------------+----------+-------+
+  kube-federation-system | cluster1     | True   | AS          | CN,KR         | https://CLUSTER1_IP:6443 |          |     
+  kube-federation-system | cluster2     | True   | AS          | CN,KR         | https://CLUSTER2_IP:6443 |          | 
+  kube-federation-system | cluster3     | True   | AS          | KR            | https://CLUSTER3_IP:6443 |          | 
+  
 ```
 > Get
 ```
