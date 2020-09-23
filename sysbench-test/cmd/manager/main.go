@@ -49,6 +49,11 @@ var STOP_NETWORK_CMD string =  "kill -9 `ps -ef | grep 'sysbench-network' | awk 
 func (h *HttpManager) help(w http.ResponseWriter, r *http.Request){
 	fmt.Println("Connect Service")
 
+	for i:=0; i< 1000000; i++ {
+		c := i+1 * 100 / 2
+		fmt.Println (c, i)
+	}
+
 	w.Write([]byte("OpenMCP Service Response\n"))
 	//w.Write([]byte("http://"+h.HTTPServer_IP+":"+h.HTTPServer_PORT+"/etcd/backup/start?time=5\n"))
 	//w.Write([]byte("http://"+h.HTTPServer_IP+":"+h.HTTPServer_PORT+"/etcd/backup/stop\n"))

@@ -147,7 +147,7 @@ NAME                           AGE
 analytic-metrics-weight        3m16s
 has-target-cluster             3m15s
 hpa-minmax-distribution-mode   3m15s
-log-version                    3m16s
+log-level                    3m16s
 metric-collector-period        3m16s
 ```
 

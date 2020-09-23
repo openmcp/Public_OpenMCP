@@ -1,7 +1,7 @@
 apiVersion: keti.example.com/v1alpha1
 kind: OpenMCPPolicy
 metadata:
-  name: log-version
+  name: log-level
   namespace: openmcp
 spec:
   template:
