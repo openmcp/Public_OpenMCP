@@ -31,7 +31,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: GRPC_SERVER
-              value: "keti.asuscomm.com"
+              value: "119.65.195.180"
             - name: GRPC_PORT
               value: "32051"
             - name: CLUSTER_NAME

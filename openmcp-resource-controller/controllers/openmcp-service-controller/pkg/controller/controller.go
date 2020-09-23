@@ -320,10 +320,14 @@ func(r *reconciler) DeleteServices(cm *clusterManager.ClusterManager, name strin
 func isInObject(child *corev1.Service, parent string) bool {
 	omcplog.V(4).Info("Function Called isInObject")
 	refKind_str := child.ObjectMeta.Annotations["multicluster.admiralty.io/controller-reference"]
+	omcplog.V(5).Info("refKind_str: ", refKind_str)
 	refKind_map := make(map[string]interface{})
 	err := json.Unmarshal([]byte(refKind_str), &refKind_map)
 	if err != nil {
 		panic(err)
+	}
+	if _, ok := refKind_map["kind"]; !ok {
+		return false
 	}
 	if refKind_map["kind"] == parent {
 		return true

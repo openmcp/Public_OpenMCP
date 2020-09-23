@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmcp-apiserver
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openmcp-apiserver
+  template:
+    metadata:
+      labels:
+        name: openmcp-apiserver
+    spec:
+      serviceAccountName: openmcp-apiserver-sa
+      containers:
+        - name: openmcp-apiserver
+          # Replace this with the built image name
+          image: openmcp/openmcp-apiserver:v0.0.1
+          command:
+          - openmcp-apiserver
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              #value: ""
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: INFLUX_IP
+              value: "10.0.3.20"
+            - name: INFLUX_PORT
+              value: "31051"
+            - name: INFLUX_USERNAME
+              value: "root"
+            - name: INFLUX_PASSWORD
+              value: "root"
+            - name: OPERATOR_NAME
+              value: "openmcp-apiserver"
+          ports:
+          - containerPort: 8080
+            name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openmcp-apiserver
+  namespace: openmcp
+spec:
+  selector:
+    name: openmcp-apiserver
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 31635
+  type: LoadBalancer

@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmcp-policy-engine
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openmcp-policy-engine
+  template:
+    metadata:
+      labels:
+        name: openmcp-policy-engine
+    spec:
+      serviceAccountName: openmcp-policy-engine
+      containers:
+        - name: openmcp-policy-engine
+          # Replace this with the built image name
+          image: openmcp/openmcp-policy-engine:v0.0.1
+          command:
+          - openmcp-policy-engine
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              #value: ""
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "openmcp-policy-engine"

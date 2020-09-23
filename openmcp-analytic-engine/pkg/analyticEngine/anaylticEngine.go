@@ -412,8 +412,12 @@ func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *p
 	startTime := time.Now()
 
 	// calculate difference between previous data and next data
-	diff_rx := ae.NetworkInfos[data.ClusterName][data.NodeName].next_rx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_rx
-	diff_tx := ae.NetworkInfos[data.ClusterName][data.NodeName].next_tx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_tx
+	var diff_rx int64 = -1
+	var diff_tx int64 = -1
+	if _, ok := ae.NetworkInfos[data.ClusterName][data.NodeName]; ok {
+		diff_rx = ae.NetworkInfos[data.ClusterName][data.NodeName].next_rx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_rx
+		diff_tx = ae.NetworkInfos[data.ClusterName][data.NodeName].next_tx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_tx
+	}
 
 	elapsedTime := time.Since(startTime)
 	omcplog.V(2).Info("%-30s [",elapsedTime,"]", "=> Total Anlysis time")
