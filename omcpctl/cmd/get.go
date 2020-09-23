@@ -18,13 +18,11 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/ghodss/yaml"
 	"io/ioutil"
 	"openmcp/openmcp/omcpctl/apiServerMethod"
 	"openmcp/openmcp/omcpctl/resource"
 	"strings"
-
-	"github.com/ghodss/yaml"
-
 	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -75,9 +73,9 @@ openmcpctl get ohas <OHASNAME> -o yaml`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		getResource(args)
-
 	},
 }
+
 
 func getMetaInfo(body []byte) (cobrautil.MetaInfo, error){
 	var metainfo cobrautil.MetaInfo
@@ -276,6 +274,10 @@ func getCore(resourceKind, resourceName, clusterContext string) error{
 			resource.PrintHorizontalPodAutoscaler(body)
 		} else if  metainfo.Kind == "HorizontalPodAutoscalerList"{
 			resource.PrintHorizontalPodAutoscalerList(body)
+		} else if  metainfo.Kind == "VerticalPodAutoscaler"{
+			resource.PrintVerticalPodAutoscaler(body)
+		} else if  metainfo.Kind == "VerticalPodAutoscalerList"{
+			resource.PrintVerticalPodAutoscalerList(body)
 		} else if  metainfo.Kind == "PodDisruptionBudget"{
 			resource.PrintPodDisruptionBudget(body)
 		} else if  metainfo.Kind == "PodDisruptionBudgetList"{

@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmcp-sync-controller
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openmcp-sync-controller
+  template:
+    metadata:
+      labels:
+        name: openmcp-sync-controller
+    spec:
+      serviceAccountName: openmcp-sync-controller
+      containers:
+        - name: openmcp-sync-controller
+          # Replace this with the built image name
+          image: openmcp/openmcp-sync-controller:v0.0.1
+          command:
+          - openmcp-sync-controller
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              #value: ""
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "openmcp-sync-controller"

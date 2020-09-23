@@ -269,7 +269,7 @@ func (ae *AnalyticEngineStruct) CompareHPAMaxInfo(clusterList []string, data *pr
 	rebalancingCount := map[string]int32{}
 
 	for _, cluster := range clusterList {
-		omcplog.V(3).Info(cluster, " hpa : ", data.HPAMinORMaxReplicas, " / ", data.HPACurrentReplicas)
+		omcplog.V(3).Info(cluster, " hpa MaxReplicas : ", data.HPAMinORMaxReplicas[cluster], " / CurrentReplicas : ", data.HPACurrentReplicas[cluster])
 		//calc := hpaInstance.Spec.MaxReplicas - hpaInstance.Status.CurrentReplicas
 		calc := data.HPAMinORMaxReplicas[cluster] - data.HPACurrentReplicas[cluster]
 		if calc > 0 {
@@ -307,6 +307,7 @@ func (ae *AnalyticEngineStruct) CompareHPAMinInfo(clusterList []string, data *pr
 	timeStart_analysis := time.Now()
 
 	for _, cluster := range clusterList {
+		omcplog.V(3).Info(cluster, " hpa MinReplicas : ", data.HPAMinORMaxReplicas[cluster], " / CurrentReplicas : ", data.HPACurrentReplicas[cluster])
 		calc := data.HPACurrentReplicas[cluster] - data.HPAMinORMaxReplicas[cluster]
 		if calc > 0 {
 			replicasGap[cluster] = calc
@@ -322,8 +323,13 @@ func (ae *AnalyticEngineStruct) CompareHPAMinInfo(clusterList []string, data *pr
 		rebalancingCount[cluster] = data.HASRebalancingCount[cluster]
 	}
 
+	omcplog.V(3).Info("desiredReplicas : ", replicasGap)
+	omcplog.V(3).Info("countRebalancing : ", rebalancingCount)
+
 	timeEnd_analysis2 := time.Since(timeStart_analysis2)
 	omcplog.V(3).Info("[3] GetHASInfo \t\t\t", timeEnd_analysis2)
+
+
 
 	result := ""
 	timeStart_analysis3 := time.Now()
@@ -406,8 +412,12 @@ func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *p
 	startTime := time.Now()
 
 	// calculate difference between previous data and next data
-	diff_rx := ae.NetworkInfos[data.ClusterName][data.NodeName].next_rx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_rx
-	diff_tx := ae.NetworkInfos[data.ClusterName][data.NodeName].next_tx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_tx
+	var diff_rx int64 = -1
+	var diff_tx int64 = -1
+	if _, ok := ae.NetworkInfos[data.ClusterName][data.NodeName]; ok {
+		diff_rx = ae.NetworkInfos[data.ClusterName][data.NodeName].next_rx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_rx
+		diff_tx = ae.NetworkInfos[data.ClusterName][data.NodeName].next_tx - ae.NetworkInfos[data.ClusterName][data.NodeName].prev_tx
+	}
 
 	elapsedTime := time.Since(startTime)
 	omcplog.V(2).Info("%-30s [",elapsedTime,"]", "=> Total Anlysis time")

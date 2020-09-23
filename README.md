@@ -158,8 +158,9 @@ metric-collector-period        3m16s
 
 # How To Join Cluster
 
-1. Kubernetes Cluster 조인 방법
-2. GKE Cluster 조인 방법
+1. Kubernetes Cluster 조인
+2. GKE Cluster 조인
+3. EKS Cluster 조인
 
 --------------------------------------------------------------------------------------------
 ## 1. Kubernetes Cluster 조인 방법
@@ -247,7 +248,72 @@ $ kubectl create -f metallb_config.yaml --context=<cluster-name>
 
 ## 2. GKE Cluster 조인 방법
 
-### (1) 
+### (1) Cloud SDK 설치
+[https://cloud.google.com/sdk/docs/downloads-apt-get?hl=ko](https://cloud.google.com/sdk/docs/downloads-apt-get?hl=ko)
+
+### (2) gcloud init
+```
+$ gcloud init
+```
+
+### (3) gcloud container clusters list
+```
+$ gcloud container clusters list
+NAME         LOCATION       MASTER_VERSION  MASTER_IP       MACHINE_TYPE  NODE_VERSION   NUM_NODES  STATUS
+cluster3     asia-east1-a   1.16.13-gke.1   35.201.135.105  e2-medium     1.16.13-gke.1  2          RUNNING
+```
+
+### (4) OpenMCP 조인
+```
+$ omcpctl join gke-cluster cluster3
+...
+***** [End] Cluster Join Completed - cluster3 *****
+
+$ kubectl get kubefedclusters -n kube-federation-system
+NAME       READY   AGE
+cluster1   True    15m
+cluster2   True    15m
+cluster3   True    10s
+```
+
+
+## 3. EKS Cluster 조인 방법
+
+### (1) AWS CLI 설치
+[https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/getting-started-console.html](https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/getting-started-console.html)
+
+### (2) aws configure
+```
+$ aws configure
+AWS Access Key ID [****************RCGA]: AKIAJAAK64B5XVB2RCGA
+AWS Secret Access Key [****************PivT]: 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
+Default region name [us-east-2]: us-east-2
+Default output format [json]: json
+```
+
+### (3) aws eks list-clusters
+```
+{
+    "clusters": [
+        "cluster4"
+    ]
+}
+```
+
+### (4) OpenMCP 조인
+```
+$ omcpctl join eks-cluster cluster4
+...
+***** [End] Cluster Join Completed - cluster4 *****
+
+$ kubectl get kubefedclusters -n kube-federation-system
+NAME       READY   AGE
+cluster1   True    15m
+cluster2   True    15m
+cluster3   True    80s
+cluster4   True    11s
+```
+
 
 # OpenMCP EXAMPLE
 OpenMCP에 cluster1, cluster2가 조인된 상태에서 EXAMPLE TEST를 진행합니다.

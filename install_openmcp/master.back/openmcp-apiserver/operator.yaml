@@ -31,6 +31,14 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+            - name: INFLUX_IP
+              value: REPLACE_INFLUXDBIP
+            - name: INFLUX_PORT
+              value: REPLACE_INFLUXDBPORT
+            - name: INFLUX_USERNAME
+              value: REPLACE_INFLUXDBUSERNAME
+            - name: INFLUX_PASSWORD
+              value: REPLACE_INFLUXDBUSERPWD
             - name: OPERATOR_NAME
               value: "openmcp-apiserver"
           ports:

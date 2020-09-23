@@ -18,8 +18,6 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"log"
-	"net"
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"openmcp/openmcp/util"
 	"os"
@@ -51,17 +49,7 @@ omcpctl register member  <OPENMCPIP>`,
 	},
 }
 
-func GetOutboundIP() string {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer conn.Close()
 
-	localAddr := conn.LocalAddr().(*net.UDPAddr)
-
-	return localAddr.IP.String()
-}
 
 func fileExists(filename string) bool {
 	info, err := os.Stat(filename)
@@ -79,7 +67,7 @@ func registerASOpenMCP() {
 
 	util.CmdExec("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
-	openmcpIP := GetOutboundIP()
+	openmcpIP := cobrautil.GetOutboundIP()
 
 	if fileExists("/mnt/openmcp/" + openmcpIP) {
 		fmt.Println("Failed Register OpenMCP Master")
@@ -117,7 +105,7 @@ func registerMemberToOpenMCP(openmcpIP string) {
 
 	util.CmdExec("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
-	memberIP := GetOutboundIP()
+	memberIP := cobrautil.GetOutboundIP()
 	//openmcpIP := cobrautil.Option_ip
 
 	if !fileExists("/mnt/openmcp/" + openmcpIP + "/master") {

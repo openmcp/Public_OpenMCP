@@ -10,10 +10,11 @@ import (
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/decode"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/kubeletClient"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/storage"
+	"os"
 )
 
 func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nodes []corev1.Node) (*storage.Collection, error) {
-	omcplog.V(4).Info( "Func Scrap Called")
+	fmt.Println( "Func Scrap Called")
 
 	responseChannel := make(chan *storage.MetricsBatch, len(nodes))
 	errChannel := make(chan error, len(nodes))
@@ -62,13 +63,15 @@ func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nod
 		nodeNum += 1
 		podNum += len(srcBatch.Pods)
 	}
+	res.ClusterName = os.Getenv("CLUSTER_NAME")
+
 	omcplog.V(3).Infof("ScrapeMetrics: time: ",clock.MyClock.Since(startTime), "nodes: ", nodeNum, "pods: ", podNum)
 	return res, utilerrors.NewAggregate(errs)
 }
 
 func CollectNode(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, node corev1.Node) (*storage.MetricsBatch, error) {
-	omcplog.V(4).Info("Func CollectNode Called")
-	omcplog.V(2).Info("Collect Node Start goroutine : '", node.Name, "'")
+	fmt.Println("Func CollectNode Called")
+	fmt.Println("Collect Node Start goroutine : '", node.Name, "'")
 	host := node.Status.Addresses[0].Address
 	token := config.BearerToken
 	summary, err := kubelet_client.GetSummary(host, token)

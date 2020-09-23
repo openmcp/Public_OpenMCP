@@ -85,7 +85,7 @@ func Delete(args []string){
 		metainfo.Kind = resourceKind
 		metainfo.Metadata.Name = resourceName
 
-		if cobrautil.Option_namespace != "" {
+		if cobrautil.Option_namespace == "" {
 			metainfo.Metadata.Namespace = ""
 		}else {
 			metainfo.Metadata.Namespace = cobrautil.Option_namespace

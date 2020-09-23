@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cluster-metric-collector
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: cluster-metric-collector
+  template:
+    metadata:
+      labels:
+        name: cluster-metric-collector
+    spec:
+      serviceAccountName: cluster-metric-collector
+      containers:
+        - name: cluster-metric-collector
+          # Replace this with the built image name
+          image: openmcp/cluster-metric-collector:v0.0.1
+          command:
+          - cluster-metric-collector
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: GRPC_SERVER
+              value: "119.65.195.180"
+            - name: GRPC_PORT
+              value: "32051"
+            - name: CLUSTER_NAME
+              value: "cluster5"
+            - name: OPERATOR_NAME
+              value: "openmcp-metric-collector"
+
+

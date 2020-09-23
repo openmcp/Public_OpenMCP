@@ -17,17 +17,14 @@ limitations under the License.
 package main
 
 import (
-
 	"context"
+	"openmcp/openmcp/openmcp-apiserver/pkg/auth"
 	"openmcp/openmcp/openmcp-apiserver/pkg/httphandler"
 
 	"net/http"
 	"openmcp/openmcp/omcplog"
 
 	"openmcp/openmcp/util/clusterManager"
-
-
-
 
 	"log"
 
@@ -59,8 +56,8 @@ func main() {
 
 		//handler.HandleFunc("/token", TokenHandler)
 		//handler.Handle("/", AuthMiddleware(http.HandlerFunc(httpManager.ExampleHandler)))
-
-		handler.HandleFunc("/", httpManager.RouteHandler)
+		handler.HandleFunc("/token", auth.TokenHandler)
+		handler.Handle("/", auth.AuthMiddleware(http.HandlerFunc(httpManager.RouteHandler)))
 		//handler.HandleFunc("/metrics/{name:[a-z]+}", httpManager.MetricsHandler)
 
 		//handler.HandleFunc("/omcpexec", httpManager.ExampleHandler2)
@@ -110,6 +107,7 @@ func main() {
 		if err := server.Shutdown(context.Background()); err != nil {
 			log.Fatalf("OpenMCP API Server Shutdown Failed:%+v", err)
 		}
+
 		log.Print("OpenMCP API Server Exited Properly")
 	}
 
