@@ -1,19 +1,22 @@
 package predicates
 
 import (
-	"strings"
-	"k8s.io/klog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
+	"strings"
+
+	"k8s.io/klog"
 )
 
-type MatchClusterSelector struct{}
+type MatchClusterSelector struct {
+}
 
 func (pl *MatchClusterSelector) Name() string {
+
 	return "MatchClusterSelector"
 }
 
 func (pl *MatchClusterSelector) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
-	
+
 	// Node must have labels correspoinding to new Pod's NodeSelector
 	// Example of *.yaml for a new OpenMCPDeployemt as folllow:
 	//  spec:
@@ -27,6 +30,10 @@ func (pl *MatchClusterSelector) Filter(newPod *ketiresource.Pod, clusterInfo *ke
 	}
 
 	for _, node := range clusterInfo.Nodes {
+		// if node.PreFilter == false || node.PreFilterA == false {
+		// 	omcplog.V(0).Infof("preFilter True", pl.Name(), node.PreFilter)
+		// 	continue
+		// }
 		node_result := true
 
 		// NodeSelector's type is map[string]string
@@ -35,8 +42,8 @@ func (pl *MatchClusterSelector) Filter(newPod *ketiresource.Pod, clusterInfo *ke
 
 			klog.Infof("pod_value:%v", pod_value)
 
-			if node_value, ok := node.Node.Labels[key]; !ok{
-				klog.Infof("node_value:%v", node_value)
+			if node_value, ok := node.Node.Labels[key]; !ok {
+				klog.Infof("n./4ode_value:%v", node_value)
 				node_result = false
 			} else {
 				// Check if value is the same
@@ -56,6 +63,6 @@ func (pl *MatchClusterSelector) Filter(newPod *ketiresource.Pod, clusterInfo *ke
 			return true
 		}
 	}
-	
+
 	return false
 }

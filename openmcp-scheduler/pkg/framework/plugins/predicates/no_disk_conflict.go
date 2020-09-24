@@ -1,11 +1,13 @@
 package predicates
 
 import (
-	v1 "k8s.io/api/core/v1"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
+
+	v1 "k8s.io/api/core/v1"
 )
 
-type NoDiskConflict struct{}
+type NoDiskConflict struct {
+}
 
 func (pl *NoDiskConflict) Name() string {
 	return "NoDiskConflict"
@@ -15,22 +17,26 @@ func (pl *NoDiskConflict) Filter(newPod *ketiresource.Pod, clusterInfo *ketireso
 
 	// check all nodes in this cluster
 	for _, node := range clusterInfo.Nodes {
+		// if node.PreFilter == false || node.PreFilterA == false {
+		// 	omcplog.V(0).Infof("preFilter True", pl.Name(), node.PreFilter)
+		// 	continue
+		// }
 		node_result := true
 
 		for _, v := range newPod.Pod.Spec.Volumes {
 
-			for _, ev := range node.Pods{
+			for _, ev := range node.Pods {
 				if isVolumeConflict(v, ev.Pod) {
 					node_result = false
 					break
 				}
 			}
-			if !node_result{
+			if !node_result {
 				break
 			}
 		}
 
-		if node_result{
+		if node_result {
 			return true
 		}
 	}
@@ -60,7 +66,7 @@ func isVolumeConflict(volume v1.Volume, pod *v1.Pod) bool {
 				return true
 			}
 		}
-	
+
 		// case 3) ISCSI
 		if volume.ISCSI != nil && existingVolume.ISCSI != nil {
 			iqn := volume.ISCSI.IQN
@@ -84,21 +90,21 @@ func isVolumeConflict(volume v1.Volume, pod *v1.Pod) bool {
 }
 
 // If you want to detail, check " kubernetes/pkg/scheduler/algorithm/predicates/predicates.go"
-// haveOverlap searches two arrays and returns true 
+// haveOverlap searches two arrays and returns true
 // if they have at least one common element; returns false otherwise.
 func haveOverlap(a1, a2 []string) bool {
 	if len(a1) > len(a2) {
-			a1, a2 = a2, a1
+		a1, a2 = a2, a1
 	}
 	m := map[string]bool{}
 
 	for _, val := range a1 {
-			m[val] = true
+		m[val] = true
 	}
 	for _, val := range a2 {
-			if _, ok := m[val]; ok {
-					return true
-			}
+		if _, ok := m[val]; ok {
+			return true
+		}
 	}
 
 	return false
