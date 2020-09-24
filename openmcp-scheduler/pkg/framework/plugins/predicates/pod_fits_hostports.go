@@ -1,13 +1,15 @@
 package predicates
 
 import (
-	"k8s.io/klog"
-	v1 "k8s.io/api/core/v1"
 	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
+
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/klog"
 )
 
-type PodFitsHostPorts struct{}
+type PodFitsHostPorts struct {
+}
 
 const (
 	// ErrReason when cluster ports aren't available
@@ -17,7 +19,6 @@ const (
 func (pl *PodFitsHostPorts) Name() string {
 	return "PodFitsHostPorts"
 }
-
 func (pl *PodFitsHostPorts) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
 	// Requested ports should be available for newPod
 	// Example of *.yaml for a new OpenMCPDeployemt as folllow:
@@ -33,25 +34,26 @@ func (pl *PodFitsHostPorts) Filter(newPod *ketiresource.Pod, clusterInfo *ketire
 	// if there is not requested Ports, PodFitHostPorts return true
 	wantPorts := getContainerPorts(newPod.Pod)
 
-	if len(wantPorts) == 0{
+	if len(wantPorts) == 0 {
 		return true
 	}
 
 	// It checks all nodes in clusterInfo and returns true if any node has an available port
 	for _, node := range clusterInfo.Nodes {
-
+		// if node.PreFilter == false || node.PreFilterA == false {
+		// 	omcplog.V(0).Infof("preFilter True", pl.Name(), node.PreFilter)
+		// 	continue
+		// }
 		// newPod cannot be deployed, if one of the wantPorts is used
 		if fitsPorts(wantPorts, node) == false {
 			omcplog.V(0).Info("%s", ErrReason)
 			return false
 		}
 	}
-
 	return true
 }
 
 func fitsPorts(wantPorts []*v1.ContainerPort, nodeInfo *ketiresource.NodeInfo) bool {
-
 
 	for _, wantPort := range wantPorts {
 
@@ -63,7 +65,7 @@ func fitsPorts(wantPorts []*v1.ContainerPort, nodeInfo *ketiresource.NodeInfo) b
 		for i := range nodeInfo.Pods {
 			pod := nodeInfo.Pods[i]
 
-			for j := range pod.Pod.Spec.Containers{
+			for j := range pod.Pod.Spec.Containers {
 				container := &pod.Pod.Spec.Containers[j]
 
 				for k := range container.Ports {

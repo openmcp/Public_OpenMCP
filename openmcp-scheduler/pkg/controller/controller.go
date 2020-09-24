@@ -14,36 +14,36 @@ limitations under the License.
 package controller // import "admiralty.io/multicluster-controller/examples/openmcpscheduler/pkg/controller/openmcpscheduler"
 
 import (
-	"strings"
 	"context"
 	"fmt"
 	"sort"
+	"strings"
 
+	"admiralty.io/multicluster-controller/pkg/cluster"
+	"admiralty.io/multicluster-controller/pkg/controller"
+	"admiralty.io/multicluster-controller/pkg/manager"
+	"admiralty.io/multicluster-controller/pkg/reconcile"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"admiralty.io/multicluster-controller/pkg/cluster"
-	"admiralty.io/multicluster-controller/pkg/manager"
-	"admiralty.io/multicluster-controller/pkg/controller"
-	"admiralty.io/multicluster-controller/pkg/reconcile"
 
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-scheduler/pkg"
 	"openmcp/openmcp/openmcp-resource-controller/apis"
 	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
+	openmcpscheduler "openmcp/openmcp/openmcp-scheduler/pkg"
 	syncapis "openmcp/openmcp/openmcp-sync-controller/pkg/apis"
 	"openmcp/openmcp/util/clusterManager"
-	"openmcp/openmcp/util/controller/reshape"
 	"openmcp/openmcp/util/controller/logLevel"
+	"openmcp/openmcp/util/controller/reshape"
 
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 )
 
 type reconciler struct {
-	live           		client.Client
-	ghosts         		[]client.Client
-	ghostNamespace 		string
-	scheduler			*openmcpscheduler.OpenMCPScheduler
+	live           client.Client
+	ghosts         []client.Client
+	ghostNamespace string
+	scheduler      *openmcpscheduler.OpenMCPScheduler
 }
 
 func NewControllers(cm *clusterManager.ClusterManager, scheduler *openmcpscheduler.OpenMCPScheduler) {
@@ -63,7 +63,7 @@ func NewControllers(cm *clusterManager.ClusterManager, scheduler *openmcpschedul
 		ghosts = append(ghosts, ghost)
 	}
 
-	sched_cont, err := NewController(live, ghosts, namespace, scheduler) 
+	sched_cont, err := NewController(live, ghosts, namespace, scheduler)
 	if err != nil {
 		omcplog.V(0).Info("err New Controller - Scheduler", err)
 	}
@@ -105,7 +105,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	}
 
 	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace, scheduler: scheduler}, controller.Options{})
-	
+
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
@@ -125,7 +125,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	return co, nil
 }
 
-
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 
 	// Fetch the OpenMCPDeployment instance
@@ -133,6 +132,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	err := r.live.Get(context.TODO(), req.NamespacedName, newDeployment)
 	if err != nil && errors.IsNotFound(err) {
 		omcplog.V(0).Info("Not Found")
+		r.scheduler.IsNetwork = false
 		return reconcile.Result{}, nil
 	}
 
@@ -143,13 +143,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			omcplog.V(0).Info("Local Scheduling을 시작합니다.(랜덤 스케줄링)")
 			omcplog.V(0).Info("Scheduling Controller와 연계하려면 Labels의 test항목을 no로 변경해주세요")
 			replicas := newDeployment.Spec.Replicas
-			
+
 			newDeployment.Status.ClusterMaps = RRScheduling(r.scheduler.ClusterManager, replicas)
 			newDeployment.Status.Replicas = replicas
-			
+
 			newDeployment.Status.SchedulingNeed = false
 			newDeployment.Status.SchedulingComplete = true
-			omcplog.V(0).Info("Scheduling 완료")
 			err := r.live.Status().Update(context.TODO(), newDeployment)
 			if err != nil {
 				omcplog.V(0).Info("Failed to update newDeployment status", err)
@@ -158,9 +157,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			return reconcile.Result{}, err
 
 		} else if strings.Compare(newDeployment.Spec.Labels["test"], "yes") == 0 {
+
 			omcplog.V(0).Infof("  Resource Get => [Name] : %v, [Namespace]  : %v", newDeployment.Name, newDeployment.Namespace)
 
-			cluster_replicas_map, _ := r.scheduler.Scheduling(newDeployment)	
+			cluster_replicas_map, _ := r.scheduler.Scheduling(newDeployment)
 
 			newDeployment.Status.ClusterMaps = cluster_replicas_map
 			newDeployment.Status.Replicas = newDeployment.Spec.Replicas
@@ -168,8 +168,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			newDeployment.Status.SchedulingNeed = false
 			newDeployment.Status.SchedulingComplete = true
 			// omcplog.V(0).Info("=> Scheduling Result : ", cluster_replicas_map)
-
 			// update OpenMCPDeployment to deploy
+
 			err := r.live.Status().Update(context.TODO(), newDeployment)
 			if err != nil {
 				omcplog.V(0).Infof("Failed to update instance status, %v", err)
@@ -181,7 +181,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	return reconcile.Result{}, nil
 }
 
-// FOR TEST	
+// FOR TEST
 func RRScheduling(cm *clusterManager.ClusterManager, replicas int32) map[string]int32 {
 
 	cluster_replicas_map := make(map[string]int32)

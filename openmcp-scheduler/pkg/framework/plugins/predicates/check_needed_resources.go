@@ -20,22 +20,21 @@ func (pl *CheckNeededResources) Filter(newPod *ketiresource.Pod, clusterInfo *ke
 	//         nvidia.com/gpu: 1
 	//         amd.com/gpu: 1
 	// In this case, selected node must have both of "nvidia.com/gpu, amd.com/gpu"
-	
+
 	if len(newPod.AdditionalResource) == 0 {
 		return true
 	}
 
 	for _, node := range clusterInfo.Nodes {
 		node_result := true
-
 		for _, resource := range newPod.AdditionalResource {
 			if contains(node.AdditionalResource, resource) == false {
 				node_result = false
 				break
 			}
 		}
-		
-		if node_result == true{
+
+		if node_result == true {
 			return true
 		}
 	}

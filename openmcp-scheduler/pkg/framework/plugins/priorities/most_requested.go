@@ -4,25 +4,52 @@ import (
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
 )
 
-type MostRequested struct{}
+type MostRequested struct {
+	prescoring   map[string]int64
+	betweenScore int64
+}
 
 func (pl *MostRequested) Name() string {
 	return "MostRequested"
 }
-
-func (pl *MostRequested) Score(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) int64 {
+func (pl *MostRequested) PreScore(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, check bool) int64 {
 	var clusterScore int64
 
 	for _, node := range clusterInfo.Nodes {
 		nodeScore := mostRequestedScore(pod.RequestedResource.MilliCPU, node.AllocatableResource.MilliCPU)
 		nodeScore += mostRequestedScore(pod.RequestedResource.Memory, node.AllocatableResource.Memory)
 		nodeScore += mostRequestedScore(pod.RequestedResource.EphemeralStorage, node.AllocatableResource.EphemeralStorage)
-	
+
 		node.NodeScore = nodeScore
 		clusterScore += nodeScore
 	}
+	if !check {
+		if len(pl.prescoring) == 0 {
+			pl.prescoring = make(map[string]int64)
+		}
+		pl.prescoring[clusterInfo.ClusterName] = clusterScore
+	} else {
 
+		pl.betweenScore = pl.prescoring[clusterInfo.ClusterName] - int64(clusterScore)
+		pl.prescoring[clusterInfo.ClusterName] = clusterScore
+		if pl.betweenScore < 0 {
+			pl.betweenScore = 5
+		}
+
+	}
 	return clusterScore
+}
+
+func (pl *MostRequested) Score(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, replicas int32, clustername string) int64 {
+
+	if clustername == clusterInfo.ClusterName {
+		score := pl.prescoring[clusterInfo.ClusterName] - pl.betweenScore
+		if score < 0 {
+			return 0
+		}
+	}
+	score := pl.prescoring[clusterInfo.ClusterName]
+	return score
 }
 
 func mostRequestedScore(requested, allocable int64) int64 {
