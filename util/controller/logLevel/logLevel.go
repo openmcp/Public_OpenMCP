@@ -56,7 +56,7 @@ var logLevel = "0"
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 
-	if req.Namespace == "openmcp" && req.Name == "log-version" {
+	if req.Namespace == "openmcp" && req.Name == "log-level" {
 		prevLogLevel := logLevel
 		logLevel = r.getLogLevel()
 		if prevLogLevel != logLevel {
@@ -72,11 +72,11 @@ func (r *reconciler) getLogLevel() string {
 	instance := &ketiv1alpha1.OpenMCPPolicy{}
 	nsn := types.NamespacedName{
 		Namespace: "openmcp",
-		Name:      "log-version",
+		Name:      "log-level",
 	}
 	err := r.live.Get(context.TODO(), nsn, instance)
 	if err != nil && errors.IsNotFound(err) {
-		omcplog.Info("Not Exist Policy 'log-version', Use Default LogLevel (0)")
+		omcplog.Info("Not Exist Policy 'log-level', Use Default LogLevel (0)")
 		return "0"
 	} else if err != nil {
 		omcplog.Info("FatalError ! ", err)
@@ -88,24 +88,24 @@ func (r *reconciler) getLogLevel() string {
 			//	if matched && len(policy.Value[0]) == 1 {
 			//		return policy.Value[0]
 			//	}
-			//	klog.Info("Policy 'log-version' Value must be [0-9], Use Default LogLevel (0)")
+			//	klog.Info("Policy 'log-level' Value must be [0-9], Use Default LogLevel (0)")
 			//	return "0"
 			//}
-			if policy.Type == "Version" && len(policy.Value) == 1 {
+			if policy.Type == "Level" && len(policy.Value) == 1 {
 				logLevelString := policy.Value[0]
 				logLevelInt, err := strconv.Atoi(logLevelString)
 				if err == nil && logLevelInt >= -1 && logLevelInt <= 9 {
 					return logLevelString
 				}
-				omcplog.Info("Policy 'log-version' Value must be [-1~9], Use Default LogLevel (0)")
+				omcplog.Info("Policy 'log-level' Value must be [-1~9], Use Default LogLevel (0)")
 				return "0"
 			}
 		}
-		omcplog.Info("Policy 'log-version' Format Error, Use Default LogLevel (0)")
+		omcplog.Info("Policy 'log-level' Format Error, Use Default LogLevel (0)")
 		return "0"
 
 	} else {
-		omcplog.Info("Policy 'log-version' Disabled, Use Default LogLevel (0)")
+		omcplog.Info("Policy 'log-level' Disabled, Use Default LogLevel (0)")
 		return "0"
 	}
 

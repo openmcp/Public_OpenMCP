@@ -5,6 +5,8 @@ import (
 	"context"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/jinzhu/copier"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/customMetrics"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/kubeletClient"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/protobuf"
@@ -115,14 +117,20 @@ func MemberMetricCollector(){
 	fmt.Println("ClusterMetricCollector Start")
 	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
+	var period_int64 int64 = 5
 	for {
-		cm := clusterManager.NewClusterManager()
-		nodes := cm.Node_list.Items
+		host_config, _ := rest.InClusterConfig()
+		host_kubeClient := kubernetes.NewForConfigOrDie(host_config)
+		Node_list, _ := clusterManager.GetNodeList(host_kubeClient)
+
+		nodes := Node_list.Items
 		fmt.Println("Get Metric Data From Kubelet")
 		kubeletClient, _ := kubeletClient.NewKubeletClient()
-		data, errs := scrap.Scrap(cm.Host_config, kubeletClient, nodes)
+		data, errs := scrap.Scrap(host_config, kubeletClient, nodes)
 		if errs != nil {
 			fmt.Println(errs)
+			time.Sleep(time.Duration(period_int64) * time.Second)
+			continue
 		}
 		fmt.Println("Convert Metric Data For gRPC")
 		grpc_data := convert(data)
@@ -131,16 +139,20 @@ func MemberMetricCollector(){
 		fmt.Println("[gRPC Start] Send Metric Data")
 		r, err := grpcClient.SendMetrics(context.TODO(), grpc_data)
 		if err != nil {
-			fmt.Printf("could not connect : %v", err)
+			fmt.Println("check")
+			fmt.Println("could not connect : ", err)
+			time.Sleep(time.Duration(period_int64) * time.Second)
+			fmt.Println("check2")
+			continue
 		}
 		fmt.Println("[gRPC End] Send Metric Data")
 		//period_int64 := r.Tick
-		_ = data
+		// _ = data
 
 		fmt.Println("[http Start] Post Metric Data to Custom Metric Server")
-		token := cm.Host_config.BearerToken
-		host := cm.Host_config.Host
-		client := cm.Host_kubeClient
+		token := host_config.BearerToken
+		host := host_config.Host
+		client := host_kubeClient
 		//fmt.Println("host: ", host)
 		//fmt.Println("token: ", token)
 		//fmt.Println("client: ", client)
@@ -149,7 +161,7 @@ func MemberMetricCollector(){
 		customMetrics.AddToDeployCustomMetricServer(data, token, host, client)
 		fmt.Println("[http End] Post Metric Data to Custom Metric Server")
 
-		period_int64 := r.Tick
+		period_int64 = r.Tick
 
 		if period_int64 > 0 && err == nil {
 

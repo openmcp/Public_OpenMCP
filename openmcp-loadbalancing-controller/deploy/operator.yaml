@@ -24,6 +24,8 @@ spec:
           env:
             - name: LB
               value : "RV"
+            - name: isAnalytic
+              value : "yes"
             - name: GRPC_SERVER
               value: "10.0.3.20"
             - name: GRPC_PORT

@@ -300,6 +300,7 @@ NAME         LOCATION       MASTER_VERSION  MASTER_IP       MACHINE_TYPE  NODE_V
 cluster3     asia-east1-a   1.16.13-gke.1   35.201.135.105  e2-medium     1.16.13-gke.1  2          RUNNING
 ```
 
+
 ### (4) Join GKE cluster to OpenMCP
 ```
 $ omcpctl join gke-cluster cluster3

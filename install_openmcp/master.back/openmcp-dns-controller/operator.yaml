@@ -35,7 +35,7 @@ spec:
               value: "openmcp-dns-controller"
             - name: PDNS_IP
               value: REPLACE_PDNSIP
-            - name: PDNS_PORT
+            - name: "8081"
               value: REPLACE_PDNSPORT
             - name: PDNS_API_KEY
               value: REPLACE_PDNSAPIKEY

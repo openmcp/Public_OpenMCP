@@ -95,7 +95,7 @@ func getDiffUnjoinIP() []string {
 	defer util.CmdExec("umount -l /mnt")
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
-	openmcpIP := GetOutboundIP()
+	openmcpIP := cobrautil.GetOutboundIP()
 	nfsClusterUnjoinStr, err := util.CmdExec("ls /mnt/openmcp/" + openmcpIP + "/members/unjoin")
 	nfsClusterUnjoinList := strings.Split(nfsClusterUnjoinStr, "\n")
 	nfsClusterUnjoinList = nfsClusterUnjoinList[:len(nfsClusterUnjoinList)-1]
@@ -127,7 +127,7 @@ func moveToJoin(memberIP string) {
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
-	openmcpIP := GetOutboundIP()
+	openmcpIP := cobrautil.GetOutboundIP()
 
 	util.CmdExec2("mv /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP + " /mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP)
 
@@ -138,15 +138,15 @@ func removeInitCluster(clusterName, openmcpDir string) {
 	initYamls := []string{"custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller"}
 
 	for _, initYaml := range initYamls {
+		fmt.Println(initYaml)
 		util.CmdExec2("kubectl delete -f " + install_dir + "/" + initYaml + " --context " + clusterName)
-		fmt.Println(initYamls)
 	}
 
 	util.CmdExec2("chmod 755 " + install_dir + "/vertical-pod-autoscaler/hack/*")
 
 	util.CmdExec2(install_dir + "/vertical-pod-autoscaler/hack/vpa-down.sh " + clusterName)
 
-	util.CmdExec2("kubectl delete ns openmcp --context " + clusterName)
+	//util.CmdExec2("kubectl delete ns openmcp --context " + clusterName)
 
 }
 
@@ -162,7 +162,7 @@ func unjoinCluster(memberIP string) {
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
 
-	openmcpIP := GetOutboundIP()
+	openmcpIP := cobrautil.GetOutboundIP()
 	if !fileExists("/mnt/openmcp/" + openmcpIP) {
 		fmt.Println("Failed UnJoin Cluster '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Not Yet Register OpenMCP.")
@@ -175,6 +175,25 @@ func unjoinCluster(memberIP string) {
 		fmt.Println("Failed UnJoin Cluster '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> '" + memberIP + "' is Not Joined Cluster in OpenMCP.")
 
+		return
+	}
+
+	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
+	genClient := genericclient.NewForConfigOrDie(kubeconfig)
+	clusterList := clusterManager.ListKubeFedClusters(genClient, "kube-federation-system")
+
+	checkJoin := 0
+
+	for _, cluster := range clusterList.Items {
+		//fmt.Println("kubefed cluster name : ", cluster.Name)
+		if strings.Contains(cluster.Spec.APIEndpoint, memberIP) {
+			checkJoin = 1
+			break
+		}
+	}
+
+	if checkJoin == 0 {
+		fmt.Println("ERROR - Fail to find cluster")
 		return
 	}
 
@@ -267,7 +286,7 @@ func unjoinCloudCluster(memberName string) {
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
 
-	openmcpIP := GetOutboundIP()
+	openmcpIP := cobrautil.GetOutboundIP()
 	if !fileExists("/mnt/openmcp/" + openmcpIP) {
 		fmt.Println("Failed UnJoin Cluster '" + memberName + "' in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Not Yet Register OpenMCP.")
@@ -276,22 +295,13 @@ func unjoinCloudCluster(memberName string) {
 		return
 	}
 
-	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
-	genClient := genericclient.NewForConfigOrDie(kubeconfig)
-	clusterList := clusterManager.ListKubeFedClusters(genClient, "kube-federation-system")
-
-	checkJoin := 0
-
-	for _, cluster := range clusterList.Items {
-		//fmt.Println("kubefed cluster name : ", cluster.Name)
-		if memberName == cluster.Name {
-			checkJoin = 1
-			break
-		}
+	alreadyJoined, err := cobrautil.CheckAlreadyJoinClusterWithPublicClusterName(memberName, "gke")
+	if err != nil {
+		fmt.Println("CheckAlreadyJoinCluster Error : ", err)
+		return
 	}
 
-	if checkJoin == 0 {
-		fmt.Println("ERROR - Fail to find cluster")
+	if !alreadyJoined {
 		return
 	}
 

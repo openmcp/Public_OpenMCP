@@ -146,10 +146,12 @@ func FillStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord, ins
 
 
 		region := ""
-		if val, ok := instanceNodeList.Items[0].Labels["topology.kubernetes.io/region"]; ok {
-			region = val
-		} else if val, ok := instanceNodeList.Items[0].Labels["failure-domain.beta.kubernetes.io/region"]; ok {
-			region = val
+		if len(instanceNodeList.Items) >= 1 {
+			if val, ok := instanceNodeList.Items[0].Labels["topology.kubernetes.io/region"]; ok {
+				region = val
+			} else if val, ok := instanceNodeList.Items[0].Labels["failure-domain.beta.kubernetes.io/region"]; ok {
+				region = val
+			}
 		}
 
 

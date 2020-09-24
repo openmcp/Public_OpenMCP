@@ -20,7 +20,7 @@ var (
 var (
 	OpenMCPAPIServer = "10.0.3.20:31635" // root.go에서 file 읽어 초기화함
 
-	resourceMap = map[string]string{
+	ResourceMap = map[string]string{
 
 		// WORKLOAD APIS
 		"cj" : "cronjobs",
@@ -96,6 +96,10 @@ var (
 		"hpa": "horizontalpodautoscalers",
 		"horizontalpodautoscaler": "horizontalpodautoscalers",
 		"horizontalpodautoscalers": "horizontalpodautoscalers",
+
+		"vpa": "verticalpodautoscalers",
+		"verticalpodautoscaler": "verticalpodautoscalers",
+		"verticalpodautoscalers": "verticalpodautoscalers",
 
 		"pdb": "poddisruptionbudgets",
 		"poddisruptionbudget": "poddisruptionbudgets",
@@ -197,6 +201,7 @@ var (
 		"customresourcedefinitions": "/apis/apiextensions.k8s.io/v1",
 		"events": "/api/v1",
 		"horizontalpodautoscalers": "/apis/autoscaling/v1",
+		"verticalpodautoscalers": "/apis/autoscaling.k8s.io/v1beta2",
 		"poddisruptionbudgets": "/apis/policy/v1beta1",
 
 		// CLUSTER APIS
@@ -249,6 +254,7 @@ var (
 		"CustomResourceDefinition": "customresourcedefinitions",
 		"Event": "events",
 		"HorizontalPodAutoscaler": "horizontalpodautoscalers",
+		"VerticalPodAutoscaler": "verticalpodautoscalers",
 		"PodDisruptionBudget": "poddisruptionbudgets",
 
 		// CLUSTER APIS
@@ -337,16 +343,16 @@ func ApplyLinkParser(metainfo *MetaInfo) string {
 }
 func GetLinkParser(resourceKind, resourceName, clusterContext string) string{
 	LINK := "http://"+OpenMCPAPIServer
-	LINK += apiGroup[resourceMap[resourceKind]]
+	LINK += apiGroup[ResourceMap[resourceKind]]
 
-	if contains(noNamespaceResources, resourceMap[resourceKind]) {
-		LINK += "/"+resourceMap[resourceKind]
+	if contains(noNamespaceResources, ResourceMap[resourceKind]) {
+		LINK += "/"+ResourceMap[resourceKind]
 		if resourceName != ""{
 			LINK += "/"+resourceName
 		}
 	} else {
 		if Option_allnamespace {
-			LINK += "/"+resourceMap[resourceKind]
+			LINK += "/"+ResourceMap[resourceKind]
 		} else {
 			LINK += "/namespaces"
 
@@ -355,7 +361,7 @@ func GetLinkParser(resourceKind, resourceName, clusterContext string) string{
 			} else {
 				LINK += "/default"
 			}
-			LINK += "/"+resourceMap[resourceKind]
+			LINK += "/"+ResourceMap[resourceKind]
 
 			if resourceName != ""{
 				LINK += "/"+resourceName
@@ -371,7 +377,7 @@ func GetLinkParser(resourceKind, resourceName, clusterContext string) string{
 }
 func LogLinkParser(resourceKind, resourceName, clusterContext string) string{
 	LINK := "http://"+OpenMCPAPIServer
-	LINK += apiGroup[resourceMap[resourceKind]]
+	LINK += apiGroup[ResourceMap[resourceKind]]
 
 	LINK += "/namespaces"
 
@@ -381,7 +387,7 @@ func LogLinkParser(resourceKind, resourceName, clusterContext string) string{
 		LINK += "/default"
 	}
 
-	LINK += "/"+resourceMap[resourceKind]
+	LINK += "/"+ResourceMap[resourceKind]
 
 	LINK += "/"+resourceName
 	LINK += "/log"
@@ -393,7 +399,7 @@ func LogLinkParser(resourceKind, resourceName, clusterContext string) string{
 func ExecLinkParser (resourceName string, clusterContext string) string{
 	LINK := "http://"+OpenMCPAPIServer
 	//LINK += "/omcpexec"
-	LINK += apiGroup[resourceMap["pods"]]
+	LINK += apiGroup[ResourceMap["pods"]]
 
 	LINK += "/namespaces"
 
@@ -407,7 +413,7 @@ func ExecLinkParser (resourceName string, clusterContext string) string{
 		namespace = "default"
 	}
 
-	LINK += "/"+resourceMap["pods"]
+	LINK += "/"+ResourceMap["pods"]
 
 	LINK += "/"+resourceName
 	LINK += "/exec"
@@ -451,7 +457,7 @@ func DeleteLinkParser(metainfo *MetaInfo, metainfoKindType string) string {
 	if metainfoKindType == "kind" {
 		kindtype = KindMap[metainfo.Kind]
 	}else if metainfoKindType == "resource" {
-		kindtype = resourceMap[metainfo.Kind]
+		kindtype = ResourceMap[metainfo.Kind]
 	}
 
 	LINK := "http://" + OpenMCPAPIServer + apiGroup[kindtype] + "/namespaces/"
