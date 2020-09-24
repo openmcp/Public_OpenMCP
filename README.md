@@ -111,7 +111,7 @@ If you are not using a private network, enter the IP of the OpenMCP Cluster Node
 
 Enter the IP of the OpenMCP Master Cluster Node in the non-public IP text box except NFS. (It doesn't matter if it's not Public)
 
-PowerDNS Server API Key 는 이전에 설정한 값을 입력해라. (https://github.com/openmcp/external#how-to-install)
+Enter the previously set value for PowerDNS Server API Key. (https://github.com/openmcp/external#how-to-install)
 ```bash
 $ cd ./install_openmcp
 $ ./SETTING.sh
