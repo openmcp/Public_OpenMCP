@@ -2,11 +2,11 @@ package v1alpha1
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	"openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
 	"openmcp/openmcp/openmcp-resource-controller/apis"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
 )
 
 type ExampleV1Alpha1Interface interface {
