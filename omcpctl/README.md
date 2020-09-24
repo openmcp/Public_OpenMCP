@@ -4,12 +4,14 @@
 
 > KETI에서 개발한 OpenMCP 플랫폼의 연합클러스터 제어를 위한 Master Cluster용 명령어 인터페이스
 >
->OpenMCP API Server에 데이터를 요청하여 
+> OpenMCP API Server에 데이터를 요청하여 Join / Create / Delete / Update 등의 명령어 처리
 
 ## Requirement
-[1. 클러스터 정보를 저장할 External 서버](https://github.com/openmcp/external)
+[1_클러스터 정보를 저장할 External 서버](https://github.com/openmcp/external)
 
-[2. OpenMCP 플랫폼 설치](https://github.com/openmcp/openmcp)
+[2_OpenMCP 플랫폼 설치](https://github.com/openmcp/openmcp)
+
+3_nfs-common 설치 (apt-get install nfs-common)
 
 ## How to Install
 1.build.sh 에서 환경변수 설정 후 빌드
@@ -34,32 +36,32 @@ $ ./1.build.sh
   Member) omcpctl register member <OpenMCP_Master_IP>
 
 3. 현재 OpenMCP Join된 클러스터 조회
-  Master) omcpctl join list
-
-   CLUSTERNAME | STATUS | REGION | ZONES |       APIENDPOINT        | AGE  
- +-------------+--------+--------+-------+--------------------------+-----+
-   cluster1    | True   | AS     | CN,KR | https://CLUSTER1_IP:6443 |      
-   cluster2    | True   | AS     | CN,KR | https://CLUSTER2_IP:6443 |      
-
-
+  Master) omcpctl get cluster -n kube-federation-system
+            NS           | CLUSTERNAME  | STATUS |   REGION    |     ZONES     |      APIENDPOINT         | PLATFORM |  AGE   
++------------------------+--------------+--------+-------------+---------------+--------------------------+----------+-------+
+  kube-federation-system | cluster1     | True   | AS          | CN,KR         | https://CLUSTER1_IP:6443 |          |     
+  kube-federation-system | cluster2     | True   | AS          | CN,KR         | https://CLUSTER2_IP:6443 |          | 
+  
 4. 현재 OpenMCP Unjoin(조인가능한) 클러스터 조회 
-  Master) omcpctl unjoin list
+  Master) omcpctl joinable list
 
-  CLUSTERNAME |        APIENDPOINT        
-+-------------+--------------------------+
-  cluster3    | https://CLUSTERIP3_IP:6443  
+  CLUSTERNAME  |                               APIENDPOINT                                | PLATFORM  
++--------------+--------------------------------------------------------------------------+----------+
+  cluster3     | https://CLUSTERIP3_IP:6443                                               |           
+  eks-cluster1 | https://EKS_CLUSTERIP_IP                                                 | eks       
 
 5. Cluster Join 및 기본 모듈 배포
   Master) omcpctl join cluster <OpenMCP_Member_IP>
 
 6. 현재 OpenMCP Join된 클러스터 조회
-  Master) omcpctl join list
-
-   CLUSTERNAME | STATUS | REGION | ZONES |       APIENDPOINT        | AGE  
- +-------------+--------+--------+-------+--------------------------+-----+
-   cluster1    | True   | AS     | CN,KR | https://CLUSTER1_IP:6443 |      
-   cluster2    | True   | AS     | CN,KR | https://CLUSTER2_IP:6443 |      
-   cluster3    | True   | AS     | KR    | https://CLUSTER3_IP:6443 |      
+  Master) omcpctl get cluster -n kube-federation-system
+   
+            NS           | CLUSTERNAME  | STATUS |   REGION    |     ZONES     |      APIENDPOINT         | PLATFORM |  AGE   
++------------------------+--------------+--------+-------------+---------------+--------------------------+----------+-------+
+  kube-federation-system | cluster1     | True   | AS          | CN,KR         | https://CLUSTER1_IP:6443 |          |     
+  kube-federation-system | cluster2     | True   | AS          | CN,KR         | https://CLUSTER2_IP:6443 |          | 
+  kube-federation-system | cluster3     | True   | AS          | KR            | https://CLUSTER3_IP:6443 |          | 
+  
 ```
 > Get
 ```
