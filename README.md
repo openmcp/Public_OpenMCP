@@ -111,6 +111,8 @@ If you are not using a private network, enter the IP of the OpenMCP Cluster Node
 
 Enter the IP of the OpenMCP Master Cluster Node in the non-public IP text box except NFS. (It doesn't matter if it's not Public)
 
+PowerDNS Server Port means the PowerDNS query/response port, and enter the value that port port number 53 is forwarded to.
+
 Enter the previously set value for PowerDNS Server API Key. (https://github.com/openmcp/external#how-to-install)
 ```bash
 $ cd ./install_openmcp
