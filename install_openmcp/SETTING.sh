@@ -46,8 +46,8 @@ read PDNS_PUBLIC_IP
 echo -n "PowerDNS Server Port(public) -> "
 read PDNS_PUBLIC_PORT
 
-#echo -n "PowerDNS Server API Key -> "
-#read PDNS_API_KEY
+echo -n "PowerDNS Server API Key -> "
+read PDNS_API_KEY
 
 echo -n "OpenMCP MetalLB Address IP Range (FROM) -> "
 read ADDRESS_FROM
@@ -91,7 +91,7 @@ sed -i 's|REPLACE_PDNSIP|'\"$PDNS_PUBLIC_IP\"':'\"$PDNS_PUBLIC_PORT\"'|g' member
 
 sed -i 's|REPLACE_PDNSIP|'\"$NFS_PDNS_IP\"'|g' master/openmcp-dns-controller/operator.yaml
 #sed -i 's|REPLACE_PDNSPORT|'\"$PDNS_PORT\"'|g' master/openmcp-dns-controller/operator.yaml
-#sed -i 's|REPLACE_PDNSAPIKEY|'\"$PDNS_API_KEY\"'|g' master/openmcp-dns-controller/operator.yaml
+sed -i 's|REPLACE_PDNSAPIKEY|'\"$PDNS_API_KEY\"'|g' master/openmcp-dns-controller/operator.yaml
 
 sed -i 's|REPLACE_ADDRESS_FROM|'"$ADDRESS_FROM"'|g' master/metallb/configmap.yaml
 sed -i 's|REPLACE_ADDRESS_TO|'"$ADDRESS_TO"'|g' master/metallb/configmap.yaml
