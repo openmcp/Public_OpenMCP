@@ -38,7 +38,7 @@ spec:
             - name: "8081"
               value: REPLACE_PDNSPORT
             - name: PDNS_API_KEY
-              value: "1234"
+              value: REPLACE_PDNSAPIKEY
           ports:
           - containerPort: 8080
             name: http
