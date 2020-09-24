@@ -113,6 +113,6 @@ func (r *reconciler) getLogLevel() string {
 
 func KetiLogInit() {
 	omcplog.InitFlags(nil)
-	flag.Set("omcpv", "0")
+	flag.Set("omcpv", "5")
 	flag.Parse()
 }

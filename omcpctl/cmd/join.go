@@ -483,7 +483,7 @@ func installInitCluster(clusterName, openmcpDir, dnsKind string) {
 	install_dir := filepath.Join(openmcpDir, "install_openmcp/member")
 
 	util.CmdExec2("cp "+install_dir+"/metric-collector/operator/operator.yaml "+install_dir+"/metric-collector/operator.yaml")
-	util.CmdExec2("sed -i 's|REPLACE_CLUSTER_NAME|"+clusterName+"|g' "+install_dir+"/metric-collector/operator.yaml")
+	util.CmdExec2("sed -i 's|REPLACE_CLUSTER_NAME|\""+clusterName+"\"|g' "+install_dir+"/metric-collector/operator.yaml")
 	initYamls := []string{"namespace", "custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap"}
 
 	util.CmdExec2("kubectl create ns openmcp --context " + clusterName)
