@@ -2,66 +2,66 @@
 
 ## Introduction of omcpctl
 
-> KETI에서 개발한 OpenMCP 플랫폼의 연합클러스터 제어를 위한 Master Cluster용 명령어 인터페이스
+> Command Interface for Master Cluster for Combined Cluster Control of OpenMCP Platform developed by KETI
 >
-> OpenMCP API Server에 데이터를 요청하여 Join / Create / Delete / Update 등의 명령어 처리
+> Process commands such as Join / Create / Delete / Update by requesting data from OpenMCP API Server
 
 ## Requirement
-[1_클러스터 정보를 저장할 External 서버](https://github.com/openmcp/external)
+[1_External Server to Store Cluster Information](https://github.com/openmcp/external)
 
-[2_OpenMCP 플랫폼 설치](https://github.com/openmcp/openmcp)
+[2_Install the OpenMCP Platform](https://github.com/openmcp/openmcp)
 
-3_nfs-common 설치 (apt-get install nfs-common)
+3_nfs-common installation (apt-get install nfs-common)
 
 ## How to Install
-1.build.sh 에서 환경변수 설정 후 빌드
+1.Build after setting environment variables at build.sh
 ```
 $ vim 1.build.sh
 ...
-OPENMCP_APISERVER="10.0.3.20:31635"                # OpenMCP API Server 지정 (kubectl get svc -n openmcp 참고)
-OPENMCP_DIR="\/root\/workspace\/openmcp\/openmcp"  # OpenMCP 설치 디렉토리 지정
-EXTERNAL_IP="10.0.3.12"                            # External(nfs) 서버 지정
+OPENMCP_APISERVER="10.0.3.20:31635"                # Specify OpenMCP API Server (ref. kubectl get svc -n openmcp)
+OPENMCP_DIR="\/root\/workspace\/openmcp\/openmcp"  # Specifying the OpenMCP installation directory
+EXTERNAL_IP="10.0.3.12"                            # Specifying an External(nfs) server
 ...
 
 $ ./1.build.sh
 ```
 
 ## How to Use
-[OpenMCP Master 설치](https://github.com/openmcp/openmcp) 후 OpenMCP Master Cluster용 [omcpctl](https://github.com/openmcp/openmcp/tree/master/omcpctl)과 OpneMCP Member Cluster용 [omcpctl](https://github.com/openmcp/openmcp-cli)을 이용한 Join 과정
+Join process using [omcpctl](https://github.com/openmcp/openmcp/tree/master/omcpctl) for OpenMCP master cluster and [omcpctl](https://github.com/openmcp/openmcp-cli) for OpneMCP member cluster after [installation of OpenMCP master](https://github.com/openmcp/openmcp)
 ```
-1. OpenMCP Master Cluster에서 Openmcp 등록 
+1. Registering Openmcp in an OpenMCP Master
   Master) omcpctl register master
 
-2. OpenMCP Member Cluster 등록
+2. Register an OpenMCP Member Cluster
   Member) omcpctl register member <OpenMCP_Master_IP>
 
-3. 현재 OpenMCP Join된 클러스터 조회
+3. Query currently OpenMCP Joined Clusters
   Master) omcpctl get cluster -n kube-federation-system
-            NS           | CLUSTERNAME  | STATUS |   REGION    |     ZONES     |      APIENDPOINT         | PLATFORM |  AGE   
+            NS           | CLUSTERNAME  | STATUS |   REGION    |     ZONES     |      APIENDPOINT         | PLATFORM |  AGE
 +------------------------+--------------+--------+-------------+---------------+--------------------------+----------+-------+
-  kube-federation-system | cluster1     | True   | AS          | CN,KR         | https://CLUSTER1_IP:6443 |          |     
-  kube-federation-system | cluster2     | True   | AS          | CN,KR         | https://CLUSTER2_IP:6443 |          | 
-  
-4. 현재 OpenMCP Unjoin(조인가능한) 클러스터 조회 
+  kube-federation-system | cluster1     | True   | AS          | CN,KR         | https://CLUSTER1_IP:6443 |          |
+  kube-federation-system | cluster2     | True   | AS          | CN,KR         | https://CLUSTER2_IP:6443 |          |
+
+4. Current OpenMCP Unjoin Cluster Lookup
   Master) omcpctl joinable list
 
-  CLUSTERNAME  |                               APIENDPOINT                                | PLATFORM  
+  CLUSTERNAME  |                               APIENDPOINT                                | PLATFORM
 +--------------+--------------------------------------------------------------------------+----------+
-  cluster3     | https://CLUSTERIP3_IP:6443                                               |           
-  eks-cluster1 | https://EKS_CLUSTERIP_IP                                                 | eks       
+  cluster3     | https://CLUSTERIP3_IP:6443                                               |
+  eks-cluster1 | https://EKS_CLUSTERIP_IP                                                 | eks
 
-5. Cluster Join 및 기본 모듈 배포
+5. Cluster Join and Deploy Base Modules
   Master) omcpctl join cluster <OpenMCP_Member_IP>
 
-6. 현재 OpenMCP Join된 클러스터 조회
+6. Query currently OpenMCP Joined Clusters
   Master) omcpctl get cluster -n kube-federation-system
-   
-            NS           | CLUSTERNAME  | STATUS |   REGION    |     ZONES     |      APIENDPOINT         | PLATFORM |  AGE   
+
+            NS           | CLUSTERNAME  | STATUS |   REGION    |     ZONES     |      APIENDPOINT         | PLATFORM |  AGE
 +------------------------+--------------+--------+-------------+---------------+--------------------------+----------+-------+
-  kube-federation-system | cluster1     | True   | AS          | CN,KR         | https://CLUSTER1_IP:6443 |          |     
-  kube-federation-system | cluster2     | True   | AS          | CN,KR         | https://CLUSTER2_IP:6443 |          | 
-  kube-federation-system | cluster3     | True   | AS          | KR            | https://CLUSTER3_IP:6443 |          | 
-  
+  kube-federation-system | cluster1     | True   | AS          | CN,KR         | https://CLUSTER1_IP:6443 |          |
+  kube-federation-system | cluster2     | True   | AS          | CN,KR         | https://CLUSTER2_IP:6443 |          |
+  kube-federation-system | cluster3     | True   | AS          | KR            | https://CLUSTER3_IP:6443 |          |
+
 ```
 > Get
 ```
@@ -101,9 +101,10 @@ omcpctl delete pod PODNAME
 omcpctl delete pod PODNAME -n NAMESPACE
 omcpctl delete pod PODNAME -n NAMESPACE --context cluster1
 ```
- 
- 
+
+
 
 ## Governance
 
-본 프로젝트는 정보통신기술진흥센터(IITP)에서 지원하는 '19년 정보통신방송연구개발사업으로, "컴퓨팅 자원의 유연한 확장 및 서비스 이동을 제공하는 분산·협업형 컨테이너 플랫폼 기술 개발 과제" 임.
+This project was supported by Institute of Information & communications Technology Planning & evaluation (IITP) grant funded by the Korea government (MSIT)
+(No.2019-0-00052, Development of Distributed and Collaborative Container Platform enabling Auto Scaling and Service Mobility)
