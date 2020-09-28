@@ -9,7 +9,7 @@
 ## Requirement
 1. [External Server](https://github.com/openmcp/external) to Store Cluster Information
 
-2. Install the [OpenMCP Platform](https://github.com/openmcp/openmcp)
+2. Install [OpenMCP](https://github.com/openmcp/openmcp)
 
 3. Install nfs-common (apt-get install nfs-common)
 
