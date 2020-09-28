@@ -1,11 +1,9 @@
 **Table of Contents**
 - [Introduction of OpenMCP&reg;](#introduction-of-openmcp)
 - [How To Install](#how-to-install)
-  - [1. Register OpenMCP server with omcpctl](#1-Register-OpenMCP-server-with-omcpctl)
-    - [(1) Create `openmcp` namespace resource](#1-Create-openmcp-namespace-resource)
-    - [(2) Rename cluster name](#2-Rename-cluster-name)
-    - [(3) Register OpenMCP server on external storage](#3-Register-OpenMCP-server-on-external-storage)   
+  - [1. Rename cluster name](#1-Rename-cluster-name)
   - [2. Deploy init modules for OpenMCP](#2-Deploy-init-modules-for-OpenMCP)
+  - [3. Register OpenMCP server on external storage](#3-Register-OpenMCP-server-on-external-storage)
 - [How To Join Cluster](#how-to-join-cluster)
   - [1. How to join Kubernetes Cluster to OpenMCP](#1-How-to-join-Kubernetes-Cluster-to-OpenMCP)
     - [(1) (option) Rename cluster name [In sub-cluster]](#1-option-Rename-cluster-name-In-sub-cluster)
@@ -43,7 +41,6 @@
 Before you install OpenMCP, 'federation', 'omcptl' and 'external server' as NFS server are required.
 
 1. Install [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) (Version: 0.1.0-rc6)
-1. Install [omcpctl](https://github.com/openmcp/openmcp/tree/master/omcpctl)
 1. Install [nfs server](https://github.com/openmcp/external)
 
 -----------------------------------------------------------------------------------------------
@@ -55,15 +52,7 @@ Cluster2  Master IP : 10.0.3.50
 NFS       Server IP : 10.0.3.12  
 ```
 
-## 1. Register OpenMCP server with omcpctl
-
-### (1) Create `openmcp` namespace resource
-
-```bash
-$ kubectl create ns openmcp
-```
-
-### (2) Rename cluster name
+## 1. Rename cluster name
 
 Rename cluster name to 'openmcp' in kubeconfig file.
 
@@ -90,15 +79,6 @@ users:
   user:
     client-certificate-data: ...
     client-key-data: ...
-```
-
-### (3) Register OpenMCP server on external storage
-
-Using Omcptl, register OpenMCP server on NFS server.
-
-```bash
-$ omcpctl register openmcp
-Success OpenMCP Master Register '10.0.3.30'
 ```
 
 ## 2. Deploy init modules for OpenMCP
@@ -178,6 +158,21 @@ has-target-cluster             3m15s
 hpa-minmax-distribution-mode   3m15s
 log-level                    3m16s
 metric-collector-period        3m16s
+```
+
+
+## 3. Register OpenMCP server on external storage
+
+Before you register OpenMCP, install [omcpctl](https://github.com/openmcp/openmcp/tree/master/omcpctl) and add a external server with /etc/resolv.conf.
+```bash
+$ vi /etc/resolv.conf
+nameserver 10.0.3.12
+```
+
+And then, register OpenMCP server on NFS server.
+```bash
+$ omcpctl register openmcp
+Success OpenMCP Master Register '10.0.3.30'
 ```
 
 ### OpenMCP Architecture
