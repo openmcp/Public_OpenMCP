@@ -14,7 +14,7 @@
 
 ## Requirement
 
-[1_OpenMCP Platform Install](https://github.com/openmcp/openmcp)
+1. Install [OpenMCP Platform](https://github.com/openmcp/openmcp)
 
 
 ## How to Use
