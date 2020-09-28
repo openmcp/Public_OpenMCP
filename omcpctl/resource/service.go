@@ -56,7 +56,6 @@ func PrintService(body []byte) {
 	svc := corev1.Service{}
 	err := yaml.Unmarshal(body, &svc)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -71,7 +70,6 @@ func PrintServiceList(body []byte) {
 	resourceStruct := corev1.ServiceList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

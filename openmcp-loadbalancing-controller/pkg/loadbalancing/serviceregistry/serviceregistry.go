@@ -14,12 +14,9 @@ var (
 	ErrServiceNotFound = errors.New("service name/version not found")
 )
 
-// Registry is an interface used to lookup the target host
-// for a given service name / version pair.
 type Registry interface {
 	Add(serviceName, endpoint string)
 	Delete(serviceName string)
-	//Delete(host, path, endpoint string)             // Remove an endpoint to our registry
 	Failure(host, path, endpoint string, err error) // Mark an endpoint as failed.
 	Lookup(serviceName string) ([]string, error)
 	EndpointCheck(serviceName string, endpoint string) bool
@@ -33,10 +30,8 @@ type Registry interface {
 //     ],
 // }
 
-//type DefaultRegistry map[string]map[string]map[string]stringzmgma
 type DefaultRegistry map[string][]string
 
-// Lookup return the endpoint list for the given service name/version.
 
 func (r DefaultRegistry) EndpointCheck(serviceName string, endpoint string) bool {
 	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ServiceRegistry)] Function Lookup")
@@ -84,8 +79,6 @@ func (r DefaultRegistry) Lookup(serviceName string) ([]string, error) {
 
 func (r DefaultRegistry) Failure(host, path, endpoint string, err error) {
 	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ServiceRegistry)] Function Failure")
-	// Would be used to remove an endpoint from the rotation, log the failure, etc.
-	//log.Printf("Error accessing %s/%s (%s): %s", path, endpoint, err)
 	log.Printf("Error accessing %s %s (%s): %s", host, path, endpoint, err)
 }
 

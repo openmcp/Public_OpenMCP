@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 NS=openmcp
 controller_name="openmcp-apiserver"
 

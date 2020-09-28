@@ -3,8 +3,6 @@ package countryregistry
 import (
 	"errors"
 	"openmcp/openmcp/omcplog"
-
-	//"strconv"
 	"sync"
 )
 
@@ -15,7 +13,6 @@ var (
 	ErrClusterNotFound = errors.New("Cluster not found")
 )
 
-// for a given service name / version pair.
 type Registry interface {
 	Lookup(country string) (string, error)
 }

@@ -70,13 +70,22 @@ func ExecSendToAPIServer(podname string, command []string, context string){
 	if metainfo2.Message != "" {
 		fmt.Println(metainfo2.Message)
 	} else {
-		//fmt.Println(podname + " exec")
+
 	}
 }
 
 func init() {
 	rootCmd.AddCommand(execCmd)
 
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// setCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// setCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	execCmd.Flags().StringVarP(&cobrautil.Option_context, "context","x", "", "input a option")
 	execCmd.Flags().StringVarP(&cobrautil.Option_namespace, "namespace","n", "", "input a option")
 

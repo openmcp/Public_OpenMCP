@@ -5,7 +5,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// IngressDNSRecordSpec defines the desired state of IngressDNSRecord
+// OpenMCPIngressDNSRecordSpec defines the desired state of OpenMCPIngressDNSRecord
 type OpenMCPIngressDNSRecordSpec struct {
 	// Host from the IngressRule in Cluster Ingress Spec
 	// Hosts []string `json:"hosts,omitempty"`
@@ -14,14 +14,14 @@ type OpenMCPIngressDNSRecordSpec struct {
 	// DomainRef string `json:"domainRef"`
 }
 
-// IngressDNSRecordStatus defines the observed state of IngressDNSRecord
+// OpenMCPIngressDNSRecordStatus defines the observed state of OpenMCPIngressDNSRecord
 type OpenMCPIngressDNSRecordStatus struct {
 	// Array of Ingress Controller LoadBalancers
 	DNS []ClusterIngressDNS `json:"dns,omitempty"`
 	//Domain string       `json:"domain,omitempty"`
 }
 
-// ClusterIngressDNS defines the observed status of Ingress within a cluster.
+// OpenMCPClusterIngressDNS defines the observed status of Ingress within a cluster.
 type ClusterIngressDNS struct {
 	// Cluster name
 	Cluster string `json:"cluster,omitempty"`
@@ -33,9 +33,9 @@ type ClusterIngressDNS struct {
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// IngressDNSRecord
+// OpenMCPIngressDNSRecord
 // +k8s:openapi-gen=true
-// +kubebuilder:resource:path=ingressdnsrecords
+// +kubebuilder:resource:path=openmcpingressdnsrecords
 // +kubebuilder:subresource:status
 type OpenMCPIngressDNSRecord struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -47,7 +47,7 @@ type OpenMCPIngressDNSRecord struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// IngressDNSRecordList contains a list of IngressDNSRecord
+// OpenMCPIngressDNSRecordList contains a list of OpenMCPIngressDNSRecord
 type OpenMCPIngressDNSRecordList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

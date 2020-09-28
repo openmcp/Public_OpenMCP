@@ -11,25 +11,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package openmcpconfigmap // import "admiralty.io/multicluster-controller/examples/openmcpconfigmap/pkg/controller/openmcpconfigmap"
+package openmcpconfigmap 
 
 import (
 	"context"
 	"fmt"
 	"github.com/getlantern/deepcopy"
-	//"k8s.io/klog"
+	"openmcp/openmcp/util/clusterManager"
+
 	"openmcp/openmcp/omcplog"
 	sync "openmcp/openmcp/openmcp-sync-controller/pkg/apis/keti/v1alpha1"
 	syncapis "openmcp/openmcp/openmcp-sync-controller/pkg/apis"
-	//"openmcp/openmcp/util/clusterManager"
 
-	//appsv1 "openmcp/openmcp/vendor/k8s.io/api/apps/v1"
 	"strconv"
 
-	//"reflect"
-	//"sort"
-	//"math/rand"
-	//"time"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/kubefed/pkg/controller/util"
 	"admiralty.io/multicluster-controller/pkg/reference"
@@ -39,13 +34,8 @@ import (
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
-	//corev1 "k8s.io/api/core/v1"
-	//"k8s.io/apimachinery/pkg/api/errors"
-	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	//"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	//appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -54,18 +44,13 @@ import (
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 
 )
-type ClusterManager struct {
-        Fed_namespace string
-        Host_config *rest.Config
-        Host_client genericclient.Client
-        Cluster_list *fedv1b1.KubeFedClusterList
-        Cluster_configs map[string]*rest.Config
-        Cluster_clients map[string]genericclient.Client
-}
 
+var cm *clusterManager.ClusterManager
 
-func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
+func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
 	omcplog.V(4).Info("Function Called NewController")
+	cm = myClusterManager
+
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
@@ -88,15 +73,10 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	}
 
 
-	//fmt.Printf("%T, %s\n", live, live.GetClusterName())
 	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPConfigMap{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
-	// Note: At the moment, all clusters share the same scheme under the hood
-	// (k8s.io/client-go/kubernetes/scheme.Scheme), yet multicluster-controller gives each cluster a scheme pointer.
-	// Therefore, if we needed a custom resource in multiple clusters, we would redundantly
-	// add it to each cluster's scheme, which points to the same underlying scheme.
 
 	for _, ghost := range ghosts {
 		fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
@@ -120,9 +100,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	i += 1
 	omcplog.V(5).Info("********* [",i,"] *********")
 	omcplog.V(3).Info(req.Context,"/",req.Namespace,"/",req.Name)
-	cm := NewClusterManager()
 
-	// Fetch the OpenMCPDeployment instance
 	instance := &ketiv1alpha1.OpenMCPConfigMap{}
     err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 
@@ -132,8 +110,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// ...TODO: multicluster garbage collector
-			// Until then...
 			omcplog.V(3).Info("Delete ConfigMap")
 
 			err := r.DeleteConfigMap(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
@@ -166,8 +142,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	return reconcile.Result{}, nil
 }
 
-//instance.Status.ClusterMaps = cluster_replicas_map
-//instance.Status.SyncRequestName = sync_req_name
 
 func (r *reconciler) configmapForOpenMCPConfigMap(req reconcile.Request, m *ketiv1alpha1.OpenMCPConfigMap) *corev1.ConfigMap {
 	omcplog.V(4).Info("Function Called configmapForOpenMCPConfigMap")
@@ -188,7 +162,7 @@ func (r *reconciler) configmapForOpenMCPConfigMap(req reconcile.Request, m *keti
 
 
 
-func (r *reconciler) createConfigMap(req reconcile.Request, cm *ClusterManager, instance *ketiv1alpha1.OpenMCPConfigMap) error {
+func (r *reconciler) createConfigMap(req reconcile.Request, cm *clusterManager.ClusterManager, instance *ketiv1alpha1.OpenMCPConfigMap) error {
 	omcplog.V(4).Info("Function Called createConfigMap")
 	cluster_map := make(map[string]int32)
 	for _, cluster := range cm.Cluster_list.Items {
@@ -210,7 +184,7 @@ func (r *reconciler) createConfigMap(req reconcile.Request, cm *ClusterManager, 
 }
 
 
-func (r *reconciler) updateConfigMap(req reconcile.Request, cm *ClusterManager, instance *ketiv1alpha1.OpenMCPConfigMap) error {
+func (r *reconciler) updateConfigMap(req reconcile.Request, cm *clusterManager.ClusterManager, instance *ketiv1alpha1.OpenMCPConfigMap) error {
 	omcplog.V(4).Info("Function Called updateConfigMap")
 
 	for _, cluster := range cm.Cluster_list.Items {
@@ -226,7 +200,7 @@ func (r *reconciler) updateConfigMap(req reconcile.Request, cm *ClusterManager, 
 	return nil
 }
 
-func (r *reconciler) DeleteConfigMap(cm *ClusterManager, name string, namespace string) error {
+func (r *reconciler) DeleteConfigMap(cm *clusterManager.ClusterManager, name string, namespace string) error {
 	omcplog.V(4).Info("Function Called DeleteConfigMap")
 
 	for _, cluster := range cm.Cluster_list.Items {
@@ -289,26 +263,6 @@ func KubeFedClusterClients(clusterList *fedv1b1.KubeFedClusterList, cluster_conf
                 cluster_clients[clusterName] = cluster_client
         }
         return cluster_clients
-}
-
-func NewClusterManager() *ClusterManager {
-	omcplog.V(4).Info("Function Called NewClusterManager")
-        fed_namespace := "kube-federation-system"
-        host_config, _ := rest.InClusterConfig()
-        host_client := genericclient.NewForConfigOrDie(host_config)
-        cluster_list := ListKubeFedClusters(host_client, fed_namespace)
-        cluster_configs := KubeFedClusterConfigs(cluster_list, host_client, fed_namespace)
-        cluster_clients := KubeFedClusterClients(cluster_list, cluster_configs)
-
-        cm := &ClusterManager{
-                Fed_namespace: fed_namespace,
-                Host_config: host_config,
-                Host_client: host_client,
-                Cluster_list: cluster_list,
-                Cluster_configs: cluster_configs,
-                Cluster_clients: cluster_clients,
-        }
-        return cm
 }
 
 

@@ -24,7 +24,6 @@ import (
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
-	//"k8s.io/api/core/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
 	"openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-service-controller/pkg/controller"
@@ -41,7 +40,6 @@ func main() {
 		namespace := "openmcp"
 
 		host_cfg := cm.Host_config
-		//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
 		live := cluster.New(host_ctx, host_cfg, cluster.Options{})
 
 		ghosts := []*cluster.Cluster{}
@@ -50,7 +48,6 @@ func main() {
 			ghost_ctx := ghost_cluster.Name
 			ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
-			//ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
 			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
 
 			ghosts = append(ghosts, ghost)
@@ -58,7 +55,7 @@ func main() {
 		for _, ghost := range ghosts {
 			fmt.Println(ghost.Name)
 		}
-		co, _ := openmcpservice.NewController(live, ghosts, namespace)
+		co, _ := openmcpservice.NewController(live, ghosts, namespace, cm)
 		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 

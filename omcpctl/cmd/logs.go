@@ -18,10 +18,9 @@ package cmd
 import (
 	"fmt"
 	"github.com/ghodss/yaml"
+	"github.com/spf13/cobra"
 	"openmcp/openmcp/omcpctl/apiServerMethod"
 	cobrautil "openmcp/openmcp/omcpctl/util"
-
-	"github.com/spf13/cobra"
 )
 
 // logsCmd represents the logs command
@@ -77,15 +76,15 @@ func getLogs(args []string) {
 func init() {
 	rootCmd.AddCommand(logsCmd)
 
-	logsCmd.Flags().StringVarP(&cobrautil.Option_context, "context","c","", "input a option")
-	logsCmd.Flags().StringVarP(&cobrautil.Option_namespace, "namespace","n", "", "input a option")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// logsCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// setCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// logsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// setCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	logsCmd.Flags().StringVarP(&cobrautil.Option_context, "context","c","", "input a option")
+	logsCmd.Flags().StringVarP(&cobrautil.Option_namespace, "namespace","n", "", "input a option")
 }

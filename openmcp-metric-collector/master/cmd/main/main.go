@@ -4,6 +4,7 @@ import (
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
 	"log"
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-metric-collector/master/pkg/metricCollector"
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/logLevel"
@@ -58,14 +59,20 @@ func main() {
 
 }
 func MasterMetricCollector() {
-
+	omcplog.V(4).Info("MasterMetricCollector Called")
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	INFLUX_IP := os.Getenv("INFLUX_IP")
 	INFLUX_PORT := os.Getenv("INFLUX_PORT")
 	INFLUX_USERNAME := os.Getenv("INFLUX_USERNAME")
 	INFLUX_PASSWORD := os.Getenv("INFLUX_PASSWORD")
 
+	omcplog.V(5).Info("INFLUX_IP: ", INFLUX_IP)
+	omcplog.V(5).Info("INFLUX_PORT: ", INFLUX_PORT)
+	omcplog.V(5).Info("INFLUX_USERNAME: ", INFLUX_USERNAME)
+	omcplog.V(5).Info("INFLUX_PASSWORD: ", INFLUX_PASSWORD)
+
 	mc := metricCollector.NewMetricCollector(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD)
+	omcplog.V(2).Info("Created NewMetricCollector Structure")
 
 	mc.Influx.CreateDatabase()
 	mc.Influx.CreateMeasurements()

@@ -5,7 +5,9 @@ import (
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	clientV1alpha1 "openmcp/openmcp/openmcp-resource-controller/clientset/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -30,22 +32,42 @@ type ClusterManager struct {
 	Cluster_dynClients  map[string]dynamic.Interface
 }
 
-func ListKubeFedClusters(client genericclient.Client, namespace string) *fedv1b1.KubeFedClusterList {
+func ListKubeFedClusters(genClient genericclient.Client, namespace string) *fedv1b1.KubeFedClusterList {
+	tempClusterList := &fedv1b1.KubeFedClusterList{}
 	clusterList := &fedv1b1.KubeFedClusterList{}
-	err := client.List(context.TODO(), clusterList, namespace)
+
+	err := genClient.List(context.TODO(), tempClusterList, namespace, &client.ListOptions{})
+
 	if err != nil {
 		fmt.Println("Error retrieving list of federated clusters: %+v", err)
 	}
-	if len(clusterList.Items) == 0 {
+	if len(tempClusterList.Items) == 0 {
 		fmt.Println("No federated clusters found")
 	}
+
+	// Status Check
+	for _, cluster := range tempClusterList.Items {
+		status := true
+
+		for _, cond := range cluster.Status.Conditions {
+			if cond.Type == "Offline" {
+				status = false
+				break
+			}
+		}
+		if status {
+			clusterList.Items = append(clusterList.Items, cluster)
+		}
+	}
+
+
 	return clusterList
 }
 
-func KubeFedClusterConfigs(clusterList *fedv1b1.KubeFedClusterList, client genericclient.Client, fedNamespace string) map[string]*rest.Config {
+func KubeFedClusterConfigs(clusterList *fedv1b1.KubeFedClusterList, genClient genericclient.Client, fedNamespace string) map[string]*rest.Config {
 	clusterConfigs := make(map[string]*rest.Config)
 	for _, cluster := range clusterList.Items {
-		config, _ := util.BuildClusterConfig(&cluster, client, fedNamespace)
+		config, _ := util.BuildClusterConfig(&cluster, genClient, fedNamespace)
 		clusterConfigs[cluster.Name] = config
 	}
 	return clusterConfigs
@@ -116,7 +138,6 @@ func NewClusterManager() *ClusterManager {
 func GetNodeList(clientSet *kubernetes.Clientset) (*corev1.NodeList, error) {
 
 	nodeList := &corev1.NodeList{}
-	//err := clientSet.List(context.TODO(), nodeList, "default")
 	nodeList, err := clientSet.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		fmt.Println("Error retrieving list of federated clusters: %+v", err)

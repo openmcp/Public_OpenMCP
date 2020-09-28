@@ -21,18 +21,14 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 	"log"
+	cobrautil "openmcp/openmcp/omcpctl/util"
+	"openmcp/openmcp/util"
 	"openmcp/openmcp/util/clusterManager"
 	"path/filepath"
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 	"strings"
 	"time"
-
-	//"k8s.io/client-go/tools/clientcmd"
-	cobrautil "openmcp/openmcp/omcpctl/util"
-	"openmcp/openmcp/util"
-	//"openmcp/openmcp/util/clusterManager"
-	//genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 )
 
 // joinCmd represents the join command
@@ -58,27 +54,6 @@ openmcpctl join eks-cluster <CLUSTERNAME>`,
 			} else {
 				joinCluster(args[1])
 			}
-
-			// }
-			///else if len(args) != 0 && args[0] == "list" {
-			//fmt.Println("[ cluster list (join) ]")
-			////실제로 조인되어 있지 않은 클러스터 정보가 join 디렉토리에 들어가 있는 경우
-			//// => unjoin
-			//clusterIps := getDiffJoinIP()
-			//for _, clusterIp := range clusterIps {
-			//	fmt.Println("Not Correct - ", clusterIp)
-			//	moveToUnjoin(clusterIp)
-			//	unjoinCluster(clusterIp)
-			//}
-			////실제로 조인된 클러스터 정보가 unjoin 디렉토리에 들어가 있는 경우
-			//// => join
-			//clusterIps = getDiffUnjoinIP()
-			//for _, clusterIp := range clusterIps {
-			//	fmt.Println("Not Correct - ", clusterIp)
-			//	moveToJoin(clusterIp)
-			//	joinCluster(clusterIp)
-			//}
-			//resource.GetClusterList()
 		} else if len(args) != 0 && args[0] == "gke-cluster" {
 			if args[1] == "" {
 				fmt.Println("You Must Provide Cluster Name")
@@ -134,7 +109,7 @@ func getDiffJoinIP() []string {
 	clusterList := clusterManager.ListKubeFedClusters(genClient, "kube-federation-system")
 
 	for _, nfsJoinCluster := range nfsClusterJoinList {
-		//	fmt.Println(nfsClusterJoin)
+
 		find := false
 		for _, cluster := range clusterList.Items {
 			if strings.Contains(cluster.Spec.APIEndpoint, nfsJoinCluster) {
@@ -143,7 +118,6 @@ func getDiffJoinIP() []string {
 			}
 		}
 		if !find {
-			//clusterIP := Splitter(cluster.Spec.APIEndpoint,"/:")[1]
 			joinErrorClusterIPs = append(joinErrorClusterIPs, nfsJoinCluster)
 		}
 
@@ -201,7 +175,6 @@ func joinCluster(memberIP string) {
 	kc.Contexts = append(kc.Contexts, context)
 	kc.Users = append(kc.Users, user)
 
-	//cobrautil.WriteKubeConfig(kc, "/root/.kube/config_2")
 
 	cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
 
@@ -483,12 +456,12 @@ func installInitCluster(clusterName, openmcpDir, dnsKind string) {
 	install_dir := filepath.Join(openmcpDir, "install_openmcp/member")
 
 	util.CmdExec2("cp "+install_dir+"/metric-collector/operator/operator.yaml "+install_dir+"/metric-collector/operator.yaml")
-	util.CmdExec2("sed -i 's|REPLACE_CLUSTER_NAME|"+clusterName+"|g' "+install_dir+"/metric-collector/operator.yaml")
+	util.CmdExec2("sed -i 's|REPLACE_CLUSTER_NAME|\""+clusterName+"\"|g' "+install_dir+"/metric-collector/operator.yaml")
 	initYamls := []string{"namespace", "custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap"}
 
 	util.CmdExec2("kubectl create ns openmcp --context " + clusterName)
 	for _, initYaml := range initYamls {
-		//fmt.Println("kubectl create -f " + install_dir + "/" + initYaml + " --context " + clusterName)
+
 		if initYaml == "configmap"{
 			if dnsKind == "coredns"{
 				util.CmdExec2("kubectl apply -f " + install_dir + "/" + initYaml + "/coredns --context " + clusterName)
@@ -508,4 +481,14 @@ func installInitCluster(clusterName, openmcpDir, dnsKind string) {
 
 func init() {
 	rootCmd.AddCommand(joinCmd)
+
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// setCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// setCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

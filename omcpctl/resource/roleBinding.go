@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
-
 	rbacv1 "k8s.io/api/rbac/v1"
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
@@ -23,7 +22,6 @@ func PrintRoleBinding(body []byte) {
 	rb := rbacv1.RoleBinding{}
 	err := yaml.Unmarshal(body, &rb)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -39,7 +37,6 @@ func PrintRoleBindingList(body []byte) {
 	resourceStruct := rbacv1.RoleBindingList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

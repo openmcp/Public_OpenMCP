@@ -11,20 +11,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package openmcpsecret // import "admiralty.io/multicluster-controller/examples/openmcpsecret/pkg/controller/openmcpsecret"
+package openmcpsecret 
 
 import (
 	"context"
 	"fmt"
-	//"k8s.io/klog"
+	"openmcp/openmcp/util/clusterManager"
+
 	"openmcp/openmcp/omcplog"
 	"strconv"
 
 	"admiralty.io/multicluster-controller/pkg/reference"
-	//"reflect"
-	//"sort"
-	//"math/rand"
-	//"time"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/kubefed/pkg/controller/util"
 
@@ -33,14 +30,9 @@ import (
 	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"openmcp/openmcp/openmcp-resource-controller/apis"
 	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
-	//corev1 "k8s.io/api/core/v1"
-	//"k8s.io/apimachinery/pkg/api/errors"
-	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	//"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1 "k8s.io/api/core/v1"
-	//appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/getlantern/deepcopy"
@@ -50,19 +42,13 @@ import (
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 )
-type ClusterManager struct {
-        Fed_namespace string
-        Host_config *rest.Config
-        Host_client genericclient.Client
-        Cluster_list *fedv1b1.KubeFedClusterList
-        Cluster_configs map[string]*rest.Config
-        Cluster_clients map[string]genericclient.Client
-}
 
 
-
-func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
+var cm *clusterManager.ClusterManager
+func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
 	omcplog.V(4).Info("Function Called NewController")
+	cm = myClusterManager
+
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
@@ -88,10 +74,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
-	// Note: At the moment, all clusters share the same scheme under the hood
-	// (k8s.io/client-go/kubernetes/scheme.Scheme), yet multicluster-controller gives each cluster a scheme pointer.
-	// Therefore, if we needed a custom resource in multiple clusters, we would redundantly
-	// add it to each cluster's scheme, which points to the same underlying scheme.
 
 	for _, ghost := range ghosts {
 		if err := co.WatchResourceReconcileController(ghost, &corev1.Secret{}, controller.WatchOptions{}); err != nil {
@@ -112,9 +94,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	i += 1
 	omcplog.V(5).Info("********* [",i,"] *********")
 	omcplog.V(3).Info(req.Context," / ", req.Namespace," / ", req.Name)
-	cm := NewClusterManager()
 
-	// Fetch the OpenMCPDeployment instance
         instance := &ketiv1alpha1.OpenMCPSecret{}
         err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 
@@ -123,8 +103,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// ...TODO: multicluster garbage collector
-			// Until then...
 			omcplog.V(3).Info("Delete Deployments ..Cluster")
 			err := r.DeleteSecret(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
 			return reconcile.Result{}, err
@@ -160,19 +138,17 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 func (r *reconciler) secretForOpenMCPSecret(req reconcile.Request, m *ketiv1alpha1.OpenMCPSecret) *corev1.Secret {
 	omcplog.V(4).Info("Function Called secretForOpenMCPSecret")
 
-        dep := &corev1.Secret{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "Secret",
-				APIVersion: "v1",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      m.Name,
-				Namespace: m.Namespace,
-			},
-                //Spec: m.Spec.Template.Spec,
-        }
-        deepcopy.Copy(&dep.Data, &m.Spec.Template.Data)
-        //dep.Spec.Replicas = &replica
+	dep := &corev1.Secret{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Secret",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      m.Name,
+			Namespace: m.Namespace,
+		},
+	}
+	deepcopy.Copy(&dep.Data, &m.Spec.Template.Data)
 
 	reference.SetMulticlusterControllerReference(dep, reference.NewMulticlusterOwnerReference(m, m.GroupVersionKind(), req.Context))
 
@@ -181,7 +157,7 @@ func (r *reconciler) secretForOpenMCPSecret(req reconcile.Request, m *ketiv1alph
 
 
 
-func (r *reconciler) createSecret(req reconcile.Request, cm *ClusterManager, instance *ketiv1alpha1.OpenMCPSecret) error {
+func (r *reconciler) createSecret(req reconcile.Request, cm *clusterManager.ClusterManager, instance *ketiv1alpha1.OpenMCPSecret) error {
 	omcplog.V(4).Info("Function Called createSecret")
 	cluster_map := make(map[string]int32)
 	for _, cluster := range cm.Cluster_list.Items {
@@ -201,7 +177,7 @@ func (r *reconciler) createSecret(req reconcile.Request, cm *ClusterManager, ins
 }
 
 
-func (r *reconciler) updateSecret(req reconcile.Request, cm *ClusterManager, instance *ketiv1alpha1.OpenMCPSecret) error {
+func (r *reconciler) updateSecret(req reconcile.Request, cm *clusterManager.ClusterManager, instance *ketiv1alpha1.OpenMCPSecret) error {
 	omcplog.V(4).Info("Function Called updateSecret")
 
 	for _, cluster := range cm.Cluster_list.Items {
@@ -217,7 +193,7 @@ func (r *reconciler) updateSecret(req reconcile.Request, cm *ClusterManager, ins
 	return nil
 }
 
-func (r *reconciler) DeleteSecret(cm *ClusterManager, name string, namespace string) error {
+func (r *reconciler) DeleteSecret(cm *clusterManager.ClusterManager, name string, namespace string) error {
 	omcplog.V(4).Info("Function Called DeleteSecret")
 
 	for _, cluster := range cm.Cluster_list.Items {
@@ -280,27 +256,6 @@ func KubeFedClusterClients(clusterList *fedv1b1.KubeFedClusterList, cluster_conf
         }
         return cluster_clients
 }
-
-func NewClusterManager() *ClusterManager {
-	omcplog.V(4).Info("Function Called NewClusterManager")
-        fed_namespace := "kube-federation-system"
-        host_config, _ := rest.InClusterConfig()
-        host_client := genericclient.NewForConfigOrDie(host_config)
-        cluster_list := ListKubeFedClusters(host_client, fed_namespace)
-        cluster_configs := KubeFedClusterConfigs(cluster_list, host_client, fed_namespace)
-        cluster_clients := KubeFedClusterClients(cluster_list, cluster_configs)
-
-        cm := &ClusterManager{
-                Fed_namespace: fed_namespace,
-                Host_config: host_config,
-                Host_client: host_client,
-                Cluster_list: cluster_list,
-                Cluster_configs: cluster_configs,
-                Cluster_clients: cluster_clients,
-        }
-        return cm
-}
-
 
 var syncIndex int = 0
 func (r *reconciler) sendSync(secret *corev1.Secret, command string, clusterName string) (string, error) {

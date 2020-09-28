@@ -2,14 +2,11 @@ package resource
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"github.com/ghodss/yaml"
+	"github.com/olekukonko/tablewriter"
 	corev1 "k8s.io/api/core/v1"
-
-
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
-
 )
 
 func EventInfo(ev *corev1.Event) []string{
@@ -28,7 +25,6 @@ func PrintEvent(body []byte) {
 	ev := corev1.Event{}
 	err := yaml.Unmarshal(body, &ev)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -44,7 +40,6 @@ func PrintEventList(body []byte) {
 	resourceStruct := corev1.EventList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

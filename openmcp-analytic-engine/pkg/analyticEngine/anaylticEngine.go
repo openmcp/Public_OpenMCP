@@ -55,7 +55,7 @@ func (ae *AnalyticEngineStruct) CalcResourceScore() {
 	ae.ClusterGeo = map[string]map[string]string{}
 	ae.NetworkInfos = make(map[string]map[string]*NetworkInfo)
 
-	//정책 엔진 - 메트릭 가중치 읽어오기----------------------------
+	//Get metric-weight Policy----------------------------
 	openmcpPolicyInstance, target_cluster_policy_err := cm.Crd_client.OpenMCPPolicy("openmcp").Get("analytic-metrics-weight", metav1.GetOptions{})
 
 	if target_cluster_policy_err != nil {
@@ -68,7 +68,6 @@ func (ae *AnalyticEngineStruct) CalcResourceScore() {
 		}
 		omcplog.V(3).Info("metricsWeight : ", ae.MetricsWeight)
 	}
-	//-------------------------------------------------------
 	for {
 		omcplog.V(2).Info("Cluster들의 Metric Score를 갱신합니다.")
 		for _, cluster := range cm.Cluster_list.Items {
@@ -83,7 +82,7 @@ func (ae *AnalyticEngineStruct) CalcResourceScore() {
 			if len(nodes.Items) != 0 {
 				node := nodes.Items[0]
 
-				//label로부터 zone, region 추출
+				//Extract zone, region from Label
 				ae.ClusterGeo[cluster.Name] = map[string]string{}
 				ae.ClusterGeo[cluster.Name]["Country"] = node.Labels["failure-domain.beta.kubernetes.io/zone"]
 				ae.ClusterGeo[cluster.Name]["Continent"] = node.Labels["failure-domain.beta.kubernetes.io/region"]
@@ -164,8 +163,6 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
 		}
 
 		totalCpuCore = totalCpuCore + nodeCapacity.Status.Capacity.Cpu().Value()
-		//fmt.Println(totalCpuCore)
-		//fmt.Println(ser)
 		for c, colName := range ser.Columns {
 			for r, _ := range ser.Values {
 
@@ -188,12 +185,11 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
 
 			}
 		}
-		//fmt.Println(totalCpuCore)
 	}
 
 	cpuScore := (float64(totalCpuCore) - MetricsMap["CPUUsageNanoCores"]) / float64(totalCpuCore) * 100 // 확인필요
 	memScore := MetricsMap["MemoryAvailableBytes"] / (MetricsMap["MemoryUsageBytes"] + MetricsMap["MemoryAvailableBytes"]) * 100
-	//netScore := (MetricsMap["NetworkRxBytes"] - prevMetricsMap["NetworkRxBytes"]) + (MetricsMap["NetworkTxBytes"] - prevMetricsMap["NetworkTxBytes"]) / float64(totalNet) * 100// 확인필요
+	//netScore := (MetricsMap["NetworkRxBytes"] - prevMetricsMap["NetworkRxBytes"]) + (MetricsMap["NetworkTxBytes"] - prevMetricsMap["NetworkTxBytes"]) / float64(totalNet) * 100
 	diskScore := MetricsMap["FsAvailableBytes"] / MetricsMap["FsCapacityBytes"] * 100
 
 	score = cpuScore*ae.MetricsWeight["CPU"] + memScore*ae.MetricsWeight["Memory"] + diskScore*ae.MetricsWeight["FS"]
@@ -208,27 +204,8 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
 func (ae *AnalyticEngineStruct) SendLBAnalysis(ctx context.Context, in *protobuf.LBInfo) (*protobuf.ResponseLB, error) {
 	omcplog.V(4).Info("Func SendLBAnalysis Called")
 
-	//clusterNameList := in.ClusterNameList
 	clusterScoreMap := make(map[string]float64)
 
-	//for _, clusterName := range clusterNameList {
-	//	clusterScoreMap[clusterName] = ae.ResourceScore[clusterName]
-	//}
-	//
-	//omcplog.V(5).Info(clusterScoreMap)
-	//
-	//omcplog.V(2).Info("Geo Score")
-	//clientIP := in.ClientIP
-	//country := ae.getCountry(clientIP)
-	//continent := ae.getContinent(country)
-	//
-	//score := ae.geoScore(clusterNameList, country, continent)
-	//
-	//for _, clusterName := range clusterNameList {
-	//	omcplog.V(5).Info(clusterScoreMap[clusterName])
-	//	omcplog.V(5).Info(score[clusterName])
-	//	clusterScoreMap[clusterName] = clusterScoreMap[clusterName] + score[clusterName]
-	//}
 	clusterScoreMap = ae.ResourceScore
 
 	omcplog.V(2).Info("LB Response")
@@ -256,10 +233,6 @@ func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) []strin
 		filteringCluster = append(filteringCluster, scoreMap[score[i]])
 	}
 
-	/*filteringCluster = append(filteringCluster, "cluster2")
-	filteringCluster = append(filteringCluster, "cluster3")
-	fmt.Println(filteringCluster)*/
-
 	return filteringCluster
 }
 
@@ -270,7 +243,6 @@ func (ae *AnalyticEngineStruct) CompareHPAMaxInfo(clusterList []string, data *pr
 
 	for _, cluster := range clusterList {
 		omcplog.V(3).Info(cluster, " hpa MaxReplicas : ", data.HPAMinORMaxReplicas[cluster], " / CurrentReplicas : ", data.HPACurrentReplicas[cluster])
-		//calc := hpaInstance.Spec.MaxReplicas - hpaInstance.Status.CurrentReplicas
 		calc := data.HPAMinORMaxReplicas[cluster] - data.HPACurrentReplicas[cluster]
 		if calc > 0 {
 			replicasGap[cluster] = calc
@@ -352,19 +324,13 @@ func (ae *AnalyticEngineStruct) CompareHPAMinInfo(clusterList []string, data *pr
 func (ae *AnalyticEngineStruct) SendHASMaxAnalysis(ctx context.Context, data *protobuf.HASInfo) (*protobuf.ResponseHAS, error) {
 	omcplog.V(4).Info("Func SendHASMaxAnalysis Called")
 
-	//fmt.Println(data)
 	timeStart_analysis := time.Now()
 	filteringCluster := ae.SelectHPACluster(data)
 	timeEnd_analysis := time.Since(timeStart_analysis)
 	omcplog.V(2).Info("[1] SelectCandidateCluster \t", timeEnd_analysis)
 
 	var result string
-	/*	if len(filteringCluster) == 1 {
-		result = filteringCluster[0]
-
-	}else {*/
 	result = ae.CompareHPAMaxInfo(filteringCluster, data)
-	//	}
 
 	timeEnd_analysis4 := time.Since(timeStart_analysis)
 	omcplog.V(2).Info("-----------------------------------------")
@@ -372,14 +338,12 @@ func (ae *AnalyticEngineStruct) SendHASMaxAnalysis(ctx context.Context, data *pr
 	omcplog.V(2).Info("ResultCluster\t[", result, "]")
 
 	omcplog.V(2).Info("*******  [End] HAS Rebalancing Analysis  ******* \n")
-	//fmt.Println("---------HAS Response End---------")
 
 	return &protobuf.ResponseHAS{TargetCluster: result}, nil
 }
 
 func (ae *AnalyticEngineStruct) SendHASMinAnalysis(ctx context.Context, data *protobuf.HASInfo) (*protobuf.ResponseHAS, error) {
 	omcplog.V(4).Info("Func SendHASMinAnalysis Called")
-	//fmt.Println("\n******* [Start] HAS Rebalancing Analysis *******")
 
 	timeStart_analysis := time.Now()
 	filteringCluster := ae.SelectHPACluster(data)
@@ -387,14 +351,7 @@ func (ae *AnalyticEngineStruct) SendHASMinAnalysis(ctx context.Context, data *pr
 	omcplog.V(2).Info("[1] SelectCandidateCluster \t", timeEnd_analysis)
 
 	var result string
-	//if len(filteringCluster) == 1 {
-	//	result = filteringCluster[0]
-	//}else {
-	//timeStart_analysis2 := time.Now()
 	result = ae.CompareHPAMinInfo(filteringCluster, data)
-	//timeEnd_analysis2 := time.Since(timeStart_analysis2)
-	//fmt.Println("[2] CompareHPAMinInfo() \t", timeEnd_analysis2)
-	//}
 
 	timeEnd_analysis4 := time.Since(timeStart_analysis)
 	omcplog.V(2).Info("-----------------------------------------")
@@ -408,7 +365,6 @@ func (ae *AnalyticEngineStruct) SendHASMinAnalysis(ctx context.Context, data *pr
 
 func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *protobuf.NodeInfo) (*protobuf.ReponseNetwork, error) {
 	omcplog.V(4).Info("Func SendNetworkAnalysis Called")
-	//klog.Info("***** [Start] Network Analysis *****")
 	startTime := time.Now()
 
 	// calculate difference between previous data and next data
@@ -443,54 +399,3 @@ func (ae *AnalyticEngineStruct) StartGRPC(GRPC_PORT string) {
 
 }
 
-//LoadBalancing
-func (ae *AnalyticEngineStruct) geoScore(clusters []string, clientCountry, clientContinent string) map[string]float64 {
-	omcplog.V(4).Info("Func geoScore Called")
-
-//	fmt.Println("*****Geo Score*****")
-
-	midScore := 100.0
-	policy := ae.MetricsWeight["GeoRate"] * 100.0
-	//policy := 70.0
-	omcplog.V(5).Info(ae.ClusterGeo)
-
-	score := map[string]float64{}
-	for _, cluster := range clusters {
-		clustercountry := ae.ClusterGeo[cluster]["Country"]
-		clustercontinent := ae.ClusterGeo[cluster]["Continent"]
-
-		if clientCountry == clustercountry {
-			score[cluster] = midScore + (midScore * policy / 100.0)
-		} else if clientContinent == clustercontinent {
-			score[cluster] = midScore
-		} else {
-			score[cluster] = midScore - (midScore * policy / 100.0)
-		}
-	}
-	omcplog.V(5).Info(score)
-	return score
-}
-
-func (ae *AnalyticEngineStruct) getCountry(clientip string) string {
-	omcplog.V(4).Info("Func getCountry Called")
-	//fmt.Println("*****Extract Country*****")
-	omcplog.V(2).Info("'/root/GeoLite2-City.mmdb' Open")
-	db, err := geoip2.Open("/root/GeoLite2-City.mmdb")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-	//ip := net.ParseIP(clientip)
-	ip := net.ParseIP("14.102.132.0")
-
-	record, err := db.City(ip)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("ISO country code: %v\n", record.Country.IsoCode)
-	return record.Country.IsoCode
-}
-
-func (ae *AnalyticEngineStruct) getContinent(country string) string {
-	return Geo.Geo[country]
-}

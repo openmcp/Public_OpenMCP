@@ -4,7 +4,7 @@ metadata:
   name: example-openmcpdeployment1
   namespace: openmcp
 spec:
-  replicas: 30
+  replicas: 3
   affinity: 
     region: 
       - AS

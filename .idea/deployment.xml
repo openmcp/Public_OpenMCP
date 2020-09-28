@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="openmcp">
+  <component name="PublishConfigData" serverName="kch">
     <serverData>
-      <paths name="openmcp">
+      <paths name="kch">
         <serverdata>
           <mappings>
             <mapping deploy="/" local="$PROJECT_DIR$" web="/" />

@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller // import "admiralty.io/multicluster-controller/examples/openmcpscheduler/pkg/controller/openmcpscheduler"
+package controller 
 
 import (
 	"context"
@@ -167,7 +167,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 			newDeployment.Status.SchedulingNeed = false
 			newDeployment.Status.SchedulingComplete = true
-			// omcplog.V(0).Info("=> Scheduling Result : ", cluster_replicas_map)
+			omcplog.V(0).Info("=> Scheduling Result : ", cluster_replicas_map)
 			// update OpenMCPDeployment to deploy
 
 			err := r.live.Status().Update(context.TODO(), newDeployment)
@@ -181,7 +181,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	return reconcile.Result{}, nil
 }
 
-// FOR TEST
 func RRScheduling(cm *clusterManager.ClusterManager, replicas int32) map[string]int32 {
 
 	cluster_replicas_map := make(map[string]int32)

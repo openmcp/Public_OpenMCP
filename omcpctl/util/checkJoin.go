@@ -31,7 +31,6 @@ func CheckAlreadyJoinClusterWithIP(memberIP string) (bool, error){
 
 
 	for _, cluster := range clusterList.Items {
-		//fmt.Println("kubefed cluster name : ", cluster.Name)
 		if strings.Contains(cluster.Spec.APIEndpoint, memberIP) {
 			fmt.Println("Already Joined Cluster IP : ", memberIP)
 			return true, nil
@@ -83,7 +82,6 @@ func CheckAlreadyJoinClusterWithPublicClusterName(clusterName, platform string) 
 			return false, err
 		}
 		clusterInfo := jsonData["cluster"].(map[string]interface{})
-		//fmt.Println(clusterName)
 
 		if _, ok := clusterInfo["endpoint"]; ok {
 			apiEndpoint = clusterInfo["endpoint"].(string)

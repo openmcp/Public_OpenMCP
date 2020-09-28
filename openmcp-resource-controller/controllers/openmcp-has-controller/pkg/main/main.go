@@ -17,35 +17,18 @@ limitations under the License.
 package main
 
 import (
-	//"os"
-	//"time"
-
-	//"flag"
 	"log"
 	openmcphas "openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-has-controller/pkg/controller"
 	"openmcp/openmcp/util/controller/logLevel"
 
-	//"os"
-
 	"fmt"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
-	//"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/manager"
-	//"admiralty.io/multicluster-controller/pkg/reconcile"
-	//"admiralty.io/multicluster-service-account/pkg/config"
-	//"k8s.io/api/core/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	//"k8s.io/sample-controller/pkg/signals"
 
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/reshape"
-	//"k8s.io/client-go/rest"
-	//genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
-	//fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
-	//"sigs.k8s.io/kubefed/pkg/controller/util"
-	//"openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-has-controller/pkg/protobuf"
-	//"context"
 )
 
 func main() {
@@ -57,16 +40,13 @@ func main() {
 		namespace := "openmcp"
 
 		host_cfg := cm.Host_config
-		//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
 		live := cluster.New(host_ctx, host_cfg, cluster.Options{})
-		//fmt.Println(host_cfg)
 		ghosts := []*cluster.Cluster{}
 
 		for _, ghost_cluster := range cm.Cluster_list.Items {
 			ghost_ctx := ghost_cluster.Name
 			ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
-			//ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
 			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
 			ghosts = append(ghosts, ghost)
 		}
@@ -76,7 +56,7 @@ func main() {
 		co, _ := openmcphas.NewController(live, ghosts, namespace, cm)
 		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
-		//fmt.Println(live)
+
 		m := manager.New()
 		m.AddController(co)
 		m.AddController(reshape_cont)

@@ -17,7 +17,6 @@ package decode
 import (
 	"fmt"
 	"math"
-	"openmcp/openmcp/omcplog"
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -28,7 +27,6 @@ import (
 
 func DecodeBatch(summary *stats.Summary) (*storage.MetricsBatch, error) {
 	fmt.Println("Func DecodeBatch Called")
-	//klog.V(0).Info("Data Decoding Summary to MetricsBatch Structure")
 	res := &storage.MetricsBatch{
 		IP:   summary.IP,
 		Node: storage.NodeMetricsPoint{},
@@ -68,7 +66,6 @@ func DecodeBatch(summary *stats.Summary) (*storage.MetricsBatch, error) {
 
 func decodeNodeStats(nodeStats *stats.NodeStats, target *storage.NodeMetricsPoint) []error {
 	fmt.Println("Func decodeNodeStats Called")
-	//klog.V(0).Info("Func decodeNodeStats Called")
 	timestamp, err := getScrapeTimeNode(nodeStats.CPU, nodeStats.Memory, nodeStats.Network, nodeStats.Fs)
 	if err != nil {
 		// if we can't get a timestamp, assume bad data in general
@@ -101,7 +98,6 @@ func decodeNodeStats(nodeStats *stats.NodeStats, target *storage.NodeMetricsPoin
 
 func decodePodStats(podStats *stats.PodStats, target *storage.PodMetricsPoint) []error {
 	fmt.Println("Func decodePodStats Called")
-	// klog.V(0).Info("Func decodePodStats Called")
 
 	timestamp, err := getScrapeTimePod(podStats.CPU, podStats.Memory)
 	if err != nil {
@@ -206,7 +202,6 @@ func decodeFs(target *storage.MetricsPoint, FsStats *stats.FsStats) error {
 }
 func getScrapeTimePod(cpu *stats.CPUStats, memory *stats.MemoryStats) (time.Time, error) {
 	fmt.Println("Func getScrapeTimePod Called")
-	//klog.V(0).Info("Func getScrapeTime Called")
 	// Ensure we get the earlier timestamp so that we can tell if a given data
 	// point was tainted by pod initialization.
 
@@ -227,7 +222,6 @@ func getScrapeTimePod(cpu *stats.CPUStats, memory *stats.MemoryStats) (time.Time
 }
 func getScrapeTimeNode(cpu *stats.CPUStats, memory *stats.MemoryStats, network *stats.NetworkStats, fs *stats.FsStats) (time.Time, error) {
 	fmt.Println("Func getScrapeTimeNode Called")
-	//klog.V(0).Info("Func getScrapeTime Called")
 	// Ensure we get the earlier timestamp so that we can tell if a given data
 	// point was tainted by pod initialization.
 
@@ -264,7 +258,7 @@ func uint64Quantity(val uint64, scale resource.Scale) *resource.Quantity {
 		return resource.NewScaledQuantity(int64(val), scale)
 	}
 
-	omcplog.V(1).Infof("unexpectedly large resource value %v, loosing precision to fit in scaled resource.Quantity", val)
+	fmt.Println("unexpectedly large resource value %v, loosing precision to fit in scaled resource.Quantity", val)
 
 	// otherwise, lose an decimal order-of-magnitude precision,
 	// so we can fit into a scaled quantity

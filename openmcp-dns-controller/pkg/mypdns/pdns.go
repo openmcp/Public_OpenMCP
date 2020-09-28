@@ -18,8 +18,8 @@ import (
 )
 
 var (
-	PDNS_IP      = os.Getenv("PDNS_IP")      //"10.0.3.12"
-	PDNS_PORT    = os.Getenv("PDNS_PORT")    //"8081"
+	PDNS_IP      = os.Getenv("PDNS_IP")      // "10.0.3.12"
+	PDNS_PORT    = os.Getenv("PDNS_PORT")    // "8081"
 	PDNS_API_KEY = os.Getenv("PDNS_API_KEY") // "1234"
 )
 

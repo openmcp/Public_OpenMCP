@@ -25,19 +25,13 @@ import (
 	hpav2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	extv1b1 "k8s.io/api/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/restmapper"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-sync-controller/pkg/apis"
 	ketiv1alpha1 "openmcp/openmcp/openmcp-sync-controller/pkg/apis/keti/v1alpha1"
 	"openmcp/openmcp/util/clusterManager"
-	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
 )
 
 var cm *clusterManager.ClusterManager
@@ -66,7 +60,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	// fmt.Printf("%T, %s\n", live, live.GetClusterName())
 	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.Sync{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
@@ -76,12 +69,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	// Therefore, if we needed a custom resource in multiple clusters, we would redundantly
 	// add it to each cluster's scheme, which points to the same underlying scheme.
 
-	//for _, ghost := range ghosts {
-	//	fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
-	//	if err := co.WatchResourceReconcileController(ghost, &appsv1.Deployment{}, controller.WatchOptions{}); err != nil {
-	//		return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
-	//	}
-	//}
 	return co, nil
 }
 
@@ -107,7 +94,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	omcplog.V(5).Info("Resource Get => [Name] : "+ instance.Name + " [Namespace]  : " + instance.Namespace)
 
 
-	// Instance 삭제
+	// Instance Delete
 	err = r.live.Delete(context.TODO(), instance)
 	if err != nil {
 		return reconcile.Result{}, err
@@ -116,14 +103,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	omcplog.V(2).Info("Resource Extract from SyncResource")
 	obj, clusterName, command := r.resourceForSync(instance)
 
-	// do(cm, obj, clusterName, command)
 	jsonbody, err := json.Marshal(obj)
 	if err != nil {
 		// do error check
-		fmt.Println(err)
 		return reconcile.Result{}, err
 	}
-	//clusterClient := cm.Cluster_clusterClients[clusterName]
 	clusterClient := r.ghosts[clusterName]
 
 
@@ -424,112 +408,4 @@ func (r *reconciler) resourceForSync(instance *ketiv1alpha1.Sync) (*unstructured
 
 	return u, clusterName, command
 }
-func CreateObj(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured, clusterName string) error {
-	omcplog.V(4).Info("[OpenMCP Sync] Function Called CreateObj")
-	//deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
-	fmt.Println("check1")
-	gvk := obj.GroupVersionKind()
-	fmt.Println("check2")
-	gk := schema.GroupKind{Group: gvk.Group, Kind: gvk.Kind}
-	fmt.Println("check3")
-	clientset := cm.Cluster_kubeClients[clusterName]
-	groupResources, err := restmapper.GetAPIGroupResources(clientset.Discovery())
-	fmt.Println("check4")
-	rm := restmapper.NewDiscoveryRESTMapper(groupResources)
-	fmt.Println("check5")
 
-	mapping, err := rm.RESTMapping(gk, gvk.Version)
-	fmt.Println("check6")
-
-	if err != nil {
-		omcplog.V(0).Info(err)
-	}
-	//omcplog.V(0).Info(mapping.Resource.Group, mapping.Resource.Version, mapping.Resource.Resource)
-	_, err = cm.Cluster_dynClients[clusterName].Resource(mapping.Resource).Namespace(obj.GetNamespace()).Create(obj, metav1.CreateOptions{})
-	fmt.Println("check7")
-	return err
-
-}
-func UpdateObj(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured, clusterName string) error {
-	omcplog.V(4).Info("[OpenMCP Sync] Function Called UpdateObj")
-	//deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
-	gvk := obj.GroupVersionKind()
-	gk := schema.GroupKind{Group: gvk.Group, Kind: gvk.Kind}
-	clientset := cm.Cluster_kubeClients[clusterName]
-	groupResources, err := restmapper.GetAPIGroupResources(clientset.Discovery())
-	rm := restmapper.NewDiscoveryRESTMapper(groupResources)
-	mapping, err := rm.RESTMapping(gk, gvk.Version)
-
-	// omcplog.V(0).Info(mapping.Resource.Group, mapping.Resource.Version, mapping.Resource.Resource)
-	_, err = cm.Cluster_dynClients[clusterName].Resource(mapping.Resource).Namespace(obj.GetNamespace()).Update(obj, metav1.UpdateOptions{})
-	return err
-
-}
-func DeleteObj(cm *clusterManager.ClusterManager, obj *unstructured.Unstructured, clusterName string) error {
-	omcplog.V(4).Info("[OpenMCP Sync] Function Called DeleteObj")
-	//deploymentRes := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
-
-	gvk := obj.GroupVersionKind()
-	gk := schema.GroupKind{Group: gvk.Group, Kind: gvk.Kind}
-
-	omcplog.V(5).Info(gvk.Kind, gvk.Group, gvk.Version)
-	omcplog.V(5).Info(obj.GetName(), obj.GetNamespace())
-	clientset := cm.Cluster_kubeClients[clusterName]
-	groupResources, err := restmapper.GetAPIGroupResources(clientset.Discovery())
-	rm := restmapper.NewDiscoveryRESTMapper(groupResources)
-
-	mapping, err := rm.RESTMapping(gk, gvk.Version)
-	found, err := cm.Cluster_dynClients[clusterName].Resource(mapping.Resource).Namespace(obj.GetNamespace()).Get(obj.GetName(), metav1.GetOptions{})
-	if err != nil && errors.IsNotFound(err) {
-		// all good
-		omcplog.V(0).Info("Not Found")
-		return nil
-	}
-	if !isInObject(found, "OpenMCP") {
-		return nil
-	}
-
-	// omcplog.V(0).Info(mapping.Resource.Group, mapping.Resource.Version, mapping.Resource.Resource)
-	err = cm.Cluster_dynClients[clusterName].Resource(mapping.Resource).Namespace(obj.GetNamespace()).Delete(obj.GetName(), &metav1.DeleteOptions{})
-	return err
-
-}
-func isInObject(obj *unstructured.Unstructured, subString string) bool {
-	refKind_str := obj.GetAnnotations()["multicluster.admiralty.io/controller-reference"]
-	refKind_map := make(map[string]interface{})
-	err := json.Unmarshal([]byte(refKind_str), &refKind_map)
-	if err != nil {
-		panic(err)
-	}
-	if strings.Contains(fmt.Sprintf("%v", refKind_map["kind"]), subString) {
-		return true
-	}
-	return false
-}
-
-func structToMap(item interface{}) map[string]interface{} {
-
-	res := map[string]interface{}{}
-	if item == nil {
-		return res
-	}
-	v := reflect.TypeOf(item)
-	reflectValue := reflect.ValueOf(item)
-	reflectValue = reflect.Indirect(reflectValue)
-
-	if v.Kind() == reflect.Ptr {
-		v = v.Elem()
-	}
-	for i := 0; i < v.NumField(); i++ {
-		tag := v.Field(i).Tag.Get("json")
-		field := reflectValue.Field(i).Interface()
-		if tag != "" && tag != "-" {
-			if v.Field(i).Type.Kind() == reflect.Struct {
-				res[tag] = structToMap(field)
-			} else {
-				res[tag] = field
-			}
-		}
-	}
-	return res
-}

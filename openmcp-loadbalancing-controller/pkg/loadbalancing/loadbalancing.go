@@ -1,7 +1,6 @@
 package loadbalancing
 
 import (
-	//"container/list"
 	"context"
 
 	"log"
@@ -16,13 +15,8 @@ import (
 	"strconv"
 	"sync"
 
-	//"github.com/abh/geoip"
-	//"log"
-	//"log"
 	"math/rand"
-	//"net"
 	"net/http"
-	//"net/http/httputil"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/clusterregistry"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/countryregistry"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/ingressregistry"
@@ -30,12 +24,9 @@ import (
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/serviceregistry"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/geo"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/protobuf"
-
 	"net/url"
 	"strings"
 	"time"
-
-	//"k8s.io/klog"
 	"openmcp/openmcp/omcplog"
 )
 
@@ -74,7 +65,6 @@ func extractIP(target string) (string, error) {
 	omcplog.V(4).Info("Function Called ExtractIP")
 	tmp := strings.Split(target, ":")
 	ip, _ := tmp[0], tmp[1]
-	//ip = "8.8.8.8"
 	omcplog.V(5).Info("IP : " + ip)
 	return ip, nil
 }
@@ -150,18 +140,6 @@ func Score(clusters []string, clientIP string, creg clusterregistry.Registry) ma
 		}
 	}
 
-	//lbInfo := &protobuf.LBInfo{
-	//	ClusterNameList: clusters,
-	//	ClientIP:        clientIP,
-	//}
-	//
-	//omcplog.V(5).Info("Request Geo, Resource Score")
-	//
-	//response, err := grpcClient.SendLBAnalysis(context.TODO(), lbInfo)
-	//if err != nil {
-	//	omcplog.V(0).Info(err)
-	//}
-	//
 	omcplog.V(3).Info("Response Geo, Resource Score")
 	omcplog.V(3).Info(sumScore)
 
@@ -186,8 +164,6 @@ func scoring(clusters []string, tip string, creg clusterregistry.Registry) strin
 }
 
 
-//geo score, resource score, hop score를 합쳐서 비율 계산
-//난수를 생성하여 비율에 속하는 클러스터를 엔드포인트로 선정
 func endpointCluster(score map[string]float64) string {
 	omcplog.V(4).Info("Function Called EnpointCluster")
 
@@ -196,7 +172,6 @@ func endpointCluster(score map[string]float64) string {
 
 	sumScore := map[string]float64{}
 	for cluster, _ := range score {
-		//sumScore[cluster] = (gscore[cluster] * geoPolicyWeight) + (rscore[cluster] * resourcePolicyWeight)
 		sumScore[cluster] = score[cluster]
 		totalScore = totalScore + sumScore[cluster]
 	}
@@ -211,7 +186,6 @@ func endpointCluster(score map[string]float64) string {
 			endpoint = cluster
 			flag = false
 		}
-		//checkScore = checkScore + (sumScore[cluster] / totalScore)
 		checkScore = checkScore + sumScore[cluster]
 		if n <= checkScore {
 			endpoint = cluster
@@ -237,11 +211,6 @@ func proxy_lb(host, tip, network, path string, reg loadbalancingregistry.Registr
 	var endpoint string
 	rand.Seed(time.Now().UnixNano())
 	round_index := rand.Intn(len(endpoints))
-	//lock.Lock()
-	//index := RR[host+path] % len(endpoints)
-	//endpoint = endpoints[index]
-	//RR[host+path]++
-	//defer lock.Unlock()
 	endpoint = endpoints[round_index]
 
 	omcplog.V(3).Info("[OpenMCP Loadbalancing Controller] Select Endpoint : " + endpoint)
@@ -262,11 +231,9 @@ var GeoDB, GeoErr  = geoip2.Open("/root/GeoLite2-City.mmdb")
 func getCountry(clientIP string) string {
 	omcplog.V(4).Info("Function Called getCountry")
 
-	//db, err := geoip2.Open("/root/GeoLite2-City.mmdb")
 	if GeoErr != nil {
 		log.Fatal(GeoErr)
 	}
-	//defer GeoDB.Close()
 	ip := net.ParseIP(clientIP)
 
 	record, err := GeoDB.City(ip)
@@ -400,8 +367,6 @@ func NewMultipleHostReverseProxy(reg loadbalancingregistry.Registry, creg cluste
 
 func NewMultipleHostReverseProxyRR(reg loadbalancingregistry.Registry, creg clusterregistry.Registry, countryreg countryregistry.Registry, sreg serviceregistry.Registry, openmcpIP string) http.HandlerFunc {
 	omcplog.V(4).Info("NewMultipleHostReversProxyRR")
-
-
 
 	return func(w http.ResponseWriter, req *http.Request) {
 

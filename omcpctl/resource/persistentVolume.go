@@ -36,7 +36,6 @@ func PrintPersistentVolume(body []byte) {
 	pv := corev1.PersistentVolume{}
 	err := yaml.Unmarshal(body, &pv)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -52,7 +51,6 @@ func PrintPersistentVolumeList(body []byte) {
 	resourceStruct := corev1.PersistentVolumeList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

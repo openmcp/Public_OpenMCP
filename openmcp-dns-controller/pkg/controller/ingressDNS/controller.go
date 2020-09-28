@@ -25,7 +25,6 @@ import (
 	"openmcp/openmcp/openmcp-dns-controller/pkg/apis"
 	ketiv1alpha1 "openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
 	"openmcp/openmcp/util/clusterManager"
-
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -53,7 +52,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	// fmt.Printf("%T, %s\n", live, live.GetClusterName())
 	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPIngressDNSRecord{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
@@ -83,21 +81,21 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	i += 1
 	omcplog.V(5).Info( "********* [ OpenMCP Domain", i, "] *********")
 	omcplog.V(5).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
-	//cm := clusterManager.NewClusterManager()
 
-	// Fetch the Sync instance
+
+
 	instanceIngressRecord := &ketiv1alpha1.OpenMCPIngressDNSRecord{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instanceIngressRecord)
 	if err != nil {
 		// Delete
-		omcplog.V(2).Info("IngressDNSRecord 삭제 감지")
+		omcplog.V(2).Info("IngressDNSRecord Delete Detection")
 		return reconcile.Result{}, nil
 	}
-	omcplog.V(2).Info("IngressDNSRecord or Ingress 생성 감지")
+	omcplog.V(2).Info("IngressDNSRecord or Ingress Create Detection")
 
 
 
-	omcplog.V(2).Info("IngressDNSRecord Status 업데이트")
+	omcplog.V(2).Info("IngressDNSRecord Status Update")
 	FillStatus(instanceIngressRecord)
 	err = r.live.Status().Update(context.TODO(), instanceIngressRecord)
 	if err != nil {
@@ -117,12 +115,12 @@ func ClearStatus(instanceIngressRecord *ketiv1alpha1.OpenMCPIngressDNSRecord) {
 func FillStatus(instanceIngressRecord *ketiv1alpha1.OpenMCPIngressDNSRecord) error {
 	instanceIngressRecord.Status = ketiv1alpha1.OpenMCPIngressDNSRecordStatus{}
 
-	// OpenMCP Ingress도 기록
+
 	lb :=  corev1.LoadBalancerStatus{}
 	instanceIngress := &extv1b1.Ingress{}
 	err := cm.Host_client.Get(context.TODO(), instanceIngress,  instanceIngressRecord.Namespace,  instanceIngressRecord.Name)
 	if err == nil {
-		// 서비스가 존재하면 lb 정보 가져옴
+		// Get lb information if service exists
 		lb = instanceIngress.Status.LoadBalancer
 	}
 
@@ -140,7 +138,7 @@ func FillStatus(instanceIngressRecord *ketiv1alpha1.OpenMCPIngressDNSRecord) err
 	omcplog.V(3).Info("Hosts : ", clusterIngressDNS.Hosts)
 	instanceIngressRecord.Status.DNS = append(instanceIngressRecord.Status.DNS, *clusterIngressDNS)
 
-	// 각 클러스터의 Ingress 정보 기록
+	// Record Ingress information for each cluster
 	for _, cluster := range cm.Cluster_list.Items {
 		cluster_client := cm.Cluster_genClients[cluster.Name]
 
@@ -148,7 +146,7 @@ func FillStatus(instanceIngressRecord *ketiv1alpha1.OpenMCPIngressDNSRecord) err
 		instanceIngress := &extv1b1.Ingress{}
 		err := cluster_client.Get(context.TODO(), instanceIngress,  instanceIngressRecord.Namespace,  instanceIngressRecord.Name)
 		if err == nil {
-			// 서비스가 존재하면 lb 정보 가져옴
+			// Get lb information if service exists
 			lb = instanceIngress.Status.LoadBalancer
 		}
 

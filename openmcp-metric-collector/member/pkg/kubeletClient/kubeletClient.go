@@ -10,7 +10,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/stats"
 	"strconv"
 )
@@ -74,30 +73,6 @@ func (kc *KubeletClient) GetSummary(host, token string) (*stats.Summary, error) 
 
 	summary.IP = host
 
-	//req.Header.Set("Content-Type", "application/json")
-	//req.Header.Set("Authorization", "Bearer "+ token)
-	//
-	//resp, err := kc.client.Do(req)
-	//if err != nil {
-	//	klog.V(0).Info( "Check2", err)
-	//	// handle err
-	//}
-	//defer resp.Body.Close()
-	//
-	//body, err := ioutil.ReadAll(resp.Body)
-	//if err != nil {
-	//	klog.V(0).Info( "Check3", err)
-	//	panic(err.Error())
-	//}
-	//
-	//var prettyJSON bytes.Buffer
-	//err = json.Indent(&prettyJSON, body, "", "\t")
-	//if err != nil {
-	//	klog.V(0).Info( "Check4", err)
-	//	panic(err.Error())
-	//}
-	//fmt.Printf("%s\n", prettyJSON.Bytes())
-
 	return summary, nil
 }
 
@@ -108,8 +83,6 @@ func (kc *KubeletClient) makeRequestAndGetValue(client *http.Client, req *http.R
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
-	//klog.V(0).Info( "makeRequestAndGetValue1")
-
 
 	fmt.Println( "Request Host:", req.Host)
 	response, err := client.Do(req)
@@ -118,25 +91,21 @@ func (kc *KubeletClient) makeRequestAndGetValue(client *http.Client, req *http.R
 		fmt.Println( err)
 		return err
 	}
-	//klog.V(0).Info( "makeRequestAndGetValue2")
 	defer response.Body.Close()
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read response body - %v", err)
 	}
-	//klog.V(0).Info( "makeRequestAndGetValue3")
 	if response.StatusCode == http.StatusNotFound {
 		return &ErrNotFound{req.URL.String()}
 	} else if response.StatusCode != http.StatusOK {
 		return fmt.Errorf("request failed - %q, response: %q", response.Status, string(body))
 	}
-	//klog.V(0).Info( "makeRequestAndGetValue4")
 	kubeletAddr := "[unknown]"
 	if req.URL != nil {
 		kubeletAddr = req.URL.Host
 	}
-	//klog.V(0).Info( "makeRequestAndGetValue5")
-	omcplog.V(5).Infof("Raw response from Kubelet at %s: %s", kubeletAddr, string(body))
+	fmt.Println("Raw response from Kubelet at %s: %s", kubeletAddr, string(body))
 
 	//////////////////////////////////////////
 	var prettyJSON bytes.Buffer
@@ -145,8 +114,8 @@ func (kc *KubeletClient) makeRequestAndGetValue(client *http.Client, req *http.R
 		fmt.Println( err)
 		panic(err.Error())
 	}
-	omcplog.V(3).Infof("%s%s\n", prettyJSON.Bytes()[:400],"...................")
-	omcplog.V(3).Infof("%s\n", prettyJSON.Bytes())
+	fmt.Println("%s%s\n", prettyJSON.Bytes()[:400],"...................")
+	fmt.Println("%s\n", prettyJSON.Bytes())
 	//////////////////////////////////////////
 
 
