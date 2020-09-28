@@ -4,21 +4,33 @@ import (
 	"fmt"
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
+	"strings"
 
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
 	"sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
-	"strings"
 )
 
 func ClusterInfo(kfc *v1beta1.KubeFedCluster) []string{
 
 	ClusterNamespace := kfc.Namespace
 	ClusterName := kfc.Name
-	ClusterStatus := string(kfc.Status.Conditions[0].Status)
+	ClusterStatus := "True"
+	for _, cond := range kfc.Status.Conditions{
+		if cond.Type == "Offline" {
+			ClusterStatus = "False"
+			break
+		}
+	}
 
-	ClusterRegion := *kfc.Status.Region
-	ClusterZone := strings.Join(kfc.Status.Zones, ",")
+	ClusterRegion := ""
+	if kfc.Status.Region != nil {
+		ClusterRegion = *kfc.Status.Region
+	}
+	ClusterZone := ""
+	if kfc.Status.Zones != nil {
+		ClusterZone = strings.Join(kfc.Status.Zones, ",")
+	}
 	ClusterAPIEndpoint := kfc.Spec.APIEndpoint
 
 	//ClusterClusterName := kubecontext.Context.Cluster\

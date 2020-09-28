@@ -17,6 +17,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/getlantern/deepcopy"
+	"openmcp/openmcp/util/clusterManager"
+
 	//"k8s.io/klog"
 	"openmcp/openmcp/omcplog"
 	sync "openmcp/openmcp/openmcp-sync-controller/pkg/apis/keti/v1alpha1"
@@ -54,18 +56,13 @@ import (
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 
 )
-type ClusterManager struct {
-        Fed_namespace string
-        Host_config *rest.Config
-        Host_client genericclient.Client
-        Cluster_list *fedv1b1.KubeFedClusterList
-        Cluster_configs map[string]*rest.Config
-        Cluster_clients map[string]genericclient.Client
-}
 
+var cm *clusterManager.ClusterManager
 
-func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
+func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
 	omcplog.V(4).Info("Function Called NewController")
+	cm = myClusterManager
+
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
@@ -120,7 +117,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	i += 1
 	omcplog.V(5).Info("********* [",i,"] *********")
 	omcplog.V(3).Info(req.Context,"/",req.Namespace,"/",req.Name)
-	cm := NewClusterManager()
 
 	// Fetch the OpenMCPDeployment instance
 	instance := &ketiv1alpha1.OpenMCPConfigMap{}
@@ -188,7 +184,7 @@ func (r *reconciler) configmapForOpenMCPConfigMap(req reconcile.Request, m *keti
 
 
 
-func (r *reconciler) createConfigMap(req reconcile.Request, cm *ClusterManager, instance *ketiv1alpha1.OpenMCPConfigMap) error {
+func (r *reconciler) createConfigMap(req reconcile.Request, cm *clusterManager.ClusterManager, instance *ketiv1alpha1.OpenMCPConfigMap) error {
 	omcplog.V(4).Info("Function Called createConfigMap")
 	cluster_map := make(map[string]int32)
 	for _, cluster := range cm.Cluster_list.Items {
@@ -210,7 +206,7 @@ func (r *reconciler) createConfigMap(req reconcile.Request, cm *ClusterManager, 
 }
 
 
-func (r *reconciler) updateConfigMap(req reconcile.Request, cm *ClusterManager, instance *ketiv1alpha1.OpenMCPConfigMap) error {
+func (r *reconciler) updateConfigMap(req reconcile.Request, cm *clusterManager.ClusterManager, instance *ketiv1alpha1.OpenMCPConfigMap) error {
 	omcplog.V(4).Info("Function Called updateConfigMap")
 
 	for _, cluster := range cm.Cluster_list.Items {
@@ -226,7 +222,7 @@ func (r *reconciler) updateConfigMap(req reconcile.Request, cm *ClusterManager, 
 	return nil
 }
 
-func (r *reconciler) DeleteConfigMap(cm *ClusterManager, name string, namespace string) error {
+func (r *reconciler) DeleteConfigMap(cm *clusterManager.ClusterManager, name string, namespace string) error {
 	omcplog.V(4).Info("Function Called DeleteConfigMap")
 
 	for _, cluster := range cm.Cluster_list.Items {
@@ -289,26 +285,6 @@ func KubeFedClusterClients(clusterList *fedv1b1.KubeFedClusterList, cluster_conf
                 cluster_clients[clusterName] = cluster_client
         }
         return cluster_clients
-}
-
-func NewClusterManager() *ClusterManager {
-	omcplog.V(4).Info("Function Called NewClusterManager")
-        fed_namespace := "kube-federation-system"
-        host_config, _ := rest.InClusterConfig()
-        host_client := genericclient.NewForConfigOrDie(host_config)
-        cluster_list := ListKubeFedClusters(host_client, fed_namespace)
-        cluster_configs := KubeFedClusterConfigs(cluster_list, host_client, fed_namespace)
-        cluster_clients := KubeFedClusterClients(cluster_list, cluster_configs)
-
-        cm := &ClusterManager{
-                Fed_namespace: fed_namespace,
-                Host_config: host_config,
-                Host_client: host_client,
-                Cluster_list: cluster_list,
-                Cluster_configs: cluster_configs,
-                Cluster_clients: cluster_clients,
-        }
-        return cm
 }
 
 

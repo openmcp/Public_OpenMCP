@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/apis"
+	"openmcp/openmcp/util/clusterManager"
 	"os"
 	"strings"
 
@@ -52,18 +53,12 @@ import (
 )
 
 
+var cm *clusterManager.ClusterManager
 
-type ClusterManager struct {
-	Fed_namespace   string
-	Host_config     *rest.Config
-	Host_client     genericclient.Client
-	Cluster_list    *fedv1b1.KubeFedClusterList
-	Cluster_configs map[string]*rest.Config
-	Cluster_clients map[string]genericclient.Client
-}
-
-func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
+func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
 	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Function Called NewController")
+	cm = myClusterManager
+
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
@@ -127,7 +122,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	i += 1
 	omcplog.V(3).Info("********* [", i, "] *********")
 	omcplog.V(3).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
-	cm := NewClusterManager()
+
 	//instance := &v1beta1.Ingress{}
 	//err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 
@@ -213,7 +208,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				serviceregistry.Registry.Delete(loadbalancing.ServiceRegistry, serviceName)
 				//queue := loadbalancing.Queue{}
 				for _, cluster := range cm.Cluster_list.Items {
-					cluster_client := cm.Cluster_clients[cluster.Name]
+					cluster_client := cm.Cluster_genClients[cluster.Name]
 					fmt.Println(cluster.Name)
 					found := &corev1.Service{}
 					err := cluster_client.Get(context.TODO(), found, instance.Namespace, serviceName)
@@ -321,25 +316,6 @@ func KubeFedClusterClients(clusterList *fedv1b1.KubeFedClusterList, cluster_conf
 	return cluster_clients
 }
 
-func NewClusterManager() *ClusterManager {
-	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Function Called NewClusterManager")
-	fed_namespace := "kube-federation-system"
-	host_config, _ := rest.InClusterConfig()
-	host_client := genericclient.NewForConfigOrDie(host_config)
-	cluster_list := ListKubeFedClusters(host_client, fed_namespace)
-	cluster_configs := KubeFedClusterConfigs(cluster_list, host_client, fed_namespace)
-	cluster_clients := KubeFedClusterClients(cluster_list, cluster_configs)
-
-	cm := &ClusterManager{
-		Fed_namespace:   fed_namespace,
-		Host_config:     host_config,
-		Host_client:     host_client,
-		Cluster_list:    cluster_list,
-		Cluster_configs: cluster_configs,
-		Cluster_clients: cluster_clients,
-	}
-	return cm
-}
 
 var OPENMCP_IP = ""
 
@@ -348,7 +324,6 @@ var OPENMCP_IP = ""
 func initRegistry() {
 	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Function Called initRegistry")
 
-	cm := NewClusterManager()
 
 	for _, cluster := range cm.Cluster_list.Items {
 		loadbalancing.ClusterRegistry[cluster.Name] = map[string]string{}
@@ -383,7 +358,7 @@ func initRegistry() {
 		loadbalancing.ClusterRegistry[cluster.Name]["Continent"] = continent
 
 		found := &corev1.Service{}
-		cluster_client := cm.Cluster_clients[cluster.Name]
+		cluster_client := cm.Cluster_genClients[cluster.Name]
 		err = cluster_client.Get(context.TODO(), found, "ingress-nginx", "ingress-nginx")
 		if err != nil {
 			omcplog.V(0).Info("Cluster Ingress Controller Not Found")
