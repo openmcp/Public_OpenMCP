@@ -160,6 +160,9 @@ log-level                    3m16s
 metric-collector-period        3m16s
 ```
 
+### OpenMCP Architecture
+![Architecture of the openmcp](/images/openmcp_architecture_2.png)
+
 
 ## 3. Register OpenMCP server on external storage
 
@@ -174,9 +177,6 @@ And then, register OpenMCP server on NFS server.
 $ omcpctl register openmcp
 Success OpenMCP Master Register '10.0.3.30'
 ```
-
-### OpenMCP Architecture
-![Architecture of the openmcp](/images/openmcp_architecture_2.png)
 
 ---
 
