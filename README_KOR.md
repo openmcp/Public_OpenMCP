@@ -83,6 +83,16 @@ users:
 ## 2. OpenMCP 기본 모듈 배포  
 
 모듈을 배포하기 전 환경변수 설정을 해줍니다.
+
+Private 네트워크를 사용하는 경우 아래 Public 입력란에 포트포워딩을 통한 IP와 Port를 입력하십시오.
+
+Public 네트워크를 사용하는 경우 아래 Public 입력란에 OpenMCP 클러스터 Master 노드의 IP를 입력하십시오.
+
+NFS를 제외한 IP 입력란에 OpenMCP 마스터 클러스터 노드의 IP를 입력하십시오. (Public & Private 네트워크 사용과 무관)
+
+PowerDNS 서버 포트는 PowerDNS 쿼리/응답 포트를 의미하며 기본 포트 번호 53의 포트포워딩 한 포트번호를 입력하십시오.
+
+PowerDNS Server API Key는 이전에 설정한 값을 입력하십시오(https://github.com/openmcp/external#how-to-install)
 ```bash
 $ cd ./install_openmcp
 $ ./SETTING.sh
