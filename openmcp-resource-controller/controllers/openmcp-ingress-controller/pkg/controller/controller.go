@@ -46,8 +46,11 @@ import (
 
 )
 
-func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
+var cm *clusterManager.ClusterManager
+func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
 	omcplog.V(4).Info("[OpenMCP Ingress Controller] Function Called NewController")
+	cm = myClusterManager
+
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
@@ -101,7 +104,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	i += 1
 	omcplog.V(5).Info("********* [", i, "] *********")
 	omcplog.V(3).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
-	cm := clusterManager.NewClusterManager()
+
 
 	// Fetch the OpenMCPDeployment instance
 	instance := &ketiv1alpha1.OpenMCPIngress{}

@@ -58,7 +58,7 @@ func main() {
 		for _, ghost := range ghosts {
 			fmt.Println(ghost.Name)
 		}
-		co, _ := openmcpservice.NewController(live, ghosts, namespace)
+		co, _ := openmcpservice.NewController(live, ghosts, namespace, cm)
 		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
