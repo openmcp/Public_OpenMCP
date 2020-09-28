@@ -12,10 +12,12 @@ import (
 
 const (
 	APP_KEY = "openmcp-apiserver"
+	USERNAME = "openmcp"
+	PASSWORD = "keti"
 )
 
-//// TokenHandler is our handler to take a username and password and,
-//// if it's valid, return a token used for future requests.
+// TokenHandler is our handler to take a username and password and,
+// if it's valid, return a token used for future requests.
 func TokenHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Content-Type", "application/json")
@@ -27,7 +29,7 @@ func TokenHandler(w http.ResponseWriter, r *http.Request) {
 	password := r.Form.Get("password")
 
 	fmt.Println(username, password)
-	if username != "openmcp" || password != "keti" {
+	if username != USERNAME || password != PASSWORD {
 		w.WriteHeader(http.StatusUnauthorized)
 		io.WriteString(w, `{"error":"invalid_credentials"}`)
 		return
@@ -38,7 +40,6 @@ func TokenHandler(w http.ResponseWriter, r *http.Request) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user": username,
 		"exp":  time.Now().Add(time.Hour * time.Duration(1)).Unix(),
-		//"exp":  time.Now().Add(time.Second * time.Duration(10)).Unix(),
 		"iat":  time.Now().Unix(),
 	})
 	tokenString, err := token.SignedString([]byte(APP_KEY))

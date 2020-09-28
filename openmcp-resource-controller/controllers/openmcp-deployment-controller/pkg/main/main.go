@@ -17,16 +17,12 @@ limitations under the License.
 package main
 
 import (
-
-	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/util/clusterManager"
-
-	"log"
-
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
-
+	"log"
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-deployment-controller/pkg/controller"
+	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
 )
@@ -43,7 +39,7 @@ func main() {
 		namespace := "openmcp"
 
 		host_cfg := cm.Host_config
-		//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+
 		live := cluster.New(host_ctx, host_cfg, cluster.Options{})
 
 		ghosts := []*cluster.Cluster{}
@@ -52,7 +48,6 @@ func main() {
 			ghost_ctx := ghost_cluster.Name
 			ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
-			//ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
 			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
 			ghosts = append(ghosts, ghost)
 		}

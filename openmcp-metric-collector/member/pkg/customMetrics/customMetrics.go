@@ -7,9 +7,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"net/http"
-	//"bytes"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/storage"
-	//url1 "net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -37,7 +35,6 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 				for _, value := range podList {
 					if value.Name != "" {
 						if strings.HasPrefix(value.Name, replicaset.Name) {
-							//fmt.Println(value.Name, "  ", replicaset.Name)
 							check_exist += 1
 
 							if len(value.CPUUsageNanoCores.String()) > 1 {
@@ -78,7 +75,6 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 			if check_exist > 0 {
 				namespace := replicaset.Namespace
 				name := replicaset.Name[:strings.LastIndexAny(replicaset.Name, "-")]
-				//fmt.Println(name, " ",sum_cpuusage," ",sum_cpuusage/check_exist, " ", strconv.Itoa(sum_cpuusage/check_exist))
 
 				fmt.Println("Post CpuUsage :", strconv.Itoa(sum_cpuusage/check_exist)+"n")
 				PostData(host, token, client, namespace, name, "CpuUsage", strconv.Itoa(sum_cpuusage/check_exist)+"n")
@@ -147,17 +143,9 @@ func PostData(host string, token string, client *http.Client, resourceNamespace 
 	baselink := "/api/v1/namespaces/custom-metrics/services/custom-metrics-apiserver:http/proxy/"
 	basepath := "write-metrics"
 	resourceKind := "pods"
-	//fmt.Println(resourceMetricValue)
-	//valueString := strconv.FormatFloat(resourceMetricValue, 'e', 4, 64)
 
 	url := "" + apiserver + baselink + basepath + "/namespaces/" + resourceNamespace + "/" + resourceKind + "/" + resourceName + "/" + resourceMetricName
 	buff := bytes.NewBufferString(resourceMetricValue)
-
-	//fmt.Println("value : ",buff)
-
-	/*data := url1.Values{}
-	data.Set("metrics", "111111")
-	fmt.Println("value : ",strings.NewReader(data.Encode()))*/
 
 	req, err := http.NewRequest("POST", os.ExpandEnv(url), buff)
 
@@ -169,14 +157,12 @@ func PostData(host string, token string, client *http.Client, resourceNamespace 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", os.ExpandEnv("Bearer "+token))
 
-	//fmt.Println("req", req)
 
 	resp, err := client.Do(req)
 	if err != nil {
 		// handle err
 		fmt.Println("Fail POST")
 	} else {
-		//fmt.Println("Success POST")
 	}
 	defer resp.Body.Close()
 }

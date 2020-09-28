@@ -67,7 +67,6 @@ func (sched *OpenMCPScheduler) Scheduling(dep *ketiv1alpha1.OpenMCPDeployment) (
 	// Make resource to schedule pod into cluster
 	newPod := newPodFromOpenMCPDeployment(dep)
 
-	// omcplog.V(0).Infof("***** [Start] Scheduling for OpenmcpDeployment *****")
 
 	// Scheduling one pod
 	for i := int32(0); i < depReplicas; i++ {
@@ -77,6 +76,9 @@ func (sched *OpenMCPScheduler) Scheduling(dep *ketiv1alpha1.OpenMCPDeployment) (
 		schedulingResult, err := sched.ScheduleOne(newPod, depReplicas)
 		if err != nil {
 			return totalSchedulingResult, fmt.Errorf("There is no proper cluster to deploy Pod(%d)~Pod(%d)", i, depReplicas)
+		}
+		if schedulingResult == "" {
+			continue
 		}
 
 		_, exists := totalSchedulingResult[schedulingResult]
@@ -92,10 +94,41 @@ func (sched *OpenMCPScheduler) Scheduling(dep *ketiv1alpha1.OpenMCPDeployment) (
 	elapsedTime := time.Since(startTime)
 	omcplog.V(0).Infof("    => Scheduling Time [%v]", elapsedTime)
 
-	// omcplog.V(0).Infof("    => Scheduling Time [%v]", elapsedTime)
 
 	return totalSchedulingResult, nil
 }
+func (sched *OpenMCPScheduler) ScheduleOne(newPod *ketiresource.Pod, replicas int32) (string, error) {
+	filterdResult := sched.Framework.RunFilterPluginsOnClusters(newPod, sched.ClusterInfos)
+
+	filteredCluster := make(map[string]*ketiresource.Cluster)
+
+	for clusterName, isfiltered := range filterdResult {
+		if isfiltered {
+			filteredCluster[clusterName] = sched.ClusterInfos[clusterName]
+		}
+	}
+
+	if len(filteredCluster) == 0 {
+		postresult := sched.Framework.RunPostFilterPluginsOnClusters(newPod, sched.ClusterInfos, sched.PostPods)
+
+		if postresult["unscheduable"] {
+			return "", fmt.Errorf("There is postpods error")
+		}
+		if postresult["error"] {
+			return "", fmt.Errorf("There is PostFilter Error")
+		}
+		if postresult["success"] {
+			sched.PostPods = append(sched.PostPods, newPod)
+			return "", nil
+		}
+		return "", fmt.Errorf("There is no cluster")
+	}
+
+	selectedCluster := sched.Framework.RunScorePluginsOnClusters(newPod, filteredCluster, sched.ClusterInfos, replicas)
+
+	return selectedCluster, nil
+}
+
 func (sched *OpenMCPScheduler) LocalNetworkAnalysis() {
 	clusters := sched.ClusterInfos
 	for {
@@ -107,8 +140,6 @@ func (sched *OpenMCPScheduler) LocalNetworkAnalysis() {
 				client := sched.GRPC_Client
 				result, err := client.SendNetworkAnalysis(context.TODO(), node_info)
 				if result.RX == -1 || result.TX == -1 {
-					//omcplog.V(0).Infof("exception Error deleted Node", node.NodeName)
-					// delete(cluster, node.NodeName)
 					continue
 				}
 				if err != nil || result == nil {
@@ -122,36 +153,12 @@ func (sched *OpenMCPScheduler) LocalNetworkAnalysis() {
 				} else {
 					nodeScore = int64((1 / float64(node.UpdateRX+node.UpdateTX)) * float64(100))
 				}
-				//omcplog.V(0).Infof("[%v] node rx [%d] tx [%d]", node.NodeName, node.UpdateRX, node.UpdateTX)
 				node.NodeScore = nodeScore
-				//omcplog.V(0).Infof(" [%v]=> updateRX [%d] updateTX[%d]", node.NodeName, node.UpdateRX, node.UpdateTX)
 			}
 		}
 		time.Sleep(1 * time.Second)
 	}
 
-}
-
-func (sched *OpenMCPScheduler) ScheduleOne(newPod *ketiresource.Pod, replicas int32) (string, error) {
-	filterdResult := sched.Framework.RunFilterPluginsOnClusters(newPod, sched.ClusterInfos, sched.PostPods)
-
-	filteredCluster := make(map[string]*ketiresource.Cluster)
-
-	for clusterName, isfiltered := range filterdResult {
-		if isfiltered {
-			filteredCluster[clusterName] = sched.ClusterInfos[clusterName]
-		}
-	}
-
-	if len(filteredCluster) == 0 {
-		return "", fmt.Errorf("There is no Filtered Clusters")
-	}
-
-	//scoreResult := sched.Framework.RunScorePluginsOnClusters(newPod, filteredCluster, replicas)
-	//selectedCluster := selectCluster(scoreResult)
-	selectedCluster := sched.Framework.RunScorePluginsOnClusters(newPod, filteredCluster, sched.ClusterInfos, replicas)
-
-	return selectedCluster, nil
 }
 
 func (sched *OpenMCPScheduler) UpdateResources(newPod *ketiresource.Pod, schedulingResult string) {
@@ -191,7 +198,6 @@ func newPodFromOpenMCPDeployment(dep *ketiv1alpha1.OpenMCPDeployment) *ketiresou
 				additionalResource = append(additionalResource, resourceName)
 			}
 		}
-
 		for key, values := range dep.Spec.Affinity {
 			for _, value := range values {
 				affinities[key] = append(affinities[key], value)

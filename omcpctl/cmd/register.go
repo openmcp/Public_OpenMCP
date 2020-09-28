@@ -106,7 +106,6 @@ func registerMemberToOpenMCP(openmcpIP string) {
 	util.CmdExec("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
 	memberIP := cobrautil.GetOutboundIP()
-	//openmcpIP := cobrautil.Option_ip
 
 	if !fileExists("/mnt/openmcp/" + openmcpIP + "/master") {
 		fmt.Println("Failed Register '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
@@ -121,7 +120,7 @@ func registerMemberToOpenMCP(openmcpIP string) {
 		return
 	}
 
-	// Already Regist
+	// Already Register
 	if fileExists("/mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP) {
 		fmt.Println("Failed Register '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Already Regist")
@@ -152,4 +151,14 @@ func registerMemberToOpenMCP(openmcpIP string) {
 
 func init() {
 	rootCmd.AddCommand(registerCmd)
+
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// setCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// setCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

@@ -54,7 +54,7 @@ type reconciler struct {
 var i int = 0
 
 func (r *reconciler) UpdateStatusServiceDNSRecordFromDelete() error {
-	// OpenMCPDomain Delete시 Service DNS Record 정보 삭제 하도록 빈 Status 업데이트
+	// Update Blank Status to delete Service DNS Record information when OpenMCPDomain Delete
 
 	instanceServiceRecordList := &ketiv1alpha1.OpenMCPServiceDNSRecordList{}
 	err := r.live.List(context.TODO(), instanceServiceRecordList, &client.ListOptions{})
@@ -95,7 +95,7 @@ func (r *reconciler) UpdateStatusServiceDNSRecordFromDelete() error {
 	return nil
 }
 func (r *reconciler) UpdateStatusServiceDNSRecordFromCreate(instanceDomain *ketiv1alpha1.OpenMCPDomain) error {
-	// OpenMCPDomain Create시 OpenMCPServiceDNSRecord 업데이트
+	//  OpenMCPServiceDNSRecord update when OpenMCPDomain Create
 	instanceServiceRecordList := &ketiv1alpha1.OpenMCPServiceDNSRecordList{}
 	err := r.live.List(context.TODO(), instanceServiceRecordList, &client.ListOptions{})
 	omcplog.V(2).Info("[List] OpenMCPServiceDNSRecordList")
@@ -123,13 +123,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	i += 1
 	omcplog.V(5).Info( "********* [ OpenMCP Domain", i, "] *********")
 	omcplog.V(5).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
-	//cm := clusterManager.NewClusterManager()
+
 
 	instanceDomain := &ketiv1alpha1.OpenMCPDomain{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instanceDomain)
 	omcplog.V(2).Info("[List] OpenMCPDomain")
 	if err != nil {
-		omcplog.V(2).Info( "Domain 삭제 감지")
+		omcplog.V(2).Info( "Domain Delete Detection")
 		err = r.UpdateStatusServiceDNSRecordFromDelete()
 		if err != nil {
 			omcplog.V(0).Info( "[OpenMCP Domain Controller] : ", err)
@@ -137,7 +137,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 		return reconcile.Result{}, nil
 	}
-	omcplog.V(2).Info( "Domain 생성 감지")
+	omcplog.V(2).Info( "Domain Create Detection")
 	omcplog.V(2).Info( "ServiceDNSRecord Status Update")
 	err = r.UpdateStatusServiceDNSRecordFromCreate(instanceDomain)
 	if err != nil {

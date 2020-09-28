@@ -39,7 +39,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	// fmt.Printf("%T, %s\n", live, live.GetClusterName())
 	if err := co.WatchResourceReconcileObject(live, &v1beta1.KubeFedCluster{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
@@ -57,10 +56,8 @@ var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	i += 1
-	//fmt.Println("********* [ Reshape", i, "] *********")
-	//fmt.Println(req.Context, " / ", req.Namespace, " / ", req.Name)
 
-	// Fetch the Sync instance
+	// Fetch the instance
 	kubeFedClusterList := &v1beta1.KubeFedClusterList{}
 	err := r.live.List(context.TODO(), kubeFedClusterList, &client.ListOptions{})
 	if err != nil {

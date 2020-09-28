@@ -3,10 +3,9 @@ package resource
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"github.com/ghodss/yaml"
+	"github.com/olekukonko/tablewriter"
 	autov1 "k8s.io/api/autoscaling/v1"
-
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
 	"strconv"
@@ -49,8 +48,6 @@ type hpaTargetInfo struct {
 }
 
 func HorizontalPodAutoscalerInfo(hpa *autov1.HorizontalPodAutoscaler) []string{
-	//fmt.Println(hpa.Annotations["autoscaling.alpha.kubernetes.io/current-metrics"])
-	//fmt.Println(hpa.Annotations["autoscaling.alpha.kubernetes.io/metrics"])
 
 	var current_metrics []hpaCurrentInfo
 	var target_metrics []hpaTargetInfo
@@ -162,7 +159,6 @@ func PrintHorizontalPodAutoscaler(body []byte) {
 	hpa := autov1.HorizontalPodAutoscaler{}
 	err := yaml.Unmarshal(body, &hpa)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -179,7 +175,6 @@ func PrintHorizontalPodAutoscalerList(body []byte) {
 	resourceStruct := autov1.HorizontalPodAutoscalerList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

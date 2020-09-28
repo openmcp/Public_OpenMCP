@@ -44,7 +44,6 @@ func main() {
 
 		host_cfg := cm.Host_config
 		live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
-		//live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
 
 		ghosts := []*cluster.Cluster{}
 
@@ -53,7 +52,6 @@ func main() {
 			ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
 			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
-			//ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
 			ghosts = append(ghosts, ghost)
 		}
 
@@ -96,7 +94,6 @@ func main() {
 		m.AddController(contLoglevel)
 
 		stop := reshape.SetupSignalHandler()
-		//stop := signals.SetupSignalHandler()
 
 		if err := m.Start(stop); err != nil {
 			log.Fatal(err)

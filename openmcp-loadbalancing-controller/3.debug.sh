@@ -6,9 +6,6 @@ NAME=$(kubectl get pod -n $NS | grep -E $controller_name | awk '{print $1}')
 
 echo "Exec Into '"$NAME"'"
 
-#kubectl exec -it $NAME -n $NS /bin/sh
-#kubectl logs --follow -n $NS $NAME
-#kubectl logs -n $NS $NAME
 for ((;;))
 do
 kubectl logs -n $NS $NAME --follow

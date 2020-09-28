@@ -18,7 +18,7 @@ var (
 
 
 var (
-	OpenMCPAPIServer = "10.0.3.20:31635" // root.go에서 file 읽어 초기화함
+	OpenMCPAPIServer = "10.0.3.20:31635" // Initialized by reading config file from root.go
 
 	ResourceMap = map[string]string{
 
@@ -466,7 +466,6 @@ func DeleteLinkParser(metainfo *MetaInfo, metainfoKindType string) string {
 		LINK += "default"
 	}else {
 		LINK += metainfo.Metadata.Namespace
-		//fmt.Println(metainfo.Metadata.Namespace)
 	}
 
 	if metainfo.Kind != "" {

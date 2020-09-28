@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller // import "admiralty.io/multicluster-controller/examples/openmcppolicyengine/pkg/controller/openmcppolicyengine"
+package controller
 
 import (
 	"context"
@@ -21,7 +21,6 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 
 	"k8s.io/apimachinery/pkg/api/errors"
-	//	"admiralty.io/multicluster-controller/pkg/reference"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
@@ -30,8 +29,6 @@ import (
 	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	//	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 )
 
@@ -65,11 +62,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
-	// Note: At the moment, all clusters share the same scheme under the hood
-	// (k8s.io/client-go/kubernetes/scheme.Scheme), yet multicluster-controller gives each cluster a scheme pointer.
-	// Therefore, if we needed a custom resource in multiple clusters, we would redundantly
-	// add it to each cluster's scheme, which points to the same underlying scheme.
-
 	return co, nil
 }
 
@@ -85,12 +77,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	i += 1
 	omcplog.V(4).Info("********* [", i, "] *********")
 	omcplog.V(5).Info("Request Context: ", req.Context, " / Request Namespace: ", req.Namespace, " /  Request Name: ", req.Name)
-	//cm := NewClusterManager()
 
 	// Fetch the OpenMCPDeployment instance
 	instance := &ketiv1alpha1.OpenMCPPolicy{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
-	//	omcplog.V(4).Info("instance: ", instance)
 	omcplog.V(5).Info("instance Name: ", instance.Name)
 	omcplog.V(5).Info("instance Namespace: ", instance.Namespace)
 
@@ -110,20 +100,16 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		if instance.Spec.RangeOfApplication == "FromNow" {
 			omcplog.V(2).Info("Policy Enabled - FromNow")
 		} else if instance.Spec.RangeOfApplication == "All" {
-			//omcplog.V(4).Info("Policy Enabled - All")
 			object := instance.Spec.Template.Spec.TargetController.Kind
 			if object == "OpenMCPHybridAutoScaler" {
 				omcplog.V(2).Info("Policy Enabled - OpenMCPHybridAutoScaler")
 				hpaList := &ketiv1alpha1.OpenMCPHybridAutoScalerList{}
 				listOptions := &client.ListOptions{Namespace: ""} //all resources
 				r.live.List(context.TODO(), hpaList, listOptions)
-				//omcplog.V(4).Info("List: ", hpaList)
 				for _, hpaInstance := range hpaList.Items {
-					//omcplog.V(4).Info("hpastatus: ",hpaInstance.Status.Policies)
-					//omcplog.V(4).Info("policies: ",instance.Spec.Template.Spec.Policies)
 					var i = 0
-					for index, tmpPolicy := range hpaInstance.Status.Policies { //정책 이름 대조하여 해당 정책만 수정
-						if tmpPolicy.Type == instance.Spec.Template.Spec.Policies[0].Type { //같은 정책이 이미 있는 경우
+					for index, tmpPolicy := range hpaInstance.Status.Policies { //Find target policy
+						if tmpPolicy.Type == instance.Spec.Template.Spec.Policies[0].Type { //Already exists
 							i++
 							hpaInstance.Status.Policies[index].Value = instance.Spec.Template.Spec.Policies[0].Value
 							break
@@ -147,26 +133,4 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 	return reconcile.Result{}, nil
 }
-
-/*func (cm *ClusterManager) DeleteOpenMCPPolicyEngine(nsn types.NamespacedName) error {
-	dep := &appsv1.Deployment{}
-	for _, cluster := range cm.Cluster_list.Items {
-		cluster_client := cm.Cluster_clients[cluster.Name]
-		omcplog.V(4).Info(nsn.Namespace, nsn.Name)
-		err := cluster_client.Get(context.Background(), dep, nsn.Namespace, nsn.Name+"-deploy")
-		if err != nil && errors.IsNotFound(err) {
-			// all good
-			omcplog.V(4).Info("Not Found")
-			continue
-		}
-		omcplog.V(4).Info(cluster.Name," Delete Start")
-		err = cluster_client.Delete(context.Background(), dep, nsn.Namespace, nsn.Name+"-deploy")
-		if err != nil {
-			return err
-		}
-		omcplog.V(4).Info(cluster.Name, "Delete Complate")
-	}
-	return nil
-
-}*/
 

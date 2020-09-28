@@ -15,7 +15,6 @@ func GetDuration(createionTime, completionTime time.Time) string {
 	duration := completionTime.Sub(createionTime)
 
 	durationTime := ""
-	//fmt.Println(int(duration.Seconds()), int(duration.Minutes()), int(duration.Seconds()) % 60)
 	if duration.Hours() >= 240 {
 		durationTime = strconv.Itoa(int(duration.Hours()/24)) + "d"
 	}else if duration.Hours() >= 24 {
@@ -37,7 +36,6 @@ func GetDuration(createionTime, completionTime time.Time) string {
 func GetAge(createionTime time.Time) string {
 	duration := time.Since(createionTime)
 	age := ""
-	//fmt.Println(int(duration.Seconds()), int(duration.Minutes()), int(duration.Seconds()) % 60)
 	if duration.Hours() >= 240 {
 		age = strconv.Itoa(int(duration.Hours()/24)) + "d"
 	}else if duration.Hours() >= 24 {

@@ -5,7 +5,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/rest"
-	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/clock"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/decode"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/kubeletClient"
@@ -23,8 +22,6 @@ func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nod
 
 	startTime := clock.MyClock.Now()
 
-	//var wait serviceDNS.WaitGroup
-	//wait.Add(len(cm.Node_list.Items))
 
 	for _, node := range nodes {
 		go func(node corev1.Node) {
@@ -38,8 +35,6 @@ func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nod
 		}(node)
 
 	}
-	//wait.Wait()
-	//time.Sleep(1 * time.Second)
 
 	var errs []error
 	res := &storage.Collection{}
@@ -57,15 +52,13 @@ func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nod
 			continue
 		}
 		res.Matricsbatchs = append(res.Matricsbatchs, *srcBatch)
-		//res.Matricsbatchs[i].Node = srcBatch.Node
-		//res.Matricsbatchs[i].Pods = append(res.Matricsbatchs[i].Pods, srcBatch.Pods...)
 
 		nodeNum += 1
 		podNum += len(srcBatch.Pods)
 	}
 	res.ClusterName = os.Getenv("CLUSTER_NAME")
 
-	omcplog.V(3).Infof("ScrapeMetrics: time: ",clock.MyClock.Since(startTime), "nodes: ", nodeNum, "pods: ", podNum)
+	fmt.Println("ScrapeMetrics: time: ",clock.MyClock.Since(startTime), "nodes: ", nodeNum, "pods: ", podNum)
 	return res, utilerrors.NewAggregate(errs)
 }
 

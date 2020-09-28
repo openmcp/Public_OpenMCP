@@ -2,13 +2,11 @@ package resource
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"github.com/ghodss/yaml"
+	"github.com/olekukonko/tablewriter"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
-
 )
 
 func CustomResourceDefinitionInfo(crd *apiextensionsv1.CustomResourceDefinition) []string{
@@ -22,7 +20,6 @@ func PrintCustomResourceDefinition(body []byte) {
 	crd := apiextensionsv1.CustomResourceDefinition{}
 	err := yaml.Unmarshal(body, &crd)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -38,7 +35,6 @@ func PrintCustomResourceDefinitionList(body []byte) {
 	resourceStruct := apiextensionsv1.CustomResourceDefinitionList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

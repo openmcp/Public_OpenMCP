@@ -17,28 +17,14 @@ limitations under the License.
 package main
 
 import (
-	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/util/controller/logLevel"
-	"openmcp/openmcp/util/controller/reshape"
-
-	//"flag"
-	"log"
-
 	"admiralty.io/multicluster-controller/pkg/cluster"
-	//"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/manager"
-	//"admiralty.io/multicluster-controller/pkg/reconcile"
-	//"admiralty.io/multicluster-service-account/pkg/config"
-	//"k8s.io/api/core/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	//"k8s.io/sample-controller/pkg/signals"
-
+	"log"
 	"openmcp/openmcp/openmcp-sync-controller/pkg/controller/sync"
 	"openmcp/openmcp/util/clusterManager"
-	//"k8s.io/client-go/rest"
-	//genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
-	//fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
-	//"sigs.k8s.io/kubefed/pkg/controller/util"
+	"openmcp/openmcp/util/controller/logLevel"
+	"openmcp/openmcp/util/controller/reshape"
 )
 
 func main() {
@@ -65,9 +51,6 @@ func main() {
 			ghosts = append(ghosts, ghost)
 		}
 
-		for _, ghost := range ghosts {
-			omcplog.V(4).Info(ghost.Name)
-		}
 		co, _ := sync.NewController(live, ghosts, namespace, cm)
 		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)

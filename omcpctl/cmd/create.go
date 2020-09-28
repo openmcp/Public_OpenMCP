@@ -44,22 +44,6 @@ openmcpctl create -f <FILENAME> --context <CLUSTERNAME>`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		CreateResource(args)
-		//cmdStr := "kubectl create"
-		//
-		//for i := 0; i < len(args); i++ {
-		//	cmdStr = cmdStr + " " + args[i]
-		//}
-		//if cobrautil.Option_file != "" {
-		//	cmdStr = cmdStr + " -f " + cobrautil.Option_file
-		//}
-		//if cobrautil.Option_namespace != "" {
-		//	cmdStr = cmdStr + " -f " + cobrautil.Option_namespace
-		//}
-		//if cobrautil.Option_context != ""{
-		//	cmdStr = cmdStr + " --context " + cobrautil.Option_context
-		//}
-		//util.CmdExec2(cmdStr)
-
 	},
 }
 func CreateResource(args []string){
@@ -131,12 +115,13 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// createCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// setCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// setCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	createCmd.Flags().StringVarP(&cobrautil.Option_file, "file","f", "", "input a option")
 	createCmd.Flags().StringVarP(&cobrautil.Option_context, "context","c", "", "input a option")
 	createCmd.Flags().StringVarP(&cobrautil.Option_namespace, "namespace","n", "", "input a option")
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

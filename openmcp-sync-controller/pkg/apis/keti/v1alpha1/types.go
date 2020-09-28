@@ -1,7 +1,6 @@
 package v1alpha1
 
 import (
-	//appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -20,9 +19,7 @@ type SyncSpec struct {
 	ClusterName string      `json:"clustername" protobuf:"varint,1,opt,name=clustername"`
 	Command     string      `json:"command" protobuf:"varint,1,opt,name=command"`
 	Template    interface{} `json:"template" protobuf:"bytes,3,opt,name=template"`
-	//Template appsv1.Deployment
-	//ServiceTemplate corev1.Service `json:"template" protobuf:"bytes,3,opt,name=template"`
-	//Template map[string]interface{} `json:"template" protobuf:"bytes,3,opt,name=template"`
+
 
 }
 

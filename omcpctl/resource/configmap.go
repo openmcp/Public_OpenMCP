@@ -2,10 +2,9 @@ package resource
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"github.com/ghodss/yaml"
+	"github.com/olekukonko/tablewriter"
 	corev1 "k8s.io/api/core/v1"
-
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
 	"strconv"
@@ -24,7 +23,7 @@ func PrintConfigMap(body []byte) {
 	cm := corev1.ConfigMap{}
 	err := yaml.Unmarshal(body, &cm)
 	if err != nil {
-		fmt.Println("Check4", err)
+		fmt.Println(err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -40,7 +39,7 @@ func PrintConfigMapList(body []byte) {
 	resourceStruct := corev1.ConfigMapList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
+		fmt.Println( err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
