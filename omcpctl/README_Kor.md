@@ -7,11 +7,13 @@
 > OpenMCP API Server에 데이터를 요청하여 Join / Create / Delete / Update 등의 명령어 처리
 
 ## Requirement
-[1_클러스터 정보를 저장할 External 서버](https://github.com/openmcp/external)
+1. 클러스터 정보를 저장할 [External 서버](https://github.com/openmcp/external)
 
-[2_OpenMCP 플랫폼 설치](https://github.com/openmcp/openmcp)
+2. [OpenMCP](https://github.com/openmcp/openmcp) 플랫폼 설치
 
-3_nfs-common 설치 (apt-get install nfs-common)
+3. nfs-common 설치 (apt-get install nfs-common)
+
+4. golang 설치 (Version: 1.14.2)
 
 ## How to Install
 1.build.sh 에서 환경변수 설정 후 빌드
