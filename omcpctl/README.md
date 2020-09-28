@@ -7,11 +7,13 @@
 > Process commands such as Join / Create / Delete / Update by requesting data from OpenMCP API Server
 
 ## Requirement
-[1_External Server to Store Cluster Information](https://github.com/openmcp/external)
+1. [External Server](https://github.com/openmcp/external) to Store Cluster Information
 
-[2_Install the OpenMCP Platform](https://github.com/openmcp/openmcp)
+2. Install the [OpenMCP Platform](https://github.com/openmcp/openmcp)
 
-3_nfs-common installation (apt-get install nfs-common)
+3. Install nfs-common (apt-get install nfs-common)
+
+4. Install golang (Version: 1.14.2)
 
 ## How to Install
 1.Build after setting environment variables at build.sh
