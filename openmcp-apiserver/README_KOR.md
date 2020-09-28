@@ -2,23 +2,23 @@
 
 ## Introduction of OpenMCP API Server
 
-> API server for combined cluster control of OpenMCP platform developed by KETI
+> KETI에서 개발한 OpenMCP 플랫폼의 연합클러스터 제어를 위한 API 서버
 >
-> Resource GET / PUT / DELETE / POST requests can be accepted and data from the member cluster can be viewed.
+> 리소스 GET / PUT / DELETE / POST 요청을 받아드리고 멤버클러스터의 데이터까지 조회 가능
 >
-> Provides an API for data retrieval collected from Metric Collector
+> Metric 콜렉터에서 수집한 데이터 조회 API 제공
+>
+> API-Server는 인증을 위한 JWT 발급 가능
 > 
-> API-Server can issue JWT for authentication
-> 
-> API-Server can authenticate to Tokyo via JWT issued (Default: Expires in 1 hour)
+> API-Server는 발급된 JWT를 통해 Token 인증이 가능 (Default: 1시간 후 만료)
 
 ## Requirement
 
-[1_OpenMCP Platform Install](https://github.com/openmcp/openmcp)
+[1_OpenMCP 플랫폼 설치](https://github.com/openmcp/openmcp)
 
 
 ## How to Use
-Check openmcp-appiserver Pod, Service resources in operation after installing OpenMCP platform
+OpenMCP 플랫폼 설치 후 가동중인 openmcp-apiserver Pod, Service 리소스 확인
 ```
 kubectl get pod -n openmcp
 NAME                                                READY   STATUS    RESTARTS   AGE
@@ -33,9 +33,9 @@ service/openmcp-apiserver                  LoadBalancer   10.97.128.224   10.0.3
 ```
 
 
-> Resource API Reference: (https://v1-17.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.17/)
+> 리소스 API 참조: (https://v1-17.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.17/)
 >
-> Pod Resource Lookup API Example with Curl Command (using NodePort)
+> Curl 명령어를 통한 Pod 리소스 조회 API Example (NodePort 이용)
 
 
 ```
@@ -95,7 +95,7 @@ curl -XGET -H "Authorization: Bearer $TOKEN" $IP:$PORT/$URL?clustername=$CLUSTER
 ....................
 ....................
 ```
-> Cluster1 Node and Pod Metric Data Lookup API Example
+> Cluster1의 Node 및 Pod 메트릭 데이터 조회 API Example
 ```
 # Node Metric 조회 Example
 > http://10.0.3.20:31635/metrics/nodes/kube1-worker1?clustername=cluster1
@@ -109,7 +109,7 @@ curl -XGET -H "Authorization: Bearer $TOKEN" $IP:$PORT/$URL?clustername=$CLUSTER
 > http://10.0.3.20:31635/metrics/namespaces/default/pods/nginx-deployment-55fbd9fd6d-h7d8t?clustername=cluster1&timeEnd=2020-09-03_09:00:15
 > http://10.0.3.20:31635/metrics/namespaces/default/pods/nginx-deployment-55fbd9fd6d-h7d8t?clustername=cluster1&timeStart=2020-09-03_09:00:00&timeEnd=2020-09-03_09:00:15
 ```
-> Cluster1 Node (cube1-worker1) Metric Data Lookup API Example (using NodePort)
+> Curl 명령어를 통한 Cluster1의 Node(kube1-worker1) 메트릭 데이터 조회 API Example (NodePort 이용)
 ```
 # Input:
 USERNAME="openmcp"
@@ -161,4 +161,4 @@ curl -XGET -H "Authorization: Bearer $TOKEN" $IP:$PORT/$URL?clustername=$CLUSTER
 
 ## Governance
 
-This project was supported by Institute of Information & communications Technology Planning & evaluation (IITP) grant funded by the Korea government (MSIT) (No.2019-0-00052, Development of Distributed and Collaborative Container Platform enabling Auto Scaling and Service Mobility)
+본 프로젝트는 정보통신기술진흥센터(IITP)에서 지원하는 '19년 정보통신방송연구개발사업으로, "컴퓨팅 자원의 유연한 확장 및 서비스 이동을 제공하는 분산·협업형 컨테이너 플랫폼 기술 개발 과제" 임.
