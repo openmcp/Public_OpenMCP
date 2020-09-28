@@ -5,7 +5,6 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
 	corev1 "k8s.io/api/core/v1"
-
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
 )
@@ -23,7 +22,6 @@ func PrintNamespace(body []byte) {
 	ns := corev1.Namespace{}
 	err := yaml.Unmarshal(body, &ns)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -39,7 +37,6 @@ func PrintNamespaceList(body []byte) {
 	resourceStruct := corev1.NamespaceList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

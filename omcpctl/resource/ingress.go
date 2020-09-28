@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
-	"strings"
-
 	"k8s.io/api/extensions/v1beta1"
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
+	"strings"
 )
 
 func IngressInfo(ing *v1beta1.Ingress) []string{
@@ -33,7 +32,6 @@ func PrintIngress(body []byte) {
 	ing := v1beta1.Ingress{}
 	err := yaml.Unmarshal(body, &ing)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -49,7 +47,6 @@ func PrintIngressList(body []byte) {
 	resourceStruct := v1beta1.IngressList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

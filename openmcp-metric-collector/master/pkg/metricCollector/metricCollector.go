@@ -34,27 +34,12 @@ func (mc *MetricCollector) FindClusterName(data *protobuf.Collection) string {
 		IpList = append(IpList, Matricsbatch.IP)
 	}
 	clusterName := data.ClusterName
-	//find := false
-	//clusterName := ""
-	//for _, cluster := range mc.ClusterManager.Cluster_list.Items {
-	//	for _, Ip := range IpList {
-	//		if strings.Contains(cluster.Spec.APIEndpoint, Ip) {
-	//			clusterName = cluster.Name
-	//			find = true
-	//			break
-	//		}
-	//	}
-	//	if find {
-	//		break
-	//	}
-	//}
 	klog.V(2).Info("=> Recieved Metric Data From '", clusterName,"'")
 	return clusterName
 }
 
 func (mc *MetricCollector) SendMetrics(ctx context.Context, data *protobuf.Collection) (*protobuf.ReturnValue, error) {
 	omcplog.V(4).Info("SendMetrics Called")
-	//startTime := time.Now()
 	clusterName := mc.FindClusterName(data)
 	mc.Influx.SaveMetrics(clusterName, data)
 	var period_int64 int64
@@ -71,7 +56,6 @@ func (mc *MetricCollector) SendMetrics(ctx context.Context, data *protobuf.Colle
 		period_int64,_ = strconv.ParseInt(period, 10, 64)
 	}
 
-	//timetick := 3600
 	clustername := "c1"
 
 	klog.V(2).Info("gRPC Return Period")
@@ -79,27 +63,12 @@ func (mc *MetricCollector) SendMetrics(ctx context.Context, data *protobuf.Colle
 		Tick:        period_int64,
 		ClusterName: clustername,
 	}, nil
-	//return nil, nil
 }
 
-//func (mc *MetricCollector) SendMetrics(ctx context.Context, data *protobuf.Collection) (*protobuf.ReturnValue, error) {
-//	fmt.Println(data.Matricsbatchs[0].Node.Name)
-//	fmt.Printf("%s",data.Matricsbatchs[0].Node.MP.CpuUsage)
-//
-//
-//	timetick:= 3600
-//	clustername := "c1"
-//	return &protobuf.ReturnValue{
-//		Tick:                 int64(timetick),
-//		ClusterName:          clustername,
-//	}, nil
-//	//return nil, nil
-//}
 func (mc *MetricCollector) StartGRPC(GRPC_PORT string) {
 	omcplog.V(4).Info("StartGRPC Called")
 	omcplog.V(2).Info("Grpc Server Start at Port %s\n", GRPC_PORT)
-
-	//manager = NewClusterManager()
+	
 	l, err := net.Listen("tcp", ":"+GRPC_PORT)
 	if err != nil {
 		omcplog.V(0).Info("failed to listen: ", err)

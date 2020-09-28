@@ -2,8 +2,8 @@ package resource
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"github.com/ghodss/yaml"
+	"github.com/olekukonko/tablewriter"
 	corev1 "k8s.io/api/core/v1"
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
@@ -47,7 +47,6 @@ func PrintPod(body []byte) {
 	pod := corev1.Pod{}
 	err := yaml.Unmarshal(body, &pod)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -63,7 +62,6 @@ func PrintPodList(body []byte) {
 	resourceStruct := corev1.PodList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

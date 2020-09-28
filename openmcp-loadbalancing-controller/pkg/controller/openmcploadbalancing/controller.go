@@ -46,10 +46,6 @@ import (
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/ingressregistry"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/loadbalancingregistry"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/serviceregistry"
-	//"github.com/HanJaeseung/LoadBalancing"
-	//"github.com/HanJaeseung/LoadBalancing/clusterregistry"
-	//"github.com/HanJaeseung/LoadBalancing/ingressregistry"
-	//"github.com/HanJaeseung/LoadBalancing/ingressnameregistry"
 )
 
 
@@ -82,29 +78,11 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	}
 
 
-	//if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPLoadbalancing{}, controller.WatchOptions{}); err != nil {
-	//	return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
-	//}
-
-	/*if err := co.WatchResourceReconcileObject(live, &v1beta1.Ingress{}, controller.WatchOptions{}); err != nil {
-		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
-	}*/
-
 	if err := co.WatchResourceReconcileObject(live, &resourcev1alpha1.OpenMCPIngress{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
-	// Note: At the moment, all clusters share the same scheme under the hood
-	// (k8s.io/client-go/kubernetes/scheme.Scheme), yet multicluster-controller gives each cluster a scheme pointer.
-	// Therefore, if we needed a custom resource in multiple clusters, we would redundantly
-	// add it to each cluster's scheme, which points to the same underlying scheme.
 
-	//for _, ghost := range ghosts {
-	//	fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
-	//	if err := co.WatchResourceReconcileController(ghost, &v1beta1.Ingress{}, controller.WatchOptions{}); err != nil {
-	//		return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
-	//	}
-	//}
 	return co, nil
 }
 
@@ -122,22 +100,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	i += 1
 	omcplog.V(3).Info("********* [", i, "] *********")
 	omcplog.V(3).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
-
-	//instance := &v1beta1.Ingress{}
-	//err := r.live.Get(context.TODO(), req.NamespacedName, instance)
-
-	//type ObjectKey = types.NamespacedName
-	//
-	//openmcpingressinstance := &resourcev1alpha1.OpenMCPIngress{}
-	//err1 := r.live.Get(context.TODO(), ObjectKey{Namespace: "openmcp", Name: "openmcp-ingress-example"}, openmcpingressinstance)
-	//fmt.Println("openmcpingressinstance",openmcpingressinstance)
-
 	instance := &resourcev1alpha1.OpenMCPIngress{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 
-	//if err1 != nil {
-	//	fmt.Println(err1, "Fail to get openmcpingress")
-	//}
 
 	omcplog.V(3).Info("instance Name: ", instance.Name)
 	omcplog.V(3).Info("instance Namespace : ", instance.Namespace)
@@ -145,7 +110,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	// delete
 	if err != nil && errors.IsNotFound(err) {
 		omcplog.V(2).Info("[OpenMCP Loadbalancing Controller] Delete Registry")
-		//해당 instance가 없을 경우 ingress & ingressName Registry 삭제
+		//ingress & ingressName Registry Delete
 		if errors.IsNotFound(err) {
 			ingressURLs, _ := ingressregistry.Registry.Lookup(loadbalancing.IngressRegistry, req.NamespacedName.Name)
 			ingressregistry.Registry.Delete(loadbalancing.IngressRegistry, req.NamespacedName.Name)
@@ -172,8 +137,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			return reconcile.Result{}, nil
 		}
 		return reconcile.Result{}, nil
-	} else { // 해당 instance가 있을 경우 ingress & ingressName Registry Add or Update
-		//	add
+	} else { // ingress & ingressName Registry Add or Update
+		//add
 		omcplog.V(2).Info("[OpenMCP Loadbalancing Controller] Registry Add or Update")
 
 		ingressName := instance.Name
@@ -206,7 +171,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				}
 				serviceName := paths.Backend.ServiceName
 				serviceregistry.Registry.Delete(loadbalancing.ServiceRegistry, serviceName)
-				//queue := loadbalancing.Queue{}
 				for _, cluster := range cm.Cluster_list.Items {
 					cluster_client := cm.Cluster_genClients[cluster.Name]
 					fmt.Println(cluster.Name)
@@ -218,13 +182,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					} else { // Add
 						loadbalancingregistry.Registry.Add(loadbalancing.LoadbalancingRegistry, host, path, serviceName)
 						serviceregistry.Registry.Add(loadbalancing.ServiceRegistry, serviceName, cluster.Name)
-						//queue.Set(cluster.Name)
-						//loadbalancing.PV(loadbalancing.RR[host+path]).Set(cluster.Name)
-						//loadbalancing.RR[host+path] = append(loadbalancing.RR[host+path], cluster.Name)
 						loadbalancing.RR[host+path] = 0
 					}
 				}
-				//loadbalancing.RR[host + path] = queue
 				ingressregistry.Registry.Add(loadbalancing.IngressRegistry, ingressName, url)
 			}
 		}
@@ -232,51 +192,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 	return reconcile.Result{}, nil // err
 
-	//else { // 해당 instance가 있을 경우 ingress & ingressName Registry Add or Update
-	//	//	add
-	//	fmt.Println("Registry Add or Update")
-	//	ingressName := instance.Name
-	//	for _, rule := range instance.Spec.Rules {
-	//		host := rule.Host
-	//		for _, paths := range rule.HTTP.Paths {
-	//			path := paths.Path
-	//			if len(path) > 1 && path[0] == '/' {
-	//				path = path[1:]
-	//			} else if path == "" {
-	//				path = "/"
-	//			}
-	//			serviceName := paths.Backend.ServiceName
-	//			serviceregistry.Registry.Delete(loadbalancing.ServiceRegistry, serviceName)
-	//			for _, cluster := range cm.Cluster_list.Items {
-	//				cluster_client := cm.Cluster_clients[cluster.Name]
-	//				found := &corev1.Service{}
-	//				err := cluster_client.Get(context.TODO(), found, "openmcp", serviceName)
-	//				if err != nil && errors.IsNotFound(err) {
-	//					fmt.Println("Service Not Found")
-	//				} else {
-	//					//기존 host path에 endpoint가 중복되서 들어가는거 방지 test-ingress1, test-ingress2 생성하는데 둘다 내용이 같을 경우
-	//					//checkIngress := loadbalancingregistry.Registry.IngressLookup(loadbalancing.LoadbalancingRegistry, host, path, cluster.Name)
-	//					//checkEndpoint := serviceregistry.Registry.EndpointCheck(loadbalancing.ServiceRegistry, serviceName, cluster.Name)
-	//					//if checkEndpoint == true  {
-	//					loadbalancingregistry.Registry.Add(loadbalancing.LoadbalancingRegistry, host, path, serviceName)
-	//					serviceregistry.Registry.Add(loadbalancing.ServiceRegistry, serviceName, cluster.Name)
-	//					//}
-	//				}
-	//			}
-	//			ingressHosts, err := ingressregistry.Registry.Lookup(loadbalancing.IngressRegistry, ingressName)
-	//			if ingressHosts != nil && err == nil {
-	//				for _, ingressHost := range ingressHosts {
-	//					s := strings.Split(ingressHost, "/")
-	//					host := s[0]
-	//					path := s[1]
-	//					loadbalancingregistry.Registry.IngressDelete(loadbalancing.LoadbalancingRegistry, host, path)
-	//				}
-	//				ingressregistry.Registry.Delete(loadbalancing.IngressRegistry, ingressName)
-	//			}
-	//			ingressregistry.Registry.Add(loadbalancing.IngressRegistry, ingressName, host + paths.Path)
-	//		}
-	//	}
-	//}
 
 }
 
@@ -319,8 +234,6 @@ func KubeFedClusterClients(clusterList *fedv1b1.KubeFedClusterList, cluster_conf
 
 var OPENMCP_IP = ""
 
-//*************************************************************************************************************************************************************
-
 func initRegistry() {
 	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Function Called initRegistry")
 
@@ -336,23 +249,9 @@ func initRegistry() {
 			omcplog.V(0).Info(err)
 		}
 		node := nodes.Items[0]
-		//label로부터 zone, region 추출
 		country := node.Labels["failure-domain.beta.kubernetes.io/zone"]
 		continent := node.Labels["failure-domain.beta.kubernetes.io/region"]
 
-		////iso 적용 전 디버깅용 정의
-		////******************
-		//if country == "korea" {
-		//	country = "KR"
-		//} else if country == "" {
-		//	country = "JP"
-		//}
-		//if continent == "asia" {
-		//	continent = "AS"
-		//} else if continent == "" {
-		//	continent = "AS"
-		//}
-		//********************
 
 		loadbalancing.ClusterRegistry[cluster.Name]["Country"] = country
 		loadbalancing.ClusterRegistry[cluster.Name]["Continent"] = continent
@@ -379,85 +278,6 @@ func initRegistry() {
 		}
 	}
 
-	////openmcp ingress
-	//openmcp_client := cm.Host_client
-	//ingressList := &v1beta1.IngressList{}
-	//ingressListErr := openmcp_client.List(context.TODO(), ingressList, "openmcp")
-	//
-	//if ingressListErr != nil && errors.IsNotFound(ingressListErr) {
-	//	fmt.Println(ingressListErr)
-	//}
-	//
-	//for _, ingress := range ingressList.Items {
-	//	ingressName := ingress.Name
-	//	//lb_proxy.IngressNameRegistry[ingressName] = []string{}
-	//	for _, rule := range ingress.Spec.Rules {
-	//		host := rule.Host
-	//		lb_proxy.IngressRegistry[host] = map[string][]string{}
-	//		for _, paths := range rule.HTTP.Paths {
-	//			path := paths.Path
-	//			//lb_proxy.IngressNameRegistry[ingressName] = append(lb_proxy.IngressNameRegistry[ingressName], host + path)
-	//			ingressnameregistry.Registry.Add(lb_proxy.IngressNameRegistry, ingressName, host+path)
-	//			if len(path) > 1 && path[0] == '/' {
-	//				path = path[1:]
-	//			} else if path == "" {
-	//				path = "/"
-	//			}
-	//			serviceName := paths.Backend.ServiceName
-	//			for _, cluster := range cm.Cluster_list.Items {
-	//				cluster_client := cm.Cluster_clients[cluster.Name]
-	//				found := &corev1.Service{}
-	//				err := cluster_client.Get(context.TODO(), found, "openmcp", serviceName)
-	//				if err != nil && errors.IsNotFound(err) {
-	//					fmt.Println("Service Not Found")
-	//				} else {
-	//					ingressregistry.Registry.Add(lb_proxy.IngressRegistry, host, path, cluster.Name)
-	//					//lb_proxy.IngressRegistry[host][path] = append(lb_proxy.IngressRegistry[host][path], cluster.Name)
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
-	//loadbalancing.CountryRegistry["KR"] = "AS"
-	//loadbalancing.CountryRegistry["JP"] = "AS"
-
-	//fmt.Println(found.Spec.Rules[0].Host)
-	//fmt.Println(found.Spec.Rules[1].Host)
-	//fmt.Println(found.Spec.Rules[0].HTTP.Paths[0].Path)
-	//fmt.Println(found.Spec.Rules[0].HTTP.Paths[0].Backend.ServiceName)
-
-	//IngressRegistry["keti.test.com"] = map[string][]string{}
-	//IngressRegistry["keti.test.com"]["service/test"] = append(IngressRegistry["keti.test.com"]["service/test"] ,"cluster1")
-	//IngressRegistry["keti.test.com"]["service/test"] = append(IngressRegistry["keti.test.com"]["service/test"] ,"cluster2")
-	//IngressRegistry["keti.test.com"]["service/test"] = append(IngressRegistry["keti.test.com"]["service/test"] ,"cluster3")
-	//
-	//ClusterRegistry["cluster1"] = map[string]string{}
-	//ClusterRegistry["cluster1"]["Latitude"] = "37.5923"
-	//ClusterRegistry["cluster1"]["Longitude"] = "126.9548"
-	//ClusterRegistry["cluster1"]["IngressIP"] = "10.0.3.201"
-	//ClusterRegistry["cluster1"]["Country"] = "KR"
-	//ClusterRegistry["cluster1"]["Continent"] = "Asia"
-	//loadbalancing.ClusterRegistry["cluster1"]["ResourceScore"] = "90"
-	//loadbalancing.ClusterRegistry["cluster1"]["HopScore"] = "0"
-	////
-	////ClusterRegistry["cluster2"] = map[string]string{}
-	////ClusterRegistry["cluster2"]["Latitude"] = "39.9035"
-	////ClusterRegistry["cluster2"]["Longitude"] = "116.388"
-	////ClusterRegistry["cluster2"]["IngressIP"] = "10.0.3.211"
-	////ClusterRegistry["cluster2"]["Country"] = "China"
-	////ClusterRegistry["cluster2"]["Continent"] = "Asia"
-	//loadbalancing.ClusterRegistry["cluster2"]["ResourceScore"] = "60"
-	//loadbalancing.ClusterRegistry["cluster2"]["HopScore"] = "0"
-
-	//
-	//ClusterRegistry["cluster3"] = map[string]string{}
-	//ClusterRegistry["cluster3"]["Latitude"] = "37.751"
-	//ClusterRegistry["cluster3"]["Longitude"] = "-97.822"
-	//ClusterRegistry["cluster3"]["IngressIP"] = "10.0.3.202"
-	//ClusterRegistry["cluster3"]["Country"] = "US"
-	//ClusterRegistry["cluster3"]["Continent"] = "North America"
-	//ClusterRegistry["cluster3"]["ResourceScore"] = "10"
-
 }
 
 
@@ -477,16 +297,12 @@ func Loadbalancer(openmcpIP string) {
 	}
 	http.HandleFunc("/add", func(writer http.ResponseWriter, request *http.Request) {
 		fmt.Fprintf(writer, "add")
-		loadbalancingregistry.Registry.Add(loadbalancing.LoadbalancingRegistry, "keti.host.com", "service2/v2", "10.0.3.202:80")
-		clusterregistry.Registry.Add(loadbalancing.ClusterRegistry, "cluster4", "15.15", "4.1", "10.0.0.10", "KP", "Asia", "80", "70")
 	})
 	http.HandleFunc("/delete", func(writer http.ResponseWriter, request *http.Request) {
 		fmt.Fprintf(writer, "delete")
-		//loadbalancingregistry.Registry.Delete(loadbalancing.LoadbalancingRegistry, "keti.test.com", "test", "cluster1")
 	})
 	http.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "%v\n", loadbalancing.LoadbalancingRegistry)
-		//fmt.Fprintf(w, "%v\n", loadbalancing.ClusterRegistry)
 		fmt.Fprintf(w, "")
 		fmt.Fprintf(w, "%v\n", loadbalancing.IngressRegistry)
 		fmt.Fprintf(w, "")

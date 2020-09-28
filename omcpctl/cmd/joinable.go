@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"openmcp/openmcp/util"
@@ -26,8 +27,6 @@ import (
 	"os"
 	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 	"strings"
-
-	"github.com/spf13/cobra"
 )
 
 // joinableCmd represents the joinable command
@@ -152,7 +151,7 @@ func getEKSClusterData() [][]string{
 		//fmt.Println(err)
 		return datas
 	}
-	//fmt.Println(s)
+
 	jsonData := make(map[string]interface{})
 	err = json.Unmarshal([]byte(s), &jsonData)
 	if err != nil {
@@ -175,7 +174,7 @@ func getEKSClusterData() [][]string{
 			fmt.Println(err)
 		}
 		clusterInfo := jsonData["cluster"].(map[string]interface{})
-		//fmt.Println(clusterName)
+
 		apiEndpoint := ""
 		if _, ok := clusterInfo["endpoint"]; ok {
 			apiEndpoint = clusterInfo["endpoint"].(string)
@@ -184,7 +183,7 @@ func getEKSClusterData() [][]string{
 		}
 
 		apiEndpoint = strings.ToLower(apiEndpoint)
-		//fmt.Println(apiEndpoint)
+
 		platform := "eks"
 
 		isAlreadyJoined := false
@@ -210,9 +209,9 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// joinableCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// setCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// joinableCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// setCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

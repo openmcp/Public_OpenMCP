@@ -17,16 +17,14 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
-	"openmcp/openmcp/omcpctl/apiServerMethod"
-	"os"
-
-	cobrautil "openmcp/openmcp/omcpctl/util"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 	"io"
+	"io/ioutil"
 	"log"
-	//"os"
+	"openmcp/openmcp/omcpctl/apiServerMethod"
+	cobrautil "openmcp/openmcp/omcpctl/util"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -53,22 +51,6 @@ openmcpctl delete <RESOURCE> <NAME> --context <CLUSTERNAME>`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		Delete(args)
-		/*cmdStr := "kubectl delete"
-
-		for i := 0; i < len(args); i++ {
-			cmdStr = cmdStr + " " + args[i]
-		}
-		if cobrautil.Option_file != "" {
-			cmdStr = cmdStr + " -f " + cobrautil.Option_file
-		}
-		if cobrautil.Option_namespace != "" {
-			cmdStr = cmdStr + " -f " + cobrautil.Option_namespace
-		}
-		if cobrautil.Option_context != ""{
-			cmdStr = cmdStr + " --context " + cobrautil.Option_context
-		}
-		util.CmdExec2(cmdStr)*/
-
 	},
 }
 
@@ -109,11 +91,7 @@ func Delete(args []string){
 		switch mode := fi.Mode(); {
 		case mode.IsDir():
 			// do directory stuff
-			fmt.Println("directory")
 			files, err := ioutil.ReadDir(fileOrDirname)
-
-			fmt.Println(fileOrDirname)
-			fmt.Println(files)
 
 			if err != nil {
 				log.Fatal(err)
@@ -128,7 +106,6 @@ func Delete(args []string){
 			}
 		case mode.IsRegular():
 			// do file stuff
-			fmt.Println("file")
 			filenameList = append(filenameList, fileOrDirname)
 		}
 
@@ -188,11 +165,13 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// deleteCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// setCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// setCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	deleteCmd.Flags().StringVarP(&cobrautil.Option_file, "file","f", "", "input a option")
 	deleteCmd.Flags().StringVarP(&cobrautil.Option_context, "context","c", "", "input a option")
 	deleteCmd.Flags().StringVarP(&cobrautil.Option_namespace, "namespace","n", "", "input a option")
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// deleteCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
 }

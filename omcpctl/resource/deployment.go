@@ -2,10 +2,9 @@ package resource
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"github.com/ghodss/yaml"
+	"github.com/olekukonko/tablewriter"
 	appsv1 "k8s.io/api/apps/v1"
-
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
 	"strconv"
@@ -30,7 +29,6 @@ func PrintDeployment(body []byte) {
 	dep := appsv1.Deployment{}
 	err := yaml.Unmarshal(body, &dep)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -46,7 +44,6 @@ func PrintDeploymentList(body []byte) {
 	resourceStruct := appsv1.DeploymentList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

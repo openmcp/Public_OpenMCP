@@ -34,7 +34,6 @@ func PrintPersistentVolumeClaim(body []byte) {
 	pvc := corev1.PersistentVolumeClaim{}
 	err := yaml.Unmarshal(body, &pvc)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -50,7 +49,6 @@ func PrintPersistentVolumeClaimList(body []byte) {
 	resourceStruct := corev1.PersistentVolumeClaimList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

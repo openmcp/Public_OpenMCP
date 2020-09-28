@@ -2,11 +2,9 @@ package resource
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"github.com/ghodss/yaml"
-
+	"github.com/olekukonko/tablewriter"
 	batchv1 "k8s.io/api/batch/v1"
-
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
 	"strconv"
@@ -34,7 +32,6 @@ func PrintJob(body []byte) {
 	job := batchv1.Job{}
 	err := yaml.Unmarshal(body, &job)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -50,7 +47,6 @@ func PrintJobList(body []byte) {
 	resourceStruct := batchv1.JobList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

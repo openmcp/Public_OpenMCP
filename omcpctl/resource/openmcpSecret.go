@@ -42,7 +42,6 @@ func PrintOpenMCPSecret(body []byte) {
 	osec := ketiv1alpha1.OpenMCPSecret{}
 	err := yaml.Unmarshal(body, &osec)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -58,7 +57,6 @@ func PrintOpenMCPSecretList(body []byte) {
 	resourceStruct := ketiv1alpha1.OpenMCPSecretList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

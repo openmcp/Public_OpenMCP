@@ -88,7 +88,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	omcplog.V(3).Info("[OpenMCP Loadbalancing Controller(Service Watch Controller)]********* [", i, "] *********")
 	omcplog.V(3).Info("[OpenMCP Loadbalancing Controller(Service Watch Controller)]" + req.Context, " / ", req.Namespace, " / ", req.Name)
 
-	//instance := &corev1.Service{}
 	instance := &resourcev1alpha1.OpenMCPService{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 
@@ -99,15 +98,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	// delete
 	if err != nil && errors.IsNotFound(err) {
-		//해당 instance가 없을 경우 ingress & ingressName Registry 삭제
 		if errors.IsNotFound(err) {
 			omcplog.V(2).Info("[OpenMCP Loadbalancing Controller(Service Watch Controller)] Delete Service Registry")
 			serviceregistry.Registry.Delete(loadbalancing.ServiceRegistry, serviceName)
 			return reconcile.Result{}, nil
 		}
 		return reconcile.Result{}, nil
-	} else { // 해당 instance가 있을 경우 ingress & ingressName Registry Add or Update
-	//	add
+	} else { 
 		target, err := serviceregistry.Registry.Lookup(loadbalancing.ServiceRegistry, serviceName)
 
 		if target != nil && !errors.IsNotFound(err) {

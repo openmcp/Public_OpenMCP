@@ -2,11 +2,9 @@ package resource
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"github.com/ghodss/yaml"
-
+	"github.com/olekukonko/tablewriter"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
-
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
 	"strconv"
@@ -28,7 +26,6 @@ func PrintCronJob(body []byte) {
 	ds := batchv1beta1.CronJob{}
 	err := yaml.Unmarshal(body, &ds)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -44,7 +41,6 @@ func PrintCronJobList(body []byte) {
 	resourceStruct := batchv1beta1.CronJobList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

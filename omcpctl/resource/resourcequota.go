@@ -38,7 +38,6 @@ func PrintResourceQuota(body []byte) {
 	quota := corev1.ResourceQuota{}
 	err := yaml.Unmarshal(body, &quota)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -54,7 +53,6 @@ func PrintResourceQuotaList(body []byte) {
 	resourceStruct := corev1.ResourceQuotaList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

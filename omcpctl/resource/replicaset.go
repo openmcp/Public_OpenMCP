@@ -2,11 +2,9 @@ package resource
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"github.com/ghodss/yaml"
+	"github.com/olekukonko/tablewriter"
 	appsv1 "k8s.io/api/apps/v1"
-
-
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
 	"strconv"
@@ -28,7 +26,6 @@ func PrintReplicaSet(body []byte) {
 	rs := appsv1.ReplicaSet{}
 	err := yaml.Unmarshal(body, &rs)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -44,7 +41,6 @@ func PrintReplicaSetList(body []byte) {
 	resourceStruct := appsv1.ReplicaSetList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

@@ -37,9 +37,6 @@ type Registry interface {
 	Continent(ClusterName string) (string, error)
 	ResourceScore(ClusterName string) (float64, error)
 	HopScore(ClusterName string) (float64, error)
-	//Delete(host, path, endpoint string)             // Remove an endpoint to our registry
-	//Failure(host, path, endpoint string, err error) // Mark an endpoint as failed.
-	//Lookup(host, path string) ([]string, error)     // Return the endpoint list for the given service name/version
 }
 
 type DefaultClusterInfo map[string]map[string]string

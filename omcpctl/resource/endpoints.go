@@ -5,11 +5,10 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
 	corev1 "k8s.io/api/core/v1"
-	"strconv"
-	"strings"
-
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func EndpointsInfo(ep *corev1.Endpoints) []string{
@@ -53,7 +52,6 @@ func PrintEndpoints(body []byte) {
 	ep := corev1.Endpoints{}
 	err := yaml.Unmarshal(body, &ep)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -69,7 +67,6 @@ func PrintEndpointsList(body []byte) {
 	resourceStruct := corev1.EndpointsList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

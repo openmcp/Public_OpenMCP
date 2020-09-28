@@ -5,10 +5,9 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
 	corev1 "k8s.io/api/core/v1"
-	"strconv"
-
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
+	"strconv"
 )
 
 func ServiceAccountInfo(sa *corev1.ServiceAccount) []string{
@@ -25,7 +24,6 @@ func PrintServiceAccount(body []byte) {
 	sa := corev1.ServiceAccount{}
 	err := yaml.Unmarshal(body, &sa)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -41,7 +39,6 @@ func PrintServiceAccountList(body []byte) {
 	resourceStruct := corev1.ServiceAccountList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

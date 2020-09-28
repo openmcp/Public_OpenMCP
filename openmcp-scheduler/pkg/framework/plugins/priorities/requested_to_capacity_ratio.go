@@ -1,6 +1,7 @@
 package priorities
 
 import (
+	"math"
 	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
 )
@@ -60,10 +61,8 @@ func (pl *RequestedToCapacityRatio) PreScore(pod *ketiresource.Pod, clusterInfo 
 		}
 		pl.prescoring[clusterInfo.ClusterName] = clusterScore
 	} else {
-		// omcplog.V(0).Infof("QOS전", pl.prescoring[clusterInfo.ClusterName], clusterInfo.ClusterName)
 		pl.betweenScore = pl.prescoring[clusterInfo.ClusterName] - int64(clusterScore)
-		pl.prescoring[clusterInfo.ClusterName] = clusterScore
-		// omcplog.V(0).Infof("QOS후", pl.prescoring[clusterInfo.ClusterName])
+		pl.betweenScore = int64(math.Abs(float64(pl.betweenScore)))
 
 	}
 	return clusterScore
@@ -83,7 +82,6 @@ func (pl *RequestedToCapacityRatio) Score(pod *ketiresource.Pod, clusterInfo *ke
 func RunRequestedToCapacityRatioScorerFunction(capacity, requested int64) int64 {
 	scoringFunctionShape := defaultFunctionShape
 	rawScoringFunction := buildBrokenLinearFunction(scoringFunctionShape)
-	// 𝑠𝑐𝑜𝑟𝑒=𝑠𝑐𝑜𝑟𝑒+(100−((𝑛𝑜𝑑𝑒.𝑎𝑙𝑙𝑜𝑐𝑎𝑏𝑙𝑒.𝐶𝑃𝑈−(𝑝𝑜𝑑.𝑟𝑒𝑞𝑢𝑒𝑠𝑡.𝐶𝑃𝑈+𝑝𝑜𝑑.𝑢𝑠𝑒𝑑.𝐶𝑃𝑈))/𝑛𝑜𝑑𝑒.𝑎𝑙𝑙𝑜𝑐𝑎𝑏𝑙𝑒.𝐶𝑃𝑈))
 	resourceScoringFunction := func(requested, capacity int64) int64 {
 		if capacity == 0 || requested > capacity {
 			return rawScoringFunction(maxUtilization)

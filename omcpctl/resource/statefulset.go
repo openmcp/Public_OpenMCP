@@ -5,7 +5,6 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
 	appsv1 "k8s.io/api/apps/v1"
-
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
 	"strconv"
@@ -26,7 +25,6 @@ func PrintStatefulSet(body []byte) {
 	sts := appsv1.StatefulSet{}
 	err := yaml.Unmarshal(body, &sts)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -42,7 +40,6 @@ func PrintStatefulSetList(body []byte) {
 	resourceStruct := appsv1.StatefulSetList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

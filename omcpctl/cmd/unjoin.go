@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 	"log"
 	cobrautil "openmcp/openmcp/omcpctl/util"
@@ -26,8 +27,6 @@ import (
 	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 	"strings"
 	"time"
-
-	"github.com/spf13/cobra"
 )
 
 // unjoinCmd represents the unjoin command
@@ -41,8 +40,6 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.
 
-openmcpctl unjoin list
->>>>>>> f86db70316573435f704a0caa51e86c90410b458
 openmcpctl unjoin cluster <CLUSTERIP>
 openmcpctl unjoin gke-cluster <CLUSTERNAME>
 openmcpctl unjoin eks-cluster <CLUSTERNAME>`,
@@ -54,25 +51,6 @@ openmcpctl unjoin eks-cluster <CLUSTERNAME>`,
 			} else {
 				unjoinCluster(args[1])
 			}
-		} else if len(args) != 0 && args[0] == "list" {
-			//fmt.Println("[ cluster list (unjoin) ]")
-			////실제로 조인되어 있지 않은 클러스터 정보가 join 디렉토리에 들어가 있는 경우
-			//// => unjoin
-			//clusterIps := getDiffJoinIP()
-			//for _, clusterIp := range clusterIps {
-			//	fmt.Println("Not Correct - ", clusterIp)
-			//	moveToUnjoin(clusterIp)
-			//	unjoinCluster(clusterIp)
-			//}
-			////실제로 조인된 클러스터 정보가 unjoin 디렉토리에 들어가 있는 경우
-			//// => join
-			//clusterIps = getDiffUnjoinIP()
-			//for _, clusterIp := range clusterIps {
-			//	fmt.Println("Not Correct - ", clusterIp)
-			//	moveToJoin(clusterIp)
-			//	joinCluster(clusterIp)
-			//}
-			//GetUnjoinClusterList()
 		} else if len(args) != 0 && (args[0] == "gke-cluster"|| args[0] == "eks-cluster") {
 			if args[1] == "" {
 				fmt.Println("You Must Provide Cluster Name")
@@ -146,7 +124,6 @@ func removeInitCluster(clusterName, openmcpDir string) {
 
 	util.CmdExec2(install_dir + "/vertical-pod-autoscaler/hack/vpa-down.sh " + clusterName)
 
-	//util.CmdExec2("kubectl delete ns openmcp --context " + clusterName)
 
 }
 
@@ -185,7 +162,6 @@ func unjoinCluster(memberIP string) {
 	checkJoin := 0
 
 	for _, cluster := range clusterList.Items {
-		//fmt.Println("kubefed cluster name : ", cluster.Name)
 		if strings.Contains(cluster.Spec.APIEndpoint, memberIP) {
 			checkJoin = 1
 			break
@@ -375,4 +351,13 @@ func unjoinCloudCluster(memberName string) {
 
 func init() {
 	rootCmd.AddCommand(unjoinCmd)
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// versionCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// versionCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

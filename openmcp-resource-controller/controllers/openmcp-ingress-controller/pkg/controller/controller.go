@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package openmcpingress // import "admiralty.io/multicluster-controller/examples/openmcpingress/pkg/controller/openmcpingress"
+package openmcpingress 
 
 import (
 	"context"
@@ -19,12 +19,10 @@ import (
 	"github.com/getlantern/deepcopy"
 	"github.com/mittwald/go-powerdns/apis/zones"
 	corev1 "k8s.io/api/core/v1"
-	//"k8s.io/klog"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/mypdns"
 	"strconv"
 
-	//"reflect"
 	"admiralty.io/multicluster-controller/pkg/reference"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"openmcp/openmcp/util/clusterManager"
@@ -34,8 +32,6 @@ import (
 	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"openmcp/openmcp/openmcp-resource-controller/apis"
 	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
-	//"k8s.io/apimachinery/pkg/api/errors"
-	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -78,10 +74,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	if err := co.WatchResourceReconcileController(live, &extv1b1.Ingress{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
 	}
-	// Note: At the moment, all clusters share the same scheme under the hood
-	// (k8s.io/client-go/kubernetes/scheme.Scheme), yet multicluster-controller gives each cluster a scheme pointer.
-	// Therefore, if we needed a custom resource in multiple clusters, we would redundantly
-	// add it to each cluster's scheme, which points to the same underlying scheme.
 
 	for _, ghost := range ghosts {
 		if err := co.WatchResourceReconcileController(ghost, &extv1b1.Ingress{}, controller.WatchOptions{}); err != nil {
@@ -106,7 +98,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	omcplog.V(3).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
 
 
-	// Fetch the OpenMCPDeployment instance
 	instance := &ketiv1alpha1.OpenMCPIngress{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 
@@ -115,11 +106,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// ...TODO: multicluster garbage collector
-			// Until then...
 			omcplog.V(3).Info("Delete Deployments ..Cluster")
 			err := r.DeleteIngress(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
-			//err := DeleteIngress(cm, req.NamespacedName)
 			return reconcile.Result{}, err
 		}
 		omcplog.V(1).Info(err)
@@ -162,8 +150,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		} else if errors.IsNotFound(err) {
 			omcplog.V(3).Info("Create Ingress")
 			host_ing, _ := r.ingressForOpenMCPIngress(req, instance)
-			//command := "create"
-			//_,err = r.sendSync(host_ing, command, "openmcp")
 			err = cm.Host_client.Create(context.Background(), host_ing)
 			if err != nil {
 				return reconcile.Result{}, err
@@ -173,7 +159,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		// Check Ingress in cluster
 		for k, _ := range instance.Status.ClusterMaps {
 			cluster_name := k
-			//isExist := v
 			found := &extv1b1.Ingress{}
 			cluster_client := cm.Cluster_genClients[cluster_name]
 			err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
@@ -185,7 +170,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				command := "create"
 				_, err = r.sendSync(ing, command, cluster_name)
 
-				//err = cluster_client.Create(context.Background(), ing)
 				if err != nil {
 					return reconcile.Result{}, err
 				}
@@ -241,60 +225,6 @@ func (r *reconciler) registerPdnsServer(ingress *extv1b1.Ingress) error {
 
 }
 
-//
-//func insertDB(cm *ClusterManager, ingress *extv1b1.Ingress) {
-//	fmt.Println("insertDB")
-//	db, err := sql.Open("mysql", "root:ketilinux@tcp(10.0.3.12:3306)/powerdns")
-//	if err != nil {
-//		fmt.Println(err)
-//	}
-//	var domainID string
-//	err = db.QueryRow("SELECT id FROM domain WHERE name=\"openmcp.org\"").Scan(&domainID)
-//	if err != nil {
-//		fmt.Println(err)
-//	}
-//	s := rand.NewSource(time.Now().UnixNano())
-//	r := rand.New(s)
-//
-//	for _, rule := range ingress.Spec.Rules {
-//		host := rule.Host
-//		var exists int
-//		err := db.QueryRow("SELECT id FROM records WHERE name='" + host + "'").Scan(&exists)
-//
-//		if err == nil && exists !=0{
-//			fmt.Println("Host Exist")
-//		} else if err != nil && exists == 0{
-//			idCheck := false
-//			//var domainID string
-//			var id string
-//			for idCheck == false {
-//				randNum := r.Intn(9999999)
-//				fmt.Println("*****Create Records Table ID*****")
-//				id = strconv.Itoa(randNum)
-//				err = db.QueryRow("SELECT id FROM records WHERE id=" + id).Scan(&exists)
-//				if err == nil && exists != 0 {
-//					fmt.Println("ID Exist")
-//				} else if err != nil && exists == 0  {
-//					idCheck = true
-//				}
-//			}
-//			found := &corev1.Service{}
-//			openmcp := cm.Host_client
-//			err = openmcp.Get(context.TODO(), found, "openmcp", "loadbalancing-controller")
-//			if err != nil && errors.IsNotFound(err) {
-//				fmt.Println("LoadBalancing-controller Service Not Found")
-//			} else {
-//				ip := found.Status.LoadBalancer.Ingress[0].IP
-//				queryValue := "(" + id + "," + domainID + ",'" + host + "','A','" + ip + "',300,0 ,NULL ,0,NULL,1)"
-//				_, err := db.Exec("INSERT INTO records VALUES " + queryValue)
-//				if err != nil {
-//					fmt.Println(err)
-//				}
-//			}
-//		}
-//	}
-//	defer db.Close()
-//}
 
 func (r *reconciler) createIngress(req reconcile.Request, cm *clusterManager.ClusterManager, instance *ketiv1alpha1.OpenMCPIngress) error {
 	omcplog.V(4).Info("[OpenMCP Ingress Controller] Function Called createIngress")
@@ -303,10 +233,6 @@ func (r *reconciler) createIngress(req reconcile.Request, cm *clusterManager.Clu
 	found := &extv1b1.Ingress{}
 	err := cm.Host_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 	if err != nil && errors.IsNotFound(err) {
-		//insertDB(cm, host_ing)
-		//r.registerPdnsServer(host_ing)
-		//command := "create"
-		//_, err = r.sendSync(host_ing, command, "openmcp")
 		err = cm.Host_client.Create(context.Background(), host_ing)
 
 		if err != nil {
@@ -343,7 +269,6 @@ func (r *reconciler) createIngress(req reconcile.Request, cm *clusterManager.Clu
 			}
 			if isService == true {
 				omcplog.V(3).Info("Create Ingress Resource - ", cluster.Name)
-				//err = cluster_client.Create(context.Background(), cluster_ing)
 				command := "create"
 				_, err = r.sendSync(cluster_ing, command, cluster.Name)
 				cluster_map[cluster.Name] = 1
@@ -371,7 +296,6 @@ func (r *reconciler) ingressForOpenMCPIngress(req reconcile.Request, m *ketiv1al
 			Name:      m.Name,
 			Namespace: m.Namespace,
 		},
-		// Spec: m.Spec.Template.Spec,
 	}
 	deepcopy.Copy(&host_ing.Spec, &m.Spec.Template.Spec)
 
@@ -395,7 +319,6 @@ func (r *reconciler) ingressForOpenMCPIngress(req reconcile.Request, m *ketiv1al
 			Name:      m.Name,
 			Namespace: m.Namespace,
 		},
-		// Spec: m.Spec.Template.Spec,
 	}
 	deepcopy.Copy(&ing.Spec, &m.Spec.Template.Spec)
 
@@ -420,14 +343,11 @@ func(r *reconciler) DeleteIngress(cm *clusterManager.ClusterManager, name string
 
 	err := cm.Host_client.Get(context.Background(), ing, namespace, name)
 	if err != nil && errors.IsNotFound(err) {
-		// all good
 		omcplog.V(0).Info("Not Found")
 	} else if err != nil && !errors.IsNotFound(err) {
 		return err
 	}
 	omcplog.V(3).Info("OpenMCP Delete Start")
-	//command := "delete"
-	//_,err = r.sendSync(ing, command, "openmcp")
 	err = cm.Host_client.Delete(context.Background(), ing,  namespace, name)
 
 	if err != nil {
@@ -440,7 +360,6 @@ func(r *reconciler) DeleteIngress(cm *clusterManager.ClusterManager, name string
 		omcplog.V(0).Info(namespace, name)
 		err := cluster_client.Get(context.Background(), ing,  namespace, name)
 		if err != nil && errors.IsNotFound(err) {
-			// all good
 			omcplog.V(0).Info("Not Found")
 			continue
 		}
@@ -461,7 +380,6 @@ func(r *reconciler) DeleteIngress(cm *clusterManager.ClusterManager, name string
 		}
 		_,err = r.sendSync(ing, command, cluster.Name)
 
-		//err = cluster_client.Delete(context.Background(), ing,  namespace, name)
 		if err != nil {
 			return err
 		}
@@ -471,41 +389,6 @@ func(r *reconciler) DeleteIngress(cm *clusterManager.ClusterManager, name string
 
 }
 
-//func DeleteIngress(cm *clusterManager.ClusterManager, nsn types.NamespacedName) error {
-//	ing := &extv1b1.Ingress{}
-//	err := cm.Host_client.Get(context.Background(), ing, nsn.Namespace, nsn.Name)
-//	if err != nil && errors.IsNotFound(err) {
-//		// all good
-//		fmt.Println("Not Found")
-//	} else if err != nil && !errors.IsNotFound(err) {
-//		return err
-//	}
-//	fmt.Println("OpenMCP Delete Start")
-//	err = cm.Host_client.Delete(context.Background(), ing, nsn.Namespace, nsn.Name)
-//	if err != nil {
-//		return err
-//	}
-//	fmt.Println("OpenMCP Delete Complate")
-//
-//	for _, cluster := range cm.Cluster_list.Items {
-//		cluster_client := cm.Cluster_genClients[cluster.Name]
-//		fmt.Println(nsn.Namespace, nsn.Name)
-//		err := cluster_client.Get(context.Background(), ing, nsn.Namespace, nsn.Name)
-//		if err != nil && errors.IsNotFound(err) {
-//			// all good
-//			fmt.Println("Not Found")
-//			continue
-//		}
-//		fmt.Println(cluster.Name, " Delete Start")
-//		err = cluster_client.Delete(context.Background(), ing, nsn.Namespace, nsn.Name)
-//		if err != nil {
-//			return err
-//		}
-//		fmt.Println(cluster.Name, "Delete Complate")
-//	}
-//	return nil
-//
-//}
 
 var syncIndex int = 0
 func (r *reconciler) sendSync(ingress *extv1b1.Ingress, command string, clusterName string) (string, error) {

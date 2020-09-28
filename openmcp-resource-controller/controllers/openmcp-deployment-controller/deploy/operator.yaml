@@ -16,7 +16,6 @@ spec:
       serviceAccountName: openmcp-deployment-controller
       containers:
         - name: openmcp-deployment-controller
-          # Replace this with the built image name
           image: openmcp/openmcp-deployment-controller:v0.0.1
           command:
           - openmcp-deployment-controller

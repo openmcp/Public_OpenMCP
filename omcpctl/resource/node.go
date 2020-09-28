@@ -34,7 +34,6 @@ func NodeInfo(no *corev1.Node) []string{
 		}
 	}
 
-	//nodeClusterName := kubecontext.Context.Cluster
 	age := cobrautil.GetAge(no.CreationTimestamp.Time)
 
 	data := []string{nodeName, nodeStatus, nodeRegion, nodeZone, nodeAddress, nodeMaster, nodeSchedule, age}
@@ -45,7 +44,6 @@ func PrintNode(body []byte) {
 	no := corev1.Node{}
 	err := yaml.Unmarshal(body, &no)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

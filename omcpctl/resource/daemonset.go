@@ -2,14 +2,13 @@ package resource
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"github.com/ghodss/yaml"
+	"github.com/olekukonko/tablewriter"
 	appsv1 "k8s.io/api/apps/v1"
-	"strings"
-
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func DaemonSetInfo(ds *appsv1.DaemonSet) []string{
@@ -37,7 +36,6 @@ func PrintDaemonSet(body []byte) {
 	ds := appsv1.DaemonSet{}
 	err := yaml.Unmarshal(body, &ds)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -53,7 +51,6 @@ func PrintDaemonSetList(body []byte) {
 	resourceStruct := appsv1.DaemonSetList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
