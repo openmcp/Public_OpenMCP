@@ -12,7 +12,15 @@
     - [(4) 하위 클러스터 Master Node에 Region, Zone 등록[OpenMCP에서 수행]](#4-하위-클러스터-master-node에-region-zone-등록-openmcp에서-수행)
     - [(5) 하위 클러스터 MetalLB Config 생성 [OpenMCP에서 수행]](#5-하위-클러스터-metallb-config-생성-openmcp에서-수행)
   - [2. OpenMCP에 GKE cluster 조인](#2-OpenMCP에-GKE-cluster-조인)
+    - [(1) Install Cloud SDK](#1-Install-Cloud-SDK)
+    - [(2) gcloud init](#2-gcloud-init)
+    - [(3) gcloud container clusters list](#3-gcloud-container-clusters-list)
+    - [(4) Join GKE cluster to OpenMCP](#4-Join-GKE-cluster-to-OpenMCP)
   - [3. OpenMCP에 EKS cluster 조인](#3-OpenMCP에-EKS-cluster-조인)
+    - [(1) Install Cloud SDK](#1-Install-Cloud-SDK)
+    - [(2) gcloud init](#2-gcloud-init)
+    - [(3) gcloud container clusters list](#3-gcloud-container-clusters-list)
+    - [(4) Join GKE cluster to OpenMCP](#4-Join-GKE-cluster-to-OpenMCP)
 - [OpenMCP EXAMPLE](#openmcp-example)
   - [OpenMCPDeployment 배포](#openmcpdeployment-배포)
   - [OpenMCPService 배포](#openmcpservice-배포)
@@ -45,15 +53,7 @@ Cluster2  Master IP : 10.0.3.50
 NFS       Server IP : 10.0.3.12  
 ```
 
-## 1. omcpctl을 이용한 OpenMCP 서버 등록
-
-### (1) `openmcp` namespaces 리소스 생성
-
-```bash
-$ kubectl create ns openmcp
-```
-
-### (2) cluster 이름 변경
+## 1. OpenMCP cluster 이름 변경
 
 kubeconfig 파일에서 클러스터 이름을 `opemncp`로 수정합니다.
 > kubeconfig 기본 경로 : $HOME/.kube/config
@@ -81,60 +81,26 @@ users:
     client-key-data: ...
 ```
 
-### (3) 외부 스토리지에 OpenMCP 서버 등록
-omcpctl 사용하여 nfs 서버에 OpenMCP 서버를 등록합니다.
-```bash
-$ omcpctl register openmcp
-Success OpenMCP Master Register '10.0.3.30'
-```
-
 ## 2. OpenMCP 기본 모듈 배포  
 
 모듈을 배포하기 전 환경변수 설정을 해줍니다.
 ```bash
 $ cd ./install_openmcp
 $ ./SETTING.sh
+OpenMCP Analytic Engine GRPC Server IP -> 10.0.3.20
 OpenMCP Analytic Engine GRPC Server Port -> 32050
-OpenMCP Metric Collector GRPC Server Port -> 32051
+OpenMCP Metric Collector GRPC Server IP(Public) -> 119.65.195.180
+OpenMCP Metric Collector GRPC Server Port(Public) -> 32051
+InfluxDB Server IP -> 10.0.3.20
 InfluxDB Server Port -> 31051
 InfluxDB User Name -> root
 InfluxDB User Password -> root
 NFS & PowerDNS Server IP -> 10.0.3.12
-PowerDNS Server Port -> 8081
+PowerDNS Server IP(Public) -> 119.65.195.180
+PowerDNS Server Port(Public) -> 5353
 PowerDNS Server API Key -> 1234
 OpenMCP MetalLB Address IP Range (FROM) -> 10.0.3.241
 OpenMCP MetalLB Address IP Range (TO) -> 10.0.3.250
-```
-> PowerDNS 서버 IP가 퍼블릭이 아닌 경우 외부 클러스터에서 접근이 불가하므로 kubedns 또는 coredns configmap을 edit하여   
-> forward 값을 포트포워딩한 IP로 수정해야 한다.  
-```
-$ kubectl edit configmap kube-dns -n kube-system --context cluster3
-
-apiVersion: v1
-data:
-  upstreamNameservers: |
-    ["REPLACE_PDNSIP"]
-kind: ConfigMap
-metadata:
-  ...
-```
-```
-$ kubectl edit configmap coredns -n kube-system --context cluster4
-
-apiVersion: v1
-data:
-  Corefile: |
-    cluster.local:53 {
-      ...
-    }
-    .:53 {
-      errors
-      cache 30
-      forward . REPLACE_PDNSIP
-    }
-kind: ConfigMap
-metadata:
-  ...
 ```
 
 OpenMCP 동작에 필요한 기본 모듈을 배포합니다.
@@ -186,16 +152,31 @@ metric-collector-period        3m16s
 ### OpenMCP Architecture
 ![Architecture of the openmcp](/images/openmcp_architecture_2.png)
 
+
+## 3. 외부 스토리지에 OpenMCP 서버 등록
+
+등록하기 전, [omcpctl](https://github.com/openmcp/openmcp/tree/master/omcpctl)를 설치하고 /etc/resolv.conf에 외부 서버를 등록합니다.
+```bash
+$ vi /etc/resolv.conf
+nameserver 10.0.3.12
+```
+
+omcpctl 사용하여 nfs 서버에 OpenMCP 서버를 등록합니다.
+```bash
+$ omcpctl register openmcp
+Success OpenMCP Master Register '10.0.3.30'
+```
+
 ---
 
 # How To Join Cluster
 
-1. Kubernetes Cluster 조인
-2. GKE Cluster 조인
-3. EKS Cluster 조인
+1. OpenMCP에 On-premise cluster 조인
+2. OpenMCP에 GKE cluster 조인
+3. OpenMCP에 EKS cluster 조인
 
 --------------------------------------------------------------------------------------------
-## 1. Kubernetes Cluster 조인 방법
+## 1. OpenMCP에 On-premise cluster 조인
 
 ### (1) (선택) cluster 이름 변경 [하위 클러스터에서 수행]
 OpenMCP에 하위 클러스터를 join하기 전에 다른 클러스터와 이름이 겹치지 않도록 하위 클러스터의 이름을 변경합니다.
@@ -278,7 +259,7 @@ data:
 $ kubectl create -f metallb_config.yaml --context=<cluster-name>
 ```
 
-## 2. GKE Cluster 조인 방법
+## 2. OpenMCP에 GKE cluster 조인
 
 ### (1) Cloud SDK 설치
 [https://cloud.google.com/sdk/docs/downloads-apt-get?hl=ko](https://cloud.google.com/sdk/docs/downloads-apt-get?hl=ko)
@@ -288,49 +269,14 @@ $ kubectl create -f metallb_config.yaml --context=<cluster-name>
 $ gcloud init
 ```
 
-### (3) gcloud container clusters get-credentials {gke_cluster_name}
+### (3) gcloud container clusters list
 ```
 $ gcloud container clusters list
-NAME            LOCATION       MASTER_VERSION  MASTER_IP       MACHINE_TYPE  NODE_VERSION   NUM_NODES  STATUS
-gke-cluster     asia-east1-a   1.16.13-gke.1   35.201.135.105  e2-medium     1.16.13-gke.1  2          RUNNING
-```
-```
-$ gcloud container clusters get-credentials gke-cluster
-Fetching cluster endpoint and auth data.
-kubeconfig entry generated for gke-cluster.
+NAME         LOCATION       MASTER_VERSION  MASTER_IP       MACHINE_TYPE  NODE_VERSION   NUM_NODES  STATUS
+cluster3     asia-east1-a   1.16.13-gke.1   35.201.135.105  e2-medium     1.16.13-gke.1  2          RUNNING
 ```
 
-### (4) KUBECONFIG 파일에서 Cluster 이름 수정
-```bash
-$ vi $HOME/.kube/config
-apiVersion: v1
-clusters:
-- cluster:
-    certificate-authority-data: ...
-    server: https://35.201.135.105
-  name: cluster3
-contexts:
-- context:
-    cluster: cluster3
-    user: cluster3-admin
-  name: cluster3
-current-context: openmcp
-kind: Config
-preferences: {}
-users:
-- name: cluster3-admin
-  user:
-    auth-provider:
-      config:
-        access-token: ya29.a0AfH6SMAhUVakRB1Yq-ZscqYwh32iOs4nvd-r3BiHuXQOBJHVHfsQw8pxZn0aexYXgzpgqlKSl8qkpCIApS7LoCjxmlg1Vg_zf73sliJrEx6kl3TvWr56j_I92yiRu6hpanCiOuHPOw_U-AC783Y9jG104g4ofVz5xtK8j-5M9Z8F
-        cmd-args: config config-helper --format=json
-        cmd-path: /usr/lib/google-cloud-sdk/bin/gcloud
-        expiry: "2020-09-07T07:52:08Z"
-        expiry-key: '{.credential.token_expiry}'
-        token-key: '{.credential.access_token}'
-      name: gcp
-```
-### (5) OpenMCP 조인
+### (4) OpenMCP에 GKE cluster 조인
 ```
 $ omcpctl join gke-cluster cluster3
 ...
@@ -343,8 +289,7 @@ cluster2   True    15m
 cluster3   True    10s
 ```
 
-
-## 3. EKS Cluster 조인 방법
+## 3. OpenMCP에 EKS cluster 조인
 
 ### (1) AWS CLI 설치
 [https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/getting-started-console.html](https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/getting-started-console.html)
@@ -357,46 +302,17 @@ AWS Secret Access Key [****************PivT]: a3jJN+zLu5NBVDALTpSbqSDj7iUGCeOItd
 Default region name [us-east-2]: us-east-2
 Default output format [json]: json
 ```
-### (3) aws eks --region {region_name} update-kubeconfig --name {eks_cluster_name}
+### (3) aws eks list-clusters
 ```
-$ aws eks update-kubeconfig --name eks-cluster
-Added new context arn:aws:eks:us-east-2:627135710314:cluster/eks-cluster to /root/.kube/config
-```
-
-### (4) KUBECONFIG 파일에서 Cluster 이름 수정
-```bash
-$ vi $HOME/.kube/config
-apiVersion: v1
-clusters:
-- cluster:
-    certificate-authority-data: ...
-    server: https://fa2e8bee9a2168ec0f822ca0dbafef40.gr7.us-east-2.eks.amazonaws.com/
-  name: cluster4
-contexts:
-- context:
-    cluster: cluster4
-    user: cluster4-admin
-  name: cluster4
-current-context: openmcp
-kind: Config
-preferences: {}
-users:
-- name: cluster4-admin
-  user:
-    exec:
-      apiVersion: client.authentication.k8s.io/v1alpha1
-      args:
-      - --region
-      - us-east-2
-      - eks
-      - get-token
-      - --cluster-name
-      - eks-cluster
-      command: aws
-      env: null
+{
+    "clusters": [
+        "cluster4"
+    ]
+}
 ```
 
-### (5) OpenMCP 조인
+### (4) OpenMCP에 EKS cluster 조인
+
 ```
 $ omcpctl join eks-cluster cluster4
 ...
@@ -409,7 +325,6 @@ cluster2   True    15m
 cluster3   True    80s
 cluster4   True    11s
 ```
-
 
 # OpenMCP EXAMPLE
 OpenMCP에 cluster1, cluster2가 조인된 상태에서 EXAMPLE TEST를 진행합니다.
