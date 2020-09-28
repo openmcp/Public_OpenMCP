@@ -55,13 +55,6 @@ func (h *HttpManager) help(w http.ResponseWriter, r *http.Request){
 	}
 
 	w.Write([]byte("OpenMCP Service Response\n"))
-	//w.Write([]byte("http://"+h.HTTPServer_IP+":"+h.HTTPServer_PORT+"/etcd/backup/start?time=5\n"))
-	//w.Write([]byte("http://"+h.HTTPServer_IP+":"+h.HTTPServer_PORT+"/etcd/backup/stop\n"))
-	//w.Write([]byte("http://"+h.HTTPServer_IP+":"+h.HTTPServer_PORT+"/etcd/backup/status\n"))
-	//w.Write([]byte("http://"+h.HTTPServer_IP+":"+h.HTTPServer_PORT+"/etcd/get/snapshot/list\n"))
-	//w.Write([]byte("http://"+h.HTTPServer_IP+":"+h.HTTPServer_PORT+"/etcd/restore/cluster?cluster=CLUSTER_NAME&file=SNAPSHOT.db\n"))
-	//w.Write([]byte("http://"+h.HTTPServer_IP+":"+h.HTTPServer_PORT+"/etcd/restore/all?file=SNAPSHOT.db\n"))
-
 
 }
 func (h *HttpManager)sysbench_daemon(resourceType string) {
@@ -169,8 +162,6 @@ func (h *HttpManager) network_stop(w http.ResponseWriter, r *http.Request){
 
 
 func main() {
-	//HTTPServer_IP :=   os.Getenv("SERVER_IP")
-	//HTTPServer_PORT := os.Getenv("SERVER_PORT")
 
 	HTTPServer_PORT := "8080"
 

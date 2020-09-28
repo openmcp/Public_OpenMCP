@@ -46,23 +46,38 @@ func (pl *PodFitsResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketire
 }
 
 // Return true if there is at least 1 node that have AdditionalResources
-func (pl *PodFitsResources) PostFilter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) (bool, error) {
+func (pl *PodFitsResources) PostFilter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, postpods []*ketiresource.Pod) (bool, error) {
 
+	var postCPU int64
+	var postMemory int64
+	var postEphemeralStorage int64
+
+	for _, pod := range postpods {
+		postCPU += pod.RequestedResource.MilliCPU
+		postMemory += pod.RequestedResource.Memory
+		postEphemeralStorage += pod.RequestedResource.EphemeralStorage
+	}
 	for _, node := range clusterInfo.Nodes {
+
 		node_result := true
 		if node.CapacityResource.MilliCPU < newPod.RequestedResource.MilliCPU {
-			node_result = false
-		}
-		if node.CapacityResource.Memory < newPod.RequestedResource.Memory {
-			node_result = false
+			if node.CapacityResource.MilliCPU < postCPU+newPod.RequestedResource.MilliCPU {
+				node_result = false
+			}
+
 		}
 		// check if node has enough Memory
 		if node.CapacityResource.Memory < newPod.RequestedResource.Memory {
-			node_result = false
+			if node.CapacityResource.Memory < postMemory+newPod.RequestedResource.Memory {
+				node_result = false
+			}
 		}
+
 		// check if node has enough EphemeralStorage
 		if node.CapacityResource.EphemeralStorage < newPod.RequestedResource.EphemeralStorage {
-			node_result = false
+			if node.CapacityResource.EphemeralStorage < postEphemeralStorage+newPod.RequestedResource.EphemeralStorage {
+				node_result = false
+			}
 		}
 
 		if node_result == true {

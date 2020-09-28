@@ -52,23 +52,10 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	// fmt.Printf("%T, %s\n", live, live.GetClusterName())
-
 	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPDNSEndpoint{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
-	// Note: At the moment, all clusters share the same scheme under the hood
-	// (k8s.io/client-go/kubernetes/scheme.Scheme), yet multicluster-controller gives each cluster a scheme pointer.
-	// Therefore, if we needed a custom resource in multiple clusters, we would redundantly
-	// add it to each cluster's scheme, which points to the same underlying scheme.
-
-	//for _, ghost := range ghosts {
-	//	fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
-	//	if err := co.WatchResourceReconcileController(ghost, &appsv1.Deployment{}, controller.WatchOptions{}); err != nil {
-	//		return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
-	//	}
-	//}
 	return co, nil
 }
 
@@ -85,7 +72,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	i += 1
 	omcplog.V(5).Info( "********* [ OpenMCP Domain", i, "] *********")
 	omcplog.V(5).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
-	//	cm := clusterManager.NewClusterManager()
 
 	omcplog.V(2).Info("PdnsNewClient")
 	pdnsClient, err := mypdns.PdnsNewClient()
@@ -93,13 +79,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		omcplog.V(0).Info(err)
 	}
 
-	// Fetch the Sync instance
+
 	instance := &ketiv1alpha1.OpenMCPDNSEndpoint{}
 	err = r.live.Get(context.TODO(), req.NamespacedName, instance)
 	omcplog.V(2).Info("[Get] OpenMCPDNSEndpoint")
 
 	if err != nil && errors.IsNotFound(err){
-		omcplog.V(2).Info( "DNSEndpoint 삭제 감지, PowerDNS 정보 삭제")
+		omcplog.V(2).Info( "DNSEndpoint Delete Detection, PowerDNS Info Delete")
 		err = mypdns.DeleteZone(pdnsClient, r.live)
 		if err != nil {
 			omcplog.V(0).Info( "[OpenMCP External DNS Controller] : Delete?  ",err)
@@ -112,28 +98,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		if domain == ""{
 			continue
 		}
-		omcplog.V(2).Info( "DNSEndpoint 생성/업데이트 감지, PowerDNS 정보 갱신")
+		omcplog.V(2).Info( "DNSEndpoint Create/Update Detection, PowerDNS Info Refresh")
 		err = mypdns.SyncZone(pdnsClient, domain, instance.Spec.Endpoints)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
 
-		//zone, err := mypdns.GetZone(pdnsClient, domain)
-		//if err != nil {
-		//	omcplog.V(0).Info( "[OpenMCP External DNS Controller] : '", domain + "' Not Found")
-		//}
-		//if err == nil {
-		//	// Already Exist
-		//	err = mypdns.UpdateZoneWithRecords(pdnsClient, *zone, domain, instance.Spec.Endpoints)
-		//	if err != nil {
-		//		omcplog.V(0).Info( "[OpenMCP External DNS Controller] : UpdateZone?  ",err)
-		//	}
-		//} else {
-		//	err = mypdns.CreateZoneWithRecords(pdnsClient, domain, instance.Spec.Endpoints)
-		//	if err != nil {
-		//		omcplog.V(0).Info( "[OpenMCP External DNS Controller] : CreateZone? ",err)
-		//	}
-		//}
 	}
 
 

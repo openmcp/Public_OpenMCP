@@ -8,7 +8,7 @@ import (
 
 
 
-// SyncSpec defines the desired state of Sync
+// OpenMCPServiceDNSRecordSpec defines the desired state of OpenMCPServiceDNSRecord
 // +k8s:openapi-gen=true
 type OpenMCPServiceDNSRecordSpec struct {
 	// DomainRef is the name of the domain object to which the corresponding federated service belongs

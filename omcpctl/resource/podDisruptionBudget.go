@@ -2,10 +2,9 @@ package resource
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"github.com/ghodss/yaml"
+	"github.com/olekukonko/tablewriter"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
-
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
 	"strconv"
@@ -33,7 +32,6 @@ func PrintPodDisruptionBudget(body []byte) {
 	pdb := policyv1beta1.PodDisruptionBudget{}
 	err := yaml.Unmarshal(body, &pdb)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -49,7 +47,6 @@ func PrintPodDisruptionBudgetList(body []byte) {
 	resourceStruct := policyv1beta1.PodDisruptionBudgetList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

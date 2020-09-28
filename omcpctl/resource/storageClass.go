@@ -2,10 +2,9 @@ package resource
 
 import (
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"github.com/ghodss/yaml"
+	"github.com/olekukonko/tablewriter"
 	storagev1 "k8s.io/api/storage/v1"
-
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
 	"strconv"
@@ -31,7 +30,6 @@ func PrintStorageClass(body []byte) {
 	sc := storagev1.StorageClass{}
 	err := yaml.Unmarshal(body, &sc)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -47,7 +45,6 @@ func PrintStorageClassList(body []byte) {
 	resourceStruct := storagev1.StorageClassList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

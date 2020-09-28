@@ -18,24 +18,15 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/ghodss/yaml"
+	"github.com/spf13/cobra"
 	"io/ioutil"
 	"openmcp/openmcp/omcpctl/apiServerMethod"
 	"openmcp/openmcp/omcpctl/resource"
-	"strings"
-	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	//ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
-
-	"fmt"
 	cobrautil "openmcp/openmcp/omcpctl/util"
-
-	"github.com/spf13/cobra"
-	//"sigs.k8s.io/controller-runtime/pkg/client"
+	"strings"
 )
-
-
 
 
 // getCmd represents the get command
@@ -139,7 +130,7 @@ func getResource(args []string) {
 			}
 		} else {
 			resourceKindList := strings.Split(resourceKinds, ",")
-			// get pod,svc
+
 			for _, resourceKind := range resourceKindList {
 				err := getCore(resourceKind, resourceName, clusterContext)
 				if err != nil {
@@ -367,7 +358,15 @@ func getCore(resourceKind, resourceName, clusterContext string) error{
 func init() {
 	rootCmd.AddCommand(getCmd)
 
+	// Here you will define your flags and configuration settings.
 
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// setCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// setCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	getCmd.Flags().StringVarP(&cobrautil.Option_filetype, "option","o", "", "input a option")
 	getCmd.Flags().StringVarP(&cobrautil.Option_context, "context","c","", "input a option")
 	getCmd.Flags().StringVarP(&cobrautil.Option_namespace, "namespace","n", "", "input a option")
@@ -375,13 +374,4 @@ func init() {
 	getCmd.Flags().BoolVarP(&cobrautil.Option_allnamespace,"all-namespaces", "A", false, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
 	getCmd.Flags().BoolVarP(&cobrautil.Option_allcluster,"all-clusters", "C", false, "If present, list the requested object(s) across all clusters.")
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// getCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// getCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

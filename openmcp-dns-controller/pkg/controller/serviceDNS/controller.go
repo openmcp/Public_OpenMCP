@@ -77,23 +77,22 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	i += 1
 	omcplog.V(5).Info( "********* [ OpenMCP Domain", i, "] *********")
 	omcplog.V(5).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
-	//cm := clusterManager.NewClusterManager()
 
 
-	// OpenMCPServiceDNSRecord 삭제 요청인 경우 종료
-	omcplog.V(2).Info("ServiceDNSRecord or Service 요청")
+	// Return for OpenMCPServiceDNSRecord deletion request
+	omcplog.V(2).Info("ServiceDNSRecord or Service Request")
 	instanceServiceRecord := &ketiv1alpha1.OpenMCPServiceDNSRecord{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instanceServiceRecord)
 	omcplog.V(2).Info("[Get] OpenMCPServiceDNSRecord")
 	if err != nil {
 		// Delete
-		omcplog.V(0).Info("ServiceDNSRecord가 존재하지 않거나 삭제되었습니다. 요청을 무시합니다.")
+		omcplog.V(0).Info("OpenMCPServiceDNSRecord does not exist or has been deleted. Ignore the request.")
 		return reconcile.Result{}, nil
 	}
-	omcplog.V(2).Info("ServiceDNSRecord or Service 생성 감지")
+	omcplog.V(2).Info("OpenMCPServiceDNSRecord or Service Create Detection")
 
 
-	// 도메인이 있는지 체크
+	// Check if a OpenMCPDomain exists
 	instanceDomain := &ketiv1alpha1.OpenMCPDomain{}
 
 	domainName := instanceServiceRecord.Spec.DomainRef
@@ -106,14 +105,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	omcplog.V(2).Info("[Get] OpenMCPDomain")
 
 	if err != nil {
-		// OpenMCPDomain이 없을경우
-		omcplog.V(0).Info("Domain 이 존재하지 않습니다.")
+		// OpenMCPDomain is not Exist
+		omcplog.V(0).Info("OpenMCPDomain Not Exist")
 		return reconcile.Result{}, nil
 	}
 
-	// OpenMCPServiceDNSRecord과 OpenMCPDomain이 존재하는경우
-	// Status 업데이트
-	omcplog.V(2).Info("ServiceDNSRecord Status 업데이트")
+	// Status Update if OpenMCPServiceDNSRecord and OpenMCPDomain exist
+	omcplog.V(2).Info("ServiceDNSRecord Status Update")
 	FillStatus(instanceServiceRecord, instanceDomain)
 
 	err = r.live.Status().Update(context.TODO(), instanceServiceRecord)
@@ -136,7 +134,7 @@ func FillStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord, ins
 	for _, cluster := range cm.Cluster_list.Items {
 		cluster_client := cm.Cluster_genClients[cluster.Name]
 
-		// 클러스터의 노드정보 (Zone, Region)
+		// Node Info of Cluster (Zone, Region)
 		instanceNodeList := &corev1.NodeList{}
 		err := cluster_client.List(context.TODO(), instanceNodeList, "default")
 		if err != nil {
@@ -156,7 +154,7 @@ func FillStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord, ins
 
 
 		zones := []string{}
-		zones_dup_map := make(map[string]string) // 중복제거를위한 딕셔너리
+		zones_dup_map := make(map[string]string) // Map for deduplication
 
 		for _, node := range instanceNodeList.Items {
 			if val, ok := node.Labels["topology.kubernetes.io/zone"]; ok {
@@ -176,12 +174,12 @@ func FillStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord, ins
 			}
 		}
 
-		// 클러스터의 노드정보 (Zone, Region)
+		// Node Info of Cluster (Zone, Region)
 		lb :=  corev1.LoadBalancerStatus{}
 		instanceService := &corev1.Service{}
 		err = cluster_client.Get(context.TODO(), instanceService,  instanceServiceRecord.Namespace,  instanceServiceRecord.Name)
 		if err == nil {
-			// 서비스가 존재하면 lb 정보 가져옴
+			// Get lb information if service exists
 			lb = instanceService.Status.LoadBalancer
 
 		}

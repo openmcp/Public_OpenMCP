@@ -28,7 +28,6 @@ func PrintReplicationController(body []byte) {
 	rc := corev1.ReplicationController{}
 	err := yaml.Unmarshal(body, &rc)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -44,7 +43,6 @@ func PrintReplicationControllerList(body []byte) {
 	resourceStruct := corev1.ReplicationControllerList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

@@ -40,7 +40,6 @@ func PrintOpenMCPConfigMap(body []byte) {
 	ocm := ketiv1alpha1.OpenMCPConfigMap{}
 	err := yaml.Unmarshal(body, &ocm)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -56,7 +55,6 @@ func PrintOpenMCPConfigMapList(body []byte) {
 	resourceStruct := ketiv1alpha1.OpenMCPConfigMapList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

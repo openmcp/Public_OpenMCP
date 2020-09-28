@@ -9,11 +9,7 @@ import (
 	"fmt"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
-	//"k8s.io/klog"
-
-	//"k8s.io/klog"
 	"openmcp/openmcp/omcplog"
-
 	"openmcp/openmcp/openmcp-resource-controller/apis"
 	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -39,7 +35,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	fmt.Printf("%T, %s\n", live, live.GetClusterName())
 	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPPolicy{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
@@ -83,14 +78,6 @@ func (r *reconciler) getLogLevel() string {
 	}
 	if instance.Spec.PolicyStatus == "Enabled" {
 		for _, policy := range instance.Spec.Template.Spec.Policies {
-			//if policy.Type == "Version" && len(policy.Value) == 1 {
-			//	matched, _ := regexp.MatchString("[0-9]", policy.Value[0])
-			//	if matched && len(policy.Value[0]) == 1 {
-			//		return policy.Value[0]
-			//	}
-			//	klog.Info("Policy 'log-level' Value must be [0-9], Use Default LogLevel (0)")
-			//	return "0"
-			//}
 			if policy.Type == "Level" && len(policy.Value) == 1 {
 				logLevelString := policy.Value[0]
 				logLevelInt, err := strconv.Atoi(logLevelString)

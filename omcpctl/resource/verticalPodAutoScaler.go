@@ -5,7 +5,6 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
-
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
 )
@@ -39,7 +38,6 @@ func PrintVerticalPodAutoscaler(body []byte) {
 	vpa := v1beta2.VerticalPodAutoscaler{}
 	err := yaml.Unmarshal(body, &vpa)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -56,7 +54,6 @@ func PrintVerticalPodAutoscalerList(body []byte) {
 	resourceStruct := v1beta2.VerticalPodAutoscalerList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}

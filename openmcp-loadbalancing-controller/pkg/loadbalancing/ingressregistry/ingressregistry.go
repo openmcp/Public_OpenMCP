@@ -14,12 +14,9 @@ var (
 	ErrServiceNotFound = errors.New("service name/version not found")
 )
 
-// Registry is an interface used to lookup the target host
-// for a given service name / version pair.
 type Registry interface {
 	Add(ingressName, url string)
 	Delete(ingressName string)
-	//Delete(host, path, endpoint string)             // Remove an endpoint to our registry
 	Failure(host, path, endpoint string, err error) // Mark an endpoint as failed.
 	Lookup(ingressName string) ([]string, error)
 	CheckURL(url string) (bool, error)
@@ -33,10 +30,8 @@ type Registry interface {
 //     ],
 // }
 
-//type DefaultRegistry map[string]map[string]map[string]stringzmgma
 type DefaultRegistry map[string][]string
 
-// Lookup return the endpoint list for the given service name/version.
 
 func (r DefaultRegistry) Add(ingressName, url string) {
 	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(IngressRegistry)] Function Add")
@@ -85,8 +80,6 @@ func (r DefaultRegistry) CheckURL(url string) (bool, error) {
 
 func (r DefaultRegistry) Failure(host, path, endpoint string, err error) {
 	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(CountryRegistry)] Function Failure")
-	// Would be used to remove an endpoint from the rotation, log the failure, etc.
-	//log.Printf("Error accessing %s/%s (%s): %s", path, endpoint, err)
 	log.Printf("Error accessing %s %s (%s): %s", host, path, endpoint, err)
 }
 
@@ -103,23 +96,3 @@ func (r DefaultRegistry) Delete(ingressName string) {
 	delete(r, ingressName)
 }
 
-//// Delete removes the given endpoit for the service name/version.
-//func (r DefaultRegistry) Delete(host, path, endpoint string) {
-//	fmt.Println("----Delete----")
-//	lock.Lock()
-//	defer lock.Unlock()
-//
-//	service, ok := r[host]
-//	if !ok {
-//		return
-//	}
-//
-//begin:
-//	for i, svc := range service[path] {
-//		if svc == endpoint {
-//			copy(service[path][i:], service[path][i+1:])
-//			service[path] = service[path][:len(service[path])-1]
-//			goto begin
-//		}
-//	}
-//}

@@ -23,13 +23,14 @@ type OpenmcpPluginToClusterScores map[string]OpenmcpPluginScoreList
 
 // OpenmcpPluginFilteredStatus declare map from cluster name to its filtering result
 type OpenmcpClusterFilteredStatus map[string]bool
-
+type OpenmcpClusterPostFilteredStatus map[string]bool
 type OpenmcpFramework interface {
 	// RunFilterPluginsOnClusters runs the set of configured filtering plugins.
 	// It returns a map that stores for each filtering plugin name the corresponding
-	RunFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, postpods []*ketiresource.Pod) OpenmcpClusterFilteredStatus
+	RunFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster) OpenmcpClusterFilteredStatus
 	// RunScorePluginsOnClusters runs the set of configured scoring plugins.
 	// It returns a map that stores for each
+	RunPostFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, postpods []*ketiresource.Pod) OpenmcpClusterPostFilteredStatus
 	RunScorePluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, allclusters map[string]*ketiresource.Cluster, replicas int32) string
 	//RunScorePluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, replicas int32) OpenmcpPluginToClusterScores
 	EndPod()
@@ -69,5 +70,5 @@ type OpenmcpPreScorePlugin interface {
 
 type OpenmcpPostFilterPlugin interface {
 	OpenmcpPlugin
-	PostFilter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) (bool, error)
+	PostFilter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, postpods []*ketiresource.Pod) (bool, error)
 }

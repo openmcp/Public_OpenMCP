@@ -29,7 +29,7 @@ type Endpoint struct {
 	Labels Labels `json:"labels,omitempty"`
 }
 
-// DNSEndpointSpec defines the desired state of DNSEndpoint
+// OpenMCPDNSEndpointSpec defines the desired state of DNSEndpoint
 type OpenMCPDNSEndpointSpec struct {
 	Endpoints []*Endpoint `json:"endpoints,omitempty"`
 	Domains []string `json:"domain,omitempty"`
@@ -45,11 +45,11 @@ type OpenMCPDNSEndpointStatus struct {
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// DNSEndpoint is the CRD wrapper for Endpoint which is designed to act as a
+// OpenMCPDNSEndpoint is the CRD wrapper for Endpoint which is designed to act as a
 // source of truth for external-dns.
 //
 // +k8s:openapi-gen=true
-// +kubebuilder:resource:path=dnsendpoints
+// +kubebuilder:resource:path=openmcpdnsendpoints
 // +kubebuilder:subresource:status
 type OpenMCPDNSEndpoint struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -61,7 +61,7 @@ type OpenMCPDNSEndpoint struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// DNSEndpointList contains a list of DNSEndpoint
+// OpenMCPDNSEndpointList contains a list of OpenMCPDNSEndpoint
 type OpenMCPDNSEndpointList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

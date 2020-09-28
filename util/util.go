@@ -35,12 +35,10 @@ func CmdExec2(cmdStr string) error{
 	err := cmd.Start()
 	if err != nil {
 		fmt.Printf("Error : %v \n", err)
-		//os.Exit(1)
 	}
 	err = cmd.Wait()
 	if err != nil {
 		fmt.Printf("Error: %v \n", err)
-		//os.Exit(1)
 	}
 
 	return nil

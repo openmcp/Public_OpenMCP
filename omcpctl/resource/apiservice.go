@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
-
-
 	"k8s.io/kube-aggregator/pkg/apis/apiregistration/v1beta1"
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
@@ -33,7 +31,6 @@ func PrintAPIService(body []byte) {
 	as := v1beta1.APIService{}
 	err := yaml.Unmarshal(body, &as)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
@@ -49,7 +46,6 @@ func PrintAPIServiceList(body []byte) {
 	resourceStruct := v1beta1.APIServiceList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
-		fmt.Println("Check4", err)
 		panic(err.Error())
 	}
 	datas := [][]string{}
