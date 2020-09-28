@@ -1,7 +1,7 @@
 **Table of Contents**
 - [Introduction of OpenMCP&reg;](#introduction-of-openmcp)
 - [How To Install](#how-to-install)
-  - [1. Rename cluster name](#1-Rename-cluster-name)
+  - [1. Rename OpenMCP cluster name](#1-Rename-openmcp-cluster-name)
   - [2. Deploy init modules for OpenMCP](#2-Deploy-init-modules-for-OpenMCP)
   - [3. Register OpenMCP server on external storage](#3-Register-OpenMCP-server-on-external-storage)
 - [How To Join Cluster](#how-to-join-cluster)
@@ -52,7 +52,7 @@ Cluster2  Master IP : 10.0.3.50
 NFS       Server IP : 10.0.3.12  
 ```
 
-## 1. Rename cluster name
+## 1. Rename OpenMCP cluster name
 
 Rename cluster name to 'openmcp' in kubeconfig file.
 
