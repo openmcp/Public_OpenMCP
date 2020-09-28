@@ -14,7 +14,7 @@
 
 ## Requirement
 
-[1_OpenMCP 플랫폼 설치](https://github.com/openmcp/openmcp)
+1. [OpenMCP 플랫폼](https://github.com/openmcp/openmcp) 설치
 
 
 ## How to Use
