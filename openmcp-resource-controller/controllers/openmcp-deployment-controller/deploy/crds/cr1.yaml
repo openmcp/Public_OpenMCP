@@ -1,0 +1,21 @@
+apiVersion: keti.example.com/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: example-openmcpdeployment
+  namespace: openmcp
+spec:
+  replicas: 8
+  labels:
+      app: openmcp-nginx
+      test: "yes"
+  template:
+    spec:
+      template:
+        spec:
+          containers:
+          - image: nginx
+            name: nginx
+            resources:
+              requests:
+                memory: "10Mi"
+                cpu: "0.1"

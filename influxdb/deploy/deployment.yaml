@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: influxdb
+  namespace: openmcp
+spec:
+  selector:
+    matchLabels:
+      app: influxdb
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: influxdb
+    spec:
+      containers:
+      - name: influxdb
+        image: docker.io/influxdb:1.6.4
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - secretRef:
+            name: influxdb-creds
+        volumeMounts:
+        - mountPath: /var/lib/influxdb
+          name: var-lib-influxdb
+        - mountPath: /etc/localtime
+          name: timezone-config
+      volumes:
+      - name: var-lib-influxdb
+        persistentVolumeClaim:
+          claimName: pvc-influxdb
+      - name: timezone-config
+        hostPath:
+          path: /usr/share/zoneinfo/Asia/Seoul

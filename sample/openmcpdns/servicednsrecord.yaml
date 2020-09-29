@@ -1,0 +1,11 @@
+apiVersion: keti.example.com/v1alpha1
+kind: OpenMCPServiceDNSRecord
+metadata:
+  # The name of the sample service.
+  name: openmcp-service
+  # The namespace of the sample deployment/service.
+  namespace: openmcp
+spec:
+  # The name of the corresponding Domain.
+  domainRef: openmcp-service-domain
+  recordTTL: 300

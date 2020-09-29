@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmcp-dns-controller
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openmcp-dns-controller
+  template:
+    metadata:
+      labels:
+        name: openmcp-dns-controller
+    spec:
+      serviceAccountName: openmcp-dns-controller-sa
+      containers:
+        - name: openmcp-dns-controller
+          # Replace this with the built image name
+          image: openmcp/openmcp-dns-controller:v0.0.1
+          command:
+          - openmcp-dns-controller
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              value: ""
+              #valueFrom:
+              #  fieldRef:
+              #    fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "openmcp-dns-controller"
+            - name: PDNS_IP
+              value: REPLACE_PDNSIP
+            - name: PDNS_PORT
+              value: "8081"
+            - name: PDNS_API_KEY
+              value: REPLACE_PDNSAPIKEY
+          ports:
+          - containerPort: 8080
+            name: http

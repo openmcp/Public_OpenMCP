@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmcp-secret-controller
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openmcp-secret-controller
+  template:
+    metadata:
+      labels:
+        name: openmcp-secret-controller
+    spec:
+      serviceAccountName: openmcp-secret-controller
+      containers:
+        - name: openmcp-secret-controller
+          # Replace this with the built image name
+          image: openmcp/openmcp-secret-controller:v0.0.1
+          command:
+          - openmcp-secret-controller
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              #value: ""
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "openmcp-secret-controller"

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: openmcp-analytic-engine
+  namespace: openmcp
+  labels:
+    name: openmcp-analytic-engine
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 2050
+    targetPort: 2050
+    nodePort: 32050
+    protocol: TCP
+  selector:
+    name: openmcp-analytic-engine

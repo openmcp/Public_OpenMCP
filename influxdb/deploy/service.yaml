@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb
+  namespace: openmcp
+spec:
+  ports:
+  - port: 8086
+    protocol: TCP
+    targetPort: 8086
+    nodePort: 31051
+  selector:
+    app: influxdb
+  type: LoadBalancer
+

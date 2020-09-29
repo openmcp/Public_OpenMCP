@@ -1,0 +1,4290 @@
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.30:6443
+  name: cluster1
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.40:6443
+  name: cluster2
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster3
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster1
+    user: cluster1-admin
+  name: cluster1
+- context:
+    cluster: cluster2
+    user: cluster2-admin
+  name: cluster2
+- context:
+    cluster: cluster3
+    user: cluster3-admin
+  name: cluster3
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster1-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster2-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster3-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster4
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.70:6443
+  name: cluster5
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.80:6443
+  name: cluster6
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster4
+    user: cluster4-admin
+  name: cluster4
+- context:
+    cluster: cluster5
+    user: cluster5-admin
+  name: cluster5
+- context:
+    cluster: cluster6
+    user: cluster6-admin
+  name: cluster6
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster4-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster5-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster6-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster4
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.70:6443
+  name: cluster5
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.80:6443
+  name: cluster6
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster4
+    user: cluster4-admin
+  name: cluster4
+- context:
+    cluster: cluster5
+    user: cluster5-admin
+  name: cluster5
+- context:
+    cluster: cluster6
+    user: cluster6-admin
+  name: cluster6
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster4-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster5-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster6-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster4
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.70:6443
+  name: cluster5
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.80:6443
+  name: cluster6
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster4
+    user: cluster4-admin
+  name: cluster4
+- context:
+    cluster: cluster5
+    user: cluster5-admin
+  name: cluster5
+- context:
+    cluster: cluster6
+    user: cluster6-admin
+  name: cluster6
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster4-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster5-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster6-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster4
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.70:6443
+  name: cluster5
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.80:6443
+  name: cluster6
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster4
+    user: cluster4-admin
+  name: cluster4
+- context:
+    cluster: cluster5
+    user: cluster5-admin
+  name: cluster5
+- context:
+    cluster: cluster6
+    user: cluster6-admin
+  name: cluster6
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster4-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster5-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster6-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.60:6443
+  name: cluster4
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.70:6443
+  name: cluster5
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.80:6443
+  name: cluster6
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://10.0.3.20:6443
+  name: openmcp
+contexts:
+- context:
+    cluster: cluster4
+    user: cluster4-admin
+  name: cluster4
+- context:
+    cluster: cluster5
+    user: cluster5-admin
+  name: cluster5
+- context:
+    cluster: cluster6
+    user: cluster6-admin
+  name: cluster6
+- context:
+    cluster: openmcp
+    user: openmcp-admin
+  name: openmcp
+current-context: openmcp
+kind: Config
+preferences: {}
+users:
+- name: cluster4-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster5-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: cluster6-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED
+- name: openmcp-admin
+  user:
+    client-certificate-data: REDACTED
+    client-key-data: REDACTED

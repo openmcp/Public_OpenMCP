@@ -1,0 +1,38 @@
+apiVersion: keti.example.com/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: example-openmcpdeployment
+  namespace: openmcp
+spec:
+  replicas: 1
+  affinity: 
+    region: 
+      - AS
+    zone: 
+      - KR
+      - CH
+  labels:
+      test: "yes"
+  template:
+    spec:
+      template:
+        spec:
+          containers:
+          - image: nginx
+            name: nginx
+            ports:
+            - containerPort: 1234
+            resources:
+              requests:
+                memory: "100Gi"
+                cpu: "10"
+                ephemeral-storage: "100Gi"
+          - image: nginx
+            name: server
+            ports:
+            - containerPort: 5678
+            resources:
+              requests:
+                memory: "50Gi"
+                cpu: "5"
+                ephemeral-storage: "200Gi"
