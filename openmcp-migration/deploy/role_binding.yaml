@@ -1,0 +1,17 @@
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: openmcp-migration
+  namespace: openmcp
+subjects:
+- kind: ServiceAccount
+  name: openmcp-migration-sa
+  namespace: openmcp
+# roleRef:
+#   kind: Role
+#   name: openmcp-migration
+#   apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io

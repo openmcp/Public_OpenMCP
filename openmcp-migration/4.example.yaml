@@ -1,0 +1,22 @@
+apiVersion: nanum.example.com/v1alpha1
+kind: Migration
+metadata:
+  name: migrations
+  namespace: openmcp
+spec:
+  MigrationServiceSource:
+  - SourceCluster: cluster1
+    TargetCluster: cluster2
+    VolumePath: /nfsdir3/
+    NameSpace: openmcp
+    MigrationSource:
+    - ResourceName: testim-dp
+      ResourceType: Deployment
+    - ResourceName: testim-sv
+      ResourceType: Service
+    - ResourceName: testim-pv
+      ResourceType: PersistentVolume
+    - ResourceName: testim-pvc
+      ResourceType: PersistentVolumeClaim
+   
+    
