@@ -38,8 +38,14 @@ and usage of using your command. For example:
 
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+to quickly create a Cobra application.
+
+omcpctl joinable list`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			fmt.Println("Run 'omcpctl joinable --help' to view all commands")
+		}
+
 		if len(args) != 0 && args[0] == "list" {
 			GetJoinableClusterList()
 		}
@@ -79,6 +85,11 @@ func GetJoinableClusterList() {
 	eks_datas := getEKSClusterData()
 	for _, eks_data := range eks_datas {
 		datas = append(datas, eks_data)
+	}
+
+	aks_datas := getAKSClusterData()
+	for _, aks_data := range aks_datas {
+		datas = append(datas, aks_data)
 	}
 
 
@@ -126,7 +137,7 @@ func getGKEClusterData() [][]string{
 			}
 		}
 		if !isAlreadyJoined {
-			data := []string{clusterName, masterIP, platform}
+			data := []string{clusterName, "https://"+masterIP, platform}
 			datas = append(datas, data)
 		}
 
@@ -162,8 +173,8 @@ func getEKSClusterData() [][]string{
 		return datas
 	}
 	eksClusterNamesInteface := jsonData["clusters"].([]interface{})
-	for _, clusterNameInteface := range eksClusterNamesInteface{
-		clusterName := clusterNameInteface.(string)
+	for _, clusterNameInterface := range eksClusterNamesInteface{
+		clusterName := clusterNameInterface.(string)
 		ss, err := util.CmdExec("aws eks describe-cluster --name "+clusterName+" | cat")
 
 		if err != nil {
@@ -202,6 +213,55 @@ func getEKSClusterData() [][]string{
 
 	return datas
 }
+
+func getAKSClusterData() [][]string{
+
+	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
+	genClient := genericclient.NewForConfigOrDie(kubeconfig)
+
+	clusterList := clusterManager.ListKubeFedClusters(genClient, "kube-federation-system")
+
+	datas := [][]string{}
+	s, err := util.CmdExec("az aks list")
+	if err != nil {
+		//fmt.Println(err)
+		return datas
+	}
+
+	jsonData := make([]map[string]interface{},0)
+	err = json.Unmarshal([]byte(s), &jsonData)
+	if err != nil {
+		return datas
+	}
+
+	for _, jsonData2 := range jsonData{
+
+		clusterName := jsonData2["name"].(string)
+		clusterAPI := jsonData2["fqdn"].(string)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		platform := "aks"
+
+		isAlreadyJoined := false
+		for _, joinedCluster := range clusterList.Items{
+			if clusterName == joinedCluster.Name && strings.Contains(joinedCluster.Spec.APIEndpoint, clusterAPI){
+				isAlreadyJoined = true
+				break
+			}
+		}
+		if !isAlreadyJoined {
+			data := []string{clusterName, "https://"+clusterAPI+":443", platform}
+			datas = append(datas, data)
+		}
+
+	}
+
+	return datas
+}
+
 func init() {
 	rootCmd.AddCommand(joinableCmd)
 
