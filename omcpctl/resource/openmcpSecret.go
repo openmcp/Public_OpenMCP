@@ -5,14 +5,14 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
 	cobrautil "openmcp/openmcp/omcpctl/util"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	"os"
 	"sort"
 	"strconv"
 )
 
 
-func OpenMCPSecretInfo(osec *ketiv1alpha1.OpenMCPSecret) []string{
+func OpenMCPSecretInfo(osec *resourcev1alpha1.OpenMCPSecret) []string{
 
 	namespace := osec.Namespace
 	name := osec.Name
@@ -39,7 +39,7 @@ func OpenMCPSecretInfo(osec *ketiv1alpha1.OpenMCPSecret) []string{
 	return data
 }
 func PrintOpenMCPSecret(body []byte) {
-	osec := ketiv1alpha1.OpenMCPSecret{}
+	osec := resourcev1alpha1.OpenMCPSecret{}
 	err := yaml.Unmarshal(body, &osec)
 	if err != nil {
 		panic(err.Error())
@@ -54,7 +54,7 @@ func PrintOpenMCPSecret(body []byte) {
 
 }
 func PrintOpenMCPSecretList(body []byte) {
-	resourceStruct := ketiv1alpha1.OpenMCPSecretList{}
+	resourceStruct := resourcev1alpha1.OpenMCPSecretList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
 		panic(err.Error())

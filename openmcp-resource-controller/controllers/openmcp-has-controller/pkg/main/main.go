@@ -17,17 +17,14 @@ limitations under the License.
 package main
 
 import (
-	"log"
-	openmcphas "openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-has-controller/pkg/controller"
-	"openmcp/openmcp/util/controller/logLevel"
-
-	"fmt"
-
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
+	"fmt"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-
+	"log"
+	openmcphas "openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-has-controller/pkg/controller"
 	"openmcp/openmcp/util/clusterManager"
+	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
 )
 

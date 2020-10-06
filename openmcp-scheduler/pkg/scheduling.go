@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"openmcp/openmcp/omcplog"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	ketiframework "openmcp/openmcp/openmcp-scheduler/pkg/framework/v1alpha1"
 	"openmcp/openmcp/openmcp-scheduler/pkg/protobuf"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
@@ -44,7 +44,7 @@ func NewScheduler(cm *clusterManager.ClusterManager, grpcClient protobuf.Request
 	return sched
 }
 
-func (sched *OpenMCPScheduler) Scheduling(dep *ketiv1alpha1.OpenMCPDeployment) (map[string]int32, error) {
+func (sched *OpenMCPScheduler) Scheduling(dep *resourcev1alpha1.OpenMCPDeployment) (map[string]int32, error) {
 	startTime := time.Now()
 	cm := sched.ClusterManager
 
@@ -178,7 +178,7 @@ func (sched *OpenMCPScheduler) UpdateResources(newPod *ketiresource.Pod, schedul
 }
 
 // Returns ketiresource.Resource if specified
-func newPodFromOpenMCPDeployment(dep *ketiv1alpha1.OpenMCPDeployment) *ketiresource.Pod {
+func newPodFromOpenMCPDeployment(dep *resourcev1alpha1.OpenMCPDeployment) *ketiresource.Pod {
 	res := ketiresource.NewResource()
 	additionalResource := make([]string, 0)
 	affinities := make(map[string][]string)
@@ -344,7 +344,7 @@ func (sched *OpenMCPScheduler) SetupResources() error {
 	return nil
 }
 
-func openmcpContainersToContainers(containers []ketiv1alpha1.OpenMCPContainer) []corev1.Container {
+func openmcpContainersToContainers(containers []resourcev1alpha1.OpenMCPContainer) []corev1.Container {
 	var newContainers []corev1.Container
 
 	for _, container := range containers {
@@ -380,7 +380,7 @@ func openmcpContainersToContainers(containers []ketiv1alpha1.OpenMCPContainer) [
 	return newContainers
 }
 
-func openmcpPodSpecToPodSpec(spec ketiv1alpha1.OpenMCPPodSpec) corev1.PodSpec {
+func openmcpPodSpecToPodSpec(spec resourcev1alpha1.OpenMCPPodSpec) corev1.PodSpec {
 	return corev1.PodSpec{
 		Volumes:                       spec.Volumes,
 		InitContainers:                openmcpContainersToContainers(spec.InitContainers),
@@ -415,14 +415,14 @@ func openmcpPodSpecToPodSpec(spec ketiv1alpha1.OpenMCPPodSpec) corev1.PodSpec {
 	}
 }
 
-func openmcpPodTemplateSpecToPodTemplateSpec(template ketiv1alpha1.OpenMCPPodTemplateSpec) corev1.PodTemplateSpec {
+func openmcpPodTemplateSpecToPodTemplateSpec(template resourcev1alpha1.OpenMCPPodTemplateSpec) corev1.PodTemplateSpec {
 	return corev1.PodTemplateSpec{
 		ObjectMeta: template.ObjectMeta,
 		Spec:       openmcpPodSpecToPodSpec(template.Spec),
 	}
 }
 
-func openmcpDeploymentTemplateSpecToDeploymentSpec(templateSpec ketiv1alpha1.OpenMCPDeploymentTemplateSpec) appsv1.DeploymentSpec {
+func openmcpDeploymentTemplateSpecToDeploymentSpec(templateSpec resourcev1alpha1.OpenMCPDeploymentTemplateSpec) appsv1.DeploymentSpec {
 	return appsv1.DeploymentSpec{
 		Replicas:                templateSpec.Replicas,
 		Selector:                templateSpec.Selector,

@@ -6,7 +6,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	clientV1alpha1 "openmcp/openmcp/openmcp-resource-controller/clientset/v1alpha1"
+	clientV1alpha1 "openmcp/openmcp/clientset/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/client-go/dynamic"

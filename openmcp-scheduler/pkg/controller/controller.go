@@ -14,27 +14,24 @@ limitations under the License.
 package controller 
 
 import (
-	"context"
-	"fmt"
-	"sort"
-	"strings"
-
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/manager"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
+	"context"
+	"fmt"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
+	"openmcp/openmcp/apis"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-resource-controller/apis"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
 	openmcpscheduler "openmcp/openmcp/openmcp-scheduler/pkg"
-	syncapis "openmcp/openmcp/openmcp-sync-controller/pkg/apis"
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sort"
+	"strings"
 
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 )
@@ -109,11 +106,9 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
-	if err := syncapis.AddToScheme(live.GetScheme()); err != nil {
-		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
-	}
 
-	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPDeployment{}, controller.WatchOptions{}); err != nil {
+
+	if err := co.WatchResourceReconcileObject(live, &resourcev1alpha1.OpenMCPDeployment{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
@@ -128,7 +123,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 
 	// Fetch the OpenMCPDeployment instance
-	newDeployment := &ketiv1alpha1.OpenMCPDeployment{}
+	newDeployment := &resourcev1alpha1.OpenMCPDeployment{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, newDeployment)
 	if err != nil && errors.IsNotFound(err) {
 		omcplog.V(0).Info("Not Found")

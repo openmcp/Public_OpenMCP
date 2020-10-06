@@ -17,21 +17,15 @@ limitations under the License.
 package main
 
 import (
-
-	"log"
-	"fmt"
-
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
-
+	"fmt"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-
+	"log"
 	"openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-configmap-controller/pkg/controller/openmcpconfigmap"
-
-	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/clusterManager"
+	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
-
 )
 
 func main() {

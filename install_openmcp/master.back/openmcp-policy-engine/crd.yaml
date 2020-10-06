@@ -1,9 +1,9 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: openmcppolicys.keti.example.com
+  name: openmcppolicys.openmcp.k8s.io
 spec:
-  group: keti.example.com
+  group: openmcp.k8s.io
   names:
     kind: OpenMCPPolicy
     listKind: OpenMCPPolicyList

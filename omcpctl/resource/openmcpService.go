@@ -5,13 +5,13 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
 	cobrautil "openmcp/openmcp/omcpctl/util"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	"os"
 	"sort"
 	"strconv"
 )
 
-func OpenMCPServiceInfo(osvc *ketiv1alpha1.OpenMCPService) []string{
+func OpenMCPServiceInfo(osvc *resourcev1alpha1.OpenMCPService) []string{
 
 	namespace := osvc.Namespace
 	name := osvc.Name
@@ -32,7 +32,7 @@ func OpenMCPServiceInfo(osvc *ketiv1alpha1.OpenMCPService) []string{
 	return data
 }
 func PrintOpenMCPService(body []byte) {
-	osvc := ketiv1alpha1.OpenMCPService{}
+	osvc := resourcev1alpha1.OpenMCPService{}
 	err := yaml.Unmarshal(body, &osvc)
 	if err != nil {
 		panic(err.Error())
@@ -47,7 +47,7 @@ func PrintOpenMCPService(body []byte) {
 
 }
 func PrintOpenMCPServiceList(body []byte) {
-	resourceStruct := ketiv1alpha1.OpenMCPServiceList{}
+	resourceStruct := resourcev1alpha1.OpenMCPServiceList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
 		panic(err.Error())

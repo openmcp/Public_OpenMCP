@@ -5,14 +5,14 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
 	cobrautil "openmcp/openmcp/omcpctl/util"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	"os"
 	"strconv"
 	"strings"
 )
 
 
-func OpenMCPHybridAutoScalerInfo(ohas *ketiv1alpha1.OpenMCPHybridAutoScaler) []string{
+func OpenMCPHybridAutoScalerInfo(ohas *resourcev1alpha1.OpenMCPHybridAutoScaler) []string{
 
 	namespace := ohas.Namespace
 	name := ohas.Name
@@ -47,7 +47,7 @@ func OpenMCPHybridAutoScalerInfo(ohas *ketiv1alpha1.OpenMCPHybridAutoScaler) []s
 	return data
 }
 func PrintOpenMCPHybridAutoScaler(body []byte) {
-	od := ketiv1alpha1.OpenMCPHybridAutoScaler{}
+	od := resourcev1alpha1.OpenMCPHybridAutoScaler{}
 	err := yaml.Unmarshal(body, &od)
 	if err != nil {
 		panic(err.Error())
@@ -62,7 +62,7 @@ func PrintOpenMCPHybridAutoScaler(body []byte) {
 
 }
 func PrintOpenMCPHybridAutoScalerList(body []byte) {
-	resourceStruct := ketiv1alpha1.OpenMCPHybridAutoScalerList{}
+	resourceStruct := resourcev1alpha1.OpenMCPHybridAutoScalerList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
 		panic(err.Error())

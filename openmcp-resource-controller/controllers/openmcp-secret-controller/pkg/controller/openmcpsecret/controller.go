@@ -14,33 +14,23 @@ limitations under the License.
 package openmcpsecret 
 
 import (
-	"context"
-	"fmt"
-	"openmcp/openmcp/util/clusterManager"
-
-	"openmcp/openmcp/omcplog"
-	"strconv"
-
-	"admiralty.io/multicluster-controller/pkg/reference"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"sigs.k8s.io/kubefed/pkg/controller/util"
-
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
-	"openmcp/openmcp/openmcp-resource-controller/apis"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
+	"admiralty.io/multicluster-controller/pkg/reference"
+	"context"
+	"fmt"
 	"github.com/getlantern/deepcopy"
-	"k8s.io/client-go/rest"
-	syncapis "openmcp/openmcp/openmcp-sync-controller/pkg/apis"
-	sync "openmcp/openmcp/openmcp-sync-controller/pkg/apis/keti/v1alpha1"
-	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
-	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"openmcp/openmcp/apis"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
+	"openmcp/openmcp/omcplog"
+	"openmcp/openmcp/util/clusterManager"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strconv"
 )
 
 
@@ -66,11 +56,9 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
                 return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
-	if err := syncapis.AddToScheme(live.GetScheme()); err != nil {
-		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
-	}
 
-	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPSecret{}, controller.WatchOptions{}); err != nil {
+
+	if err := co.WatchResourceReconcileObject(live, &resourcev1alpha1.OpenMCPSecret{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
@@ -95,7 +83,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	omcplog.V(5).Info("********* [",i,"] *********")
 	omcplog.V(3).Info(req.Context," / ", req.Namespace," / ", req.Name)
 
-        instance := &ketiv1alpha1.OpenMCPSecret{}
+        instance := &resourcev1alpha1.OpenMCPSecret{}
         err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 
 	omcplog.V(3).Info("instance Name: ", instance.Name)
@@ -135,7 +123,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	return reconcile.Result{}, nil
 }
 
-func (r *reconciler) secretForOpenMCPSecret(req reconcile.Request, m *ketiv1alpha1.OpenMCPSecret) *corev1.Secret {
+func (r *reconciler) secretForOpenMCPSecret(req reconcile.Request, m *resourcev1alpha1.OpenMCPSecret) *corev1.Secret {
 	omcplog.V(4).Info("Function Called secretForOpenMCPSecret")
 
 	dep := &corev1.Secret{
@@ -157,7 +145,7 @@ func (r *reconciler) secretForOpenMCPSecret(req reconcile.Request, m *ketiv1alph
 
 
 
-func (r *reconciler) createSecret(req reconcile.Request, cm *clusterManager.ClusterManager, instance *ketiv1alpha1.OpenMCPSecret) error {
+func (r *reconciler) createSecret(req reconcile.Request, cm *clusterManager.ClusterManager, instance *resourcev1alpha1.OpenMCPSecret) error {
 	omcplog.V(4).Info("Function Called createSecret")
 	cluster_map := make(map[string]int32)
 	for _, cluster := range cm.Cluster_list.Items {
@@ -177,7 +165,7 @@ func (r *reconciler) createSecret(req reconcile.Request, cm *clusterManager.Clus
 }
 
 
-func (r *reconciler) updateSecret(req reconcile.Request, cm *clusterManager.ClusterManager, instance *ketiv1alpha1.OpenMCPSecret) error {
+func (r *reconciler) updateSecret(req reconcile.Request, cm *clusterManager.ClusterManager, instance *resourcev1alpha1.OpenMCPSecret) error {
 	omcplog.V(4).Info("Function Called updateSecret")
 
 	for _, cluster := range cm.Cluster_list.Items {
@@ -221,54 +209,18 @@ func (r *reconciler) DeleteSecret(cm *clusterManager.ClusterManager, name string
 	return nil
 }
 
-
-func ListKubeFedClusters(client genericclient.Client, namespace string) *fedv1b1.KubeFedClusterList {
-	omcplog.V(4).Info("Function Called ListKubeFedClusters")
-        clusterList := &fedv1b1.KubeFedClusterList{}
-        err := client.List(context.TODO(), clusterList, namespace)
-        if err != nil {
-			omcplog.V(1).Info("Error retrieving list of federated clusters: %+v", err)
-        }
-        if len(clusterList.Items) == 0 {
-			omcplog.V(1).Info("No federated clusters found")
-        }
-        return clusterList
-}
-
-func KubeFedClusterConfigs(clusterList *fedv1b1.KubeFedClusterList, client genericclient.Client, fedNamespace string) map[string]*rest.Config {
-	omcplog.V(4).Info("Function Called KubeFedClusterConfigs")
-        clusterConfigs := make(map[string]*rest.Config)
-        for _, cluster := range clusterList.Items {
-                config, _ := util.BuildClusterConfig(&cluster, client, fedNamespace)
-                clusterConfigs[cluster.Name] = config
-        }
-        return clusterConfigs
-}
-func KubeFedClusterClients(clusterList *fedv1b1.KubeFedClusterList, cluster_configs map[string]*rest.Config) map[string]genericclient.Client {
-	omcplog.V(4).Info("Function Called KubeFedClusterClients")
-
-        cluster_clients := make(map[string]genericclient.Client)
-        for _, cluster := range clusterList.Items {
-                clusterName := cluster.Name
-                cluster_config := cluster_configs[clusterName]
-                cluster_client := genericclient.NewForConfigOrDie(cluster_config)
-                cluster_clients[clusterName] = cluster_client
-        }
-        return cluster_clients
-}
-
 var syncIndex int = 0
 func (r *reconciler) sendSync(secret *corev1.Secret, command string, clusterName string) (string, error) {
 	omcplog.V(4).Info("Function Called sendSync")
 
 	syncIndex += 1
 
-	s := &sync.Sync{
+	s := &syncv1alpha1.Sync{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "openmcp-secret-sync-" + strconv.Itoa(syncIndex),
 			Namespace: "openmcp",
 		},
-		Spec: sync.SyncSpec{
+		Spec: syncv1alpha1.SyncSpec{
 			ClusterName: clusterName,
 			Command:     command,
 			Template:    *secret,

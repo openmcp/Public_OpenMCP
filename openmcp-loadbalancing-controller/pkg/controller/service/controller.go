@@ -14,27 +14,24 @@ limitations under the License.
 package service
 
 import (
-	"context"
-	"fmt"
-	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/apis"
-	"openmcp/openmcp/util/clusterManager"
-
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
+	"context"
+	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"openmcp/openmcp/apis"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/serviceregistry"
-	resourceapis "openmcp/openmcp/openmcp-resource-controller/apis"
-	resourcev1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
+	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-
-
 var cm *clusterManager.ClusterManager
+
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
 	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(Service Watch Controller)] Function Called NewController")
 	cm = myClusterManager
@@ -56,11 +53,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
-
-	if err := resourceapis.AddToScheme(live.GetScheme()); err != nil {
-		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
-	}
-
 
 	if err := co.WatchResourceReconcileObject(live, &resourcev1alpha1.OpenMCPService{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
@@ -86,7 +78,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(Service Watch Controller)] Function Called Reconcile")
 	i += 1
 	omcplog.V(3).Info("[OpenMCP Loadbalancing Controller(Service Watch Controller)]********* [", i, "] *********")
-	omcplog.V(3).Info("[OpenMCP Loadbalancing Controller(Service Watch Controller)]" + req.Context, " / ", req.Namespace, " / ", req.Name)
+	omcplog.V(3).Info("[OpenMCP Loadbalancing Controller(Service Watch Controller)]"+req.Context, " / ", req.Namespace, " / ", req.Name)
 
 	instance := &resourcev1alpha1.OpenMCPService{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
@@ -104,7 +96,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			return reconcile.Result{}, nil
 		}
 		return reconcile.Result{}, nil
-	} else { 
+	} else {
 		target, err := serviceregistry.Registry.Lookup(loadbalancing.ServiceRegistry, serviceName)
 
 		if target != nil && !errors.IsNotFound(err) {
@@ -128,4 +120,3 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 	return reconcile.Result{}, nil
 }
-

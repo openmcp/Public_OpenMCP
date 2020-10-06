@@ -14,39 +14,33 @@ limitations under the License.
 package openmcphas
 
 import (
-	"admiralty.io/multicluster-controller/pkg/reference"
-	"context"
-	"fmt"
-	autoscaling "k8s.io/api/autoscaling/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/util/clusterManager"
-	"os"
-	"strconv"
-	"time"
-	"reflect"
-
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
-	"k8s.io/apimachinery/pkg/api/errors"
-
-	appsv1 "k8s.io/api/apps/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"openmcp/openmcp/openmcp-resource-controller/apis"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
-
+	"admiralty.io/multicluster-controller/pkg/reference"
+	"context"
+	"fmt"
 	vpav1beta2 "github.com/kubernetes/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	appsv1 "k8s.io/api/apps/v1"
+	autoscaling "k8s.io/api/autoscaling/v1"
 	hpav2beta2 "k8s.io/api/autoscaling/v2beta2"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"openmcp/openmcp/apis"
+	policyv1alpha1 "openmcp/openmcp/apis/policy/v1alpha1"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
+	"openmcp/openmcp/omcplog"
+	"openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-has-controller/pkg/protobuf"
+	"openmcp/openmcp/util/clusterManager"
+	"os"
+	"reflect"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
-
-	"openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-has-controller/pkg/protobuf"
-
-	syncapis "openmcp/openmcp/openmcp-sync-controller/pkg/apis"
-	sync "openmcp/openmcp/openmcp-sync-controller/pkg/apis/keti/v1alpha1"
+	"strconv"
+	"time"
 )
 
 var cm *clusterManager.ClusterManager
@@ -81,12 +75,8 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	if err := syncapis.AddToScheme(live.GetScheme()); err != nil {
-		return nil, fmt.Errorf("adding APIs to live cluster's scheme: #{err}")
-	}
-
 	fmt.Printf("%T, %s\n", live, live.GetClusterName())
-	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPHybridAutoScaler{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(live, &resourcev1alpha1.OpenMCPHybridAutoScaler{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
@@ -110,12 +100,12 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 func (r *reconciler) sendSyncHPA(hpa *hpav2beta2.HorizontalPodAutoscaler, command string, clusterName string) (string, error) {
 	syncIndex += 1
 
-	s := &sync.Sync{
+	s := &syncv1alpha1.Sync{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "openmcp-hybridautoscaler-hpa-sync-" + strconv.Itoa(syncIndex),
 			Namespace: "openmcp",
 		},
-		Spec: sync.SyncSpec{
+		Spec: syncv1alpha1.SyncSpec{
 			ClusterName: clusterName,
 			Command:     command,
 			Template:    *hpa,
@@ -134,12 +124,12 @@ func (r *reconciler) sendSyncHPA(hpa *hpav2beta2.HorizontalPodAutoscaler, comman
 func (r *reconciler) sendSyncVPA(vpa *vpav1beta2.VerticalPodAutoscaler, command string, clusterName string) (string, error) {
 	syncIndex += 1
 
-	s := &sync.Sync{
+	s := &syncv1alpha1.Sync{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "openmcp-hybridautoscaler-vpa-sync-" + strconv.Itoa(syncIndex),
 			Namespace: "openmcp",
 		},
-		Spec: sync.SyncSpec{
+		Spec: syncv1alpha1.SyncSpec{
 			ClusterName: clusterName,
 			Command:     command,
 			Template:    *vpa,
@@ -177,7 +167,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 	type ObjectKey = types.NamespacedName
 
-	hasInstance := &ketiv1alpha1.OpenMCPHybridAutoScaler{}
+	hasInstance := &resourcev1alpha1.OpenMCPHybridAutoScaler{}
 	err := r.live.Get(context.TODO(), request.NamespacedName, hasInstance)
 
 	//Delete OpenMCPHAS resource
@@ -210,7 +200,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		totalHASTimeStart2 := time.Now()
 
 		//Get Target OpenMCPDeployment
-		openmcpDep := &ketiv1alpha1.OpenMCPDeployment{}
+		openmcpDep := &resourcev1alpha1.OpenMCPDeployment{}
 		openmcpDep_err := r.live.Get(context.TODO(), ObjectKey{Namespace: hasInstance.Namespace, Name: hasInstance.Spec.HpaTemplate.Spec.ScaleTargetRef.Name}, openmcpDep)
 
 		omcplog.V(3).Info(">>> Target OpenMCPDeployment [", openmcpDep.Name, " | ", openmcpDep.Namespace, "]")
@@ -363,7 +353,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 								}
 							}
 						}
-					// case 2) HPA + VPA 
+						// case 2) HPA + VPA
 					} else if hasInstance.Spec.VpaMode == "Always" || (hasInstance.Spec.VpaMode == "Auto" && cluster_dep_request[clustername] == false) {
 						// First, Create HPA
 						foundHPA := &hpav2beta2.HorizontalPodAutoscaler{}
@@ -471,7 +461,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 				totalHASTimeEnd5 := time.Since(totalHASTimeStart5)
 				omcplog.V(4).Info("------ Check HAS Time (5) : ", totalHASTimeEnd5)
 
-				//Check for Changes to OpenMCPHPA resource 
+				//Check for Changes to OpenMCPHPA resource
 				hasInstance.Status.LastSpec = hasInstance.Spec
 
 				err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
@@ -500,7 +490,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	rebalancingTimeStart := time.Now()
 
 	//Get Target  OpenMCPDeployment
-	openmcpDep := &ketiv1alpha1.OpenMCPDeployment{}
+	openmcpDep := &resourcev1alpha1.OpenMCPDeployment{}
 	openmcpDep_err := r.live.Get(context.TODO(), ObjectKey{Namespace: hasInstance.Namespace, Name: hasInstance.Spec.HpaTemplate.Spec.ScaleTargetRef.Name}, openmcpDep)
 
 	var dep_list_for_hpa []string
@@ -511,7 +501,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		cluster_dep_replicas = make(map[string]int32)
 		cluster_dep_request = make(map[string]bool)
 
-		for _, cluster := range  cm.Cluster_list.Items {
+		for _, cluster := range cm.Cluster_list.Items {
 			dep := &appsv1.Deployment{}
 			cluster_client := cm.Cluster_genClients[cluster.Name]
 			dep_err := cluster_client.Get(context.TODO(), dep, hasInstance.Namespace, hasInstance.Spec.HpaTemplate.Spec.ScaleTargetRef.Name)
@@ -533,7 +523,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		cluster_client := cm.Cluster_genClients[clustername]
 		err = cluster_client.Get(context.TODO(), foundHPA, hasInstance.Namespace, hasInstance.Name)
 
-		if foundHPA.Spec.MinReplicas != nil  {
+		if foundHPA.Spec.MinReplicas != nil {
 
 			//UPDATE HPA (Rebalancing or Update min/max value)
 			if foundHPA.Spec.MaxReplicas == foundHPA.Status.CurrentReplicas && foundHPA.Status.CurrentReplicas == foundHPA.Status.DesiredReplicas {
@@ -579,16 +569,14 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		}
 	}
 
-
-
 	return reconcile.Result{}, nil
 
 }
 
-func (r *reconciler) UpdateMinMaxDistributionPolicy(hasInstance *ketiv1alpha1.OpenMCPHybridAutoScaler, cluster_dep_request map[string]bool, dep_list_for_hpa []string, cluster_dep_replicas map[string]int32) (map[string]int32, map[string]int32, error){
+func (r *reconciler) UpdateMinMaxDistributionPolicy(hasInstance *resourcev1alpha1.OpenMCPHybridAutoScaler, cluster_dep_request map[string]bool, dep_list_for_hpa []string, cluster_dep_replicas map[string]int32) (map[string]int32, map[string]int32, error) {
 	type ObjectKey = types.NamespacedName
 
-	foundPolicy := &ketiv1alpha1.OpenMCPPolicy{}
+	foundPolicy := &policyv1alpha1.OpenMCPPolicy{}
 	minmax_policy_err := r.live.Get(context.TODO(), ObjectKey{Namespace: "openmcp", Name: "hpa-minmax-distribution-mode"}, foundPolicy)
 
 	cluster_min_map, cluster_max_map, hasInstance, min_max_err := r.CreateMinMaxMap(hasInstance, cluster_dep_request, foundPolicy, minmax_policy_err, dep_list_for_hpa, cluster_dep_replicas)
@@ -596,7 +584,7 @@ func (r *reconciler) UpdateMinMaxDistributionPolicy(hasInstance *ketiv1alpha1.Op
 	return cluster_min_map, cluster_max_map, min_max_err
 }
 
-func (r *reconciler) UpdateTargetClusterPolicy(cm *clusterManager.ClusterManager, hasInstance *ketiv1alpha1.OpenMCPHybridAutoScaler) ([]fedv1b1.KubeFedCluster, *ketiv1alpha1.OpenMCPHybridAutoScaler){
+func (r *reconciler) UpdateTargetClusterPolicy(cm *clusterManager.ClusterManager, hasInstance *resourcev1alpha1.OpenMCPHybridAutoScaler) ([]fedv1b1.KubeFedCluster, *resourcev1alpha1.OpenMCPHybridAutoScaler) {
 	checkPolicy := 0
 	clusterListItems := make([]fedv1b1.KubeFedCluster, 0)
 
@@ -622,7 +610,7 @@ func (r *reconciler) UpdateTargetClusterPolicy(cm *clusterManager.ClusterManager
 		}
 	}
 	if checkPolicy == 0 { // if policy doesn't exist
-		foundPolicy := &ketiv1alpha1.OpenMCPPolicy{}
+		foundPolicy := &policyv1alpha1.OpenMCPPolicy{}
 		target_cluster_policy_err := r.live.Get(context.TODO(), ObjectKey{Namespace: "openmcp", Name: "has-target-cluster"}, foundPolicy)
 		if target_cluster_policy_err == nil {
 			if foundPolicy.Spec.PolicyStatus == "Enabled" {
@@ -637,7 +625,7 @@ func (r *reconciler) UpdateTargetClusterPolicy(cm *clusterManager.ClusterManager
 				}
 			} else {
 				omcplog.V(3).Info(">>> Policy \"Cluster Target\" Apply (Disabled - set default)")
-				omp := make([]ketiv1alpha1.OpenMCPPolicies, 1)
+				omp := make([]policyv1alpha1.OpenMCPPolicies, 1)
 				omp[0].Type = "Target"
 				omp_value := make([]string, 0)
 				omp_value = append(omp_value, "Default")
@@ -647,7 +635,7 @@ func (r *reconciler) UpdateTargetClusterPolicy(cm *clusterManager.ClusterManager
 			}
 		} else {
 			omcplog.V(1).Info("!!! Fail to get policy \"Cluster Target\" (set default)")
-			omp := make([]ketiv1alpha1.OpenMCPPolicies, 1)
+			omp := make([]policyv1alpha1.OpenMCPPolicies, 1)
 			omp[0].Type = "Target"
 			omp_value := make([]string, 0)
 			omp_value = append(omp_value, "Default")
@@ -660,7 +648,7 @@ func (r *reconciler) UpdateTargetClusterPolicy(cm *clusterManager.ClusterManager
 	return clusterListItems, hasInstance
 }
 
-func (r *reconciler) CreateMinMaxMap(hasInstance *ketiv1alpha1.OpenMCPHybridAutoScaler, cluster_dep_request map[string]bool,foundPolicy *ketiv1alpha1.OpenMCPPolicy, minmax_policy_err error, dep_list_for_hpa []string, cluster_dep_replicas map[string]int32) (map[string]int32, map[string]int32, *ketiv1alpha1.OpenMCPHybridAutoScaler, error) {
+func (r *reconciler) CreateMinMaxMap(hasInstance *resourcev1alpha1.OpenMCPHybridAutoScaler, cluster_dep_request map[string]bool, foundPolicy *policyv1alpha1.OpenMCPPolicy, minmax_policy_err error, dep_list_for_hpa []string, cluster_dep_replicas map[string]int32) (map[string]int32, map[string]int32, *resourcev1alpha1.OpenMCPHybridAutoScaler, error) {
 	timeStart_mixmaxdist := time.Now()
 
 	cluster_min_map := make(map[string]int32)
@@ -681,7 +669,7 @@ func (r *reconciler) CreateMinMaxMap(hasInstance *ketiv1alpha1.OpenMCPHybridAuto
 					cluster_max_map = HpaMaxScheduling(dep_list_for_hpa, cluster_dep_replicas, hasInstance.Spec.HpaTemplate.Spec.MaxReplicas)
 
 					for _, cluster := range dep_list_for_hpa {
-						if hasInstance.Spec.VpaMode == "Always" || (hasInstance.Spec.VpaMode == "Auto" && cluster_dep_request[cluster] == false){
+						if hasInstance.Spec.VpaMode == "Always" || (hasInstance.Spec.VpaMode == "Auto" && cluster_dep_request[cluster] == false) {
 							if cluster_min_map[cluster] < 2 {
 								cluster_min_map[cluster] = 2
 							}
@@ -717,7 +705,7 @@ func (r *reconciler) CreateMinMaxMap(hasInstance *ketiv1alpha1.OpenMCPHybridAuto
 				omcplog.V(3).Info(">>> Policy \"Min Max Distribution\" Apply (Disabled - set default)")
 				cluster_min_map = HpaMinScheduling(dep_list_for_hpa, cluster_dep_replicas, *hasInstance.Spec.HpaTemplate.Spec.MinReplicas)
 				cluster_max_map = HpaMaxScheduling(dep_list_for_hpa, cluster_dep_replicas, hasInstance.Spec.HpaTemplate.Spec.MaxReplicas)
-				omp := make([]ketiv1alpha1.OpenMCPPolicies, 1)
+				omp := make([]policyv1alpha1.OpenMCPPolicies, 1)
 				omp_value := make([]string, 1)
 				omp_value[0] = "Default"
 				omp[0].Type = "Mode"
@@ -728,7 +716,7 @@ func (r *reconciler) CreateMinMaxMap(hasInstance *ketiv1alpha1.OpenMCPHybridAuto
 			omcplog.V(1).Info("Fail to get policy \"Min Max Distribution\" (set default)")
 			cluster_min_map = HpaMinScheduling(dep_list_for_hpa, cluster_dep_replicas, *hasInstance.Spec.HpaTemplate.Spec.MinReplicas)
 			cluster_max_map = HpaMaxScheduling(dep_list_for_hpa, cluster_dep_replicas, hasInstance.Spec.HpaTemplate.Spec.MaxReplicas)
-			omp := make([]ketiv1alpha1.OpenMCPPolicies, 1)
+			omp := make([]policyv1alpha1.OpenMCPPolicies, 1)
 			omp_value := make([]string, 1)
 			omp_value[0] = "Default"
 			omp[0].Type = "Mode"
@@ -737,7 +725,7 @@ func (r *reconciler) CreateMinMaxMap(hasInstance *ketiv1alpha1.OpenMCPHybridAuto
 		}
 
 		for _, cluster := range dep_list_for_hpa {
-			if hasInstance.Spec.VpaMode == "Always" || (hasInstance.Spec.VpaMode == "Auto" && cluster_dep_request[cluster] == false){
+			if hasInstance.Spec.VpaMode == "Always" || (hasInstance.Spec.VpaMode == "Auto" && cluster_dep_request[cluster] == false) {
 				if cluster_min_map[cluster] < 2 {
 					cluster_min_map[cluster] = 2
 				}
@@ -747,11 +735,10 @@ func (r *reconciler) CreateMinMaxMap(hasInstance *ketiv1alpha1.OpenMCPHybridAuto
 		omcplog.V(4).Info("******* [Start] HAS Min/Max Distribution *******")
 		timeEnd_mixmaxdist := time.Since(timeStart_mixmaxdist)
 		for _, cluster := range dep_list_for_hpa {
-			omcplog.V(4).Info("[",cluster,"] min:",cluster_min_map[cluster]," / max:",cluster_max_map[cluster],"")
+			omcplog.V(4).Info("[", cluster, "] min:", cluster_min_map[cluster], " / max:", cluster_max_map[cluster], "")
 		}
-		omcplog.V(4).Info("=> Total Min/Max Distribution Time [", timeEnd_mixmaxdist,"]")
+		omcplog.V(4).Info("=> Total Min/Max Distribution Time [", timeEnd_mixmaxdist, "]")
 		omcplog.V(4).Info("*******  [End] HAS Min/Max Distribution  *******")
-
 
 		//Update OpenMCPHAS Policy Option
 		err = r.live.Status().Update(context.TODO(), hasInstance)
@@ -766,7 +753,7 @@ func (r *reconciler) CreateMinMaxMap(hasInstance *ketiv1alpha1.OpenMCPHybridAuto
 	return cluster_min_map, cluster_max_map, hasInstance, err
 }
 
-func (r *reconciler) MinRebalancing(cm *clusterManager.ClusterManager, hasInstance *ketiv1alpha1.OpenMCPHybridAutoScaler, dep_list_for_hpa []string, clustername string, foundHPA *hpav2beta2.HorizontalPodAutoscaler) (*ketiv1alpha1.OpenMCPHybridAutoScaler, string) {
+func (r *reconciler) MinRebalancing(cm *clusterManager.ClusterManager, hasInstance *resourcev1alpha1.OpenMCPHybridAutoScaler, dep_list_for_hpa []string, clustername string, foundHPA *hpav2beta2.HorizontalPodAutoscaler) (*resourcev1alpha1.OpenMCPHybridAutoScaler, string) {
 
 	var dep_list_for_analysis []string
 
@@ -868,7 +855,7 @@ func (r *reconciler) MinRebalancing(cm *clusterManager.ClusterManager, hasInstan
 	return hasInstance, "Success"
 }
 
-func (r *reconciler) MaxRebalancing(cm *clusterManager.ClusterManager, hasInstance *ketiv1alpha1.OpenMCPHybridAutoScaler, dep_list_for_hpa []string, clustername string, foundHPA *hpav2beta2.HorizontalPodAutoscaler) (*ketiv1alpha1.OpenMCPHybridAutoScaler, string) {
+func (r *reconciler) MaxRebalancing(cm *clusterManager.ClusterManager, hasInstance *resourcev1alpha1.OpenMCPHybridAutoScaler, dep_list_for_hpa []string, clustername string, foundHPA *hpav2beta2.HorizontalPodAutoscaler) (*resourcev1alpha1.OpenMCPHybridAutoScaler, string) {
 
 	var dep_list_for_analysis []string
 
@@ -915,7 +902,6 @@ func (r *reconciler) MaxRebalancing(cm *clusterManager.ClusterManager, hasInstan
 			qosCluster := result.TargetCluster
 			omcplog.V(2).Info(">>> " + clustername + " max rebalancing")
 			omcplog.V(3).Info("     => Anlysis Result [", qosCluster, "]")
-
 
 			omcplog.V(4).Info("     => Total Rebalancing Time [", timeEnd_mixmaxrebal, "] (Analysis + gRPC)")
 
@@ -973,7 +959,7 @@ func (r *reconciler) MaxRebalancing(cm *clusterManager.ClusterManager, hasInstan
 
 }
 
-func (r *reconciler) UpdateHorizontalPodAutoscaler(req reconcile.Request, m *ketiv1alpha1.OpenMCPHybridAutoScaler, min int32, max int32) *hpav2beta2.HorizontalPodAutoscaler {
+func (r *reconciler) UpdateHorizontalPodAutoscaler(req reconcile.Request, m *resourcev1alpha1.OpenMCPHybridAutoScaler, min int32, max int32) *hpav2beta2.HorizontalPodAutoscaler {
 	ls := LabelsForHpa(m.Name)
 
 	hpa := &hpav2beta2.HorizontalPodAutoscaler{
@@ -1002,7 +988,7 @@ func (r *reconciler) UpdateHorizontalPodAutoscaler(req reconcile.Request, m *ket
 	return hpa
 }
 
-func (r *reconciler) UpdateVerticalPodAutoscaler(req reconcile.Request, m *ketiv1alpha1.OpenMCPHybridAutoScaler) *vpav1beta2.VerticalPodAutoscaler {
+func (r *reconciler) UpdateVerticalPodAutoscaler(req reconcile.Request, m *resourcev1alpha1.OpenMCPHybridAutoScaler) *vpav1beta2.VerticalPodAutoscaler {
 	ls := LabelsForHpa(m.Name)
 	vpaUpdateMode := vpav1beta2.UpdateModeAuto
 
@@ -1031,7 +1017,7 @@ func (r *reconciler) UpdateVerticalPodAutoscaler(req reconcile.Request, m *ketiv
 	reference.SetMulticlusterControllerReference(vpa, reference.NewMulticlusterOwnerReference(m, m.GroupVersionKind(), req.Context))
 	return vpa
 }
-func (r *reconciler) DeleteHPAVPA(cm *clusterManager.ClusterManager, cluster string, namespace string, name string) string{
+func (r *reconciler) DeleteHPAVPA(cm *clusterManager.ClusterManager, cluster string, namespace string, name string) string {
 	hpa := &hpav2beta2.HorizontalPodAutoscaler{}
 
 	vpa := &vpav1beta2.VerticalPodAutoscaler{

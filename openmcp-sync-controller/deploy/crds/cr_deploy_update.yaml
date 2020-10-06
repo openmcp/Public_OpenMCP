@@ -1,4 +1,4 @@
-apiVersion: keti.example.com/v1alpha1
+apiVersion: openmcp.k8s.io/v1alpha1
 kind: Sync
 metadata:
   name: openmcp-deployment-sync-2
@@ -13,7 +13,7 @@ spec:
       name: nginx-deployment
       namespace: openmcp
       annotations:
-        multicluster.admiralty.io/controller-reference: '{"apiVersion":"keti.example.com/v1alpha1","kind":"OpenMCPDeployment","name":"openmcp-pod-test","uid":"740f7d83-0da2-432d-93bf-2cc620b5b56d","controller":true,"blockOwnerDeletion":true,"clusterName":"openmcp","namespace":"test"}'
+        multicluster.admiralty.io/controller-reference: '{"apiVersion":"openmcp.k8s.io/v1alpha1","kind":"OpenMCPDeployment","name":"openmcp-pod-test","uid":"740f7d83-0da2-432d-93bf-2cc620b5b56d","controller":true,"blockOwnerDeletion":true,"clusterName":"openmcp","namespace":"test"}'
     spec:
       selector:
         matchLabels:

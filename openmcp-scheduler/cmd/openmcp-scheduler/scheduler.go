@@ -20,7 +20,6 @@ import (
 	"os"
 	"google.golang.org/grpc"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-scheduler/pkg"
 	"openmcp/openmcp/openmcp-scheduler/pkg/controller"

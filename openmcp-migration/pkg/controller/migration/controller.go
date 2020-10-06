@@ -23,10 +23,10 @@ import (
 	"regexp"
 
 	// "openmcp/openmcp/migration/pkg/apis"
-	"openmcp/openmcp/migration/pkg/apis"
-	nanumv1alpha1 "openmcp/openmcp/migration/pkg/apis/nanum/v1alpha1"
-	config "openmcp/openmcp/migration/pkg/util"
+	"openmcp/openmcp/apis"
+	migrationv1alpha1 "openmcp/openmcp/apis/migration/v1alpha1"
 	"openmcp/openmcp/omcplog"
+	config "openmcp/openmcp/openmcp-migration/pkg/util"
 	"openmcp/openmcp/util/clusterManager"
 
 	restclient "k8s.io/client-go/rest"
@@ -204,7 +204,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 	omcplog.Info("[OpenMCP] 33333333333333333")
-	if err := co.WatchResourceReconcileObject(live, &nanumv1alpha1.Migration{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(live, &migrationv1alpha1.Migration{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 	omcplog.Info("[OpenMCP] 44444444444444444444")
@@ -380,7 +380,7 @@ func CreateLinkShare(client generic.Client, sourceResource *appsv1.Deployment, v
 }
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	omcplog.Info("Function Called Reconcile")
-	instance := &nanumv1alpha1.Migration{}
+	instance := &migrationv1alpha1.Migration{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 	if err != nil {
 		omcplog.Info("get instance error")

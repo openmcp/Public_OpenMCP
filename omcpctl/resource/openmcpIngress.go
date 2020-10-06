@@ -5,13 +5,13 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
 	cobrautil "openmcp/openmcp/omcpctl/util"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	"os"
 	"sort"
 	"strconv"
 )
 
-func OpenMCPIngressInfo(oing *ketiv1alpha1.OpenMCPIngress) []string{
+func OpenMCPIngressInfo(oing *resourcev1alpha1.OpenMCPIngress) []string{
 
 	namespace := oing.Namespace
 	name := oing.Name
@@ -33,7 +33,7 @@ func OpenMCPIngressInfo(oing *ketiv1alpha1.OpenMCPIngress) []string{
 	return data
 }
 func PrintOpenMCPIngress(body []byte) {
-	oing := ketiv1alpha1.OpenMCPIngress{}
+	oing := resourcev1alpha1.OpenMCPIngress{}
 	err := yaml.Unmarshal(body, &oing)
 	if err != nil {
 		panic(err.Error())
@@ -48,7 +48,7 @@ func PrintOpenMCPIngress(body []byte) {
 
 }
 func PrintOpenMCPIngressList(body []byte) {
-	resourceStruct := ketiv1alpha1.OpenMCPIngressList{}
+	resourceStruct := resourcev1alpha1.OpenMCPIngressList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
 		panic(err.Error())

@@ -5,14 +5,14 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
 	cobrautil "openmcp/openmcp/omcpctl/util"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	"os"
 	"sort"
 	"strconv"
 )
 
 
-func OpenMCPConfigMapInfo(ocm *ketiv1alpha1.OpenMCPConfigMap) []string{
+func OpenMCPConfigMapInfo(ocm *resourcev1alpha1.OpenMCPConfigMap) []string{
 
 	namespace := ocm.Namespace
 	name := ocm.Name
@@ -37,7 +37,7 @@ func OpenMCPConfigMapInfo(ocm *ketiv1alpha1.OpenMCPConfigMap) []string{
 	return data
 }
 func PrintOpenMCPConfigMap(body []byte) {
-	ocm := ketiv1alpha1.OpenMCPConfigMap{}
+	ocm := resourcev1alpha1.OpenMCPConfigMap{}
 	err := yaml.Unmarshal(body, &ocm)
 	if err != nil {
 		panic(err.Error())
@@ -52,7 +52,7 @@ func PrintOpenMCPConfigMap(body []byte) {
 
 }
 func PrintOpenMCPConfigMapList(body []byte) {
-	resourceStruct := ketiv1alpha1.OpenMCPConfigMapList{}
+	resourceStruct := resourcev1alpha1.OpenMCPConfigMapList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
 		panic(err.Error())

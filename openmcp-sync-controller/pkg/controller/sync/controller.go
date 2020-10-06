@@ -27,9 +27,9 @@ import (
 	extv1b1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"openmcp/openmcp/apis"
+	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-sync-controller/pkg/apis"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-sync-controller/pkg/apis/keti/v1alpha1"
 	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -60,7 +60,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.Sync{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(live, &syncv1alpha1.Sync{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
@@ -86,7 +86,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	i += 1
 
 	// Fetch the Sync instance
-	instance := &ketiv1alpha1.Sync{}
+	instance := &syncv1alpha1.Sync{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 	if err != nil {
 		return reconcile.Result{}, nil
@@ -390,7 +390,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	return reconcile.Result{}, nil // err
 }
 
-func (r *reconciler) resourceForSync(instance *ketiv1alpha1.Sync) (*unstructured.Unstructured, string, string) {
+func (r *reconciler) resourceForSync(instance *syncv1alpha1.Sync) (*unstructured.Unstructured, string, string) {
 	omcplog.V(4).Info("[OpenMCP Sync] Function Called resourceForSync")
 	clusterName := instance.Spec.ClusterName
 	command := instance.Spec.Command
