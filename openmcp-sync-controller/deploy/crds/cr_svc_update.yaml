@@ -1,4 +1,4 @@
-apiVersion: keti.example.com/v1alpha1
+apiVersion: openmcp.k8s.io/v1alpha1
 kind: Sync
 metadata:
   name: openmcp-service-sync-2
@@ -15,7 +15,7 @@ spec:
       labels:
         app: nginx
       annotations:
-        multicluster.admiralty.io/controller-reference: '{"apiVersion":"keti.example.com/v1alpha1","kind":"OpenMCPService","name":"example-openmcpservice","uid":"b22b7506-b969-4589-ab1f-63c166588583","controller":true,"blockOwnerDeletion":true,"clusterName":"openmcp","namespace":"openmcp"}'
+        multicluster.admiralty.io/controller-reference: '{"apiVersion":"openmcp.k8s.io/v1alpha1","kind":"OpenMCPService","name":"example-openmcpservice","uid":"b22b7506-b969-4589-ab1f-63c166588583","controller":true,"blockOwnerDeletion":true,"clusterName":"openmcp","namespace":"openmcp"}'
     spec:
       type: LoadBalancer
       ports:

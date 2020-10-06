@@ -14,22 +14,19 @@ limitations under the License.
 package controller
 
 import (
-	"context"
-	"fmt"
-	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/util/clusterManager"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-
-	"k8s.io/apimachinery/pkg/api/errors"
-
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
-	"openmcp/openmcp/openmcp-resource-controller/apis"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
-
+	"context"
+	"fmt"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"openmcp/openmcp/apis"
+	policyv1alpha1 "openmcp/openmcp/apis/policy/v1alpha1"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+	"openmcp/openmcp/omcplog"
+	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 var log = logf.Log.WithName("controller_openmcphybridautoscaler")
@@ -58,7 +55,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	}
 
 	omcplog.V(4).Info(live, live.GetClusterName())
-	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPPolicy{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(live, &policyv1alpha1.OpenMCPPolicy{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
@@ -79,7 +76,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	omcplog.V(5).Info("Request Context: ", req.Context, " / Request Namespace: ", req.Namespace, " /  Request Name: ", req.Name)
 
 	// Fetch the OpenMCPDeployment instance
-	instance := &ketiv1alpha1.OpenMCPPolicy{}
+	instance := &policyv1alpha1.OpenMCPPolicy{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 	omcplog.V(5).Info("instance Name: ", instance.Name)
 	omcplog.V(5).Info("instance Namespace: ", instance.Namespace)
@@ -103,7 +100,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			object := instance.Spec.Template.Spec.TargetController.Kind
 			if object == "OpenMCPHybridAutoScaler" {
 				omcplog.V(2).Info("Policy Enabled - OpenMCPHybridAutoScaler")
-				hpaList := &ketiv1alpha1.OpenMCPHybridAutoScalerList{}
+				hpaList := &resourcev1alpha1.OpenMCPHybridAutoScalerList{}
 				listOptions := &client.ListOptions{Namespace: ""} //all resources
 				r.live.List(context.TODO(), hpaList, listOptions)
 				for _, hpaInstance := range hpaList.Items {
@@ -133,4 +130,3 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 	return reconcile.Result{}, nil
 }
-

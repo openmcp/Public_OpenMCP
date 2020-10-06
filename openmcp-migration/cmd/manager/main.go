@@ -17,8 +17,8 @@ limitations under the License.
 package main
 
 import (
-	"openmcp/openmcp/migration/pkg/controller/migration"
 	"openmcp/openmcp/omcplog"
+	"openmcp/openmcp/openmcp-migration/pkg/controller/migration"
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"

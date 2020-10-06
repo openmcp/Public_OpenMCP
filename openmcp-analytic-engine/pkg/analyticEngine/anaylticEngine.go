@@ -3,7 +3,6 @@ package analyticEngine
 import (
 	"context"
 	"fmt"
-	"github.com/oschwald/geoip2-golang"
 	"google.golang.org/grpc"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -12,7 +11,6 @@ import (
 	"log"
 	"net"
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-analytic-engine/pkg/Geo"
 	"openmcp/openmcp/openmcp-analytic-engine/pkg/influx"
 	"openmcp/openmcp/openmcp-analytic-engine/pkg/protobuf"
 	"openmcp/openmcp/util/clusterManager"
@@ -301,8 +299,6 @@ func (ae *AnalyticEngineStruct) CompareHPAMinInfo(clusterList []string, data *pr
 	timeEnd_analysis2 := time.Since(timeStart_analysis2)
 	omcplog.V(3).Info("[3] GetHASInfo \t\t\t", timeEnd_analysis2)
 
-
-
 	result := ""
 	timeStart_analysis3 := time.Now()
 	for cluster, _ := range rebalancingCount {
@@ -376,7 +372,7 @@ func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *p
 	}
 
 	elapsedTime := time.Since(startTime)
-	omcplog.V(2).Info("%-30s [",elapsedTime,"]", "=> Total Anlysis time")
+	omcplog.V(2).Info("%-30s [", elapsedTime, "]", "=> Total Anlysis time")
 	omcplog.V(2).Info("***** [End] Network Analysis *****")
 
 	return &protobuf.ReponseNetwork{RX: diff_rx, TX: diff_tx}, nil
@@ -398,4 +394,3 @@ func (ae *AnalyticEngineStruct) StartGRPC(GRPC_PORT string) {
 	}
 
 }
-

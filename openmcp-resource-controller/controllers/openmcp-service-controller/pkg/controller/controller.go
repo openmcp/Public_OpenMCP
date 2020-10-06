@@ -22,24 +22,18 @@ import (
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 	"strconv"
-
 	"k8s.io/apimachinery/pkg/api/errors"
-
 	"reflect"
-
-
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
-	"openmcp/openmcp/openmcp-resource-controller/apis"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
-
+	"openmcp/openmcp/apis"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	sync "openmcp/openmcp/openmcp-sync-controller/pkg/apis/keti/v1alpha1"
-	syncapis "openmcp/openmcp/openmcp-sync-controller/pkg/apis"
+	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
+
 )
 
 var cm *clusterManager.ClusterManager
@@ -65,11 +59,9 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
-	if err := syncapis.AddToScheme(live.GetScheme()); err != nil {
-		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
-	}
 
-	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPService{}, controller.WatchOptions{}); err != nil {
+
+	if err := co.WatchResourceReconcileObject(live, &resourcev1alpha1.OpenMCPService{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
@@ -99,7 +91,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 
 	// Fetch the OpenMCPService instance
-	instance := &ketiv1alpha1.OpenMCPService{}
+	instance := &resourcev1alpha1.OpenMCPService{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 
 	omcplog.V(3).Info("instance Name: ", instance.Name)
@@ -124,7 +116,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 
 		//OpenMCPIngress Check
-		ingress_list := &ketiv1alpha1.OpenMCPIngressList{}
+		ingress_list := &resourcev1alpha1.OpenMCPIngressList{}
 		r.live.List(context.TODO(), ingress_list, &client.ListOptions{Namespace: instance.Namespace})
 
 		for _, ingressInstance := range ingress_list.Items {
@@ -163,7 +155,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 
 	//OpenMCPIngress Check
-	ingress_list := &ketiv1alpha1.OpenMCPIngressList{}
+	ingress_list := &resourcev1alpha1.OpenMCPIngressList{}
 	r.live.List(context.TODO(), ingress_list, &client.ListOptions{Namespace: instance.Namespace})
 
 	for _, ingressInstance := range ingress_list.Items {
@@ -184,7 +176,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	return reconcile.Result{}, nil // err
 }
 
-func (r *reconciler) serviceForOpenMCPService(req reconcile.Request, m *ketiv1alpha1.OpenMCPService) *corev1.Service {
+func (r *reconciler) serviceForOpenMCPService(req reconcile.Request, m *resourcev1alpha1.OpenMCPService) *corev1.Service {
 	omcplog.V(4).Info("Function Called serviceForOpenMCPService")
 
 	svc := &corev1.Service{
@@ -277,7 +269,7 @@ func (r *reconciler) getClusterIncludeLabel(label_map map[string]string, namespa
 	omcplog.V(4).Info("Function Called getClusterIncludeLabel")
 	result_cluster_list := []string{}
 
-	odeploy_list := &ketiv1alpha1.OpenMCPDeploymentList{}
+	odeploy_list := &resourcev1alpha1.OpenMCPDeploymentList{}
 	listOptions := &client.ListOptions{Namespace: namespace}
 
 	r.live.List(context.TODO(), odeploy_list, listOptions)
@@ -301,7 +293,7 @@ func (r *reconciler) getClusterIncludeLabel(label_map map[string]string, namespa
 	omcplog.V(3).Info(result_cluster_list)
 	return result_cluster_list
 }
-func (r *reconciler) createService(req reconcile.Request, cm *clusterManager.ClusterManager, instance *ketiv1alpha1.OpenMCPService) error {
+func (r *reconciler) createService(req reconcile.Request, cm *clusterManager.ClusterManager, instance *resourcev1alpha1.OpenMCPService) error {
 	omcplog.V(4).Info("Function Called createService")
 	cluster_map := make(map[string]int32)
 
@@ -345,7 +337,7 @@ func contains(slice []string, item string) bool {
 	_, ok := set[item]
 	return ok
 }
-func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.ClusterManager, instance *ketiv1alpha1.OpenMCPService) error {
+func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.ClusterManager, instance *resourcev1alpha1.OpenMCPService) error {
 	omcplog.V(4).Info("Function Called updateService")
 	cluster_map := make(map[string]int32)
 
@@ -419,12 +411,12 @@ func (r *reconciler) sendSync(service *corev1.Service, command string, clusterNa
 	omcplog.V(4).Info("Function Called sendSync")
 	syncIndex += 1
 
-	s := &sync.Sync{
+	s := &syncv1alpha1.Sync{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "openmcp-service-sync-" + strconv.Itoa(syncIndex),
 			Namespace: "openmcp",
 		},
-		Spec: sync.SyncSpec{
+		Spec: syncv1alpha1.SyncSpec{
 			ClusterName: clusterName,
 			Command:     command,
 			Template:    *service,

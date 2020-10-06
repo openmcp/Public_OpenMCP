@@ -6,9 +6,9 @@ import (
 	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"context"
 	"fmt"
+	"openmcp/openmcp/apis"
+	dnsv1alpha1 "openmcp/openmcp/apis/dns/v1alpha1"
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-dns-controller/pkg/apis"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/controller/serviceDNS"
 	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -38,7 +38,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPDomain{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(live, &dnsv1alpha1.OpenMCPDomain{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
@@ -56,13 +56,13 @@ var i int = 0
 func (r *reconciler) UpdateStatusServiceDNSRecordFromDelete() error {
 	// Update Blank Status to delete Service DNS Record information when OpenMCPDomain Delete
 
-	instanceServiceRecordList := &ketiv1alpha1.OpenMCPServiceDNSRecordList{}
+	instanceServiceRecordList := &dnsv1alpha1.OpenMCPServiceDNSRecordList{}
 	err := r.live.List(context.TODO(), instanceServiceRecordList, &client.ListOptions{})
 	omcplog.V(2).Info("[List] OpenMCPServiceDNSRecordList")
 	if err != nil {
 		return err
 	}
-	instanceDomainList := &ketiv1alpha1.OpenMCPDomainList{}
+	instanceDomainList := &dnsv1alpha1.OpenMCPDomainList{}
 	err = r.live.List(context.TODO(), instanceDomainList, &client.ListOptions{})
 	omcplog.V(2).Info("[List] OpenMCPDomainList")
 	if err != nil {
@@ -94,9 +94,9 @@ func (r *reconciler) UpdateStatusServiceDNSRecordFromDelete() error {
 	}
 	return nil
 }
-func (r *reconciler) UpdateStatusServiceDNSRecordFromCreate(instanceDomain *ketiv1alpha1.OpenMCPDomain) error {
+func (r *reconciler) UpdateStatusServiceDNSRecordFromCreate(instanceDomain *dnsv1alpha1.OpenMCPDomain) error {
 	//  OpenMCPServiceDNSRecord update when OpenMCPDomain Create
-	instanceServiceRecordList := &ketiv1alpha1.OpenMCPServiceDNSRecordList{}
+	instanceServiceRecordList := &dnsv1alpha1.OpenMCPServiceDNSRecordList{}
 	err := r.live.List(context.TODO(), instanceServiceRecordList, &client.ListOptions{})
 	omcplog.V(2).Info("[List] OpenMCPServiceDNSRecordList")
 	if err != nil {
@@ -125,7 +125,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	omcplog.V(5).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
 
 
-	instanceDomain := &ketiv1alpha1.OpenMCPDomain{}
+	instanceDomain := &dnsv1alpha1.OpenMCPDomain{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instanceDomain)
 	omcplog.V(2).Info("[List] OpenMCPDomain")
 	if err != nil {

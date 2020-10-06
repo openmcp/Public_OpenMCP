@@ -1,5 +1,5 @@
 #!/bin/bash
-docker_id="leelee3150"
+docker_id="openmcp"
 image_name="openmcp-migration"
 
 export GO111MODULE=on

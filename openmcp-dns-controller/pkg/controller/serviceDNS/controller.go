@@ -21,17 +21,17 @@ import (
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"openmcp/openmcp/apis"
+	dnsv1alpha1 "openmcp/openmcp/apis/dns/v1alpha1"
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-dns-controller/pkg/apis"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
 	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var cm *clusterManager.ClusterManager
 
-func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string,  myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
-	omcplog.V(4).Info( ">>> ServiceDNS NewController()")
+func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
+	omcplog.V(4).Info(">>> ServiceDNS NewController()")
 	cm = myClusterManager
 
 	liveclient, err := live.GetDelegatingClient()
@@ -52,7 +52,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPServiceDNSRecord{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(live, &dnsv1alpha1.OpenMCPServiceDNSRecord{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 	for _, ghost := range ghosts {
@@ -73,15 +73,14 @@ type reconciler struct {
 var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
-	omcplog.V(4).Info( "Function Called Reconcile")
+	omcplog.V(4).Info("Function Called Reconcile")
 	i += 1
-	omcplog.V(5).Info( "********* [ OpenMCP Domain", i, "] *********")
-	omcplog.V(5).Info( req.Context, " / ", req.Namespace, " / ", req.Name)
-
+	omcplog.V(5).Info("********* [ OpenMCP Domain", i, "] *********")
+	omcplog.V(5).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
 
 	// Return for OpenMCPServiceDNSRecord deletion request
 	omcplog.V(2).Info("ServiceDNSRecord or Service Request")
-	instanceServiceRecord := &ketiv1alpha1.OpenMCPServiceDNSRecord{}
+	instanceServiceRecord := &dnsv1alpha1.OpenMCPServiceDNSRecord{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instanceServiceRecord)
 	omcplog.V(2).Info("[Get] OpenMCPServiceDNSRecord")
 	if err != nil {
@@ -91,9 +90,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 	omcplog.V(2).Info("OpenMCPServiceDNSRecord or Service Create Detection")
 
-
 	// Check if a OpenMCPDomain exists
-	instanceDomain := &ketiv1alpha1.OpenMCPDomain{}
+	instanceDomain := &dnsv1alpha1.OpenMCPDomain{}
 
 	domainName := instanceServiceRecord.Spec.DomainRef
 	domainNamespace := "kube-federation-system"
@@ -116,21 +114,20 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	err = r.live.Status().Update(context.TODO(), instanceServiceRecord)
 	if err != nil {
-		omcplog.V(0).Info( "[OpenMCP Service DNS Record Controller] : ",err)
+		omcplog.V(0).Info("[OpenMCP Service DNS Record Controller] : ", err)
 		return reconcile.Result{}, nil
 	}
 
-
 	return reconcile.Result{}, nil
 }
-func ClearStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord) {
-	instanceServiceRecord.Status = ketiv1alpha1.OpenMCPServiceDNSRecordStatus{}
+func ClearStatus(instanceServiceRecord *dnsv1alpha1.OpenMCPServiceDNSRecord) {
+	instanceServiceRecord.Status = dnsv1alpha1.OpenMCPServiceDNSRecordStatus{}
 }
 
-func FillStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord, instanceDomain *ketiv1alpha1.OpenMCPDomain) error {
-	
-	instanceServiceRecord.Status = ketiv1alpha1.OpenMCPServiceDNSRecordStatus{}
-	
+func FillStatus(instanceServiceRecord *dnsv1alpha1.OpenMCPServiceDNSRecord, instanceDomain *dnsv1alpha1.OpenMCPDomain) error {
+
+	instanceServiceRecord.Status = dnsv1alpha1.OpenMCPServiceDNSRecordStatus{}
+
 	for _, cluster := range cm.Cluster_list.Items {
 		cluster_client := cm.Cluster_genClients[cluster.Name]
 
@@ -138,10 +135,9 @@ func FillStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord, ins
 		instanceNodeList := &corev1.NodeList{}
 		err := cluster_client.List(context.TODO(), instanceNodeList, "default")
 		if err != nil {
-			omcplog.V(0).Info("[OpenMCP Service DNS Record Controller] : ",err)
+			omcplog.V(0).Info("[OpenMCP Service DNS Record Controller] : ", err)
 			return nil
 		}
-
 
 		region := ""
 		if len(instanceNodeList.Items) >= 1 {
@@ -151,7 +147,6 @@ func FillStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord, ins
 				region = val
 			}
 		}
-
 
 		zones := []string{}
 		zones_dup_map := make(map[string]string) // Map for deduplication
@@ -175,15 +170,15 @@ func FillStatus(instanceServiceRecord *ketiv1alpha1.OpenMCPServiceDNSRecord, ins
 		}
 
 		// Node Info of Cluster (Zone, Region)
-		lb :=  corev1.LoadBalancerStatus{}
+		lb := corev1.LoadBalancerStatus{}
 		instanceService := &corev1.Service{}
-		err = cluster_client.Get(context.TODO(), instanceService,  instanceServiceRecord.Namespace,  instanceServiceRecord.Name)
+		err = cluster_client.Get(context.TODO(), instanceService, instanceServiceRecord.Namespace, instanceServiceRecord.Name)
 		if err == nil {
 			// Get lb information if service exists
 			lb = instanceService.Status.LoadBalancer
 
 		}
-		clusterDNS := &ketiv1alpha1.ClusterDNS{
+		clusterDNS := &dnsv1alpha1.ClusterDNS{
 			Cluster:      cluster.Name,
 			LoadBalancer: lb, // instanceService.Status.LoadBalancer,
 			Zones:        zones,

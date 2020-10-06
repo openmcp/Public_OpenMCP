@@ -20,9 +20,9 @@ import (
 	"context"
 	"fmt"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"openmcp/openmcp/apis"
+	dnsv1alpha1 "openmcp/openmcp/apis/dns/v1alpha1"
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-dns-controller/pkg/apis"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
 	"openmcp/openmcp/openmcp-dns-controller/pkg/mypdns"
 	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -52,7 +52,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	if err := co.WatchResourceReconcileObject(live, &ketiv1alpha1.OpenMCPDNSEndpoint{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(live, &dnsv1alpha1.OpenMCPDNSEndpoint{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
@@ -80,7 +80,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 
 
-	instance := &ketiv1alpha1.OpenMCPDNSEndpoint{}
+	instance := &dnsv1alpha1.OpenMCPDNSEndpoint{}
 	err = r.live.Get(context.TODO(), req.NamespacedName, instance)
 	omcplog.V(2).Info("[Get] OpenMCPDNSEndpoint")
 

@@ -14,40 +14,33 @@ limitations under the License.
 package openmcploadbalancing // import "admiralty.io/multicluster-controller/examples/openmcploadbalancing/pkg/controller/openmcploadbalancing"
 
 import (
-	"context"
-	"fmt"
-	"log"
-	"net/http"
-	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/apis"
-	"openmcp/openmcp/util/clusterManager"
-	"os"
-	"strings"
-
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
+	"context"
+	"fmt"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/kubefed/pkg/controller/util"
-
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	resourceapis "openmcp/openmcp/openmcp-resource-controller/apis"
-	resourcev1alpha1 "openmcp/openmcp/openmcp-resource-controller/apis/keti/v1alpha1"
-	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
-	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
-
+	"log"
+	"net/http"
+	"openmcp/openmcp/apis"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing"
-	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/clusterregistry"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/ingressregistry"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/loadbalancingregistry"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/serviceregistry"
+	"openmcp/openmcp/util/clusterManager"
+	"os"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
+	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
+	"sigs.k8s.io/kubefed/pkg/controller/util"
+	"strings"
 )
-
 
 var cm *clusterManager.ClusterManager
 
@@ -73,15 +66,9 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	if err := resourceapis.AddToScheme(live.GetScheme()); err != nil {
-		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
-	}
-
-
 	if err := co.WatchResourceReconcileObject(live, &resourcev1alpha1.OpenMCPIngress{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
-
 
 	return co, nil
 }
@@ -102,7 +89,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	omcplog.V(3).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
 	instance := &resourcev1alpha1.OpenMCPIngress{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
-
 
 	omcplog.V(3).Info("instance Name: ", instance.Name)
 	omcplog.V(3).Info("instance Namespace : ", instance.Namespace)
@@ -192,7 +178,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 	return reconcile.Result{}, nil // err
 
-
 }
 
 func ListKubeFedClusters(client genericclient.Client, namespace string) *fedv1b1.KubeFedClusterList {
@@ -231,19 +216,17 @@ func KubeFedClusterClients(clusterList *fedv1b1.KubeFedClusterList, cluster_conf
 	return cluster_clients
 }
 
-
 var OPENMCP_IP = ""
 
 func initRegistry() {
 	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Function Called initRegistry")
-
 
 	for _, cluster := range cm.Cluster_list.Items {
 		loadbalancing.ClusterRegistry[cluster.Name] = map[string]string{}
 
 		config, _ := util.BuildClusterConfig(&cluster, cm.Host_client, cm.Fed_namespace)
 		clientset, _ := kubernetes.NewForConfig(config)
-		nodes, err := clientset.CoreV1().Nodes().List( metav1.ListOptions{})
+		nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
 
 		if err != nil {
 			omcplog.V(0).Info(err)
@@ -251,7 +234,6 @@ func initRegistry() {
 		node := nodes.Items[0]
 		country := node.Labels["failure-domain.beta.kubernetes.io/zone"]
 		continent := node.Labels["failure-domain.beta.kubernetes.io/region"]
-
 
 		loadbalancing.ClusterRegistry[cluster.Name]["Country"] = country
 		loadbalancing.ClusterRegistry[cluster.Name]["Continent"] = continent
@@ -264,7 +246,7 @@ func initRegistry() {
 		} else {
 			if found.Spec.Type == "LoadBalancer" {
 				omcplog.V(5).Info("[OpenMCP Loadbalancing Controller] Service Type LoadBalancer")
-				if len (found.Status.LoadBalancer.Ingress) > 0 {
+				if len(found.Status.LoadBalancer.Ingress) > 0 {
 					loadbalancing.ClusterRegistry[cluster.Name]["IngressIP"] = found.Status.LoadBalancer.Ingress[0].IP
 				}
 			} else {
@@ -279,8 +261,6 @@ func initRegistry() {
 	}
 
 }
-
-
 
 func Loadbalancer(openmcpIP string) {
 	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Function Called Reconcile")

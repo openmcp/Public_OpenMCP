@@ -2,19 +2,12 @@ package mypdns
 
 import (
 	"context"
-	"openmcp/openmcp/omcplog"
-
-	//"database/sql"
-	//"github.com/dmportella/powerdns"
-	"os"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	//"fmt"
 	"github.com/mittwald/go-powerdns"
 	"github.com/mittwald/go-powerdns/apis/zones"
-	ketiv1alpha1 "openmcp/openmcp/openmcp-dns-controller/pkg/apis/keti/v1alpha1"
-	//"github.com/joeig/go-powerdns/v2"
-	//"sigs.k8s.io/controller-runtime/pkg/client"
+	dnsv1alpha1 "openmcp/openmcp/apis/dns/v1alpha1"
+	"openmcp/openmcp/omcplog"
+	"os"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var (
@@ -44,7 +37,7 @@ func GetZoneList(pdnsClient pdns.Client) ([]zones.Zone, error) {
 
 }
 func DeleteZone(pdnsClient pdns.Client, liveClient client.Client) error {
-	instanceDNSEndpointList := &ketiv1alpha1.OpenMCPDNSEndpointList{}
+	instanceDNSEndpointList := &dnsv1alpha1.OpenMCPDNSEndpointList{}
 	err := liveClient.List(context.TODO(), instanceDNSEndpointList, &client.ListOptions{})
 	if err != nil {
 		return err
@@ -73,7 +66,7 @@ func DeleteZone(pdnsClient pdns.Client, liveClient client.Client) error {
 			err := pdnsClient.Zones().DeleteZone(context.TODO(), "localhost", zone.Name)
 			if err != nil {
 				for {
-					omcplog.V(0).Info( "[ERROR Retry Delete] ", err)
+					omcplog.V(0).Info("[ERROR Retry Delete] ", err)
 					err = pdnsClient.Zones().DeleteZone(context.TODO(), "localhost", zone.Name)
 					if err == nil {
 						break
@@ -84,11 +77,11 @@ func DeleteZone(pdnsClient pdns.Client, liveClient client.Client) error {
 		}
 
 	}
-	omcplog.V(2).Info( "[Deleted Pdns Zone] ", deleteZone.Name)
+	omcplog.V(2).Info("[Deleted Pdns Zone] ", deleteZone.Name)
 	return nil
 }
 
-func GetResourceRecordSets(domainName string, Endpoints []*ketiv1alpha1.Endpoint) []zones.ResourceRecordSet {
+func GetResourceRecordSets(domainName string, Endpoints []*dnsv1alpha1.Endpoint) []zones.ResourceRecordSet {
 	ResourceRecordSets := []zones.ResourceRecordSet{}
 	for _, endpoint := range Endpoints {
 
@@ -127,7 +120,7 @@ func GetResourceRecordSets(domainName string, Endpoints []*ketiv1alpha1.Endpoint
 
 	}
 
-	omcplog.V(3).Info( "[Get RecordSets] ", ResourceRecordSets)
+	omcplog.V(3).Info("[Get RecordSets] ", ResourceRecordSets)
 	return ResourceRecordSets
 }
 func UpdateZoneWithRecords(client pdns.Client, domainName string, resourceRecordSets []zones.ResourceRecordSet) error {
@@ -159,7 +152,7 @@ func CreateZoneWithRecords(client pdns.Client, domainName string, resourceRecord
 	return nil
 }
 
-func SyncZone(pdnsClient pdns.Client, domainName string, Endpoints []*ketiv1alpha1.Endpoint) error {
+func SyncZone(pdnsClient pdns.Client, domainName string, Endpoints []*dnsv1alpha1.Endpoint) error {
 
 	_, err := GetZone(pdnsClient, domainName)
 	resourceRecordSets := GetResourceRecordSets(domainName, Endpoints)
@@ -168,15 +161,15 @@ func SyncZone(pdnsClient pdns.Client, domainName string, Endpoints []*ketiv1alph
 		// Already Exist
 		err = UpdateZoneWithRecords(pdnsClient, domainName, resourceRecordSets)
 		if err != nil {
-			omcplog.V(0).Info( "[OpenMCP External DNS Controller] : UpdateZone?  ", err)
+			omcplog.V(0).Info("[OpenMCP External DNS Controller] : UpdateZone?  ", err)
 		}
-		omcplog.V(2).Info( "Update Zone ", domainName)
+		omcplog.V(2).Info("Update Zone ", domainName)
 	} else {
 		err = CreateZoneWithRecords(pdnsClient, domainName, resourceRecordSets)
 		if err != nil {
-			omcplog.V(0).Info( "[OpenMCP External DNS Controller] : CreateZone? ", err)
+			omcplog.V(0).Info("[OpenMCP External DNS Controller] : CreateZone? ", err)
 		}
-		omcplog.V(2).Info( "Create Zone ", domainName)
+		omcplog.V(2).Info("Create Zone ", domainName)
 	}
 	return err
 }
