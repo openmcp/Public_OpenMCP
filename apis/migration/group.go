@@ -14,5 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package nanum contains multicluster API versions
+// Package openmcp contains multicluster API versions
 package migration
