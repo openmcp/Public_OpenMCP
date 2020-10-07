@@ -17,8 +17,8 @@ limitations under the License.
 package main
 
 import (
+	"openmcp/openmcp/migration/pkg/controller/migration"
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-migration/pkg/controller/migration"
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
@@ -32,7 +32,6 @@ func main() {
 	logLevel.KetiLogInit()
 
 	for {
-		omcplog.Info("[OpenMCP] omcplog Test")
 		cm := clusterManager.NewClusterManager()
 		host_ctx := "openmcp"
 		namespace := "openmcp"
@@ -55,9 +54,9 @@ func main() {
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 		m := manager.New()
 		m.AddController(co)
-		omcplog.Info("[OpenMCP] omcplog Test")
+		omcplog.Info("[OpenMCP] omcplog reconcile")
 		m.AddController(loglevel_cont)
-
+		omcplog.Info("[OpenMCP] omcplog loglevel")
 		stop := reshape.SetupSignalHandler()
 		if err := m.Start(stop); err != nil {
 			omcplog.V(4).Info("[OpenMCP] ", err)

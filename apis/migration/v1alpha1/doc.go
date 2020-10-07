@@ -19,5 +19,5 @@ limitations under the License.
 // +k8s:deepcopy-gen=package,register
 // +k8s:conversion-gen=admiralty.io/multicluster-controller/examples/Migration/pkg/apis/multicluster
 // +k8s:defaulter-gen=TypeMeta
-// +groupName=nanum.example.com
-package v1alpha1 // import "admiralty.io/multicluster-controller/examples/Migration/pkg/apis/multicluster/v1alpha1"
+// +groupName= openmcp.k8s.io
+package v1alpha1
