@@ -107,16 +107,31 @@ func GetResourceRecordSets(domainName string, Endpoints []*dnsv1alpha1.Endpoint)
 			continue
 		}
 
-		ResourceRecordSet := zones.ResourceRecordSet{
-			Name:       endpoint.DNSName + ".",
-			Type:       endpoint.RecordType,
-			TTL:        int(endpoint.RecordTTL),
-			ChangeType: zones.ChangeTypeReplace,
-			Records:    records,
-			Comments:   nil,
+		existDNS := false
+		for i, ResourceRecordSet := range ResourceRecordSets {
+			if endpoint.DNSName + "." == ResourceRecordSet.Name {
+				for _, record := range records {
+					ResourceRecordSets[i].Records = append(ResourceRecordSets[i].Records, record)
+				}
+				existDNS = true
+				break
+
+			}
 		}
 
-		ResourceRecordSets = append(ResourceRecordSets, ResourceRecordSet)
+		if !existDNS {
+			ResourceRecordSet := zones.ResourceRecordSet{
+				Name:       endpoint.DNSName + ".",
+				Type:       endpoint.RecordType,
+				TTL:        int(endpoint.RecordTTL),
+				ChangeType: zones.ChangeTypeReplace,
+				Records:    records,
+				Comments:   nil,
+			}
+
+			ResourceRecordSets = append(ResourceRecordSets, ResourceRecordSet)
+		}
+
 
 	}
 
