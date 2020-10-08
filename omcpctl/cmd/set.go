@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/cobra"
 	"openmcp/openmcp/omcpctl/apiServerMethod"
 	cobrautil "openmcp/openmcp/omcpctl/util"
-	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+	policyv1alpha1 "openmcp/openmcp/apis/policy/v1alpha1"
 )
 
 // setCmd represents the set command
@@ -113,12 +113,12 @@ func setPolicy(args []string){
 
 }
 
-func bytearrayToPolicy(body []byte) (resourcev1alpha1.OpenMCPPolicy, error){
-	var policyinfo resourcev1alpha1.OpenMCPPolicy
+func bytearrayToPolicy(body []byte) (policyv1alpha1.OpenMCPPolicy, error){
+	var policyinfo policyv1alpha1.OpenMCPPolicy
 	err := yaml.Unmarshal(body, &policyinfo)
 	return policyinfo, err
 }
-func policyToBytearray(policyinfo resourcev1alpha1.OpenMCPPolicy) ([]byte, error){
+func policyToBytearray(policyinfo policyv1alpha1.OpenMCPPolicy) ([]byte, error){
 
 	body, err := yaml.Marshal(&policyinfo)
 	return body, err
