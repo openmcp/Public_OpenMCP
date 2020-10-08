@@ -23,7 +23,7 @@ $ ./2.create.sh
 
 1. Setting migration information at 4.example.yaml
 ```
-apiVersion: nanum.example.com/v1alpha1
+apiVersion: openmcp.k8s.io/v1alpha1
 kind: Migration
 metadata:
   name: migrations
@@ -34,6 +34,7 @@ spec:
     TargetCluster: cluster2
     VolumePath: /nfsdir3/
     NameSpace: openmcp
+    ServiceName: testim
     MigrationSource:
     - ResourceName: testim-dp
       ResourceType: Deployment

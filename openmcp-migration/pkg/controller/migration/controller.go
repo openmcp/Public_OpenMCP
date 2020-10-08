@@ -22,9 +22,10 @@ import (
 	"regexp"
 
 	// "openmcp/openmcp/migration/pkg/apis"
+
 	nanumv1alpha1 "openmcp/openmcp/apis/migration/v1alpha1"
-	"openmcp/openmcp/migration/pkg/apis"
-	config "openmcp/openmcp/migration/pkg/util"
+	"openmcp/openmcp/omcplog"
+	config "openmcp/openmcp/openmcp-migration/pkg/util"
 	"openmcp/openmcp/util/clusterManager"
 
 	restclient "k8s.io/client-go/rest"
@@ -40,9 +41,13 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
 
+	// "sigs.k8s.io/controller-runtime/pkg/client"
+	// "sigs.k8s.io/kubefed/pkg/controller/util"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/kubefed/pkg/apis"
 	"sigs.k8s.io/kubefed/pkg/client/generic"
+	// "openmcp/openmcp/migration/pkg/controller"
 )
 
 var cm *clusterManager.ClusterManager
@@ -66,30 +71,31 @@ func GetPodName(targetClient generic.Client, dpName string, namespace string) st
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
 	cm = myClusterManager
-	////omcplog.Info("[OpenMCP] NewController")
+	omcplog.V(4).Info("NewController start")
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
-		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
+		omcplog.V(0).Info("getting delegating client for live cluster: ", err)
+		return nil, err
 	}
-	////omcplog.Info("[OpenMCP] 1111111111111")
 	ghostclients := []client.Client{}
 	for _, ghost := range ghosts {
 		ghostclient, err := ghost.GetDelegatingClient()
 		if err != nil {
-			return nil, fmt.Errorf("getting delegating client for ghost cluster: %v", err)
+			omcplog.V(0).Info("getting delegating client for ghost cluster: ", err)
+			return nil, err
 		}
 		ghostclients = append(ghostclients, ghostclient)
 	}
-	////omcplog.Info("[OpenMCP] 2222222222222")
 	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{})
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
-		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
+		omcplog.V(0).Info("adding APIs to live cluster's scheme: ", err)
+		return nil, err
 	}
-	////omcplog.Info("[OpenMCP] 33333333333333333")
 	if err := co.WatchResourceReconcileObject(live, &nanumv1alpha1.Migration{}, controller.WatchOptions{}); err != nil {
-		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
+		omcplog.V(0).Info("setting up Pod watch in live cluster: ", err)
+		return nil, err
 	}
-	////omcplog.Info("[OpenMCP] 44444444444444444444")
+	omcplog.V(4).Info("NewController end")
 	return co, nil
 }
 
@@ -105,28 +111,30 @@ START:
 	podName := ""
 	for _, pod := range pods.Items {
 		result, err := regexp.MatchString(dpName, pod.Name)
-		if err == nil && result == true && pod.Status.Phase == corev1.PodRunning {
-			//omcplog.Info("pod:  ", pod)
+		if err == nil && result == true {
+			omcplog.V(4).Info("pod STATUS:  ", pod.Status.ContainerStatuses)
 			podName = pod.Name
 			break
 		} else if err != nil {
-			//omcplog.Info("pod name error ", err)
+			omcplog.V(0).Info("pod name error", err)
 			continue
 		} else {
 			continue
 		}
 	}
 	if podName == "" {
-		//omcplog.Info("can not found podName")
+		omcplog.V(0).Info("can not found podName")
 		goto START
 	} else {
-		//omcplog.Info("podName :  ", podName)
+		omcplog.V(4).Info("podName :  ", podName)
 		return podName
 	}
 }
 func CopyToNfsCMD(oriVolumePath string, serviceName string) (string, string) {
 	mkCMD := config.MKDIR_CMD + " " + config.EXTERNAL_NFS_PATH + "/" + serviceName
 	copyCMD := config.COPY_CMD + " " + oriVolumePath + " " + config.EXTERNAL_NFS_PATH + "/" + serviceName
+	omcplog.V(4).Info("mkdir cmd  :  ", mkCMD)
+	omcplog.V(4).Info("copy cmd  :  ", copyCMD)
 	return mkCMD, copyCMD
 }
 
@@ -153,7 +161,7 @@ func LinkShareVolume(client kubernetes.Interface, config *restclient.Config, pod
 	)
 	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
 	if err != nil {
-		//omcplog.Info("err----------", err)
+		omcplog.V(0).Info("NewSPDYExecutor err: ", err)
 
 	}
 	err = exec.Stream(remotecommand.StreamOptions{
@@ -161,15 +169,16 @@ func LinkShareVolume(client kubernetes.Interface, config *restclient.Config, pod
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
 	})
-	//omcplog.Info("123123123-----", command)
+
 	if err != nil {
-		return fmt.Errorf("error stream: %v", err)
+		omcplog.V(0).Info("error stream: ", err)
+		return err
 	} else {
 		return err
 	}
 }
 
-func CreateLinkShare(client generic.Client, sourceResource *appsv1.Deployment, volumePath string, mountPath string, serviceName string) (bool, error) {
+func CreateLinkShare(client generic.Client, sourceResource *appsv1.Deployment, volumePath string, serviceName string) (bool, error) {
 	//nfs-pvc append
 	resourceInfo := &appsv1.Deployment{}
 	resourceInfo = sourceResource
@@ -214,7 +223,6 @@ func CreateLinkShare(client generic.Client, sourceResource *appsv1.Deployment, v
 	nfsNewPv.Spec.Capacity = corev1.ResourceList{
 		corev1.ResourceStorage: resource.MustParse("10Gi"),
 	}
-	fmt.Println("링크쉐어 pv생성")
 
 	nfsNewPv.ObjectMeta.ResourceVersion = ""
 	nfsNewPv.ResourceVersion = ""
@@ -234,43 +242,44 @@ func CreateLinkShare(client generic.Client, sourceResource *appsv1.Deployment, v
 			corev1.ResourceStorage: resource.MustParse("10Gi"),
 		},
 	}
-	fmt.Println("링크쉐어 pvc생성")
+
 	nfsNewPvc.ObjectMeta.ResourceVersion = ""
 	nfsNewPvc.ResourceVersion = ""
 
 	pvErr := client.Create(context.TODO(), nfsNewPv)
 	if pvErr != nil {
-		//omcplog.Info(pvErr, " --- nfsPv생성 에러")
+		omcplog.V(0).Info("nfsPv 생성 에러: ", pvErr)
 	}
+	omcplog.V(3).Info("nfsPv 생성 완료")
 	pvcErr := client.Create(context.TODO(), nfsNewPvc)
 	if pvcErr != nil {
-		//omcplog.Info(pvcErr, " ---- nfsPvc생성 에러")
+		omcplog.V(0).Info("nfsPvc 생성 에러: ", pvcErr)
 	}
+	omcplog.V(3).Info("nfsPvc 생성 완료")
 	//client.Update(context.TODO(), resourceInfo)
 	//client.Create(context.TODO(), resourceInfo)
 	dpErr := client.Update(context.TODO(), resourceInfo)
 	if dpErr != nil {
-		//omcplog.Info(dpErr, " ---- dp 생성 에러")
+		omcplog.V(0).Info("dp 생성 에러: ", dpErr)
 	}
+	omcplog.V(3).Info("dp 생성 완료")
 	return true, nil
 
 }
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
-	//omcplog.Info("Function Called Reconcile")
+	omcplog.V(3).Info("Function Called Reconcile")
 	instance := &nanumv1alpha1.Migration{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 	if err != nil {
-		//omcplog.Info("get instance error")
+		omcplog.V(0).Info("get instance error")
 	}
-	//omcplog.Info(len(instance.Spec.MigrationServiceSources))
 	for _, migraionSource := range instance.Spec.MigrationServiceSources {
-		//omcplog.Info(migraionSource)
+		omcplog.V(4).Info(migraionSource)
 		targetCluster := migraionSource.TargetCluster
 		sourceCluster := migraionSource.SourceCluster
 		nameSpace := migraionSource.NameSpace
 		resourceList := migraionSource.MigrationSources
 		volumePath := migraionSource.VolumePath
-		mountPath := migraionSource.MountPath
 		targetClient := cm.Cluster_genClients[targetCluster]
 		sourceClient := cm.Cluster_genClients[sourceCluster]
 		serviceName := migraionSource.ServiceName
@@ -278,33 +287,33 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		for _, resource := range resourceList {
 			resourceType := resource.ResourceType
 			if resourceType == config.DEPLOY {
-				//omcplog.Info("deploy")
+				omcplog.V(3).Info("deploy migration start")
 				targetResource := &appsv1.Deployment{}
 				sourceResource := &appsv1.Deployment{}
 
 				sourceGetErr := sourceClient.Get(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
 				if sourceGetErr != nil {
-					//omcplog.V(3).Info("get source cluster")
+					omcplog.V(3).Info("get source cluster")
 				}
 
 				client := cm.Cluster_kubeClients[sourceCluster]
 				restconfig := cm.Cluster_configs[sourceCluster]
 
-				addpvcErr, _ := CreateLinkShare(sourceClient, sourceResource, volumePath, mountPath, serviceName)
+				addpvcErr, _ := CreateLinkShare(sourceClient, sourceResource, volumePath, serviceName)
 				if addpvcErr != true {
-					//omcplog.Info("add pvc error!")
+					omcplog.V(0).Info("add pvc error!")
 				}
 				podName := GetCopyPodName(client, sourceResource.Name, nameSpace)
 				mkCommand, copyCommand := CopyToNfsCMD(volumePath, serviceName)
 				err := LinkShareVolume(client, restconfig, podName, mkCommand, nameSpace)
 				if err != nil {
-					//omcplog.Info("volume make dir error")
+					omcplog.V(0).Info("volume make dir error")
 				} else {
 					copyErr := LinkShareVolume(client, restconfig, podName, copyCommand, nameSpace)
 					if copyErr != nil {
-						//omcplog.Info("volume linkshare error")
+						omcplog.V(0).Info("volume linkshare error")
 					} else {
-						//omcplog.Info("volume linkshare complete")
+						omcplog.V(3).Info("volume linkshare complete")
 					}
 				}
 
@@ -338,43 +347,43 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				targetResource.ResourceVersion = ""
 				targetErr := targetClient.Create(context.TODO(), targetResource)
 				if targetErr != nil {
-					//omcplog.V(3).Info("target cluster create : " + serviceName)
+					omcplog.V(3).Info("target cluster create : " + serviceName)
 				}
 
 				// sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
 				// if sourceErr != nil {
-				// 	//omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
+				// 	omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
 				// }
 
 			} else if resourceType == config.SERVICE {
-				//omcplog.Info("service")
+				omcplog.V(3).Info("service migration")
 				targetResource := &corev1.Service{}
 				sourceResource := &corev1.Service{}
 
 				sourceGetErr := sourceClient.Get(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
 				if sourceGetErr != nil {
-					//omcplog.V(3).Info("get source cluster")
+					omcplog.V(3).Info("get source cluster")
 				}
 				targetResource = sourceResource
 				targetResource.ObjectMeta.ResourceVersion = ""
 				targetResource.ResourceVersion = ""
 				targetErr := targetClient.Create(context.TODO(), targetResource)
 				if targetErr != nil {
-					//omcplog.V(3).Info("target cluster create : " + resource.ResourceName)
+					omcplog.V(3).Info("target cluster create : " + resource.ResourceName)
 				}
 
 				// sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
 				// if sourceErr != nil {
-				// 	//omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
+				// 	omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
 				// }
 			} else if resourceType == config.PV {
-				//omcplog.Info("pv")
+				omcplog.V(3).Info("pv migration")
 				targetResource := &corev1.PersistentVolume{}
 				sourceResource := &corev1.PersistentVolume{}
 
 				sourceGetErr := sourceClient.Get(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
 				if sourceGetErr != nil {
-					//omcplog.V(3).Info("get source cluster")
+					omcplog.V(3).Info("get source cluster")
 				}
 
 				targetResource = GetLinkSharePv(sourceResource, volumePath, serviceName)
@@ -385,25 +394,25 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 				targetErr := targetClient.Create(context.TODO(), targetResource)
 				if targetErr != nil {
-					//omcplog.V(3).Info("target cluster create : " + resource.ResourceName)
+					omcplog.V(3).Info("target cluster create : " + resource.ResourceName)
 				}
 
 				// sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
 				// if sourceErr != nil {
-				// 	//omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
+				// 	omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
 				// }
 			} else if resourceType == config.PVC {
-				//omcplog.Info("pvc")
+				omcplog.V(3).Info("pvc migration")
 				targetResource := &corev1.PersistentVolumeClaim{}
 				sourceResource := &corev1.PersistentVolumeClaim{}
 
 				// targetGetErr := targetClient.Get(context.TODO(), targetResource, nameSpace, resource.ResourceName)
 				// if targetGetErr != nil {
-				// 	//omcplog.V(3).Info("get target cluster")
+				// 	omcplog.V(3).Info("get target cluster")
 				// }
 				sourceGetErr := sourceClient.Get(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
 				if sourceGetErr != nil {
-					//omcplog.V(3).Info("get source cluster")
+					omcplog.V(3).Info("get source cluster")
 				}
 
 				//targetResource = sourceResource
@@ -413,20 +422,19 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 				targetErr := targetClient.Create(context.TODO(), targetResource)
 				if targetErr != nil {
-					//omcplog.V(3).Info("target cluster create : " + resource.ResourceName)
+					omcplog.V(3).Info("target cluster create : " + resource.ResourceName)
 				}
 
 				// sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
 				// if sourceErr != nil {
-				// 	//omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
+				// 	omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
 				// }
 			} else {
-				//omcplog.V(3).Info("Resource Type Error!")
+				omcplog.V(0).Info("Resource Type Error!")
 				return reconcile.Result{}, fmt.Errorf("Resource Type Error!")
 			}
 		}
 	}
-	//omcplog.Info("reconcile end")
 	return reconcile.Result{}, nil
 }
 
@@ -448,7 +456,6 @@ func GetLinkSharePvc(sourceResource *corev1.PersistentVolumeClaim, volumePath st
 	// 		"name": config.EXTERNAL_NFS_NAME_PV + sourceResource.ObjectMeta.Labels["name"],
 	// 	},
 	// }
-	fmt.Println("링크쉐어 pvc생성")
 	linkSharePvc.ObjectMeta.ResourceVersion = ""
 	linkSharePvc.ResourceVersion = ""
 	return linkSharePvc
@@ -470,7 +477,6 @@ func GetLinkSharePv(sourceResource *corev1.PersistentVolume, volumePath string, 
 		Path:     config.EXTERNAL_NFS_PATH + "/" + serviceName,
 		ReadOnly: false,
 	}
-	fmt.Println("링크쉐어 pv생성")
 
 	linkSharePv.ObjectMeta.ResourceVersion = ""
 	linkSharePv.ResourceVersion = ""

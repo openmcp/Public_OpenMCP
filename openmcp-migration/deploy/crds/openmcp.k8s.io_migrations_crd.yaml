@@ -52,8 +52,6 @@ spec:
                         - ResourceType
                         type: object
                       type: array
-                    MountPath:
-                      type: string
                     NameSpace:
                       type: string
                     ServiceName:
@@ -66,7 +64,6 @@ spec:
                       type: string
                   required:
                   - MigrationSource
-                  - MountPath
                   - NameSpace
                   - ServiceName
                   - SourceCluster

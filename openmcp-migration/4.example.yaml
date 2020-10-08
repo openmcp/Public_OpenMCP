@@ -9,7 +9,6 @@ spec:
     TargetCluster: cluster2
     VolumePath: /nfsdir3/
     NameSpace: openmcp
-    MountPath: /nfs/
     ServiceName: testim
     MigrationSource:
     - ResourceName: testim-dp
