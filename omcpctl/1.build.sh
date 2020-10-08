@@ -4,7 +4,7 @@ export GO111MODULE=on
 go mod vendor
 
 OPENMCP_APISERVER="10.0.3.20:31635"
-OPENMCP_DIR="\/root\/workspace\/openmcp\/openmcp"
+OPENMCP_DIR="\/root\/workspace\/public-openmcp\/openmcp"
 EXTERNAL_IP="10.0.3.12"
 
 go build -o omcpctl && \
