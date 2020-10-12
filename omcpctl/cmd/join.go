@@ -133,8 +133,10 @@ func joinCluster(memberIP string) {
 		if lockErr != nil {
 			fmt.Println("Mount Dir Using Another Works. Wait...")
 			time.Sleep(time.Second)
+		} else {
+			break
 		}
-		break
+
 	}
 
 	totalStart := time.Now()
@@ -232,8 +234,9 @@ func joinGKECluster(memberName string) {
 		if lockErr != nil {
 			fmt.Println("Mount Dir Using Another Works. Wait...")
 			time.Sleep(time.Second)
+		} else {
+			break
 		}
-		break
 	}
 
 	fmt.Println("gke cluster name : ", memberName)
@@ -359,8 +362,9 @@ func joinEKSCluster(memberName string) {
 		if lockErr != nil {
 			fmt.Println("Mount Dir Using Another Works. Wait...")
 			time.Sleep(time.Second)
+		}else {
+			break
 		}
-		break
 	}
 
 	totalStart := time.Now()

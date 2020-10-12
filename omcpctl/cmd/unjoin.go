@@ -133,8 +133,9 @@ func unjoinCluster(memberIP string) {
 		if lockErr != nil {
 			fmt.Println("Mount Dir Using Another Works. Wait...")
 			time.Sleep(time.Second)
+		}else {
+			break
 		}
-		break
 	}
 
 	totalStart := time.Now()
@@ -266,8 +267,9 @@ func unjoinCloudCluster(memberName string) {
 		if lockErr != nil {
 			fmt.Println("Mount Dir Using Another Works. Wait...")
 			time.Sleep(time.Second)
+		}else {
+			break
 		}
-		break
 	}
 
 	totalStart := time.Now()
