@@ -18,6 +18,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 	"log"
@@ -127,6 +128,15 @@ func getDiffJoinIP() []string {
 }
 
 func joinCluster(memberIP string) {
+	for {
+		lockErr := Lock.TryLock()
+		if lockErr != nil {
+			fmt.Println("Mount Dir Using Another Works. Wait...")
+			time.Sleep(time.Second)
+		}
+		break
+	}
+
 	totalStart := time.Now()
 	fmt.Println("***** [Start] Cluster Join Start : '", memberIP, "' *****")
 
@@ -193,6 +203,8 @@ func joinCluster(memberIP string) {
 	util.CmdExec2("mv /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP + " /mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP)
 	util.CmdExec2("kubefedctl join " + cluster.Name + " --cluster-context " + cluster.Name + " --host-cluster-context openmcp --v=2")
 
+	Lock.Unlock()
+
 	elapsed2 := time.Since(start2)
 	log.Printf("Cluster Join Time : %s", elapsed2)
 	fmt.Println("***** [End] 2. Cluster Join ***** ")
@@ -214,6 +226,16 @@ func joinCluster(memberIP string) {
 }
 
 func joinGKECluster(memberName string) {
+
+	for {
+		lockErr := Lock.TryLock()
+		if lockErr != nil {
+			fmt.Println("Mount Dir Using Another Works. Wait...")
+			time.Sleep(time.Second)
+		}
+		break
+	}
+
 	fmt.Println("gke cluster name : ", memberName)
 	totalStart := time.Now()
 	fmt.Println("***** [Start] Cluster Join Start : '", memberName, "' *****")
@@ -232,6 +254,7 @@ func joinGKECluster(memberName string) {
 		fmt.Println("=> First You Must be Input the Next Command in 'OpenMCP Master Server(" + openmcpIP + ")' : omcpctl register openmcp")
 		return
 	}
+	Lock.Unlock()
 
 	alreadyJoined, err := cobrautil.CheckAlreadyJoinClusterWithPublicClusterName(memberName, "gke")
 	if err != nil {
@@ -331,6 +354,15 @@ func joinGKECluster(memberName string) {
 }
 
 func joinEKSCluster(memberName string) {
+	for {
+		lockErr := Lock.TryLock()
+		if lockErr != nil {
+			fmt.Println("Mount Dir Using Another Works. Wait...")
+			time.Sleep(time.Second)
+		}
+		break
+	}
+
 	totalStart := time.Now()
 	fmt.Println("***** [Start] Cluster Join Start : '", memberName, "' *****")
 
@@ -348,7 +380,7 @@ func joinEKSCluster(memberName string) {
 		fmt.Println("=> First You Must be Input the Next Command in 'OpenMCP Master Server(" + openmcpIP + ")' : omcpctl register openmcp")
 		return
 	}
-
+	Lock.Unlock()
 
 	_, err := util.CmdExec("aws eks update-kubeconfig --name " + memberName)
 	if err != nil {
