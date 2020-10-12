@@ -66,8 +66,9 @@ func registerASOpenMCP() {
 		if lockErr != nil {
 			fmt.Println("Mount Dir Using Another Works. Wait...")
 			time.Sleep(time.Second)
+		}else {
+			break
 		}
-		break
 	}
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
@@ -114,8 +115,9 @@ func registerMemberToOpenMCP(openmcpIP string) {
 		if lockErr != nil {
 			fmt.Println("Mount Dir Using Another Works. Wait...")
 			time.Sleep(time.Second)
+		}else {
+			break
 		}
-		break
 	}
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
