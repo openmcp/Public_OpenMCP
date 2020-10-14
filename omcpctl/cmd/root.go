@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/juju/fslock"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -52,6 +53,7 @@ func Execute() {
 	}
 }
 
+var Lock *fslock.Lock
 func init() {
 	cobra.OnInitialize(initConfig)
 
@@ -68,6 +70,8 @@ func init() {
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
 	cobrautil.OpenMCPAPIServer = c.OpenmcpApiServer
+
+	Lock = fslock.New("/tmp/mntlock.txt")
 }
 
 // initConfig reads in config file and ENV variables if set.

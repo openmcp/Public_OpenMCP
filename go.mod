@@ -19,6 +19,11 @@ require (
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/influxdata/influxdb v1.8.0
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
+<<<<<<< HEAD
+=======
+	github.com/juju/fslock v0.0.0-20160525022230-4d5c94c67b4b
+	github.com/kr/pty v1.1.5 // indirect
+>>>>>>> 00687a01e33894f0ec47d2490d08817af08969ac
 	github.com/kubernetes/autoscaler v0.0.0-20191021073337-3f137fde4f66
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mittwald/go-powerdns v0.5.0
@@ -27,6 +32,10 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.4.0
+<<<<<<< HEAD
+=======
+	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6 // indirect
+>>>>>>> 00687a01e33894f0ec47d2490d08817af08969ac
 	google.golang.org/grpc v1.31.0
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.2.8

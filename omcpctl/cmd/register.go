@@ -21,6 +21,7 @@ import (
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"openmcp/openmcp/util"
 	"os"
+	"time"
 )
 
 // registerCmd represents the register command
@@ -60,6 +61,15 @@ func fileExists(filename string) bool {
 }
 
 func registerASOpenMCP() {
+	for {
+		lockErr := Lock.TryLock()
+		if lockErr != nil {
+			fmt.Println("Mount Dir Using Another Works. Wait...")
+			time.Sleep(time.Second)
+		}else {
+			break
+		}
+	}
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
 	util.CmdExec("umount -l /mnt")
@@ -95,9 +105,20 @@ func registerASOpenMCP() {
 	fmt.Println("Success OpenMCP Master Register '" + openmcpIP + "'")
 	return
 
+	Lock.Unlock()
+
 }
 
 func registerMemberToOpenMCP(openmcpIP string) {
+	for {
+		lockErr := Lock.TryLock()
+		if lockErr != nil {
+			fmt.Println("Mount Dir Using Another Works. Wait...")
+			time.Sleep(time.Second)
+		}else {
+			break
+		}
+	}
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
 	util.CmdExec("umount -l /mnt")
@@ -111,12 +132,14 @@ func registerMemberToOpenMCP(openmcpIP string) {
 		fmt.Println("Failed Register '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Not Yet Register OpenMCP.")
 		fmt.Println("=> First You Must be Input the Next Command in 'OpenMCP Master Server(" + openmcpIP + ")' : omcpctl register openmcp")
+		Lock.Unlock()
 		return
 	}
 
 	if memberIP == openmcpIP {
 		fmt.Println("Failed Register '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Can Not Self regist. [My_IP '" + memberIP + "', OpenMCP_IP '" + openmcpIP + "']")
+		Lock.Unlock()
 		return
 	}
 
@@ -124,11 +147,13 @@ func registerMemberToOpenMCP(openmcpIP string) {
 	if fileExists("/mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP) {
 		fmt.Println("Failed Register '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Already Regist")
+		Lock.Unlock()
 		return
 
 	} else if fileExists("/mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP) {
 		fmt.Println("Failed Register '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Already Joined by OpenMCP '" + openmcpIP + "'")
+		Lock.Unlock()
 		return
 
 	} else {
@@ -145,8 +170,10 @@ func registerMemberToOpenMCP(openmcpIP string) {
 		util.CmdExec("cat /mnt/ssh/id_rsa.pub >> /root/.ssh/authorized_keys")
 
 		fmt.Println("Success Register '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
+		Lock.Unlock()
 		return
 	}
+
 }
 
 func init() {

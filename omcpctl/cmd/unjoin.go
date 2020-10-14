@@ -128,6 +128,16 @@ func removeInitCluster(clusterName, openmcpDir string) {
 }
 
 func unjoinCluster(memberIP string) {
+	for {
+		lockErr := Lock.TryLock()
+		if lockErr != nil {
+			fmt.Println("Mount Dir Using Another Works. Wait...")
+			time.Sleep(time.Second)
+		}else {
+			break
+		}
+	}
+
 	totalStart := time.Now()
 	fmt.Println("***** [Start] Cluster UnJoin Start : '", memberIP, "' *****")
 
@@ -241,6 +251,7 @@ func unjoinCluster(memberIP string) {
 	fmt.Println("***** [End] 4. Cluster Config Remove ***** ")
 
 	util.CmdExec2("mv /mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP + " /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP)
+	Lock.Unlock()
 
 	totalElapsed := time.Since(totalStart)
 	log.Printf("Cluster UnJoin Total Elapsed Time : %s", totalElapsed)
@@ -251,6 +262,16 @@ func unjoinCluster(memberIP string) {
 }
 
 func unjoinCloudCluster(memberName string) {
+	for {
+		lockErr := Lock.TryLock()
+		if lockErr != nil {
+			fmt.Println("Mount Dir Using Another Works. Wait...")
+			time.Sleep(time.Second)
+		}else {
+			break
+		}
+	}
+
 	totalStart := time.Now()
 	fmt.Println("***** [Start] Cluster UnJoin Start : '", memberName, "' *****")
 
@@ -260,7 +281,7 @@ func unjoinCloudCluster(memberName string) {
 	defer util.CmdExec("umount -l /mnt")
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
-
+	Lock.Unlock()
 
 	openmcpIP := cobrautil.GetOutboundIP()
 	if !fileExists("/mnt/openmcp/" + openmcpIP) {

@@ -5,13 +5,13 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
 	cobrautil "openmcp/openmcp/omcpctl/util"
-	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+	policyv1alpha1 "openmcp/openmcp/apis/policy/v1alpha1"
 	"os"
 	"strings"
 )
 
 
-func OpenMCPPolicyInfo(opol *resourcev1alpha1.OpenMCPPolicy) []string{
+func OpenMCPPolicyInfo(opol *policyv1alpha1.OpenMCPPolicy) []string{
 
 	namespace := opol.Namespace
 	name := opol.Name
@@ -31,7 +31,7 @@ func OpenMCPPolicyInfo(opol *resourcev1alpha1.OpenMCPPolicy) []string{
 	return data
 }
 func PrintOpenMCPPolicy(body []byte) {
-	od := resourcev1alpha1.OpenMCPPolicy{}
+	od := policyv1alpha1.OpenMCPPolicy{}
 	err := yaml.Unmarshal(body, &od)
 	if err != nil {
 		panic(err.Error())
@@ -46,7 +46,7 @@ func PrintOpenMCPPolicy(body []byte) {
 
 }
 func PrintOpenMCPPolicyList(body []byte) {
-	resourceStruct := resourcev1alpha1.OpenMCPPolicyList{}
+	resourceStruct := policyv1alpha1.OpenMCPPolicyList{}
 	err := yaml.Unmarshal(body, &resourceStruct)
 	if err != nil {
 		panic(err.Error())

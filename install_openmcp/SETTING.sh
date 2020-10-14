@@ -84,10 +84,10 @@ sed -i 's|REPLACE_INFLUXDBUSERPWD|'\"$INFLUXDB_USERPWD\"'|g' master/openmcp-apis
 
 sed -i 's|REPLACE_NFSIP|'\"$NFS_PDNS_IP\"'|g' master/influxdb/pv.yaml
 
-sed -i 's|REPLACE_PDNSIP|'\"$PDNS_PUBLIC_IP\"':'\"$PDNS_PUBLIC_PORT\"'|g' master/configmap/coredns/coredns-cm.yaml
+sed -i 's|REPLACE_PDNSIP|'$PDNS_PUBLIC_IP':'$PDNS_PUBLIC_PORT'|g' master/configmap/coredns/coredns-cm.yaml
 
-sed -i 's|REPLACE_PDNSIP|'\"$PDNS_PUBLIC_IP\"':'\"$PDNS_PUBLIC_PORT\"'|g' member/configmap/coredns/coredns-cm.yaml
-sed -i 's|REPLACE_PDNSIP|'\"$PDNS_PUBLIC_IP\"':'\"$PDNS_PUBLIC_PORT\"'|g' member/configmap/kubedns/kube-dns-cm.yaml
+sed -i 's|REPLACE_PDNSIP|'$PDNS_PUBLIC_IP':'$PDNS_PUBLIC_PORT'|g' member/configmap/coredns/coredns-cm.yaml
+sed -i 's|REPLACE_PDNSIP|'$PDNS_PUBLIC_IP':'$PDNS_PUBLIC_PORT'|g' member/configmap/kubedns/kube-dns-cm.yaml
 
 sed -i 's|REPLACE_PDNSIP|'\"$NFS_PDNS_IP\"'|g' master/openmcp-dns-controller/operator.yaml
 #sed -i 's|REPLACE_PDNSPORT|'\"$PDNS_PORT\"'|g' master/openmcp-dns-controller/operator.yaml

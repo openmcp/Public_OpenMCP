@@ -27,6 +27,7 @@ import (
 	"os"
 	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 	"strings"
+	"time"
 )
 
 // joinableCmd represents the joinable command
@@ -48,6 +49,15 @@ to quickly create a Cobra application.`,
 
 
 func GetJoinableClusterList() {
+	for {
+		lockErr := Lock.TryLock()
+		if lockErr != nil {
+			fmt.Println("Mount Dir Using Another Works. Wait...")
+			time.Sleep(time.Second)
+		}else {
+			break
+		}
+	}
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
 	util.CmdExec("umount -l /mnt")
@@ -70,6 +80,7 @@ func GetJoinableClusterList() {
 		data := []string{kc.Clusters[0].Name, kc.Clusters[0].Cluster.Server, ""}
 		datas = append(datas, data)
 	}
+	Lock.Unlock()
 
 	gke_datas := getGKEClusterData()
 	for _, gke_data := range gke_datas {
