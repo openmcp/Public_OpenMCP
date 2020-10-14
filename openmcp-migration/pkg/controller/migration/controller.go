@@ -448,9 +448,9 @@ func GetLinkSharePvc(sourceResource *corev1.PersistentVolumeClaim, volumePath st
 	linkSharePvc.Labels = map[string]string{
 		"name": config.EXTERNAL_NFS_NAME_PVC + "-" + serviceName,
 	}
-	linkSharePvc.Spec.Selector.MatchLabels = map[string]string{
-		"name": config.EXTERNAL_NFS_NAME_PV + "-" + serviceName,
-	}
+	// linkSharePvc.Spec.Selector.MatchLabels = map[string]string{
+	// 	"name": config.EXTERNAL_NFS_NAME_PV + "-" + serviceName,
+	// }
 	// linkSharePvc.Spec.Selector = &metav1.LabelSelector{
 	// 	MatchLabels: map[string]string{
 	// 		"name": config.EXTERNAL_NFS_NAME_PV + sourceResource.ObjectMeta.Labels["name"],
