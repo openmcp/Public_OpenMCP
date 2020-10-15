@@ -2,13 +2,13 @@ apiVersion: openmcp.k8s.io/v1alpha1
 kind: Migration
 metadata:
   name: migrations
+  namespace: openmcp
 spec:
   MigrationServiceSource:
   - SourceCluster: cluster1
     TargetCluster: cluster2
-    VolumePath: /nfsdir3/
-    NameSpace: openmcp
-    ServiceName: testim
+    NameSpace: testmig
+    ServiceName: testim11
     MigrationSource:
     - ResourceName: testim-dp
       ResourceType: Deployment
@@ -18,5 +18,3 @@ spec:
       ResourceType: PersistentVolume
     - ResourceName: testim-pvc
       ResourceType: PersistentVolumeClaim
-   
-    

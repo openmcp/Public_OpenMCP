@@ -34,7 +34,6 @@ type MigrationServiceSource struct {
 	// container service spec
 	MigrationSources []MigrationSource `json:"MigrationSource"`
 	ServiceName      string            `json:"ServiceName"`
-	VolumePath       string            `json:"VolumePath"`
 	TargetCluster    string            `json:"TargetCluster"`
 	SourceCluster    string            `json:"SourceCluster"`
 	NameSpace        string            `json:"NameSpace"`

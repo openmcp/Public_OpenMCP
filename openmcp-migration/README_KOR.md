@@ -10,21 +10,21 @@ Install [OpenMCP] (https://github.com/openmcp/Public_OpenMCP)
 
 ## 설치 방법 
 
-1. Build after setting environment variables at pkg/util/config.go
+1. pkg/util/config.go 파일 User Config 부분을 작성 후 빌드. 
 ```
 $ ./1.build.sh
 ```
 
-2. Create migration CRD. 
+2. migration CRD 배포 
 ```
 $ ./2.create.sh
 ```
 
-## Sample code
+## 사용 방법
 
-1. Setting migration information at 4.example.yaml
+1. migration cr spec 작성  (예시 4.example.yaml)
 ```
-apiVersion: nanum.example.com/v1alpha1
+apiVersion: openmcp.k8s.io/v1alpha1
 kind: Migration
 metadata:
   name: migrations
@@ -33,8 +33,8 @@ spec:
   MigrationServiceSource:
   - SourceCluster: cluster1
     TargetCluster: cluster2
-    VolumePath: /nfsdir3/
-    NameSpace: openmcp
+    NameSpace: testmig
+    ServiceName: testim
     MigrationSource:
     - ResourceName: testim-dp
       ResourceType: Deployment
@@ -46,7 +46,7 @@ spec:
       ResourceType: PersistentVolumeClaim
 ```
 
-2.  Deploy Migration resource 
+2.  작성한 Migration yaml 파일 배포
 ```
 kubectl create -f 4.example.yaml
 ```
