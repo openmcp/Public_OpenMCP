@@ -5,7 +5,7 @@
 This is an example of migrating resources (Deployment, Service, PVC, PV) from Source Cluster to Target Cluster by deploying OpenMCPMigration CRD.
 
 ## Requirement
-Install [OpenMCP](https://github.com/openmcp/openmcp)
+Install [OpenMCP](https://github.com/openmcp/Public_OpenMCP)
 
 
 ## How to Install
@@ -21,7 +21,7 @@ $ ./2.create.sh
 
 ## Sample code
 
-1. Setting migration information at 4.example.yaml
+1. Setting migration spec information at 4.example.yaml
 ```
 apiVersion: openmcp.k8s.io/v1alpha1
 kind: Migration
@@ -32,8 +32,7 @@ spec:
   MigrationServiceSource:
   - SourceCluster: cluster1
     TargetCluster: cluster2
-    VolumePath: /nfsdir3/
-    NameSpace: openmcp
+    NameSpace: testmig
     ServiceName: testim
     MigrationSource:
     - ResourceName: testim-dp

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"time"
 
 	// "openmcp/openmcp/migration/pkg/apis"
 
@@ -111,19 +112,20 @@ START:
 	podName := ""
 	for _, pod := range pods.Items {
 		result, err := regexp.MatchString(dpName, pod.Name)
-		if err == nil && result == true {
-			omcplog.V(4).Info("pod STATUS:  ", pod.Status.ContainerStatuses)
+		if err == nil && result == true && pod.Labels["updateCheck"] == "true" {
+			//omcplog.V(4).Info("pod STATUS:  ", pod.Status.ContainerStatuses)
 			podName = pod.Name
 			break
 		} else if err != nil {
-			omcplog.V(0).Info("pod name error", err)
+			//omcplog.V(0).Info("pod name error", err)
 			continue
 		} else {
 			continue
 		}
 	}
 	if podName == "" {
-		omcplog.V(0).Info("can not found podName")
+		omcplog.V(4).Info("can not found podName")
+		time.Sleep(time.Second * 1)
 		goto START
 	} else {
 		omcplog.V(4).Info("podName :  ", podName)
@@ -140,13 +142,13 @@ func CopyToNfsCMD(oriVolumePath string, serviceName string) (string, string) {
 
 //pod 내부의 볼륨 폴더를 external nfs로 복사
 func LinkShareVolume(client kubernetes.Interface, config *restclient.Config, podName string, command string, namespace string) error {
-
 	cmd := []string{
 		"sh",
 		"-c",
 		command,
 	}
-
+	timeoutcheck := 0
+START:
 	req := client.CoreV1().RESTClient().Post().Resource("pods").Name(podName).Namespace(namespace).SubResource("exec")
 	option := &corev1.PodExecOptions{
 		Command: cmd,
@@ -164,6 +166,7 @@ func LinkShareVolume(client kubernetes.Interface, config *restclient.Config, pod
 		omcplog.V(0).Info("NewSPDYExecutor err: ", err)
 
 	}
+
 	err = exec.Stream(remotecommand.StreamOptions{
 		Stdin:  os.Stdin,
 		Stdout: os.Stdout,
@@ -171,14 +174,20 @@ func LinkShareVolume(client kubernetes.Interface, config *restclient.Config, pod
 	})
 
 	if err != nil {
-		omcplog.V(0).Info("error stream: ", err)
-		return err
+		timeoutcheck = timeoutcheck + 1
+		if timeoutcheck == 10 {
+			omcplog.V(0).Info("error stream: ", err)
+			return err
+		}
+		omcplog.V(4).Info("connecting: ", podName)
+		time.Sleep(time.Second * 1)
+		goto START
 	} else {
 		return err
 	}
 }
 
-func CreateLinkShare(client generic.Client, sourceResource *appsv1.Deployment, volumePath string, serviceName string) (bool, error) {
+func CreateLinkShare(client generic.Client, sourceResource *appsv1.Deployment, volumePath string, serviceName string, resourceRequire corev1.ResourceList) (bool, error, *corev1.PersistentVolume, *corev1.PersistentVolumeClaim) {
 	//nfs-pvc append
 	resourceInfo := &appsv1.Deployment{}
 	resourceInfo = sourceResource
@@ -202,7 +211,7 @@ func CreateLinkShare(client generic.Client, sourceResource *appsv1.Deployment, v
 	oriVolumeMount := resourceInfo.Spec.Template.Spec.Containers[0].VolumeMounts
 
 	resourceInfo.Spec.Template.Spec.Containers[0].VolumeMounts = append(oriVolumeMount, nfsMount)
-
+	resourceInfo.Spec.Template.Labels["updateCheck"] = "true"
 	nfsNewPv := &corev1.PersistentVolume{}
 	nfsNewPvc := &corev1.PersistentVolumeClaim{}
 
@@ -220,16 +229,14 @@ func CreateLinkShare(client generic.Client, sourceResource *appsv1.Deployment, v
 		Path:     config.EXTERNAL_NFS_PATH,
 		ReadOnly: false,
 	}
-	nfsNewPv.Spec.Capacity = corev1.ResourceList{
-		corev1.ResourceStorage: resource.MustParse("10Gi"),
-	}
+	nfsNewPv.Spec.Capacity = resourceRequire
 
 	nfsNewPv.ObjectMeta.ResourceVersion = ""
 	nfsNewPv.ResourceVersion = ""
 	nfsNewPv.Spec.ClaimRef = nil
 
 	nfsNewPvc.ObjectMeta.Name = config.EXTERNAL_NFS_NAME_PVC + "-" + serviceName
-	nfsNewPvc.ObjectMeta.Namespace = config.NameSpace
+	nfsNewPvc.ObjectMeta.Namespace = sourceResource.Namespace
 	nfsNewPvc.Kind = config.PVC
 	nfsNewPvc.Labels = map[string]string{
 		"name": config.EXTERNAL_NFS_NAME_PVC + "-" + serviceName,
@@ -238,9 +245,7 @@ func CreateLinkShare(client generic.Client, sourceResource *appsv1.Deployment, v
 		corev1.ReadWriteMany,
 	}
 	nfsNewPvc.Spec.Resources = corev1.ResourceRequirements{
-		Requests: corev1.ResourceList{
-			corev1.ResourceStorage: resource.MustParse("10Gi"),
-		},
+		Requests: resourceRequire,
 	}
 
 	nfsNewPvc.ObjectMeta.ResourceVersion = ""
@@ -263,8 +268,78 @@ func CreateLinkShare(client generic.Client, sourceResource *appsv1.Deployment, v
 		omcplog.V(0).Info("dp 생성 에러: ", dpErr)
 	}
 	omcplog.V(3).Info("dp 생성 완료")
-	return true, nil
+	return true, nil, nfsNewPv, nfsNewPvc
+	// return true, nil
+}
+func getVolumePath(migraionSource nanumv1alpha1.MigrationServiceSource) (string, corev1.ResourceList) {
+	pvcName := ""
+	dpResource := &appsv1.Deployment{}
+	pvcResource := &corev1.PersistentVolumeClaim{}
+	sourceCluster := migraionSource.SourceCluster
+	sourceClient := cm.Cluster_genClients[sourceCluster]
+	volumeName := ""
+	mountPath := ""
+	for _, resource := range migraionSource.MigrationSources {
+		if resource.ResourceType == config.PVC {
+			pvcName = resource.ResourceName
+			sourceClient.Get(context.TODO(), pvcResource, migraionSource.NameSpace, resource.ResourceName)
+		} else if resource.ResourceType == config.DEPLOY {
+			sourceClient.Get(context.TODO(), dpResource, migraionSource.NameSpace, resource.ResourceName)
+		} else {
+			continue
+		}
+	}
+	if pvcName == "" {
+		omcplog.V(0).Info("error pvc name nil")
+	}
 
+	volumeList := dpResource.Spec.Template.Spec.Volumes
+	for _, volume := range volumeList {
+		if volume.PersistentVolumeClaim.ClaimName == pvcName {
+			volumeName = volume.Name
+		}
+	}
+	if volumeName == "" {
+		omcplog.V(0).Info("error volume name nil")
+	}
+
+	containerList := dpResource.Spec.Template.Spec.Containers
+	for _, container := range containerList {
+		for _, volumeMount := range container.VolumeMounts {
+			if volumeMount.Name == volumeName {
+				mountPath = volumeMount.MountPath
+			}
+		}
+	}
+	if mountPath == "" {
+		omcplog.V(0).Info("error mount path nil")
+	}
+	storageSize := corev1.ResourceList{}
+	if pvcResource.Spec.Resources.Requests.Storage() != nil {
+		storageSize = pvcResource.Spec.Resources.Requests
+	} else {
+		storageSize = corev1.ResourceList{
+			corev1.ResourceStorage: resource.MustParse(config.DEFAULT_VOLUME_SIZE),
+		}
+	}
+	return mountPath, storageSize
+}
+
+func checkNameSpace(client generic.Client, namespace string) bool {
+	ns := &corev1.NamespaceList{}
+	client.List(context.TODO(), ns, "")
+	for _, nss := range ns.Items {
+		if nss.Name == namespace {
+			omcplog.V(4).Info("Already exists namespace: ", namespace)
+			return true
+		}
+	}
+
+	nameSpaceObj := &corev1.Namespace{}
+	nameSpaceObj.Name = namespace
+	client.Create(context.TODO(), nameSpaceObj)
+	omcplog.V(4).Info("Create namespace: ", namespace)
+	return true
 }
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	omcplog.V(3).Info("Function Called Reconcile")
@@ -279,10 +354,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		sourceCluster := migraionSource.SourceCluster
 		nameSpace := migraionSource.NameSpace
 		resourceList := migraionSource.MigrationSources
-		volumePath := migraionSource.VolumePath
+		// volumePath := migraionSource.VolumePath
+		volumePath, resourceRequire := getVolumePath(migraionSource)
 		targetClient := cm.Cluster_genClients[targetCluster]
 		sourceClient := cm.Cluster_genClients[sourceCluster]
 		serviceName := migraionSource.ServiceName
+		checkNameSpace(targetClient, nameSpace)
 
 		for _, resource := range resourceList {
 			resourceType := resource.ResourceType
@@ -295,16 +372,19 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				if sourceGetErr != nil {
 					omcplog.V(3).Info("get source cluster")
 				}
-
+				targetResource = sourceResource.DeepCopy()
 				client := cm.Cluster_kubeClients[sourceCluster]
 				restconfig := cm.Cluster_configs[sourceCluster]
 
-				addpvcErr, _ := CreateLinkShare(sourceClient, sourceResource, volumePath, serviceName)
+				addpvcErr, _, newPv, newPvc := CreateLinkShare(sourceClient, sourceResource, volumePath, serviceName, resourceRequire)
+				//addpvcErr, _ := CreateLinkShare(sourceClient, sourceResource, volumePath, serviceName)
 				if addpvcErr != true {
 					omcplog.V(0).Info("add pvc error!")
 				}
+				// time.Sleep(time.Second * 3)
 				podName := GetCopyPodName(client, sourceResource.Name, nameSpace)
 				mkCommand, copyCommand := CopyToNfsCMD(volumePath, serviceName)
+				omcplog.V(0).Info("podName111111 : ", podName)
 				err := LinkShareVolume(client, restconfig, podName, mkCommand, nameSpace)
 				if err != nil {
 					omcplog.V(0).Info("volume make dir error")
@@ -316,32 +396,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 						omcplog.V(3).Info("volume linkshare complete")
 					}
 				}
-
-				targetResource = sourceResource
-
-				nfsPvc := []corev1.Volume{
-					{
-						Name: config.EXTERNAL_NFS_NAME_PVC + "-" + serviceName,
-						VolumeSource: corev1.VolumeSource{
-							PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-								ClaimName: config.EXTERNAL_NFS_NAME_PVC + "-" + serviceName,
-								ReadOnly:  false,
-							},
-						},
-					},
-				}
-
-				targetResource.Spec.Template.Spec.Volumes = nfsPvc
-
-				nfsMount := []corev1.VolumeMount{
-					{
-						Name:      config.EXTERNAL_NFS_NAME_PVC + "-" + serviceName,
-						ReadOnly:  false,
-						MountPath: volumePath,
-					},
-				}
-				// targetResource.Spec.Template.Spec.Containers[0].VolumeMounts = append(targetResource.Spec.Template.Spec.Containers[0].VolumeMounts, nfsMount)
-				targetResource.Spec.Template.Spec.Containers[0].VolumeMounts = nfsMount
 				targetResource.ObjectMeta.ResourceVersion = ""
 				targetResource.Spec.Template.ResourceVersion = ""
 				targetResource.ResourceVersion = ""
@@ -349,12 +403,42 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				if targetErr != nil {
 					omcplog.V(3).Info("target cluster create : " + serviceName)
 				}
-
-				// sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
-				// if sourceErr != nil {
-				// 	omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
+				// nfsPvc := []corev1.Volume{
+				// 	{
+				// 		Name: config.EXTERNAL_NFS_NAME_PVC + "-" + serviceName,
+				// 		VolumeSource: corev1.VolumeSource{
+				// 			PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+				// 				ClaimName: config.EXTERNAL_NFS_NAME_PVC + "-" + serviceName,
+				// 				ReadOnly:  false,
+				// 			},
+				// 		},
+				// 	},
 				// }
 
+				// targetResource.Spec.Template.Spec.Volumes = nfsPvc
+
+				// nfsMount := []corev1.VolumeMount{
+				// 	{
+				// 		Name:      config.EXTERNAL_NFS_NAME_PVC + "-" + serviceName,
+				// 		ReadOnly:  false,
+				// 		MountPath: volumePath,
+				// 	},
+				// }
+				// // targetResource.Spec.Template.Spec.Containers[0].VolumeMounts = append(targetResource.Spec.Template.Spec.Containers[0].VolumeMounts, nfsMount)
+				// targetResource.Spec.Template.Spec.Containers[0].VolumeMounts = nfsMount
+
+				sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
+				if sourceErr != nil {
+					omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
+				}
+				pvErr := sourceClient.Delete(context.TODO(), newPv, nameSpace, newPv.Name)
+				if pvErr != nil {
+					omcplog.V(3).Info("source cluster delete : " + newPv.Name)
+				}
+				pvcError := sourceClient.Delete(context.TODO(), newPvc, nameSpace, newPvc.Name)
+				if pvcError != nil {
+					omcplog.V(3).Info("source cluster delete : " + newPvc.Name)
+				}
 			} else if resourceType == config.SERVICE {
 				omcplog.V(3).Info("service migration")
 				targetResource := &corev1.Service{}
@@ -372,10 +456,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					omcplog.V(3).Info("target cluster create : " + resource.ResourceName)
 				}
 
-				// sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
-				// if sourceErr != nil {
-				// 	omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
-				// }
+				sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
+				if sourceErr != nil {
+					omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
+				}
 			} else if resourceType == config.PV {
 				omcplog.V(3).Info("pv migration")
 				targetResource := &corev1.PersistentVolume{}
@@ -397,10 +481,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					omcplog.V(3).Info("target cluster create : " + resource.ResourceName)
 				}
 
-				// sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
-				// if sourceErr != nil {
-				// 	omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
-				// }
+				sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
+				if sourceErr != nil {
+					omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
+				}
 			} else if resourceType == config.PVC {
 				omcplog.V(3).Info("pvc migration")
 				targetResource := &corev1.PersistentVolumeClaim{}
@@ -425,10 +509,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					omcplog.V(3).Info("target cluster create : " + resource.ResourceName)
 				}
 
-				// sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
-				// if sourceErr != nil {
-				// 	omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
-				// }
+				sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
+				if sourceErr != nil {
+					omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
+				}
 			} else {
 				omcplog.V(0).Info("Resource Type Error!")
 				return reconcile.Result{}, fmt.Errorf("Resource Type Error!")
@@ -440,17 +524,17 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 func GetLinkSharePvc(sourceResource *corev1.PersistentVolumeClaim, volumePath string, serviceName string) *corev1.PersistentVolumeClaim {
 	linkSharePvc := &corev1.PersistentVolumeClaim{}
-	linkSharePvc = sourceResource
-	linkSharePvc.ObjectMeta.Name = config.EXTERNAL_NFS_NAME_PVC + "-" + serviceName
-	linkSharePvc.ObjectMeta.Namespace = config.NameSpace
-	linkSharePvc.Kind = config.PVC
-	linkSharePvc.Spec.VolumeName = config.EXTERNAL_NFS_NAME_PV + "-" + serviceName
-	linkSharePvc.Labels = map[string]string{
-		"name": config.EXTERNAL_NFS_NAME_PVC + "-" + serviceName,
-	}
-	linkSharePvc.Spec.Selector.MatchLabels = map[string]string{
-		"name": config.EXTERNAL_NFS_NAME_PV + "-" + serviceName,
-	}
+	linkSharePvc = sourceResource.DeepCopy()
+	// linkSharePvc.ObjectMeta.Name = config.EXTERNAL_NFS_NAME_PVC + "-" + serviceName
+	// linkSharePvc.ObjectMeta.Namespace = sourceResource.NameSpace
+	// linkSharePvc.Kind = config.PVC
+	// linkSharePvc.Spec.VolumeName = config.EXTERNAL_NFS_NAME_PV + "-" + serviceName
+	// linkSharePvc.Labels = map[string]string{
+	// 	"name": config.EXTERNAL_NFS_NAME_PVC + "-" + serviceName,
+	// }
+	// linkSharePvc.Spec.Selector.MatchLabels = map[string]string{
+	// 	"name": config.EXTERNAL_NFS_NAME_PV + "-" + serviceName,
+	// }
 	// linkSharePvc.Spec.Selector = &metav1.LabelSelector{
 	// 	MatchLabels: map[string]string{
 	// 		"name": config.EXTERNAL_NFS_NAME_PV + sourceResource.ObjectMeta.Labels["name"],
@@ -463,11 +547,11 @@ func GetLinkSharePvc(sourceResource *corev1.PersistentVolumeClaim, volumePath st
 
 func GetLinkSharePv(sourceResource *corev1.PersistentVolume, volumePath string, serviceName string) *corev1.PersistentVolume {
 	linkSharePv := &corev1.PersistentVolume{}
-	linkSharePv.ObjectMeta.Name = config.EXTERNAL_NFS_NAME_PV + "-" + serviceName
+	linkSharePv.ObjectMeta.Name = sourceResource.ObjectMeta.Name
 	linkSharePv.Kind = config.PV
-	linkSharePv.Labels = map[string]string{
-		"name": config.EXTERNAL_NFS_NAME_PV + "-" + serviceName,
-	}
+	// linkSharePv.Labels = map[string]string{
+	// 	"name": config.EXTERNAL_NFS_NAME_PV + "-" + serviceName,
+	// }
 	linkSharePv.Spec.AccessModes = []corev1.PersistentVolumeAccessMode{
 		corev1.ReadWriteMany,
 	}
@@ -483,6 +567,7 @@ func GetLinkSharePv(sourceResource *corev1.PersistentVolume, volumePath string, 
 	linkSharePv.Spec.ClaimRef = nil
 	// linkSharePv.Spec = sourceResource.Spec
 	// 현재 nfs 진행 (해당 클러스터 pv정보 필요)
+
 	// 	var volumeInfo *corev1.NFSVolumeSource
 	// if sourceResource.Spec.NFS != nil {
 	// 	json.Unmarshal([]byte(volumeString), volumeInfo)

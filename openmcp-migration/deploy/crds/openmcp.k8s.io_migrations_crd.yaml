@@ -60,15 +60,12 @@ spec:
                       type: string
                     TargetCluster:
                       type: string
-                    VolumePath:
-                      type: string
                   required:
                   - MigrationSource
                   - NameSpace
                   - ServiceName
                   - SourceCluster
                   - TargetCluster
-                  - VolumePath
                   type: object
                 type: array
             required:
