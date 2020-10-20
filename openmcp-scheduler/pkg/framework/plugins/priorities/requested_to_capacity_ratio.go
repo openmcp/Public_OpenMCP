@@ -1,7 +1,6 @@
 package priorities
 
 import (
-	"math"
 	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
 )
@@ -62,7 +61,12 @@ func (pl *RequestedToCapacityRatio) PreScore(pod *ketiresource.Pod, clusterInfo 
 		pl.prescoring[clusterInfo.ClusterName] = clusterScore
 	} else {
 		pl.betweenScore = pl.prescoring[clusterInfo.ClusterName] - int64(clusterScore)
-		pl.betweenScore = int64(math.Abs(float64(pl.betweenScore)))
+		if pl.betweenScore <= 0 {
+			pl.betweenScore = 5
+		}
+		pl.prescoring[clusterInfo.ClusterName] = clusterScore - pl.betweenScore
+
+		// omcplog.V(0).Infof("2["+clusterInfo.ClusterName+"]노드"+pl.Name()+" 노드차이 =", pl.betweenScore)
 
 	}
 	return clusterScore
@@ -70,15 +74,12 @@ func (pl *RequestedToCapacityRatio) PreScore(pod *ketiresource.Pod, clusterInfo 
 
 func (pl *RequestedToCapacityRatio) Score(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, replicas int32, clustername string) int64 {
 	if clustername == clusterInfo.ClusterName {
-		score := pl.prescoring[clusterInfo.ClusterName] - pl.betweenScore
-		if score < 0 {
-			return 0
-		}
+		pl.prescoring[clusterInfo.ClusterName] = pl.prescoring[clusterInfo.ClusterName] - pl.betweenScore
+		return pl.prescoring[clusterInfo.ClusterName]
 	}
 	score := pl.prescoring[clusterInfo.ClusterName]
 	return score
 }
-
 func RunRequestedToCapacityRatioScorerFunction(capacity, requested int64) int64 {
 	scoringFunctionShape := defaultFunctionShape
 	rawScoringFunction := buildBrokenLinearFunction(scoringFunctionShape)

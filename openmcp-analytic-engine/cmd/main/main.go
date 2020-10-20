@@ -20,10 +20,13 @@ const (
 func main() {
 	logLevel.KetiLogInit()
 
-	go AnalyticEngine()
+	//go AnalyticEngine()
 
 	for {
 		cm := clusterManager.NewClusterManager()
+
+		quit := make(chan bool)
+		go AnalyticEngine(cm, quit)
 
 		host_ctx := "openmcp"
 		namespace := "openmcp"
@@ -59,7 +62,7 @@ func main() {
 
 }
 
-func AnalyticEngine() {
+func AnalyticEngine(cm *clusterManager.ClusterManager, quit chan bool) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	INFLUX_IP := os.Getenv("INFLUX_IP")
 	INFLUX_PORT := os.Getenv("INFLUX_PORT")
@@ -69,13 +72,20 @@ func AnalyticEngine() {
 	//ae := analyticEngine.NewAnalyticEngine()
 	ae := analyticEngine.NewAnalyticEngine(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD)
 
-	go ae.CalcResourceScore()
+	go ae.CalcResourceScore(cm, quit)
 
 	//a := protobuf.HASInfo{HPANamespace:"openmcp", HPAName:"openmcp-hpa", ClusterName:""}
 
 	//ae.SelectHPACluster(&a)
 	//mc.Influx.CreateDatabase()
 	//mc.Influx.CreateMeasurements()
+	go func(){
+		ae.StartGRPC(GRPC_PORT)
+	}()
 
-	ae.StartGRPC(GRPC_PORT)
+	if <- quit {
+		ae.StopGRPC()
+	}
+
+
 }

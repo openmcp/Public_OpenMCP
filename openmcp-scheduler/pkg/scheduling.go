@@ -3,8 +3,8 @@ package openmcpscheduler
 import (
 	"context"
 	"fmt"
-	"openmcp/openmcp/omcplog"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+	"openmcp/openmcp/omcplog"
 	ketiframework "openmcp/openmcp/openmcp-scheduler/pkg/framework/v1alpha1"
 	"openmcp/openmcp/openmcp-scheduler/pkg/protobuf"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
@@ -67,13 +67,12 @@ func (sched *OpenMCPScheduler) Scheduling(dep *resourcev1alpha1.OpenMCPDeploymen
 	// Make resource to schedule pod into cluster
 	newPod := newPodFromOpenMCPDeployment(dep)
 
-
 	// Scheduling one pod
 	for i := int32(0); i < depReplicas; i++ {
 
 		// If there is no proper cluster to deploy Pod,
 		// stop scheduling and return scheduling result
-		schedulingResult, err := sched.ScheduleOne(newPod, depReplicas)
+		schedulingResult, err := sched.ScheduleOne(newPod, depReplicas-i)
 		if err != nil {
 			return totalSchedulingResult, fmt.Errorf("There is no proper cluster to deploy Pod(%d)~Pod(%d)", i, depReplicas)
 		}
@@ -93,7 +92,6 @@ func (sched *OpenMCPScheduler) Scheduling(dep *resourcev1alpha1.OpenMCPDeploymen
 	sched.Framework.EndPod()
 	elapsedTime := time.Since(startTime)
 	omcplog.V(0).Infof("    => Scheduling Time [%v]", elapsedTime)
-
 
 	return totalSchedulingResult, nil
 }

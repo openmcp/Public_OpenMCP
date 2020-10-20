@@ -12,10 +12,13 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 	"net/http"
 	"openmcp/openmcp/omcplog"
+	"openmcp/openmcp/util/clusterManager"
 	"strings"
 )
 
 func (h *HttpManager) ApiHandler(w http.ResponseWriter, r *http.Request) {
+	// Migration
+	// POST http://10.0.3.20:31635/apis/openmcp.k8s.io/v1alpha1/namespaces/openmcp/migrations?clustername=openmcp (yaml)
 
 	if strings.Contains(r.URL.Path, "exec"){
 		clusterNames, ok := r.URL.Query()["clustername"]
@@ -82,7 +85,7 @@ func (h *HttpManager) ApiHandler(w http.ResponseWriter, r *http.Request) {
 		APISERVER := ""
 		TOKEN := ""
 		clusterName := clusterNames[0]
-
+		RESTART:
 		if clusterName == "openmcp" {
 			APISERVER = h.ClusterManager.Host_config.Host
 			TOKEN = h.ClusterManager.Host_config.BearerToken
@@ -121,7 +124,8 @@ func (h *HttpManager) ApiHandler(w http.ResponseWriter, r *http.Request) {
 		omcplog.V(5).Info("Content-Type : ", r.Header.Get("Content-Type"))
 		omcplog.V(5).Info("Authorization", "Bearer "+TOKEN)
 
-		req.Header.Set("Content-Type", r.Header.Get("Content-Type"))
+		//req.Header.Set("Content-Type", r.Header.Get("Content-Type"))
+		req.Header.Set("Content-Type", "application/yaml")
 		req.Header.Set("Authorization", "Bearer "+TOKEN)
 
 
@@ -130,6 +134,8 @@ func (h *HttpManager) ApiHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			// handle err
 			omcplog.V(0).Info(err)
+			h.ClusterManager = clusterManager.NewClusterManager()
+			goto RESTART
 		}
 		defer resp.Body.Close()
 

@@ -53,6 +53,7 @@ type OpenmcpFilterPlugin interface {
 type OpenmcpScorePlugin interface {
 	OpenmcpPlugin
 	Score(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, replicas int32, clustername string) int64
+	PreScore(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, check bool) int64
 }
 
 // OpenmcpPreFilterPlugin and OpenmcpPreScore are interfaces for PreFilter and PreScore
@@ -63,11 +64,6 @@ type OpenmcpPreFilterPlugin interface {
 }
 
 //
-type OpenmcpPreScorePlugin interface {
-	OpenmcpPlugin
-	PreScore(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, check bool) int64
-}
-
 type OpenmcpPostFilterPlugin interface {
 	OpenmcpPlugin
 	PostFilter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, postpods []*ketiresource.Pod) (bool, error)

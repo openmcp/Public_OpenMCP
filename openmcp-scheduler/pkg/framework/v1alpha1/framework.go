@@ -3,7 +3,6 @@ package v1alpha1
 import (
 	// "openmcp/openmcp/omcplog"
 
-	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-scheduler/pkg/framework/plugins/predicates"
 	"openmcp/openmcp/openmcp-scheduler/pkg/framework/plugins/priorities"
 	"openmcp/openmcp/openmcp-scheduler/pkg/protobuf"
@@ -14,7 +13,6 @@ type openmcpFramework struct {
 	filterPlugins     []OpenmcpFilterPlugin
 	scorePlugins      []OpenmcpScorePlugin
 	prefilterPlugins  []OpenmcpPreFilterPlugin
-	prescorePlugins   []OpenmcpPreScorePlugin
 	postfilterPlugins []OpenmcpPostFilterPlugin
 	IspreScore        bool
 	preScore          int64
@@ -55,13 +53,6 @@ func NewFramework(grpcClient protobuf.RequestAnalysisClient) OpenmcpFramework {
 		prefilterPlugins: []OpenmcpPreFilterPlugin{
 			&predicates.PodFitsResources{},
 			&predicates.MatchClusterAffinity{},
-		},
-		prescorePlugins: []OpenmcpPreScorePlugin{
-			&priorities.MostRequested{},
-			&priorities.DominantResource{},
-			&priorities.RequestedToCapacityRatio{},
-			&priorities.BalancedNetworkAllocation{},
-			&priorities.QosPriority{},
 		},
 		postfilterPlugins: []OpenmcpPostFilterPlugin{
 			&predicates.PodFitsResources{},
@@ -117,7 +108,7 @@ func (f *openmcpFramework) RunFilterPluginsOnClusters(pod *ketiresource.Pod, clu
 			}
 		}
 	}
-	omcplog.V(0).Info("filter result=> ", result)
+	//omcplog.V(0).Info("filter result=> ", result)
 	return result
 }
 func selectCluster(scoreResult OpenmcpPluginToClusterScores) string {
@@ -136,7 +127,7 @@ func selectCluster(scoreResult OpenmcpPluginToClusterScores) string {
 
 		}
 	}
-
+	//omcplog.V(0).Info("selected clustet ==", selectedCluster)
 	return selectedCluster
 }
 
@@ -146,17 +137,15 @@ func (f *openmcpFramework) RunScorePluginsOnClusters(pod *ketiresource.Pod, clus
 	if !f.IspreScore {
 		f.preScore = 0
 		preresult := make(map[string]OpenmcpPluginScoreList)
-
 		for _, cluster := range clusters {
 			preresult[cluster.ClusterName] = make([]OpenmcpPluginScore, 0)
-			for _, pl := range f.prescorePlugins {
+			for _, pl := range f.scorePlugins {
 				scoring := pl.PreScore(pod, cluster, false)
 				transScore := OpenmcpPluginScore{
 					Name:  pl.Name(),
 					Score: scoring,
 				}
 				f.preScore += scoring
-
 				preresult[cluster.ClusterName] = append(preresult[cluster.ClusterName], transScore)
 			}
 
@@ -170,7 +159,7 @@ func (f *openmcpFramework) RunScorePluginsOnClusters(pod *ketiresource.Pod, clus
 		return pr
 	}
 	if f.IspreScore && f.preselectedName != "" {
-		for _, pl := range f.prescorePlugins {
+		for _, pl := range f.scorePlugins {
 			pl.PreScore(pod, allclusters[f.preselectedName], true)
 		}
 		f.preselectedName = ""
@@ -190,7 +179,9 @@ func (f *openmcpFramework) RunScorePluginsOnClusters(pod *ketiresource.Pod, clus
 			result[cluster.ClusterName] = append(result[cluster.ClusterName], plScore)
 		}
 	}
+
 	pr := selectCluster(result)
+	//omcplog.V(0).Info("result =", result)
 	f.preClusterName = pr
 	return pr
 }
