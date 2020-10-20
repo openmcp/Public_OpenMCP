@@ -60,15 +60,15 @@ type NetworkMetric struct {
 
 func (h *HttpManager)MetricsHandler(w http.ResponseWriter, r *http.Request, splitUrl []string) {
 	// example Node & Pod in cluster1
-	// http://10.0.3.20:31635/metrics/nodes/kube1-worker1?clustername=cluster1
-	// http://10.0.3.20:31635/metrics/nodes/kube1-worker1?clustername=cluster1&timeStart=2020-09-03_09:00:00
-	// http://10.0.3.20:31635/metrics/nodes/kube1-worker1?clustername=cluster1&timeEnd=2020-09-03_09:00:15
-	// http://10.0.3.20:31635/metrics/nodes/kube1-worker1?clustername=cluster1&timeStart=2020-09-03_09:00:00&timeEnd=2020-09-03_09:00:15
+	// GET http://10.0.3.20:31635/metrics/nodes/kube1-worker1?clustername=cluster1
+	// GET http://10.0.3.20:31635/metrics/nodes/kube1-worker1?clustername=cluster1&timeStart=2020-09-03_09:00:00
+	// GET http://10.0.3.20:31635/metrics/nodes/kube1-worker1?clustername=cluster1&timeEnd=2020-09-03_09:00:15
+	// GET http://10.0.3.20:31635/metrics/nodes/kube1-worker1?clustername=cluster1&timeStart=2020-09-03_09:00:00&timeEnd=2020-09-03_09:00:15
 
-	// http://10.0.3.20:31635/metrics/namespaces/default/pods/nginx-deployment-55fbd9fd6d-h7d8t?clustername=cluster1
-	// http://10.0.3.20:31635/metrics/namespaces/default/pods/nginx-deployment-55fbd9fd6d-h7d8t?clustername=cluster1&timeStart=2020-09-03_09:00:00
-	// http://10.0.3.20:31635/metrics/namespaces/default/pods/nginx-deployment-55fbd9fd6d-h7d8t?clustername=cluster1&timeEnd=2020-09-03_09:00:15
-	// http://10.0.3.20:31635/metrics/namespaces/default/pods/nginx-deployment-55fbd9fd6d-h7d8t?clustername=cluster1&timeStart=2020-09-03_09:00:00&timeEnd=2020-09-03_09:00:15
+	// GET http://10.0.3.20:31635/metrics/namespaces/default/pods/nginx-deployment-55fbd9fd6d-h7d8t?clustername=cluster1
+	// GET http://10.0.3.20:31635/metrics/namespaces/default/pods/nginx-deployment-55fbd9fd6d-h7d8t?clustername=cluster1&timeStart=2020-09-03_09:00:00
+	// GET http://10.0.3.20:31635/metrics/namespaces/default/pods/nginx-deployment-55fbd9fd6d-h7d8t?clustername=cluster1&timeEnd=2020-09-03_09:00:15
+	// GET http://10.0.3.20:31635/metrics/namespaces/default/pods/nginx-deployment-55fbd9fd6d-h7d8t?clustername=cluster1&timeStart=2020-09-03_09:00:00&timeEnd=2020-09-03_09:00:15
 
 
 	ns := ""

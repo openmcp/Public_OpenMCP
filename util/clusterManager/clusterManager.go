@@ -78,7 +78,8 @@ func KubeFedClusterGenClients(clusterList *fedv1b1.KubeFedClusterList, cluster_c
 	for _, cluster := range clusterList.Items {
 		clusterName := cluster.Name
 		cluster_config := cluster_configs[clusterName]
-		cluster_client := genericclient.NewForConfigOrDie(cluster_config)
+		//cluster_client := genericclient.NewForConfigOrDie(cluster_config)
+		cluster_client, _ := genericclient.New(cluster_config)
 		cluster_clients[clusterName] = cluster_client
 	}
 	return cluster_clients

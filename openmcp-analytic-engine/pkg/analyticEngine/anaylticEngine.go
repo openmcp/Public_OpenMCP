@@ -46,9 +46,9 @@ func NewAnalyticEngine(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD 
 	return ae
 }
 
-func (ae *AnalyticEngineStruct) CalcResourceScore() {
+func (ae *AnalyticEngineStruct) CalcResourceScore(cm *clusterManager.ClusterManager, quit chan bool) {
 	omcplog.V(4).Info("Func CalcResourceScore Called")
-	cm := clusterManager.NewClusterManager()
+	//cm := clusterManager.NewClusterManager()
 	ae.MetricsWeight = make(map[string]float64)
 	ae.ClusterGeo = map[string]map[string]string{}
 	ae.NetworkInfos = make(map[string]map[string]*NetworkInfo)
@@ -67,29 +67,42 @@ func (ae *AnalyticEngineStruct) CalcResourceScore() {
 		omcplog.V(3).Info("metricsWeight : ", ae.MetricsWeight)
 	}
 	for {
-		omcplog.V(2).Info("Cluster들의 Metric Score를 갱신합니다.")
-		for _, cluster := range cm.Cluster_list.Items {
-			ae.ResourceScore[cluster.Name] = ae.UpdateScore(cluster.Name)
-			config, _ := util.BuildClusterConfig(&cluster, cm.Host_client, cm.Fed_namespace)
-			clientset, _ := kubernetes.NewForConfig(config)
-			nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
-			if err != nil {
-				fmt.Println(err)
+		select {
+		case <- quit:
+			omcplog.V(2).Info("CalcResourceScore Quit")
+			return
+		default:
+			omcplog.V(2).Info("Cluster Metric Score Refresh")
+			for _, cluster := range cm.Cluster_list.Items {
+				ae.ResourceScore[cluster.Name] = ae.UpdateScore(cluster.Name, cm)
+				config, err := util.BuildClusterConfig(&cluster, cm.Host_client, cm.Fed_namespace)
+				if err != nil {
+					omcplog.V(0).Info(err)
+				}
+				clientset, err := kubernetes.NewForConfig(config)
+				if err != nil {
+					omcplog.V(0).Info(err)
+				}
+				nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+				if err != nil {
+					omcplog.V(0).Info(err)
+				}
+
+				if len(nodes.Items) != 0 {
+					node := nodes.Items[0]
+
+					//Extract zone, region from Label
+					ae.ClusterGeo[cluster.Name] = map[string]string{}
+					ae.ClusterGeo[cluster.Name]["Country"] = node.Labels["failure-domain.beta.kubernetes.io/zone"]
+					ae.ClusterGeo[cluster.Name]["Continent"] = node.Labels["failure-domain.beta.kubernetes.io/region"]
+				}
+
+				// Update Network Data from InfluxDB
+				ae.UpdateNetworkData(cluster.Name, nodes)
 			}
-
-			if len(nodes.Items) != 0 {
-				node := nodes.Items[0]
-
-				//Extract zone, region from Label
-				ae.ClusterGeo[cluster.Name] = map[string]string{}
-				ae.ClusterGeo[cluster.Name]["Country"] = node.Labels["failure-domain.beta.kubernetes.io/zone"]
-				ae.ClusterGeo[cluster.Name]["Continent"] = node.Labels["failure-domain.beta.kubernetes.io/region"]
-			}
-
-			// Update Network Data from InfluxDB
-			ae.UpdateNetworkData(cluster.Name, nodes)
+			time.Sleep(5 * time.Second)
 		}
-		time.Sleep(5 * time.Second)
+
 	}
 }
 
@@ -139,7 +152,7 @@ func (ae *AnalyticEngineStruct) UpdateNetworkData(clusterName string, nodeList *
 	}
 }
 
-func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
+func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManager.ClusterManager) float64 {
 	omcplog.V(4).Info("Func UpdateScore Called")
 	var score float64 = 0
 	result := ae.Influx.GetClusterMetricsData(clusterName)
@@ -148,7 +161,7 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string) float64 {
 	prevMetricsMap := make(map[string]float64)
 	var totalCpuCore int64 = 0
 
-	cm := clusterManager.NewClusterManager()
+	//cm := clusterManager.NewClusterManager()
 
 	for _, ser := range result[0].Series {
 
@@ -378,6 +391,8 @@ func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *p
 	return &protobuf.ReponseNetwork{RX: diff_rx, TX: diff_tx}, nil
 }
 
+var grpcServer *grpc.Server
+
 func (ae *AnalyticEngineStruct) StartGRPC(GRPC_PORT string) {
 	omcplog.V(4).Info("Func StartGRPC Called")
 	log.Printf("Grpc Server Start at Port %s\n", GRPC_PORT)
@@ -386,11 +401,18 @@ func (ae *AnalyticEngineStruct) StartGRPC(GRPC_PORT string) {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer := grpc.NewServer()
+	grpcServer = grpc.NewServer()
 
 	protobuf.RegisterRequestAnalysisServer(grpcServer, ae)
+
 	if err := grpcServer.Serve(l); err != nil {
 		log.Fatalf("fail to serve: %v", err)
 	}
+
+
+}
+func (ae *AnalyticEngineStruct) StopGRPC() {
+	omcplog.V(4).Info("Func StopGRPC Called")
+	grpcServer.Stop()
 
 }
