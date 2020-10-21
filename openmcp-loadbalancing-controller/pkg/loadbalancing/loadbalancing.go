@@ -329,6 +329,7 @@ func NewMultipleHostReverseProxy(reg loadbalancingregistry.Registry, creg cluste
 
 	return func(w http.ResponseWriter, req *http.Request) {
 		host := req.Host
+		fmt.Println(req)
 		ip, _ := ExtractIP(req.RemoteAddr)
 		path, err := ExtractPath(req.URL)
 		omcplog.V(4).Info("Extract Host, IP, Path")

@@ -73,7 +73,8 @@ func getDiffUnjoinIP() []string {
 	defer util.CmdExec("umount -l /mnt")
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
-	openmcpIP := cobrautil.GetOutboundIP()
+	//openmcpIP := cobrautil.GetOutboundIP()
+	openmcpIP := cobrautil.GetEndpointIP()
 	nfsClusterUnjoinStr, err := util.CmdExec("ls /mnt/openmcp/" + openmcpIP + "/members/unjoin")
 	nfsClusterUnjoinList := strings.Split(nfsClusterUnjoinStr, "\n")
 	nfsClusterUnjoinList = nfsClusterUnjoinList[:len(nfsClusterUnjoinList)-1]
@@ -105,7 +106,8 @@ func moveToJoin(memberIP string) {
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
-	openmcpIP := cobrautil.GetOutboundIP()
+	//openmcpIP := cobrautil.GetOutboundIP()
+	openmcpIP := cobrautil.GetEndpointIP()
 
 	util.CmdExec2("mv /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP + " /mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP)
 
@@ -149,7 +151,8 @@ func unjoinCluster(memberIP string) {
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
 
-	openmcpIP := cobrautil.GetOutboundIP()
+	//openmcpIP := cobrautil.GetOutboundIP()
+	openmcpIP := cobrautil.GetEndpointIP()
 	if !fileExists("/mnt/openmcp/" + openmcpIP) {
 		fmt.Println("Failed UnJoin Cluster '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Not Yet Register OpenMCP.")
@@ -283,7 +286,8 @@ func unjoinCloudCluster(memberName string) {
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 	Lock.Unlock()
 
-	openmcpIP := cobrautil.GetOutboundIP()
+	//openmcpIP := cobrautil.GetOutboundIP()
+	openmcpIP := cobrautil.GetEndpointIP()
 	if !fileExists("/mnt/openmcp/" + openmcpIP) {
 		fmt.Println("Failed UnJoin Cluster '" + memberName + "' in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Not Yet Register OpenMCP.")

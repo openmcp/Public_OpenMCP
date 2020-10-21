@@ -77,7 +77,8 @@ func registerASOpenMCP() {
 
 	util.CmdExec("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
-	openmcpIP := cobrautil.GetOutboundIP()
+	//openmcpIP := cobrautil.GetOutboundIP()
+	openmcpIP := cobrautil.GetEndpointIP()
 
 	if fileExists("/mnt/openmcp/" + openmcpIP) {
 		fmt.Println("Failed Register OpenMCP Master")
