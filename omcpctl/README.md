@@ -7,9 +7,9 @@
 > Process commands such as Join / Create / Delete / Update by requesting data from OpenMCP API Server
 
 ## Requirement
-1. [External Server](https://github.com/openmcp/external) to Store Cluster Information
+1. [External Server](https://github.com/openmcp/Public_OpenMCP_ExternalServer) to Store Cluster Information
 
-2. Install [OpenMCP](https://github.com/openmcp/openmcp)
+2. Install [OpenMCP](https://github.com/openmcp/Public_OpenMCP)
 
 3. Install nfs-common (apt-get install nfs-common)
 
@@ -29,7 +29,7 @@ $ ./1.build.sh
 ```
 
 ## How to Use
-Join process using [omcpctl](https://github.com/openmcp/openmcp/tree/master/omcpctl) for OpenMCP master cluster and [omcpctl](https://github.com/openmcp/openmcp-cli) for OpneMCP member cluster after [installation of OpenMCP master](https://github.com/openmcp/openmcp)
+Join process using [omcpctl](https://github.com/openmcp/Public_OpenMCP/tree/master/omcpctl) for OpenMCP master cluster and [omcpctl](https://github.com/openmcp/Public_OpenMCP_Member_CLI) for OpneMCP member cluster after [installation of OpenMCP master](https://github.com/openmcp/Public_OpenMCP)
 ```
 1. Registering Openmcp in an OpenMCP Master
   Master) omcpctl register openmcp
