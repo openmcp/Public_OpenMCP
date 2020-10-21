@@ -1,13 +1,18 @@
 package util
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/tools/clientcmd"
 	"log"
 	"net"
 	"os"
 	"path/filepath"
+	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -103,4 +108,23 @@ func GetOutboundIP() string {
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 
 	return localAddr.IP.String()
+}
+func GetEndpointIP() string {
+	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
+	genClient := genericclient.NewForConfigOrDie(kubeconfig)
+	obj := &v1.ConfigMap{}
+	err := genClient.Get(context.TODO(),obj, "kube-system", "kubeadm-config")
+	if err != nil {
+		log.Fatal(err)
+	}
+	ip := ""
+	if controlPlaneEndpoint, ok := obj.Data["controlPlaneEndpoint"]; ok {
+		//do something here
+		endpoints := strings.Split(controlPlaneEndpoint, ":")
+		ip = endpoints[0]
+	} else {
+		ip = GetOutboundIP()
+	}
+	return ip
+
 }

@@ -81,7 +81,8 @@ func moveToUnjoin(memberIP string) {
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
-	openmcpIP := cobrautil.GetOutboundIP()
+	//openmcpIP := cobrautil.GetOutboundIP()
+	openmcpIP := cobrautil.GetEndpointIP()
 
 	util.CmdExec2("mv /mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP + " /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP)
 
@@ -98,7 +99,8 @@ func getDiffJoinIP() []string {
 	defer util.CmdExec("umount -l /mnt")
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
-	openmcpIP := cobrautil.GetOutboundIP()
+	//openmcpIP := cobrautil.GetOutboundIP()
+	openmcpIP := cobrautil.GetEndpointIP()
 	nfsClusterJoinStr, err := util.CmdExec("ls /mnt/openmcp/" + openmcpIP + "/members/join")
 	nfsClusterJoinList := strings.Split(nfsClusterJoinStr, "\n")
 	nfsClusterJoinList = nfsClusterJoinList[:len(nfsClusterJoinList)-1]
@@ -150,7 +152,8 @@ func joinCluster(memberIP string) {
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
 
-	openmcpIP := cobrautil.GetOutboundIP()
+	//openmcpIP := cobrautil.GetOutboundIP()
+	openmcpIP := cobrautil.GetEndpointIP()
 	if !fileExists("/mnt/openmcp/" + openmcpIP) {
 		fmt.Println("Failed Join List in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Not Yet Register OpenMCP.")
@@ -250,7 +253,8 @@ func joinGKECluster(memberName string) {
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
-	openmcpIP := cobrautil.GetOutboundIP()
+	//openmcpIP := cobrautil.GetOutboundIP()
+	openmcpIP := cobrautil.GetEndpointIP()
 	if !fileExists("/mnt/openmcp/" + openmcpIP) {
 		fmt.Println("Failed Join List in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Not Yet Register OpenMCP.")
@@ -377,7 +381,8 @@ func joinEKSCluster(memberName string) {
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
-	openmcpIP := cobrautil.GetOutboundIP()
+	//openmcpIP := cobrautil.GetOutboundIP()
+	openmcpIP := cobrautil.GetEndpointIP()
 	if !fileExists("/mnt/openmcp/" + openmcpIP) {
 		fmt.Println("Failed Join List in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Not Yet Register OpenMCP.")

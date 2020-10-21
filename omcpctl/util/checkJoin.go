@@ -11,7 +11,8 @@ import (
 )
 
 func CheckAlreadyJoinClusterWithIP(memberIP string) (bool, error){
-	openmcpIP := GetOutboundIP()
+	//openmcpIP := GetOutboundIP()
+	openmcpIP := GetEndpointIP()
 	kc := GetKubeConfig("/mnt/openmcp/"+openmcpIP+"/members/unjoin/"+memberIP+"/config/config")
 
 	clusterName := ""
