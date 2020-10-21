@@ -41,7 +41,7 @@
 Before you install OpenMCP, 'federation' and 'external server' as NFS server are required.
 1. GO v1.14
 1. Install [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) (Version: 0.1.0-rc6)
-1. Install [nfs server](https://github.com/openmcp/external)
+1. Install [nfs server](https://github.com/openmcp/Public_OpenMCP_ExternalServer)
 
 -----------------------------------------------------------------------------------------------
 [ Test Environment ]
@@ -93,7 +93,7 @@ Enter the IP of the OpenMCP Master Cluster Node in the non-public IP text box ex
 
 PowerDNS Server Port means the PowerDNS query/response port, and enter the value that port port number 53 is forwarded to.
 
-Enter the previously set value for PowerDNS Server API Key. (https://github.com/openmcp/external#how-to-install)
+Enter the previously set value for PowerDNS Server API Key. (https://github.com/openmcp/Public_OpenMCP_ExternalServer#how-to-install)
 ```bash
 $ cd ./install_openmcp
 $ ./SETTING.sh
@@ -166,7 +166,7 @@ metric-collector-period        3m16s
 
 ## 3. Register OpenMCP server on external storage
 
-Before you register OpenMCP, install [omcpctl](https://github.com/openmcp/openmcp/tree/master/omcpctl) and add a external server with /etc/resolv.conf.
+Before you register OpenMCP, install [omcpctl](https://github.com/openmcp/Public_OpenMCP/tree/master/omcpctl) and add a external server with /etc/resolv.conf.
 ```bash
 $ vi /etc/resolv.conf
 nameserver 10.0.3.12
@@ -220,7 +220,7 @@ users:
 
 ### (2) Register sub-cluster to external storage [In sub-cluster]
 
-After installing [omctl](https://github.com/openmcp/openmcp-cli) on each cluster, use omctl to register sub-cluster to nfs server.
+After installing [omctl](https://github.com/openmcp/Public_OpenMCP_Member_CLI) on each cluster, use omctl to register sub-cluster to nfs server.
 
 ```bash
 $ OPENMCP_IP="10.0.3.30"
