@@ -39,7 +39,7 @@
 ## Requirement
 
 Before you install OpenMCP, 'federation' and 'external server' as NFS server are required.
-
+1. GO v1.14
 1. Install [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) (Version: 0.1.0-rc6)
 1. Install [nfs server](https://github.com/openmcp/external)
 
