@@ -37,3 +37,10 @@ spec:
               value: REPLACE_GRPCPORT
             - name: OPERATOR_NAME
               value: "openmcp-scheduler"
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0

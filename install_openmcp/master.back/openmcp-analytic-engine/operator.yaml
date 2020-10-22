@@ -42,5 +42,12 @@ spec:
               value: REPLACE_INFLUXDBUSERPWD
             - name: OPERATOR_NAME
               value: "openmcp-analytic-engine"
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0
 
 

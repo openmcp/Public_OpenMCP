@@ -34,3 +34,10 @@ spec:
             memory: 500Mi
         ports:
         - containerPort: 8080
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0
