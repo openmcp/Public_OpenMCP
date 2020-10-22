@@ -381,7 +381,7 @@ $ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
 ## 8. 마스터 노드 복제 확인
-고가용성 클러스터가 구축 완료되었는지 확인한다.
+고가용성 클러스터 구축 완료되었는지 확인한다.
 ### > Master1 / Master2 / Master3
 ```
 $ kubectl get nodes
