@@ -16,7 +16,7 @@
 |LoadBalancer|10.0.3.99|
 
 ## 1. hostname 설정
-먼저 각 마스터 노드들의 hostname을 원하는 이름으로 변경한다.
+먼저, 각 마스터 노드들의 hostname을 원하는 이름으로 변경한다.
 ### > Master1
 ```
 $ cd create_cluster
@@ -118,7 +118,7 @@ defaults
         errorfile 504 /etc/haproxy/errors/504.http
 
 frontend kubernetes-master-lb
-bind 10.0.3.99:26443       ## 로드밸런서 ip/port 설정
+bind 10.0.3.99:26443                 ## 로드밸런서 ip/port 설정
 option tcplog
 mode tcp
 default_backend kubernetes-master-nodes
@@ -139,11 +139,13 @@ $ systemctl start haproxy
 $ systemctl status haproxy
 ```
 ## 5. Keepalived 설치 / config 수정
+모든 마스터 노드에 로드밸런싱을 위한 Keepalived를 설치한다.
 ### > Master1 / Master2 / Master3
 ```
 $ apt-get install keepalived
 ```
 ### > Master1
+keepalived config 파일 수정
 ```
 $ vi /etc/keepalived/keepalived.conf
 global_defs {
@@ -151,21 +153,22 @@ global_defs {
         smtp_connect_timeout 30
 }
 
-vrrp_instance VI_1 {
+vrrp_instance VI_1 {           ## VRRP 인스턴스 이름 지정
         state MASTER
         interface eno1
-        virtual_router_id 40
-        priority 102
+        virtual_router_id 40   ## 라우터 ID 설정 (모든 노드가 동일한 ID를 가져야함)
+        priority 102           ## 우선순위 지정
         advert_int 1
         authentication {
                 auth_type PASS
                 auth_pass 1111
         }
         virtual_ipaddress {
-                10.0.3.99
+                10.0.3.99      ## VIP 설정
         }
 }
 ```
+keepalived 정상 동작 확인
 ```
 $ systemctl enable keepalived
 $ systemctl start keepalived
@@ -195,6 +198,7 @@ $ systemctl status keepalived
 10월 22 14:55:26 master1 Keepalived_vrrp[22764]: VRRP_Instance(VI_1) Entering MASTER STATE
 ```
 ### > Master2
+keepalived config 파일 수정
 ```
 $ vi /etc/keepalived/keepalived.conf
 global_defs {
@@ -202,21 +206,22 @@ global_defs {
         smtp_connect_timeout 30
 }
 
-vrrp_instance VI_2 {
+vrrp_instance VI_2 {           ## VRRP 인스턴스 이름 지정
         state BACKUP
         interface enp5s0f0
-        virtual_router_id 40
-        priority 101
+        virtual_router_id 40   ## 라우터 ID 설정 (모든 노드가 동일한 ID를 가져야함)
+        priority 101           ## 우선순위 지정
         advert_int 1
         authentication {
                 auth_type PASS
                 auth_pass 1111
         }
         virtual_ipaddress {
-                10.0.3.99
+                10.0.3.99      ## VIP 설정
         }
 }
 ```
+keepalived 정상 동작 확인
 ```
 $ systemctl enable keepalived
 $ systemctl start keepalived
@@ -245,6 +250,7 @@ Oct 21 22:55:25 master2 Keepalived_vrrp[17307]: Using LinkWatch kernel netlink r
 Oct 21 22:55:25 master2 Keepalived_vrrp[17307]: VRRP_Instance(VI_2) Entering BACKUP STATE
 ```
 ### > Master3
+keepalived config 파일 수정
 ```
 $ vi /etc/keepalived/keepalived.conf
 global_defs {
@@ -252,21 +258,22 @@ global_defs {
         smtp_connect_timeout 30
 }
 
-vrrp_instance VI_3 {
+vrrp_instance VI_3 {           ## VRRP 인스턴스 이름 지정
         state BACKUP
         interface enp96s0f0
-        virtual_router_id 40
-        priority 100
+        virtual_router_id 40   ## 라우터 ID 설정 (모든 노드가 동일한 ID를 가져야함)
+        priority 100           ## 우선순위 지정
         advert_int 1
         authentication {
                 auth_type PASS
                 auth_pass 1111
         }
         virtual_ipaddress {
-                10.0.3.99
+                10.0.3.99      ## VIP 설정
         }
 }
 ```
+keepalived 정상 동작 확인
 ```
 $ systemctl enable keepalived
 $ systemctl start keepalived
@@ -296,6 +303,7 @@ Oct 21 22:55:51 master3 Keepalived_vrrp[73068]: VRRP_Instance(VI_3) Entering BAC
 ```
 
 ## 6. 클러스터 생성 (kubeadm init)
+하나의
 ### > Master1
 ```
 $ kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=NumCPU --v=5 --control-plane-endpoint "10.0.3.99:26443" --upload-certs
