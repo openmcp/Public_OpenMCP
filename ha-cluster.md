@@ -1,6 +1,6 @@
 # 고가용성 클러스터 구축
 
-### 1. 구성 환경
+### 구성 환경
 
 * OS : Ubuntu 16.04.6  
 * Kubernets : 1.17.3  
@@ -15,7 +15,7 @@
 |Master3|10.0.3.30|
 |LoadBalancer|10.0.3.99|
 
-### 2. 구축 순서
+### 구축 순서
 (1) hostname 설정  
 (2) docker 설치  
 (3) kubeadm/kubectl/kubelet 설치  
@@ -25,7 +25,7 @@
 (7) 마스터 노드 추가 (kubeadm join)  
 (8) 마스터 노드 복제 확인
 
-## 2-1. hostname 설정
+## 1. hostname 설정
 먼저 각 마스터 노드들의 hostname을 원하는 이름으로 변경한다.
 ### > Master1
 ```
