@@ -261,11 +261,11 @@ kube-system   calico-kube-controllers-8464785d6b-8f2gm   1/1     Running        
 kube-system   calico-node-287sb                          1/1     Running            0          103s
 kube-system   coredns-6955765f44-b5mx4                   1/1     Running            0          2m8s
 kube-system   coredns-6955765f44-hzncd                   1/1     Running            0          2m8s
-kube-system   etcd-openmcp-master1                       1/1     Running            0          2m17s
-kube-system   kube-apiserver-openmcp-master1             1/1     Running            0          2m17s
-kube-system   kube-controller-manager-openmcp-master1    1/1     Running            0          2m17s
+kube-system   etcd-master1                               1/1     Running            0          2m17s
+kube-system   kube-apiserver-master1                     1/1     Running            0          2m17s
+kube-system   kube-controller-manager-master1            1/1     Running            0          2m17s
 kube-system   kube-proxy-6rc5j                           1/1     Running            0          2m8s
-kube-system   kube-scheduler-openmcp-master1             1/1     Running            0          2m17s
+kube-system   kube-scheduler-master1                     1/1     Running            0          2m17s
 ```
 ## 7. 마스터 노드 추가 (kubeadm join)
 ### Master2
@@ -286,6 +286,8 @@ $ mkdir -p $HOME/.kube
 $ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 $ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
+
+## 8. 마스터 노드 복제 확인
 ### Master1 / Master2 / Master3
 ```
 $ kubectl get nodes
@@ -298,28 +300,23 @@ $ kubectl get pods -A
 NAMESPACE     NAME                                       READY   STATUS    RESTARTS   AGE
 kube-system   calico-kube-controllers-8464785d6b-8f2gm   1/1     Running   0          21m
 kube-system   calico-node-287sb                          1/1     Running   0          21m
-kube-system   calico-node-tjp8n                          1/1     Running   0          7m47s
+kube-system   calico-node-tjp8n                          1/1     Running   0          18m
 kube-system   calico-node-zdw2z                          1/1     Running   0          18m
 kube-system   coredns-6955765f44-dlzl7                   1/1     Running   0          19m
-kube-system   coredns-6955765f44-dxq4n                   1/1     Running   0          19m
-kube-system   etcd-master1                       1/1     Running   0          53s
-kube-system   etcd-master2                       1/1     Running   0          7m45s
-kube-system   etcd-openmcp-master3                       1/1     Running   0          21s
-kube-system   kube-apiserver-openmcp-master1             1/1     Running   1          22m
-kube-system   kube-apiserver-openmcp-master2             1/1     Running   0          7m44s
-kube-system   kube-apiserver-openmcp-master3             1/1     Running   0          18m
-kube-system   kube-controller-manager-openmcp-master1    1/1     Running   2          22m
-kube-system   kube-controller-manager-openmcp-master2    1/1     Running   0          7m45s
-kube-system   kube-controller-manager-openmcp-master3    1/1     Running   1          18m
-kube-system   kube-proxy-5frhq                           1/1     Running   0          7m47s
+kube-system   coredns-6955765f44-dxq4n                   1/1     Running   0          22m
+kube-system   etcd-master1                               1/1     Running   0          22m
+kube-system   etcd-master2                               1/1     Running   0          18m
+kube-system   etcd-master3                               1/1     Running   0          18m
+kube-system   kube-apiserver-master1                     1/1     Running   0          22m
+kube-system   kube-apiserver-master2                     1/1     Running   0          18m
+kube-system   kube-apiserver-master3                     1/1     Running   0          18m
+kube-system   kube-controller-manager-master1            1/1     Running   0          22m
+kube-system   kube-controller-manager-master2            1/1     Running   0          18m
+kube-system   kube-controller-manager-master3            1/1     Running   0          18m
+kube-system   kube-proxy-5frhq                           1/1     Running   0          18m
 kube-system   kube-proxy-6rc5j                           1/1     Running   0          21m
 kube-system   kube-proxy-cchrl                           1/1     Running   0          18m
-kube-system   kube-scheduler-openmcp-master1             1/1     Running   3          22m
-kube-system   kube-scheduler-openmcp-master2             1/1     Running   0          7m45s
-kube-system   kube-scheduler-openmcp-master3             1/1     Running   0          18m
-```
-## 8. 마스터 노드 복제 확인
-### Master1 / Master2 / Master3
-```
-$ kubectl get pods -A
+kube-system   kube-scheduler-master1                     1/1     Running   0          22m
+kube-system   kube-scheduler-master2                     1/1     Running   0          18m
+kube-system   kube-scheduler-master3                     1/1     Running   0          18m
 ```
