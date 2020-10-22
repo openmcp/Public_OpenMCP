@@ -48,7 +48,8 @@ $ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 $ add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 $ apt-cache madison docker-ce
 $ apt-get install docker-ce=17.03.2~ce-0~ubuntu-xenial
-
+```
+```
 $ docker version
 Client:
  Version:      17.03.2-ce
@@ -74,14 +75,251 @@ $ apt-get install kubeadm=1.17.3-00
 $ apt-get install kubectl=1.17.3-00
 $ apt-get install kubelet=1.17.3-00
 ```
-## 4. HAProxy 설치
+## 4. HAProxy 설치 / config 수정
 ### Master1 / Master2 / Master3
 ```
+$ apt-get install haproxy
 ```
-## 5. Keepalived 설치
+```
+$ vi /etc/haproxy/haproxy.cfg
+global
+        log /dev/log    local0
+        log /dev/log    local1 notice
+        chroot /var/lib/haproxy
+        stats socket /run/haproxy/admin.sock mode 660 level admin
+        stats timeout 30s
+        user haproxy
+        group haproxy
+        daemon
 
+        ca-base /etc/ssl/certs
+        crt-base /etc/ssl/private
+        
+        ssl-default-bind-ciphers ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS
+        ssl-default-bind-options no-sslv3
+
+defaults
+        log     global
+        mode    http
+        option  httplog
+        option  dontlognull
+        timeout connect 5000
+        timeout client  50000
+        timeout server  50000
+        errorfile 400 /etc/haproxy/errors/400.http
+        errorfile 403 /etc/haproxy/errors/403.http
+        errorfile 408 /etc/haproxy/errors/408.http
+        errorfile 500 /etc/haproxy/errors/500.http
+        errorfile 502 /etc/haproxy/errors/502.http
+        errorfile 503 /etc/haproxy/errors/503.http
+        errorfile 504 /etc/haproxy/errors/504.http
+
+frontend kubernetes-master-lb
+bind 10.0.3.99:26443
+option tcplog
+mode tcp
+default_backend kubernetes-master-nodes
+
+backend kubernetes-master-nodes
+mode tcp
+balance roundrobin
+option tcp-check
+option tcplog
+server node1 10.0.3.100:6443 check
+server node2 10.0.3.40:6443 check
+server node3 10.0.3.30:6443 check
+```
+```
+$ systemctl enable haproxy
+$ systemctl start haproxy
+$ systemctl status haproxy
+```
+## 5. Keepalived 설치 / config 수정
+### Master1 / Master2 / Master3
+```
+$ apt-get install keepalived
+```
+### Master1
+```
+$ vi /etc/keepalived/keepalived.conf
+global_defs {
+        smtp_server 127.0.0.1
+        smtp_connect_timeout 30
+}
+
+vrrp_instance VI_1 {
+        state MASTER
+        interface eno1
+        virtual_router_id 40
+        priority 102
+        advert_int 1
+        authentication {
+                auth_type PASS
+                auth_pass 1111
+        }
+        virtual_ipaddress {
+                10.0.3.99
+        }
+}
+```
+### Master2
+```
+$ vi /etc/keepalived/keepalived.conf
+global_defs {
+        smtp_server 127.0.0.1
+        smtp_connect_timeout 30
+}
+
+vrrp_instance VI_2 {
+        state BACKUP
+        interface enp5s0f0
+        virtual_router_id 40
+        priority 101
+        advert_int 1
+        authentication {
+                auth_type PASS
+                auth_pass 1111
+        }
+        virtual_ipaddress {
+                10.0.3.99
+        }
+}
+```
+### Master3
+```
+$ vi /etc/keepalived/keepalived.conf
+global_defs {
+        smtp_server 127.0.0.1
+        smtp_connect_timeout 30
+}
+
+vrrp_instance VI_3 {
+        state BACKUP
+        interface enp96s0f0
+        virtual_router_id 40
+        priority 100
+        advert_int 1
+        authentication {
+                auth_type PASS
+                auth_pass 1111
+        }
+        virtual_ipaddress {
+                10.0.3.99
+        }
+}
+```
+### Master1 / Master2 / Master3
+```
+$ systemctl enable keepalived
+$ systemctl start keepalived
+$ systemctl status keepalived
+```
 ## 6. 클러스터 생성 (kubeadm init)
+### Master1
+```
+$ kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=NumCPU --v=5 --control-plane-endpoint "10.0.3.99:26443" --upload-certs
+...
+...
+...
 
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+You can now join any number of the control-plane node running the following command on each as root:
+
+  kubeadm join 10.0.3.99:26443 --token ulr0v8.vsz2jwjk5uvvl7h1 \
+    --discovery-token-ca-cert-hash sha256:1c15018f135af60b8b44915cf3e5030dbdb14e5f56a8365c9cd3a97c5a776e31 \
+    --control-plane --certificate-key 07a8671ee05aae5961d1b220ff25059c2b6fd4896de8c940099921b0b680c770
+
+Please note that the certificate-key gives access to cluster sensitive data, keep it secret!
+As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you can use
+"kubeadm init phase upload-certs --upload-certs" to reload certs afterward.
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 10.0.3.99:26443 --token ulr0v8.vsz2jwjk5uvvl7h1 \
+    --discovery-token-ca-cert-hash sha256:1c15018f135af60b8b44915cf3e5030dbdb14e5f56a8365c9cd3a97c5a776e31 
+```
+```
+$ mkdir -p $HOME/.kube
+$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+$ sudo chown $(id -u):$(id -g) $HOME/.kube/config
+$ sysctl net.bridge.bridge-nf-call-iptables=1
+$ kubectl apply -f calico.yaml
+$ kubectl get pods -A
+NAMESPACE     NAME                                       READY   STATUS             RESTARTS   AGE
+kube-system   calico-kube-controllers-8464785d6b-8f2gm   1/1     Running            0          103s
+kube-system   calico-node-287sb                          1/1     Running            0          103s
+kube-system   coredns-6955765f44-b5mx4                   1/1     Running            0          2m8s
+kube-system   coredns-6955765f44-hzncd                   1/1     Running            0          2m8s
+kube-system   etcd-openmcp-master1                       1/1     Running            0          2m17s
+kube-system   kube-apiserver-openmcp-master1             1/1     Running            0          2m17s
+kube-system   kube-controller-manager-openmcp-master1    1/1     Running            0          2m17s
+kube-system   kube-proxy-6rc5j                           1/1     Running            0          2m8s
+kube-system   kube-scheduler-openmcp-master1             1/1     Running            0          2m17s
+```
 ## 7. 마스터 노드 추가 (kubeadm join)
+### Master2
+```
+$ kubeadm join 10.0.3.99:26443 --token ulr0v8.vsz2jwjk5uvvl7h1 \
+    --discovery-token-ca-cert-hash sha256:1c15018f135af60b8b44915cf3e5030dbdb14e5f56a8365c9cd3a97c5a776e31 \
+    --control-plane --certificate-key 07a8671ee05aae5961d1b220ff25059c2b6fd4896de8c940099921b0b680c770
+$ mkdir -p $HOME/.kube
+$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+$ sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+### Master3
+```
+$ kubeadm join 10.0.3.99:26443 --token ulr0v8.vsz2jwjk5uvvl7h1 \
+    --discovery-token-ca-cert-hash sha256:1c15018f135af60b8b44915cf3e5030dbdb14e5f56a8365c9cd3a97c5a776e31 \
+    --control-plane --certificate-key 07a8671ee05aae5961d1b220ff25059c2b6fd4896de8c940099921b0b680c770
+$ mkdir -p $HOME/.kube
+$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+$ sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+### Master1 / Master2 / Master3
+```
+$ kubectl get nodes
+NAME      STATUS   ROLES    AGE     VERSION
+master1   Ready    master   3m15s   v1.17.3
+master2   Ready    master   4m6s    v1.17.3
+master3   Ready    master   2m13s   v1.17.3
 
+$ kubectl get pods -A
+NAMESPACE     NAME                                       READY   STATUS    RESTARTS   AGE
+kube-system   calico-kube-controllers-8464785d6b-8f2gm   1/1     Running   0          21m
+kube-system   calico-node-287sb                          1/1     Running   0          21m
+kube-system   calico-node-tjp8n                          1/1     Running   0          7m47s
+kube-system   calico-node-zdw2z                          1/1     Running   0          18m
+kube-system   coredns-6955765f44-dlzl7                   1/1     Running   0          19m
+kube-system   coredns-6955765f44-dxq4n                   1/1     Running   0          19m
+kube-system   etcd-master1                       1/1     Running   0          53s
+kube-system   etcd-master2                       1/1     Running   0          7m45s
+kube-system   etcd-openmcp-master3                       1/1     Running   0          21s
+kube-system   kube-apiserver-openmcp-master1             1/1     Running   1          22m
+kube-system   kube-apiserver-openmcp-master2             1/1     Running   0          7m44s
+kube-system   kube-apiserver-openmcp-master3             1/1     Running   0          18m
+kube-system   kube-controller-manager-openmcp-master1    1/1     Running   2          22m
+kube-system   kube-controller-manager-openmcp-master2    1/1     Running   0          7m45s
+kube-system   kube-controller-manager-openmcp-master3    1/1     Running   1          18m
+kube-system   kube-proxy-5frhq                           1/1     Running   0          7m47s
+kube-system   kube-proxy-6rc5j                           1/1     Running   0          21m
+kube-system   kube-proxy-cchrl                           1/1     Running   0          18m
+kube-system   kube-scheduler-openmcp-master1             1/1     Running   3          22m
+kube-system   kube-scheduler-openmcp-master2             1/1     Running   0          7m45s
+kube-system   kube-scheduler-openmcp-master3             1/1     Running   0          18m
+```
 ## 8. 마스터 노드 복제 확인
+### Master1 / Master2 / Master3
+```
+$ kubectl get pods -A
+```
