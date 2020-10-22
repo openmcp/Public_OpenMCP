@@ -1,6 +1,8 @@
 # 고가용성 클러스터 구축
 
-### - 구성 환경
+고가용성 클러스터를 구축하기 위해 openmcp 마스터 노드 복제를 시행한다.
+
+### 구성 환경
 
 * OS : Ubuntu 16.04.6  
 * Kubernets : 1.17.3  
@@ -303,7 +305,7 @@ Oct 21 22:55:51 master3 Keepalived_vrrp[73068]: VRRP_Instance(VI_3) Entering BAC
 ```
 
 ## 6. 클러스터 생성 (kubeadm init)
-하나의
+마스터 노드 하나를 선택하여 쿠버네티스 초기화를 진행한다. --control-plane-endpoint와 --upload-certs 옵션을 명시한다.
 ### > Master1
 ```
 $ kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=NumCPU --v=5 --control-plane-endpoint "10.0.3.99:26443" --upload-certs
@@ -338,6 +340,7 @@ Then you can join any number of worker nodes by running the following on each as
 kubeadm join 10.0.3.99:26443 --token ulr0v8.vsz2jwjk5uvvl7h1 \
     --discovery-token-ca-cert-hash sha256:1c15018f135af60b8b44915cf3e5030dbdb14e5f56a8365c9cd3a97c5a776e31 
 ```
+클러스터 생성 확인
 ```
 $ mkdir -p $HOME/.kube
 $ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
@@ -357,6 +360,7 @@ kube-system   kube-proxy-6rc5j                           1/1     Running        
 kube-system   kube-scheduler-master1                     1/1     Running            0          2m17s
 ```
 ## 7. 마스터 노드 추가 (kubeadm join)
+나머지 마스터 노드들을 조인시켜 컨트롤러와 etcd를 동기화한다.
 ### > Master2
 ```
 $ kubeadm join 10.0.3.99:26443 --token ulr0v8.vsz2jwjk5uvvl7h1 \
@@ -377,6 +381,7 @@ $ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
 ## 8. 마스터 노드 복제 확인
+고가용성 클러스터가 구축 완료되었는지 확인한다.
 ### > Master1 / Master2 / Master3
 ```
 $ kubectl get nodes
