@@ -162,6 +162,34 @@ vrrp_instance VI_1 {
         }
 }
 ```
+```
+$ systemctl enable keepalived
+$ systemctl start keepalived
+$ systemctl status keepalived
+● keepalived.service - Keepalive Daemon (LVS and VRRP)
+   Loaded: loaded (/lib/systemd/system/keepalived.service; enabled; vendor preset: enabled)
+   Active: active (running) since 목 2020-10-22 14:55:24 KST; 8s ago
+  Process: 22752 ExecStart=/usr/sbin/keepalived $DAEMON_ARGS (code=exited, status=0/SUCCESS)
+ Main PID: 22758 (keepalived)
+    Tasks: 3
+   Memory: 2.4M
+      CPU: 18ms
+   CGroup: /system.slice/keepalived.service
+           ├─22758 /usr/sbin/keepalived
+           ├─22762 /usr/sbin/keepalived
+           └─22764 /usr/sbin/keepalived
+
+10월 22 14:55:24 master1 Keepalived_vrrp[22764]: Registering Kernel netlink command channel
+10월 22 14:55:24 master1 Keepalived_vrrp[22764]: Registering gratuitous ARP shared channel
+10월 22 14:55:24 master1 Keepalived_healthcheckers[22762]: Opening file '/etc/keepalived/keepalived.conf'.
+10월 22 14:55:24 master1 Keepalived_vrrp[22764]: Unable to load ipset library
+10월 22 14:55:24 master1 Keepalived_vrrp[22764]: Unable to initialise ipsets
+10월 22 14:55:24 master1 Keepalived_vrrp[22764]: Opening file '/etc/keepalived/keepalived.conf'.
+10월 22 14:55:24 master1 Keepalived_vrrp[22764]: Using LinkWatch kernel netlink reflector...
+10월 22 14:55:24 master1 Keepalived_healthcheckers[22762]: Using LinkWatch kernel netlink reflector...
+10월 22 14:55:25 master1 Keepalived_vrrp[22764]: VRRP_Instance(VI_1) Transition to MASTER STATE
+10월 22 14:55:26 master1 Keepalived_vrrp[22764]: VRRP_Instance(VI_1) Entering MASTER STATE
+```
 ### Master2
 ```
 $ vi /etc/keepalived/keepalived.conf
@@ -184,6 +212,33 @@ vrrp_instance VI_2 {
                 10.0.3.99
         }
 }
+```
+```
+$ systemctl enable keepalived
+$ systemctl start keepalived
+$ systemctl status keepalived
+● keepalived.service - Keepalive Daemon (LVS and VRRP)
+   Loaded: loaded (/lib/systemd/system/keepalived.service; enabled; vendor preset: enabled)
+   Active: active (running) since Wed 2020-10-21 22:55:25 PDT; 8s ago
+  Process: 17302 ExecStart=/usr/sbin/keepalived $DAEMON_ARGS (code=exited, status=0/SUCCESS)
+ Main PID: 17305 (keepalived)
+    Tasks: 3
+   Memory: 1.0M
+      CPU: 16ms
+   CGroup: /system.slice/keepalived.service
+           ├─17305 /usr/sbin/keepalived
+           ├─17306 /usr/sbin/keepalived
+           └─17307 /usr/sbin/keepalived
+
+Oct 21 22:55:25 master2 Keepalived_healthcheckers[17306]: Registering Kernel netlink command channel
+Oct 21 22:55:25 master2 Keepalived_vrrp[17307]: Registering Kernel netlink command channel
+Oct 21 22:55:25 master2 Keepalived_vrrp[17307]: Registering gratuitous ARP shared channel
+Oct 21 22:55:25 master2 Keepalived_healthcheckers[17306]: Opening file '/etc/keepalived/keepalived.conf'.
+Oct 21 22:55:25 master2 Keepalived_vrrp[17307]: Unable to load ipset library
+Oct 21 22:55:25 master2 Keepalived_vrrp[17307]: Unable to initialise ipsets
+Oct 21 22:55:25 master2 Keepalived_vrrp[17307]: Opening file '/etc/keepalived/keepalived.conf'.
+Oct 21 22:55:25 master2 Keepalived_vrrp[17307]: Using LinkWatch kernel netlink reflector...
+Oct 21 22:55:25 master2 Keepalived_vrrp[17307]: VRRP_Instance(VI_2) Entering BACKUP STATE
 ```
 ### Master3
 ```
@@ -208,12 +263,34 @@ vrrp_instance VI_3 {
         }
 }
 ```
-### Master1 / Master2 / Master3
 ```
 $ systemctl enable keepalived
 $ systemctl start keepalived
 $ systemctl status keepalived
+● keepalived.service - Keepalive Daemon (LVS and VRRP)
+   Loaded: loaded (/lib/systemd/system/keepalived.service; enabled; vendor preset: enabled)
+   Active: active (running) since Wed 2020-10-21 22:55:51 PDT; 1s ago
+  Process: 73064 ExecStart=/usr/sbin/keepalived $DAEMON_ARGS (code=exited, status=0/SUCCESS)
+ Main PID: 73066 (keepalived)
+    Tasks: 3
+   Memory: 1.4M
+      CPU: 22ms
+   CGroup: /system.slice/keepalived.service
+           ├─73066 /usr/sbin/keepalived
+           ├─73067 /usr/sbin/keepalived
+           └─73068 /usr/sbin/keepalived
+
+Oct 21 22:55:51 master3 Keepalived_vrrp[73068]: Registering Kernel netlink reflector
+Oct 21 22:55:51 master3 Keepalived_vrrp[73068]: Registering Kernel netlink command channel
+Oct 21 22:55:51 master3 Keepalived_healthcheckers[73067]: Opening file '/etc/keepalived/keepalived.conf'.
+Oct 21 22:55:51 master3 Keepalived_vrrp[73068]: Registering gratuitous ARP shared channel
+Oct 21 22:55:51 master3 Keepalived_vrrp[73068]: Unable to load ipset library
+Oct 21 22:55:51 master3 Keepalived_vrrp[73068]: Unable to initialise ipsets
+Oct 21 22:55:51 master3 Keepalived_vrrp[73068]: Opening file '/etc/keepalived/keepalived.conf'.
+Oct 21 22:55:51 master3 Keepalived_vrrp[73068]: Using LinkWatch kernel netlink reflector...
+Oct 21 22:55:51 master3 Keepalived_vrrp[73068]: VRRP_Instance(VI_3) Entering BACKUP STATE
 ```
+
 ## 6. 클러스터 생성 (kubeadm init)
 ### Master1
 ```
