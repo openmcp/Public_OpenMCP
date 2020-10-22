@@ -305,7 +305,7 @@ Oct 21 22:55:51 master3 Keepalived_vrrp[73068]: VRRP_Instance(VI_3) Entering BAC
 ```
 
 ## 6. 클러스터 생성 (kubeadm init)
-마스터 노드 하나를 선택하여 쿠버네티스 초기화를 진행한다. --control-plane-endpoint와 --upload-certs 옵션을 명시한다.
+--control-plane-endpoint와 --upload-certs 플래그를 추가하여 쿠버네티스 초기화를 진행한다. 해당 플래그를 사용해야 인증서가 자동으로 배포되고 마스터 노드 조인 명령어가 출력된다.
 ### > Master1
 ```
 $ kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=NumCPU --v=5 --control-plane-endpoint "10.0.3.99:26443" --upload-certs
