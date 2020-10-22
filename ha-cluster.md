@@ -1,21 +1,22 @@
 # 고가용성 클러스터 구축
 
-## 구성 환경
+### 구성 환경
 
-OS : Ubuntu 16.04.6  
-Kubernets : 1.17.3  
-Docker : 17.03.2-ce  
-HAProxy : 1.6.3  
-Keepalived : 1.2.24
+* OS : Ubuntu 16.04.6  
+* Kubernets : 1.17.3  
+* Docker : 17.03.2-ce  
+* HAProxy : 1.6.3  
+* Keepalived : 1.2.24
 
-## 마스터 노드 테스트 IP
+### 마스터 노드 테스트 IP
+|Hostname|IP|
+|------|------|
+|Master1|10.0.3.100|
+|Master2|10.0.3.40|
+|Master3|10.0.3.30|
+|LoadBalancer|10.0.3.99|
 
-Master1 IP [10.0.3.100]  
-Master2 IP [10.0.3.40]  
-Master3 IP [10.0.3.30]  
-LoadBalancer IP [10.0.3.99]
-
-## 구축 순서
+### 구축 순서
 1. hostname 설정
 1. docker 설치
 1. kubeadm/kubectl/kubelet 설치
