@@ -2,7 +2,7 @@
 
 ## 구성 환경
 
-Master1 IP : 10.0.3.100 
+Master1 IP : 10.0.3.100  
 Master2 IP : 10.0.3.40  
 Master3 IP : 10.0.3.30  
 LoadBalancer IP : 10.0.3.99
