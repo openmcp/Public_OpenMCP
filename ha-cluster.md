@@ -8,7 +8,6 @@
 * HAProxy : 1.6.3  
 * Keepalived : 1.2.24
 
-### 마스터 노드 테스트 IP
 |Hostname|IP|
 |------|------|
 |Master1|10.0.3.100|
@@ -88,10 +87,12 @@ $ apt-get install kubectl=1.17.3-00
 $ apt-get install kubelet=1.17.3-00
 ```
 ## 4. HAProxy 설치 / config 수정
+모든 마스터 노드에 로드밸런싱을 위한 HAProxy를 설치한다.
 ### > Master1 / Master2 / Master3
 ```
 $ apt-get install haproxy
 ```
+haproxy config 파일을 수정하여 로드밸런서 ip와 port를 설정하고 로드밸런서로 받은 데이터를 포워드 시켜줄 노드 정보를 입력한다.
 ```
 $ vi /etc/haproxy/haproxy.cfg
 global
@@ -127,7 +128,7 @@ defaults
         errorfile 504 /etc/haproxy/errors/504.http
 
 frontend kubernetes-master-lb
-bind 10.0.3.99:26443
+bind 10.0.3.99:26443       ## 로드밸런서 ip/port 설정
 option tcplog
 mode tcp
 default_backend kubernetes-master-nodes
@@ -137,10 +138,11 @@ mode tcp
 balance roundrobin
 option tcp-check
 option tcplog
-server node1 10.0.3.100:6443 check
+server node1 10.0.3.100:6443 check   ## 마스터 노드 
 server node2 10.0.3.40:6443 check
 server node3 10.0.3.30:6443 check
 ```
+haproxy 서비스를 실행시켜 정상적으로 작동하는지 확인한다.
 ```
 $ systemctl enable haproxy
 $ systemctl start haproxy
