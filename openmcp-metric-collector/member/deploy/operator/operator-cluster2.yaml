@@ -38,5 +38,11 @@ spec:
               value: "cluster2"
             - name: OPERATOR_NAME
               value: "openmcp-metric-collector"
-
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0
 

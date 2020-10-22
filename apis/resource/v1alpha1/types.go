@@ -217,7 +217,7 @@ type OpenMCPServiceSpec struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	Template      corev1.Service    `json:"template" protobuf:"bytes,3,opt,name=template"`
-	LabelSelector map[string]string `json:"labelselector" protobuf: "bytes,3,opt,name=labelselector"`
+	LabelSelector map[string]string `json:"labelselector" protobuf:"bytes,3,opt,name=labelselector"`
 	//Replicas int32 `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
 
 	//Placement

@@ -3,6 +3,8 @@ package util
 import (
 	"context"
 	"fmt"
+	"gopkg.in/yaml.v2"
+
 	"io/ioutil"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
@@ -11,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
+
 	"strconv"
 	"strings"
 	"time"
@@ -109,6 +112,10 @@ func GetOutboundIP() string {
 
 	return localAddr.IP.String()
 }
+
+type ClusterConfiguration struct {
+	ControlPlaneEndpoint string `yaml:"controlPlaneEndpoint"`
+}
 func GetEndpointIP() string {
 	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
 	genClient := genericclient.NewForConfigOrDie(kubeconfig)
@@ -118,13 +125,19 @@ func GetEndpointIP() string {
 		log.Fatal(err)
 	}
 	ip := ""
-	if controlPlaneEndpoint, ok := obj.Data["controlPlaneEndpoint"]; ok {
+	if clusterConfigYaml, ok := obj.Data["ClusterConfiguration"]; ok {
 		//do something here
-		endpoints := strings.Split(controlPlaneEndpoint, ":")
+		cc := ClusterConfiguration{}
+		err := yaml.Unmarshal([]byte(clusterConfigYaml), &cc)
+		if err != nil {
+			panic(err)
+		}
+		endpoints := strings.Split(cc.ControlPlaneEndpoint, ":")
 		ip = endpoints[0]
 	} else {
 		ip = GetOutboundIP()
 	}
+
 	return ip
 
 }
