@@ -2,10 +2,18 @@
 
 ## 구성 환경
 
-Master1 IP : 10.0.3.100  
-Master2 IP : 10.0.3.40  
-Master3 IP : 10.0.3.30  
-LoadBalancer IP : 10.0.3.99
+OS : Ubuntu 16.04.6  
+Kubernets : 1.17.3  
+Docker : 17.03.2-ce  
+HAProxy : 1.6.3  
+Keepalived : 1.2.24
+
+## 마스터 노드 테스트 IP
+
+Master1 IP [10.0.3.100]  
+Master2 IP [10.0.3.40]  
+Master3 IP [10.0.3.30]  
+LoadBalancer IP [10.0.3.99]
 
 ## 구축 순서
 1. hostname 설정
@@ -41,8 +49,7 @@ Your Hostname? master3
 Please Reconnect shell to Change Hostname!
 ```
 ## 2. docker 설치
-모든 노드에 도커를 설치한다.
-
+모든 마스터 노드에 도커를 설치한다.
 ### > Master1 / Master2 / Master3
 ```
 $ apt-get update
@@ -72,6 +79,7 @@ Server:
  Experimental: true
 ```
 ## 3. kubeadm/kubectl/kubelet 설치
+모든 마스터 노드에 쿠버네티스를 설치한다.
 ### > Master1 / Master2 / Master3
 ```
 $ apt-get install kubeadm=1.17.3-00
