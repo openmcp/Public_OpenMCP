@@ -18,6 +18,7 @@ LoadBalancer IP : 10.0.3.99
 1. 마스터 노드 복제 확인
 
 ## 1. hostname 설정
+먼저 각 마스터 노드들의 hostname을 원하는 이름으로 변경한다.
 ### > Master1
 ```
 $ cd create_cluster
@@ -40,6 +41,8 @@ Your Hostname? master3
 Please Reconnect shell to Change Hostname!
 ```
 ## 2. docker 설치
+모든 노드에 도커를 설치한다.
+
 ### > Master1 / Master2 / Master3
 ```
 $ apt-get update
