@@ -16,6 +16,8 @@ import (
 	"time"
 )
 
+var APP_KEY = "openmcp-apiserver"
+
 func saveTokenToFile(token string) {
 	filename := "/var/lib/omcpctl/token"
 	f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
@@ -63,7 +65,7 @@ func getTokenWithFile() (string, error){
 	tokenString := tokenMap["token"]
 	claims := jwt.MapClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte("<YOUR VERIFICATION KEY>"), nil
+		return []byte(APP_KEY), nil
 	})
 
 	// ... error handling

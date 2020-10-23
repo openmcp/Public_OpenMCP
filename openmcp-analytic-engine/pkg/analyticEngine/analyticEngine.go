@@ -162,7 +162,9 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 	var totalCpuCore int64 = 0
 
 	//cm := clusterManager.NewClusterManager()
-
+	if len(result) == 0{
+		return 0
+	}
 	for _, ser := range result[0].Series {
 
 		nodeCapacity := &corev1.Node{}
