@@ -32,7 +32,7 @@ $ ./1.build.sh
 Join process using [omcpctl](https://github.com/openmcp/openmcp/tree/master/omcpctl) for OpenMCP master cluster and [omcpctl](https://github.com/openmcp/openmcp-cli) for OpneMCP member cluster after [installation of OpenMCP master](https://github.com/openmcp/openmcp)
 ```
 1. Registering Openmcp in an OpenMCP Master
-  Master) omcpctl register master
+  Master) omcpctl register openmcp
 
 2. Register an OpenMCP Member Cluster
   Member) omcpctl register member <OpenMCP_Master_IP>
