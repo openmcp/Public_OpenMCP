@@ -132,8 +132,13 @@ func GetEndpointIP() string {
 		if err != nil {
 			panic(err)
 		}
-		endpoints := strings.Split(cc.ControlPlaneEndpoint, ":")
-		ip = endpoints[0]
+		if cc.ControlPlaneEndpoint != "" {
+			endpoints := strings.Split(cc.ControlPlaneEndpoint, ":")
+			ip = endpoints[0]
+		} else {
+			ip = GetOutboundIP()
+		}
+
 	} else {
 		ip = GetOutboundIP()
 	}
