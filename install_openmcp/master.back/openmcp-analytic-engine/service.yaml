@@ -10,7 +10,7 @@ spec:
   ports:
   - port: 2050
     targetPort: 2050
-    nodePort: 32050
+    nodePort: REPLACE_GRPCPORT
     protocol: TCP
   selector:
     name: openmcp-analytic-engine

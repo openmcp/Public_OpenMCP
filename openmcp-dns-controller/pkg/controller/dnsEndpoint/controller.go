@@ -329,10 +329,21 @@ func CreateEndpointsFromIngressDNS(instanceIngressRecord *dnsv1alpha1.OpenMCPIng
 			targets := []string{}
 			for _, ingress := range dns.LoadBalancer.Ingress {
 				target := ingress.IP
-				if target == "" {
-					target = ingress.Hostname
+				if ingress.IP == "" {
+					addrs, err := net.LookupIP(ingress.Hostname)
+					if err != nil {
+						fmt.Println("Unknown host: ", ingress.Hostname)
+					} else {
+						for _, addr := range addrs {
+							target := addr.String()
+							fmt.Println("CHECK : ", target)
+							targets = append(targets, target)
+						}
+					}
+				} else {
+					targets = append(targets, target)
 				}
-				targets = append(targets, target)
+
 			}
 			endpoint := CreateEndpoint(dnsName, recordTTL, recordType, targets)
 			omcplog.V(3).Info("DNSName : ", endpoint.DNSName)

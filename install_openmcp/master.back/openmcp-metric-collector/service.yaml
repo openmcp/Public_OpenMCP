@@ -10,7 +10,7 @@ spec:
   ports:
   - port: 2051
     targetPort: 2051
-    nodePort: 32051
+    nodePort: REPLACE_GRPCPORT
     protocol: TCP
   selector:
     name: openmcp-metric-collector
