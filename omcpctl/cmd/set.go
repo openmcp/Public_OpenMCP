@@ -61,9 +61,9 @@ func setPolicy(args []string){
 	policyName := args[2]
 	value := args[3]
 
-	cobrautil.Option_namespace = "openmcp"
+	resourceNamespace := "openmcp"
 
-	LINK := cobrautil.GetLinkParser("openmcppolicys", resourceName, "openmcp")
+	LINK := cobrautil.GetLinkParser("openmcppolicys", resourceName, resourceNamespace, "openmcp")
 
 	body, err := apiServerMethod.GetAPIServer(LINK)
 	if err != nil {
