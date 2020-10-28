@@ -41,14 +41,18 @@ omcpctl set openmcppolicys log-level Level 5
 omcpctl set opol log-level Level 2
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 1 {
-			fmt.Println("error: Required resource not specified.")
-			return
-		}
-		resourceKind := args[0]
+		if len(args) == 0 {
+			fmt.Println("Run 'omcpctl set --help' to view all commands")
+		}else {
+			if len(args) < 1 {
+				fmt.Println("error: Required resource not specified.")
+				return
+			}
+			resourceKind := args[0]
 
-		if cobrautil.ResourceMap[resourceKind] == "openmcppolicys"{
-			setPolicy(args)
+			if cobrautil.ResourceMap[resourceKind] == "openmcppolicys" {
+				setPolicy(args)
+			}
 		}
 	},
 }

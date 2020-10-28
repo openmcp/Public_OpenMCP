@@ -18,13 +18,11 @@ package cmd
 import (
 	"context"
 	"fmt"
-
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 	"log"
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"openmcp/openmcp/util"
-	"openmcp/openmcp/util/clusterManager"
 	"path/filepath"
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
@@ -43,36 +41,50 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.
 
-openmcpctl join list
-openmcpctl join cluster <CLUSTERIP>
-openmcpctl join gke-cluster <CLUSTERNAME>
-openmcpctl join eks-cluster <CLUSTERNAME>`,
+omcpctl join list
+omcpctl join cluster <CLUSTERIP>
+omcpctl join gke-cluster <CLUSTERNAME>
+omcpctl join eks-cluster <CLUSTERNAME>
+omcpctl join aks-cluster <CLUSTERNAME> <RESOURCEGROUPNAME>`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 0 && args[0] == "cluster" {
+		if len(args) == 0 {
+			fmt.Println("Run 'omcpctl join --help' to view all commands")
+		}
+
+		if len(args) != 0 && args[0] == "list" {
+			listCluster()
+		}else if len(args) != 0 && args[0] == "cluster" {
 			if args[1] == "" {
-				fmt.Println("You Must Provide Cluster IP")
+				fmt.Println("Run 'omcpctl join --help' to view all commands")
 			} else {
 				joinCluster(args[1])
 			}
 		} else if len(args) != 0 && args[0] == "gke-cluster" {
 			if args[1] == "" {
-				fmt.Println("You Must Provide Cluster Name")
+				fmt.Println("Run 'omcpctl join --help' to view all commands")
 			} else {
 				joinGKECluster(args[1])
 			}
 		} else if len(args) != 0 && args[0] == "eks-cluster" {
 			if args[1] == "" {
-				fmt.Println("You Must Provide Cluster Name")
+				fmt.Println("Run 'omcpctl join --help' to view all commands")
 			} else {
 				joinEKSCluster(args[1])
+			}
+
+		} else if len(args) != 0 && args[0] == "aks-cluster" {
+			if args[1] == "" {
+				fmt.Println("Run 'omcpctl join --help' to view all commands")
+			} else {
+				joinAKSCluster(args[1], args[2])
 			}
 
 		}
 	},
 }
 
-func moveToUnjoin(memberIP string) {
+/*func moveToUnjoin(memberIP string) {
 
 	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
 
@@ -81,8 +93,7 @@ func moveToUnjoin(memberIP string) {
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
-	//openmcpIP := cobrautil.GetOutboundIP()
-	openmcpIP := cobrautil.GetEndpointIP()
+	openmcpIP := cobrautil.GetOutboundIP()
 
 	util.CmdExec2("mv /mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP + " /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP)
 
@@ -99,8 +110,7 @@ func getDiffJoinIP() []string {
 	defer util.CmdExec("umount -l /mnt")
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
-	//openmcpIP := cobrautil.GetOutboundIP()
-	openmcpIP := cobrautil.GetEndpointIP()
+	openmcpIP := cobrautil.GetOutboundIP()
 	nfsClusterJoinStr, err := util.CmdExec("ls /mnt/openmcp/" + openmcpIP + "/members/join")
 	nfsClusterJoinList := strings.Split(nfsClusterJoinStr, "\n")
 	nfsClusterJoinList = nfsClusterJoinList[:len(nfsClusterJoinList)-1]
@@ -127,8 +137,10 @@ func getDiffJoinIP() []string {
 	}
 
 	return joinErrorClusterIPs
+}*/
+func listCluster(){
+	util.CmdExec2("omcpctl get cluster -A")
 }
-
 func joinCluster(memberIP string) {
 	for {
 		lockErr := Lock.TryLock()
@@ -263,7 +275,7 @@ func joinGKECluster(memberName string) {
 	}
 	Lock.Unlock()
 
-	alreadyJoined, err := cobrautil.CheckAlreadyJoinClusterWithPublicClusterName(memberName, "gke")
+	alreadyJoined, err := cobrautil.CheckAlreadyJoinClusterWithPublicClusterName(memberName, "gke", "")
 	if err != nil {
 		fmt.Println("CheckAlreadyJoinClusterWithPublicClusterName Error : ", err)
 		return
@@ -397,7 +409,7 @@ func joinEKSCluster(memberName string) {
 		return
 	}
 
-	alreadyJoined, err := cobrautil.CheckAlreadyJoinClusterWithPublicClusterName(memberName, "eks")
+	alreadyJoined, err := cobrautil.CheckAlreadyJoinClusterWithPublicClusterName(memberName, "eks", "")
 	if err != nil {
 		fmt.Println("CheckAlreadyJoinClusterWithPublicClusterName Error : ", err)
 		return
@@ -478,6 +490,127 @@ func joinEKSCluster(memberName string) {
 	}
 	labels := make(map[string]string)
 	labels["platform"] = "eks"
+	kubefedcluster.Labels = labels
+
+
+	err = genClient.Update(context.TODO(), kubefedcluster)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+
+	totalElapsed := time.Since(totalStart)
+	log.Printf("Cluster Join Total Elapsed Time : %s", totalElapsed)
+	fmt.Println("***** [End] Cluster Join Completed - " + memberName, "*****")
+}
+
+func joinAKSCluster(memberName string, resourceGroupName string) {
+
+	for {
+		lockErr := Lock.TryLock()
+		if lockErr != nil {
+			fmt.Println("Mount Dir Using Another Works. Wait...")
+			time.Sleep(time.Second)
+		}else {
+			break
+		}
+	}
+
+	totalStart := time.Now()
+	fmt.Println("***** [Start] Cluster Join Start : '", memberName, "' *****")
+
+	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
+
+	util.CmdExec("umount -l /mnt")
+	defer util.CmdExec("umount -l /mnt")
+
+	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
+
+	//openmcpIP := cobrautil.GetOutboundIP()
+	openmcpIP := cobrautil.GetEndpointIP()
+	if !fileExists("/mnt/openmcp/" + openmcpIP) {
+		fmt.Println("Failed Join List in OpenMCP Master: " + openmcpIP)
+		fmt.Println("=> Not Yet Register OpenMCP.")
+		fmt.Println("=> First You Must be Input the Next Command in 'OpenMCP Master Server(" + openmcpIP + ")' : omcpctl register openmcp")
+		return
+	}
+
+	Lock.Unlock()
+
+
+	_, err := util.CmdExec("az aks get-credentials --name " + memberName+" --resource-group "+resourceGroupName)
+	if err != nil {
+		fmt.Println("[",err, "] No cluster found for name: " + memberName)
+		return
+	}
+
+	alreadyJoined, err := cobrautil.CheckAlreadyJoinClusterWithPublicClusterName(memberName, "aks", resourceGroupName)
+	if err != nil {
+		fmt.Println("CheckAlreadyJoinClusterWithPublicClusterName Error : ", err)
+		return
+	}
+
+	if alreadyJoined {
+		return
+	}
+
+	kc := cobrautil.GetKubeConfig("/root/.kube/config")
+
+
+	for i, c := range kc.Contexts {
+		if strings.Contains(c.Name, memberName){
+			kc.Contexts[i].Name = memberName
+			kc.Contexts[i].Context.User = memberName+"-admin"
+			kc.Contexts[i].Context.Cluster = memberName
+			break
+
+		}
+	}
+	for i, c := range kc.Users {
+		if strings.Contains(c.Name, memberName){
+			kc.Users[i].Name = memberName+"-admin"
+			break
+
+		}
+	}
+	kc.CurrentContext = "openmcp"
+	cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
+
+
+	// namespace terminating stuck force delete
+	util.CmdExec2("kubectl get namespace kube-federation-system --context "+ memberName+" -o json |jq '.spec = {\"finalizers\":[]}' >temp.json")
+	util.CmdExec2("kubectl replace --raw \"/api/v1/namespaces/kube-federation-system/finalize\" -f ./temp.json --context "+ memberName)
+	util.CmdExec2("rm temp.json")
+
+	start2 := time.Now()
+	fmt.Println("***** [Start] 1. Cluster Join *****")
+	util.CmdExec2("kubefedctl join " + memberName + " --cluster-context " + memberName + " --host-cluster-context openmcp --v=2")
+
+	elapsed2 := time.Since(start2)
+	log.Printf("Cluster Join Time : %s", elapsed2)
+	fmt.Println("***** [End] 1. Cluster Join ***** ")
+
+
+	start3 := time.Now()
+	fmt.Println("***** [Start] 2. Init Service Deployments *****")
+
+	installInitCluster(memberName, c.OpenmcpDir, "coredns")
+
+	elapsed3 := time.Since(start3)
+	log.Printf("Init Service Deployments Time : %s", elapsed3)
+	fmt.Println("***** [End] 2. Init Service Deployments ***** ")
+
+
+	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
+	genClient := genericclient.NewForConfigOrDie(kubeconfig)
+
+	kubefedcluster := &fedv1b1.KubeFedCluster{}
+	err = genClient.Get(context.TODO(), kubefedcluster, "kube-federation-system", memberName)
+	if err != nil {
+		fmt.Println(err)
+	}
+	labels := make(map[string]string)
+	labels["platform"] = "aks"
 	kubefedcluster.Labels = labels
 
 
