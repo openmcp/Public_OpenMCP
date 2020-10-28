@@ -27,7 +27,7 @@ spec:
             - name: isAnalytic
               value : "yes"
             - name: GRPC_SERVER
-              value: "10.0.3.20"
+              value: "10.0.3.99"
             - name: GRPC_PORT
               value: "32050"
             - name: WATCH_NAMESPACE

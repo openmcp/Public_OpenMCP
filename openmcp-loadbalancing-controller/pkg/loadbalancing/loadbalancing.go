@@ -150,6 +150,8 @@ func scoring(clusters []string, tip string, creg clusterregistry.Registry) strin
 		return clusters[0]
 	}
 
+	omcplog.V(4).Info(strconv.Itoa(len(clusters)) + " Clusters Scoring & Compare")
+
 	score = Score(clusters, tip, creg)
 
 	cluster := endpointCluster(score)
@@ -298,7 +300,8 @@ func loadbalancing(host, tip, path string, reg loadbalancingregistry.Registry, c
 
 	serviceName, err := reg.Lookup(host, path)
 	endpoints, err := sreg.Lookup(serviceName)
-	omcplog.V(5).Info("Check Service, Endpoint(Cluster)")
+	omcplog.V(5).Info("Service Discovery, Endpoint(Cluster)")
+	omcplog.V(5).Info(endpoints)
 
 	if err != nil {
 		return "", err
