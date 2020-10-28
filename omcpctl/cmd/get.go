@@ -82,6 +82,7 @@ func getResource(args []string) {
 
 	resourceKinds := ""
 	resourceName := ""
+	resourceNamespace := ""
 
 	if len(args) >= 1 {
 		resourceKinds = args[0]
@@ -121,8 +122,9 @@ func getResource(args []string) {
 
 				resourceKind := cobrautil.KindMap[metainfo.Kind]
 				resourceName = metainfo.Metadata.Name
+				resourceNamespace = metainfo.Metadata.Namespace
 
-				err = getCore(resourceKind, resourceName, clusterContext)
+				err = getCore(resourceKind, resourceName, resourceNamespace, clusterContext)
 				if err != nil {
 					continue
 				}
@@ -132,7 +134,8 @@ func getResource(args []string) {
 			resourceKindList := strings.Split(resourceKinds, ",")
 
 			for _, resourceKind := range resourceKindList {
-				err := getCore(resourceKind, resourceName, clusterContext)
+				resourceNamespace = cobrautil.Option_namespace
+				err := getCore(resourceKind, resourceName, resourceNamespace, clusterContext)
 				if err != nil {
 					continue
 				}
@@ -146,8 +149,8 @@ func getResource(args []string) {
 
 
 }
-func getCore(resourceKind, resourceName, clusterContext string) error{
-	LINK := cobrautil.GetLinkParser(resourceKind, resourceName, clusterContext)
+func getCore(resourceKind, resourceName, resourceNamespace, clusterContext string) error{
+	LINK := cobrautil.GetLinkParser(resourceKind, resourceName, resourceNamespace, clusterContext)
 	fmt.Println(LINK)
 
 	body, err := apiServerMethod.GetAPIServer(LINK)
