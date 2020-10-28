@@ -38,6 +38,10 @@ to quickly create a Cobra application.
 omcpctl register openmcp <OPENMCPIP>
 omcpctl register member  <OPENMCPIP>`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			fmt.Println("Run 'omcpctl register --help' to view all commands")
+		}
+
 		if len(args) != 0 && args[0] == "openmcp" {
 			registerASOpenMCP()
 		} else if len(args) != 0 && args[0] == "member" {
@@ -174,7 +178,6 @@ func registerMemberToOpenMCP(openmcpIP string) {
 		Lock.Unlock()
 		return
 	}
-
 }
 
 func init() {

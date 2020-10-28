@@ -39,16 +39,21 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.
 
-openmcpctl create -f <FILENAME>
-openmcpctl create -f <FILENAME> --context <CLUSTERNAME>`,
+omcpctl create -f <FILENAME>
+omcpctl create -f <FILENAME> --context <CLUSTERNAME>`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		CreateResource(args)
+		if len(args) == 0 {
+			fmt.Println("Run 'omcpctl create --help' to view all commands")
+		}else {
+			CreateResource(args)
+		}
 	},
 }
 func CreateResource(args []string){
+
 	if cobrautil.Option_file == "" {
-		fmt.Println("-f option needed")
+		fmt.Println("Run 'omcpctl create --help' to view all commands")
 		return
 	}
 	filenameList := cobrautil.GetFileNameList()
@@ -58,7 +63,7 @@ func CreateResource(args []string){
 		if err != nil {
 			panic(err)
 		}
-		
+
 		err = RunCreate(yamlFile)
 
 		if err != nil {

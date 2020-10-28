@@ -6,7 +6,6 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"log"
-	"time"
 )
 
 type KubeConfig struct {
@@ -34,12 +33,13 @@ type KubeConfig struct {
 		User struct {
 			ClientCertificateData string `yaml:"client-certificate-data,omitempty"`
 			ClientKeyData         string `yaml:"client-key-data,omitempty"`
+			Token                 string `yaml:"token,omitempty"`
 			AuthProvider struct {
 				Config struct {
 					AccessToken string    `yaml:"access-token,omitempty"`
 					CmdArgs     string    `yaml:"cmd-args,omitempty"`
 					CmdPath     string    `yaml:"cmd-path,omitempty"`
-					Expiry      time.Time `yaml:"expiry,omitempty"`
+					Expiry      string `yaml:"expiry,omitempty"`
 					ExpiryKey   string    `yaml:"expiry-key,omitempty"`
 					TokenKey    string    `yaml:"token-key,omitempty"`
 				} `yaml:"config,omitempty"`

@@ -40,17 +40,21 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.
 
-openmcpctl delete -f <FILENAME>
-openmcpctl delete -f <FILENAME> --context <CLUSTERNAME>
+omcpctl delete -f <FILENAME>
+omcpctl delete -f <FILENAME> --context <CLUSTERNAME>
 
-openmcpctl delete -f <FILEDIRECTORY>/<FILENAME>
-openmcpctl delete -f <FILEDIRECTORY>/<FILENAME> --context <CLUSTERNAME>
+omcpctl delete -f <FILEDIRECTORY>/<FILENAME>
+omcpctl delete -f <FILEDIRECTORY>/<FILENAME> --context <CLUSTERNAME>
 
-openmcpctl delete <RESOURCE> <NAME>
-openmcpctl delete <RESOURCE> <NAME> --context <CLUSTERNAME>`,
+omcpctl delete <RESOURCE> <NAME>
+omcpctl delete <RESOURCE> <NAME> --context <CLUSTERNAME>`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		Delete(args)
+		if len(args) == 0 {
+			fmt.Println("Run 'omcpctl delete --help' to view all commands")
+		}else{
+			Delete(args)
+		}
 	},
 }
 
@@ -73,9 +77,9 @@ func Delete(args []string){
 			metainfo.Metadata.Namespace = cobrautil.Option_namespace
 		}
 
-		fmt.Printf("Value: %#v\n", metainfo.Kind)
+	/*	fmt.Printf("Value: %#v\n", metainfo.Kind)
 		fmt.Printf("Value: %#v\n", metainfo.Metadata.Name)
-		fmt.Printf("Value: %#v\n", metainfo.Metadata.Namespace)
+		fmt.Printf("Value: %#v\n", metainfo.Metadata.Namespace)*/
 
 		SendToAPIServer(metainfo, nil, "resource")
 	}else {
@@ -123,9 +127,9 @@ func Delete(args []string){
 				panic(err)
 			}
 
-			fmt.Printf("Value: %#v\n", metainfo.Kind)
+			/*fmt.Printf("Value: %#v\n", metainfo.Kind)
 			fmt.Printf("Value: %#v\n", metainfo.Metadata.Name)
-			fmt.Printf("Value: %#v\n", metainfo.Metadata.Namespace)
+			fmt.Printf("Value: %#v\n", metainfo.Metadata.Namespace)*/
 
 			body := strings.NewReader(string(yamlFile))
 
@@ -137,7 +141,7 @@ func Delete(args []string){
 
 func SendToAPIServer(metainfo cobrautil.MetaInfo, body io.Reader, metainfoKindType string){
 	LINK := cobrautil.DeleteLinkParser(&metainfo, metainfoKindType)
-	fmt.Println(LINK)
+	//fmt.Println(LINK)
 
 	msg, err := apiServerMethod.DeleteAPIServer(LINK, body)
 	if err != nil {
