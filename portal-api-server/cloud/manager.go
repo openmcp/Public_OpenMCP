@@ -18,8 +18,8 @@ func AddNode(nodenm string) AddNodeResult {
 
 	var r = AddNodeResult{}
 
-	akid := "AKIAIELVTPYOW23AO3KA"
-	secretkey := "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"
+	akid := "accesskey"
+	secretkey := "secretkey"
 
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String("ap-northeast-2"),
