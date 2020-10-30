@@ -2,13 +2,12 @@ apiVersion: openmcp.k8s.io/v1alpha1
 kind: Migration
 metadata:
   name: migrations
-  namespace: openmcp
 spec:
   MigrationServiceSource:
   - SourceCluster: cluster1
     TargetCluster: cluster2
     NameSpace: testmig
-    ServiceName: testim11
+    ServiceName: testim
     MigrationSource:
     - ResourceName: testim-dp
       ResourceType: Deployment

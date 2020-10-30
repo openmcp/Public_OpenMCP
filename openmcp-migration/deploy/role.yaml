@@ -49,6 +49,7 @@ rules:
   - create
 - apiGroups:
   - apps
+  - openmcp.k8s.io
   resourceNames:
   - openmcp-migration
   resources:
