@@ -154,8 +154,8 @@ func getResource(args []string) {
 
 }
 
-func getCore(resourceKind, resourceName, clusterContext string) error{
-	LINK := cobrautil.GetLinkParser(resourceKind, resourceName, clusterContext)
+func getCore(resourceKind, resourceName, resourceNamespace, clusterContext string) error{
+	LINK := cobrautil.GetLinkParser(resourceKind, resourceName, resourceNamespace, clusterContext)
 	//fmt.Println(LINK)
 	fmt.Println()
 
