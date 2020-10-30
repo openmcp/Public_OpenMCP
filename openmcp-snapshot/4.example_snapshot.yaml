@@ -1,0 +1,18 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: Snapshot
+metadata:
+  name: example-snapshot
+spec:
+  snapshotSources:
+  - resourceCluster: cluster1
+    resourceNamespace: default
+    resourceType: pv
+    resourceName: test-pv
+  - resourceCluster: cluster1
+     resourceNamespace: default
+    resourceType: pvc
+    resourceName: test-pvc
+  - resourceCluster: cluster1
+    resourceNamespace: default
+    resourceType: deployment
+    resourceName: test-dp

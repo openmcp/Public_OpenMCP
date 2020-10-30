@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata: 
+  name: testim-pv
+  labels: 
+    name: testim-pv
+    app: testim
+spec: 
+  capacity: 
+    storage: 1Gi
+  accessModes: 
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: 
+    Delete
+  hostPath: 
+    path: /tmp
+    type: Directory
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: 
+  name: testim-pvc
+  namespace: testmig
+  labels: 
+    name: testim-pvc
+    app: testim
+spec: 
+  accessModes: 
+    - ReadWriteOnce
+  resources: 
+    requests: 
+      storage: 1Gi
+  selector: 
+    matchLabels: 
+      name: testim-pv 
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: testim-dp
+  namespace: testmig
+  labels: 
+    name: testim-dp
+    app: testim
+spec: 
+  selector: 
+    matchLabels: 
+      app: testim
+  template: 
+    metadata: 
+      labels: 
+        app: testim
+    spec: 
+      containers: 
+      - name: testim
+        image: ubuntu:16.04
+        command: ["sh", "-c", "chmod a+x /entrypoint.sh; /entrypoint.sh; sleep 100000000;"]
+        imagePullPolicy: IfNotPresent
+        ports: 
+        - containerPort: 8080
+        volumeMounts: 
+        - mountPath: /mountdir/ 
+          name: testim-volume
+        env: 
+          - name: DOCKER_HOST
+            value: tcp://localhost:2375 
+      volumes: 
+      - name: testim-volume 
+        persistentVolumeClaim: 
+          claimName: testim-pvc
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: testim-sv
+  namespace: testmig
+  labels: 
+    name: testim-sv
+    app: testim
+spec: 
+  type: NodePort
+  ports: 
+  - name: testim-web
+    port: 31327
+    targetPort: 8080
+    protocol: TCP
+    nodePort: 31327
+  selector: 
+    app: testim

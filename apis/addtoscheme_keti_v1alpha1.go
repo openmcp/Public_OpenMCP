@@ -6,6 +6,7 @@ import (
 	migrationv1alpha1 "openmcp/openmcp/apis/migration/v1alpha1"
 	policyv1alpha1 "openmcp/openmcp/apis/policy/v1alpha1"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+	snapshotv1alpha1 "openmcp/openmcp/apis/snapshot/v1alpha1"
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 )
 
@@ -17,4 +18,5 @@ func init() {
 	AddToSchemes = append(AddToSchemes, migrationv1alpha1.SchemeBuilder.AddToScheme)
 	AddToSchemes = append(AddToSchemes, syncv1alpha1.SchemeBuilder.AddToScheme)
 	AddToSchemes = append(AddToSchemes, policyv1alpha1.SchemeBuilder.AddToScheme)
+	AddToSchemes = append(AddToSchemes, snapshotv1alpha1.SchemeBuilder.AddToScheme)
 }

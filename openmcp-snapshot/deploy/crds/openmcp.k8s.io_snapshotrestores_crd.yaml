@@ -1,0 +1,88 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: snapshotrestores.openmcp.k8s.io
+  annotations:
+    "api-approved.kubernetes.io": "https://github.com/kubernetes/kubernetes/pull/78458"
+spec:
+  group: openmcp.k8s.io
+  names:
+    kind: SnapshotRestore
+    listKind: SnapshotRestoreList
+    plural: snapshotrestores
+    singular: snapshotrestore
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: SnapshotRestore is the Schema for the snapshotrestores
+          API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: SnapshotRestoreSpec defines the desired state of SnapshotRestore
+            properties:
+              snapshotRestoreSource:
+                description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                  Important: Run "operator-sdk generate k8s" to regenerate code after
+                  modifying this file Add custom validation using kubebuilder tags:
+                  https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html'
+                items:
+                  description: SnapshotRestoreSource contains the supported SnapshotRestore
+                    sources.
+                  properties:
+                    resourceCluster:
+                      type: string
+                    resourceNamespace:
+                      type: string
+                    resourceType:
+                      type: string
+                    snapshotKey:
+                      type: string
+                  required:
+                  - resourceType
+                  - snapshotKey
+                  type: object
+                type: array
+            required:
+            - snapshotRestoreSource
+            type: object
+          status:
+            description: SnapshotRestoreStatus defines the observed state of
+              SnapshotRestore
+            properties:
+              Reason:
+                description: Reason indicates the reason for any backup related failures.
+                type: string
+              lastSuccessDate:
+                description: LastSuccessDate indicate the time to get snapshot last
+                  time
+                format: date-time
+                type: string
+              succeeded:
+                description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                  of cluster Important: Run "operator-sdk generate k8s" to regenerate
+                  code after modifying this file Add custom validation using kubebuilder
+                  tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+                  Succeeded indicates if the backup has Succeeded.'
+                type: boolean
+            required:
+            - succeeded
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

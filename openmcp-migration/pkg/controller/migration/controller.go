@@ -24,7 +24,8 @@ import (
 
 	// "openmcp/openmcp/migration/pkg/apis"
 
-	nanumv1alpha1 "openmcp/openmcp/apis/migration/v1alpha1"
+	"openmcp/openmcp/apis"
+	v1alpha1 "openmcp/openmcp/apis/migration/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	config "openmcp/openmcp/openmcp-migration/pkg/util"
 	"openmcp/openmcp/util/clusterManager"
@@ -46,7 +47,6 @@ import (
 	// "sigs.k8s.io/kubefed/pkg/controller/util"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/kubefed/pkg/apis"
 	"sigs.k8s.io/kubefed/pkg/client/generic"
 	// "openmcp/openmcp/migration/pkg/controller"
 )
@@ -92,7 +92,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		omcplog.V(0).Info("adding APIs to live cluster's scheme: ", err)
 		return nil, err
 	}
-	if err := co.WatchResourceReconcileObject(live, &nanumv1alpha1.Migration{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(live, &v1alpha1.Migration{}, controller.WatchOptions{}); err != nil {
 		omcplog.V(0).Info("setting up Pod watch in live cluster: ", err)
 		return nil, err
 	}
@@ -271,7 +271,7 @@ func CreateLinkShare(client generic.Client, sourceResource *appsv1.Deployment, v
 	return true, nil, nfsNewPv, nfsNewPvc
 	// return true, nil
 }
-func getVolumePath(migraionSource nanumv1alpha1.MigrationServiceSource) (string, corev1.ResourceList) {
+func getVolumePath(migraionSource v1alpha1.MigrationServiceSource) (string, corev1.ResourceList) {
 	pvcName := ""
 	dpResource := &appsv1.Deployment{}
 	pvcResource := &corev1.PersistentVolumeClaim{}
@@ -343,7 +343,7 @@ func checkNameSpace(client generic.Client, namespace string) bool {
 }
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	omcplog.V(3).Info("Function Called Reconcile")
-	instance := &nanumv1alpha1.Migration{}
+	instance := &v1alpha1.Migration{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 	if err != nil {
 		omcplog.V(0).Info("get instance error")
