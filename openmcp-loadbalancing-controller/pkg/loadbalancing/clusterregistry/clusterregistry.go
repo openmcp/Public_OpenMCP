@@ -89,7 +89,7 @@ func (c DefaultClusterInfo) Latitude(ClusterName string) (float64, error) {
 }
 
 func (c DefaultClusterInfo) Country(ClusterName string) (string, error) {
-	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster Country")
+//	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster Country")
 	lock.RLock()
 	cluster, ok := c[ClusterName]
 	lock.RUnlock()
@@ -101,7 +101,7 @@ func (c DefaultClusterInfo) Country(ClusterName string) (string, error) {
 }
 
 func (c DefaultClusterInfo) Continent(ClusterName string) (string, error) {
-	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster Continent")
+//	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster Continent")
 	lock.RLock()
 	cluster, ok := c[ClusterName]
 	lock.RUnlock()

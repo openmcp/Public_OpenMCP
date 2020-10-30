@@ -231,33 +231,38 @@ func initRegistry() {
 		if err != nil {
 			omcplog.V(0).Info(err)
 		}
-		node := nodes.Items[0]
-		country := node.Labels["failure-domain.beta.kubernetes.io/zone"]
-		continent := node.Labels["failure-domain.beta.kubernetes.io/region"]
 
-		loadbalancing.ClusterRegistry[cluster.Name]["Country"] = country
-		loadbalancing.ClusterRegistry[cluster.Name]["Continent"] = continent
+		if len(nodes.Items) > 1 {
+			node := nodes.Items[0]
+			country := node.Labels["failure-domain.beta.kubernetes.io/zone"]
+			continent := node.Labels["failure-domain.beta.kubernetes.io/region"]
+			loadbalancing.ClusterRegistry[cluster.Name]["Country"] = country
+			loadbalancing.ClusterRegistry[cluster.Name]["Continent"] = continent
 
-		found := &corev1.Service{}
-		cluster_client := cm.Cluster_genClients[cluster.Name]
-		err = cluster_client.Get(context.TODO(), found, "ingress-nginx", "ingress-nginx")
-		if err != nil {
-			omcplog.V(0).Info("Cluster Ingress Controller Not Found")
-		} else {
-			if found.Spec.Type == "LoadBalancer" {
-				omcplog.V(5).Info("[OpenMCP Loadbalancing Controller] Service Type LoadBalancer")
-				if len(found.Status.LoadBalancer.Ingress) > 0 {
-					loadbalancing.ClusterRegistry[cluster.Name]["IngressIP"] = found.Status.LoadBalancer.Ingress[0].IP
-				}
+			found := &corev1.Service{}
+			cluster_client := cm.Cluster_genClients[cluster.Name]
+			err = cluster_client.Get(context.TODO(), found, "ingress-nginx", "ingress-nginx")
+			if err != nil {
+				omcplog.V(0).Info("Cluster Ingress Controller Not Found")
 			} else {
-				omcplog.V(5).Info("[OpenMCP Loadbalancing Controller] Service Type NodePort")
-				port := fmt.Sprint(found.Spec.Ports[0].NodePort)
-				nodeIP := node.Status.Addresses[0].Address
-				omcplog.V(5).Info("[OpenMCP Loadbalancing Controller] NodePort :" + port)
-				omcplog.V(5).Info("[OpenMCP Loadbalancing Controller] NodeIP :" + nodeIP)
-				loadbalancing.ClusterRegistry[cluster.Name]["IngressIP"] = nodeIP + ":" + port
+				if found.Spec.Type == "LoadBalancer" {
+					omcplog.V(5).Info("[OpenMCP Loadbalancing Controller] Service Type LoadBalancer")
+					if len(found.Status.LoadBalancer.Ingress) > 0 {
+						loadbalancing.ClusterRegistry[cluster.Name]["IngressIP"] = found.Status.LoadBalancer.Ingress[0].IP
+					}
+				} else {
+					omcplog.V(5).Info("[OpenMCP Loadbalancing Controller] Service Type NodePort")
+					port := fmt.Sprint(found.Spec.Ports[0].NodePort)
+					nodeIP := node.Status.Addresses[0].Address
+					omcplog.V(5).Info("[OpenMCP Loadbalancing Controller] NodePort :" + port)
+					omcplog.V(5).Info("[OpenMCP Loadbalancing Controller] NodeIP :" + nodeIP)
+					loadbalancing.ClusterRegistry[cluster.Name]["IngressIP"] = nodeIP + ":" + port
+				}
 			}
+		} else {
+			omcplog.V(0).Info("Worker node does not exist")
 		}
+
 	}
 
 }

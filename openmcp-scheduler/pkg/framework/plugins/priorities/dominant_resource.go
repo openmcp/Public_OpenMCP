@@ -46,19 +46,21 @@ func (pl *DominantResource) PreScore(pod *ketiresource.Pod, clusterInfo *ketires
 		pl.prescoring[clusterInfo.ClusterName] = clusterScore
 	} else {
 		pl.betweenScore = pl.prescoring[clusterInfo.ClusterName] - int64(clusterScore)
-		pl.betweenScore = int64(math.Abs(float64(pl.betweenScore)))
+		if pl.betweenScore <= 0 {
+			pl.betweenScore = 5
+		}
+		pl.prescoring[clusterInfo.ClusterName] = clusterScore - pl.betweenScore
 	}
 	return clusterScore
 }
 
 func (pl *DominantResource) Score(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, replicas int32, clustername string) int64 {
 	if clustername == clusterInfo.ClusterName {
-		score := pl.prescoring[clusterInfo.ClusterName] - pl.betweenScore
-		return score
+		pl.prescoring[clusterInfo.ClusterName] = pl.prescoring[clusterInfo.ClusterName] - pl.betweenScore
+		return pl.prescoring[clusterInfo.ClusterName]
 	}
 	score := pl.prescoring[clusterInfo.ClusterName]
 	return score
-
 }
 
 func getMinDominantShare(arr []float64) float64 {

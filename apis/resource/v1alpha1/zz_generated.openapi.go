@@ -29,6 +29,12 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"openmcp/openmcp/apis/resource/v1alpha1.OpenMCPSecret":                 schema_pkg_apis_resource_v1alpha1_OpenMCPSecret(ref),
 		"openmcp/openmcp/apis/resource/v1alpha1.OpenMCPSecretSpec":             schema_pkg_apis_resource_v1alpha1_OpenMCPSecretSpec(ref),
 		"openmcp/openmcp/apis/resource/v1alpha1.OpenMCPSecretStatus":           schema_pkg_apis_resource_v1alpha1_OpenMCPSecretStatus(ref),
+		"openmcp/openmcp/apis/resource/v1alpha1.OpenMCPJob":                 	schema_pkg_apis_resource_v1alpha1_OpenMCPJob(ref),
+		"openmcp/openmcp/apis/resource/v1alpha1.OpenMCPJobSpec":             	schema_pkg_apis_resource_v1alpha1_OpenMCPJobSpec(ref),
+		"openmcp/openmcp/apis/resource/v1alpha1.OpenMCPJobStatus":           	schema_pkg_apis_resource_v1alpha1_OpenMCPJobStatus(ref),
+		"openmcp/openmcp/apis/resource/v1alpha1.OpenMCPNamespace":              schema_pkg_apis_resource_v1alpha1_OpenMCPNamespace(ref),
+		"openmcp/openmcp/apis/resource/v1alpha1.OpenMCPNamespaceSpec":          schema_pkg_apis_resource_v1alpha1_OpenMCPNamespaceSpec(ref),
+		"openmcp/openmcp/apis/resource/v1alpha1.OpenMCPNamespaceStatus":        schema_pkg_apis_resource_v1alpha1_OpenMCPNamespaceStatus(ref),
 	}
 }
 
@@ -427,6 +433,142 @@ func schema_pkg_apis_resource_v1alpha1_OpenMCPSecretStatus(ref common.ReferenceC
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "OpenMCPSecretStatus defines the observed state of OpenMCPSecret",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+
+func schema_pkg_apis_resource_v1alpha1_OpenMCPJob(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OpenMCPJob is the Schema for the openmcpjobs API",
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("openmcp/openmcp/apis/resource/v1alpha1.OpenMCPJobSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("openmcp/openmcp/apis/resource/v1alpha1.OpenMCPJobStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "openmcp/openmcp/apis/resource/v1alpha1.OpenMCPJobSpec", "openmcp/openmcp/apis/resource/v1alpha1.OpenMCPJobStatus"},
+	}
+}
+
+func schema_pkg_apis_resource_v1alpha1_OpenMCPJobSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OpenMCPJobSpec defines the desired state of OpenMCPJob",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+func schema_pkg_apis_resource_v1alpha1_OpenMCPJobStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OpenMCPJobStatus defines the observed state of OpenMCPJob",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+
+func schema_pkg_apis_resource_v1alpha1_OpenMCPNamespace(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OpenMCPNamespace is the Schema for the openmcpnamespaces API",
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("openmcp/openmcp/apis/resource/v1alpha1.OpenMCPNamespaceSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("openmcp/openmcp/apis/resource/v1alpha1.OpenMCPNamespaceStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "openmcp/openmcp/apis/resource/v1alpha1.OpenMCPNamespaceSpec", "openmcp/openmcp/apis/resource/v1alpha1.OpenMCPNamespaceStatus"},
+	}
+}
+
+func schema_pkg_apis_resource_v1alpha1_OpenMCPNamespaceSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OpenMCPNamespaceSpec defines the desired state of OpenMCPNamespace",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+func schema_pkg_apis_resource_v1alpha1_OpenMCPNamespaceStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OpenMCPNamespaceStatus defines the observed state of OpenMCPNamespace",
 				Properties:  map[string]spec.Schema{},
 			},
 		},

@@ -40,24 +40,37 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.
 
-openmcpctl unjoin cluster <CLUSTERIP>
-openmcpctl unjoin gke-cluster <CLUSTERNAME>
-openmcpctl unjoin eks-cluster <CLUSTERNAME>`,
+omcpctl unjoin cluster <CLUSTERIP>
+omcpctl unjoin gke-cluster <CLUSTERNAME>
+omcpctl unjoin eks-cluster <CLUSTERNAME>
+omcpctl unjoin aks-cluster <CLUSTERNAME> <RESOURCEGROUPNAME>`,
 
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			fmt.Println("Run 'omcpctl unjoin --help' to view all commands")
+		}
+
 		if len(args) != 0 && args[0] == "cluster" {
 			if args[1] == "" {
-				fmt.Println("You Must Provide Cluster IP")
+				fmt.Println("Run 'omcpctl unjoin --help' to view all commands")
 			} else {
 				unjoinCluster(args[1])
 			}
 		} else if len(args) != 0 && (args[0] == "gke-cluster"|| args[0] == "eks-cluster") {
 			if args[1] == "" {
-				fmt.Println("You Must Provide Cluster Name")
+				fmt.Println("Run 'omcpctl unjoin --help' to view all commands")
 			} else {
-				unjoinCloudCluster(args[1])
+				unjoinCloudCluster(args[0], args[1], "")
 			}
 
+		} else if len(args) != 0 && (args[0] == "aks-cluster") {
+			if args[1] == "" {
+				fmt.Println("Run 'omcpctl unjoin --help' to view all commands")
+			}else if args[2] == "" {
+				fmt.Println("Run 'omcpctl unjoin --help' to view all commands")
+			} else {
+				unjoinCloudCluster(args[0], args[1], args[2])
+			}
 		}
 	},
 }
@@ -73,7 +86,8 @@ func getDiffUnjoinIP() []string {
 	defer util.CmdExec("umount -l /mnt")
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
-	openmcpIP := cobrautil.GetOutboundIP()
+	//openmcpIP := cobrautil.GetOutboundIP()
+	openmcpIP := cobrautil.GetEndpointIP()
 	nfsClusterUnjoinStr, err := util.CmdExec("ls /mnt/openmcp/" + openmcpIP + "/members/unjoin")
 	nfsClusterUnjoinList := strings.Split(nfsClusterUnjoinStr, "\n")
 	nfsClusterUnjoinList = nfsClusterUnjoinList[:len(nfsClusterUnjoinList)-1]
@@ -105,7 +119,8 @@ func moveToJoin(memberIP string) {
 
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
-	openmcpIP := cobrautil.GetOutboundIP()
+	//openmcpIP := cobrautil.GetOutboundIP()
+	openmcpIP := cobrautil.GetEndpointIP()
 
 	util.CmdExec2("mv /mnt/openmcp/" + openmcpIP + "/members/unjoin/" + memberIP + " /mnt/openmcp/" + openmcpIP + "/members/join/" + memberIP)
 
@@ -149,7 +164,8 @@ func unjoinCluster(memberIP string) {
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 
 
-	openmcpIP := cobrautil.GetOutboundIP()
+	//openmcpIP := cobrautil.GetOutboundIP()
+	openmcpIP := cobrautil.GetEndpointIP()
 	if !fileExists("/mnt/openmcp/" + openmcpIP) {
 		fmt.Println("Failed UnJoin Cluster '" + memberIP + "' in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Not Yet Register OpenMCP.")
@@ -261,7 +277,7 @@ func unjoinCluster(memberIP string) {
 	log.Printf("Cluster Join Elapsed Time : %s", elapsed)
 }
 
-func unjoinCloudCluster(memberName string) {
+func unjoinCloudCluster(clusterkind string, memberName string, resourceGroupName string) {
 	for {
 		lockErr := Lock.TryLock()
 		if lockErr != nil {
@@ -283,7 +299,8 @@ func unjoinCloudCluster(memberName string) {
 	util.CmdExec2("mount -t nfs " + c.NfsServer + ":/home/nfs/ /mnt")
 	Lock.Unlock()
 
-	openmcpIP := cobrautil.GetOutboundIP()
+	//openmcpIP := cobrautil.GetOutboundIP()
+	openmcpIP := cobrautil.GetEndpointIP()
 	if !fileExists("/mnt/openmcp/" + openmcpIP) {
 		fmt.Println("Failed UnJoin Cluster '" + memberName + "' in OpenMCP Master: " + openmcpIP)
 		fmt.Println("=> Not Yet Register OpenMCP.")
@@ -291,8 +308,16 @@ func unjoinCloudCluster(memberName string) {
 
 		return
 	}
+	var alreadyJoined bool
+	var err error
 
-	alreadyJoined, err := cobrautil.CheckAlreadyJoinClusterWithPublicClusterName(memberName, "gke")
+	if clusterkind == "gke-cluster" {
+		alreadyJoined, err = cobrautil.CheckAlreadyJoinClusterWithPublicClusterName(memberName, "gke", "")
+	} else if clusterkind == "eks-cluster" {
+		alreadyJoined, err = cobrautil.CheckAlreadyJoinClusterWithPublicClusterName(memberName, "eks", "")
+	} else if clusterkind == "aks-cluster" {
+		alreadyJoined, err = cobrautil.CheckAlreadyJoinClusterWithPublicClusterName(memberName, "aks", resourceGroupName)
+	}
 	if err != nil {
 		fmt.Println("CheckAlreadyJoinCluster Error : ", err)
 		return

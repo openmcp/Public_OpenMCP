@@ -41,6 +41,13 @@ spec:
         - name: tls-certs
           secret:
             secretName: vpa-tls-certs
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0
 ---
 apiVersion: v1
 kind: Service

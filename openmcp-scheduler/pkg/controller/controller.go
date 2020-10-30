@@ -11,17 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller 
+package controller
 
 import (
-	"admiralty.io/multicluster-controller/pkg/cluster"
-	"admiralty.io/multicluster-controller/pkg/controller"
-	"admiralty.io/multicluster-controller/pkg/manager"
-	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"context"
 	"fmt"
-	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"openmcp/openmcp/apis"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	"openmcp/openmcp/omcplog"
@@ -29,9 +23,16 @@ import (
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sort"
 	"strings"
+
+	"admiralty.io/multicluster-controller/pkg/cluster"
+	"admiralty.io/multicluster-controller/pkg/controller"
+	"admiralty.io/multicluster-controller/pkg/manager"
+	"admiralty.io/multicluster-controller/pkg/reconcile"
+	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 )
@@ -107,7 +108,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-
 	if err := co.WatchResourceReconcileObject(live, &resourcev1alpha1.OpenMCPDeployment{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
@@ -162,7 +162,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 			newDeployment.Status.SchedulingNeed = false
 			newDeployment.Status.SchedulingComplete = true
-			omcplog.V(0).Info("=> Scheduling Result : ", cluster_replicas_map)
+			//omcplog.V(0).Info("=> Scheduling Result : ", cluster_replicas_map)
 			// update OpenMCPDeployment to deploy
 
 			err := r.live.Status().Update(context.TODO(), newDeployment)

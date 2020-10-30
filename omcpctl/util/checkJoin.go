@@ -11,7 +11,8 @@ import (
 )
 
 func CheckAlreadyJoinClusterWithIP(memberIP string) (bool, error){
-	openmcpIP := GetOutboundIP()
+	//openmcpIP := GetOutboundIP()
+	openmcpIP := GetEndpointIP()
 	kc := GetKubeConfig("/mnt/openmcp/"+openmcpIP+"/members/unjoin/"+memberIP+"/config/config")
 
 	clusterName := ""
@@ -43,7 +44,7 @@ func CheckAlreadyJoinClusterWithIP(memberIP string) (bool, error){
 	return false, nil
 
 }
-func CheckAlreadyJoinClusterWithPublicClusterName(clusterName, platform string) (bool, error){
+func CheckAlreadyJoinClusterWithPublicClusterName(clusterName, platform string, resourcegroupname string) (bool, error){
 	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
 	genClient := genericclient.NewForConfigOrDie(kubeconfig)
 	clusterList := clusterManager.ListKubeFedClusters(genClient, "kube-federation-system")
@@ -91,6 +92,25 @@ func CheckAlreadyJoinClusterWithPublicClusterName(clusterName, platform string) 
 
 		apiEndpoint = strings.ToLower(apiEndpoint)
 
+
+	} else if platform == "aks"{
+
+		ss, err := util.CmdExec("az aks show --resource-group "+resourcegroupname+" --name "+clusterName+" | cat")
+
+		if err != nil {
+			return false, err
+		}
+		jsonData := make(map[string]interface{})
+		err = json.Unmarshal([]byte(ss), &jsonData)
+		if err != nil {
+			return false, err
+		}
+
+		apiEndpoint = jsonData["fqdn"].(string)
+		fmt.Println(apiEndpoint)
+
+		apiEndpoint = "https://"+apiEndpoint+":443"
+		fmt.Println(apiEndpoint)
 
 	} else {
 

@@ -40,30 +40,34 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.
 
-openmcpctl get cluster
-openmcpctl get cluster -o yaml
+omcpctl get cluster
+omcpctl get cluster -o yaml
 
-openmcpctl get cluster <CLUSTERNAME>
-openmcpctl get cluster <CLUSTERNAME> -o yaml
+omcpctl get cluster <CLUSTERNAME>
+omcpctl get cluster <CLUSTERNAME> -o yaml
 
-openmcpctl get node
-openmcpctl get node -o yaml
-openmcpctl get node --context <CLUUSTERNAME>
-openmcpctl get node --context <CLUUSTERNAME> -o yaml
+omcpctl get node
+omcpctl get node -o yaml
+omcpctl get node --context <CLUUSTERNAME>
+omcpctl get node --context <CLUUSTERNAME> -o yaml
 
-openmcpctl get node <NODENAME>
-openmcpctl get node <NODENAME> -o yaml
-openmcpctl get node <NODENAME> --context <CLUSTERNAME>
-openmcpctl get node <NODENAME> --context <CLUSTERNAME> -o yaml
+omcpctl get node <NODENAME>
+omcpctl get node <NODENAME> -o yaml
+omcpctl get node <NODENAME> --context <CLUSTERNAME>
+omcpctl get node <NODENAME> --context <CLUSTERNAME> -o yaml
 
-openmcpctl get odeploy <ODEPLOYNAME>
-openmcpctl get odeploy <ODEPLOYNAME> -o yaml
+omcpctl get odeploy <ODEPLOYNAME>
+omcpctl get odeploy <ODEPLOYNAME> -o yaml
 
-openmcpctl get ohas <OHASNAME>
-openmcpctl get ohas <OHASNAME> -o yaml`,
+omcpctl get ohas <OHASNAME>
+omcpctl get ohas <OHASNAME> -o yaml`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		getResource(args)
+		if len(args) == 0 {
+			fmt.Println("Run 'omcpctl get --help' to view all commands")
+		}else {
+			getResource(args)
+		}
 	},
 }
 
@@ -82,6 +86,7 @@ func getResource(args []string) {
 
 	resourceKinds := ""
 	resourceName := ""
+	resourceNamespace := ""
 
 	if len(args) >= 1 {
 		resourceKinds = args[0]
@@ -121,8 +126,9 @@ func getResource(args []string) {
 
 				resourceKind := cobrautil.KindMap[metainfo.Kind]
 				resourceName = metainfo.Metadata.Name
+				resourceNamespace = metainfo.Metadata.Namespace
 
-				err = getCore(resourceKind, resourceName, clusterContext)
+				err = getCore(resourceKind, resourceName, resourceNamespace, clusterContext)
 				if err != nil {
 					continue
 				}
@@ -132,7 +138,8 @@ func getResource(args []string) {
 			resourceKindList := strings.Split(resourceKinds, ",")
 
 			for _, resourceKind := range resourceKindList {
-				err := getCore(resourceKind, resourceName, clusterContext)
+				resourceNamespace = cobrautil.Option_namespace
+				err := getCore(resourceKind, resourceName, resourceNamespace, clusterContext)
 				if err != nil {
 					continue
 				}
@@ -146,9 +153,11 @@ func getResource(args []string) {
 
 
 }
+
 func getCore(resourceKind, resourceName, clusterContext string) error{
 	LINK := cobrautil.GetLinkParser(resourceKind, resourceName, clusterContext)
-	fmt.Println(LINK)
+	//fmt.Println(LINK)
+	fmt.Println()
 
 	body, err := apiServerMethod.GetAPIServer(LINK)
 	if err != nil {
@@ -190,8 +199,8 @@ func getCore(resourceKind, resourceName, clusterContext string) error{
 		}
 
 
-		fmt.Println("metainfo.Kind : ",  metainfo.Kind)
-		fmt.Println("Cluster : ", clusterContext)
+		//fmt.Println("metainfo.Kind : ",  metainfo.Kind)
+		//fmt.Println("Cluster : ", clusterContext)
 
 		if  metainfo.Kind == "CronJob"{
 			resource.PrintCronJob(body)

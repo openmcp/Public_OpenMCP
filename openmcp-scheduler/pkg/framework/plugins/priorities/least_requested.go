@@ -1,7 +1,6 @@
 package priorities
 
 import (
-	"math"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
 )
 
@@ -30,21 +29,24 @@ func (pl *LeastRequested) PreScore(pod *ketiresource.Pod, clusterInfo *ketiresou
 		}
 		pl.prescoring[clusterInfo.ClusterName] = clusterScore
 	} else {
+		// omcplog.V(0).Infof("QOS전", pl.prescoring[clusterInfo.ClusterName], clusterInfo.ClusterName)
 		pl.betweenScore = pl.prescoring[clusterInfo.ClusterName] - int64(clusterScore)
-		pl.betweenScore = int64(math.Abs(float64(pl.betweenScore)))
+		if pl.betweenScore <= 0 {
+			pl.betweenScore = 5
+		}
+		pl.prescoring[clusterInfo.ClusterName] = clusterScore - pl.betweenScore
+
 	}
 	return clusterScore
 }
 func (pl *LeastRequested) Score(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, replicas int32, clustername string) int64 {
 	if clustername == clusterInfo.ClusterName {
-		score := pl.prescoring[clusterInfo.ClusterName] - pl.betweenScore
-		return score
+		pl.prescoring[clusterInfo.ClusterName] = pl.prescoring[clusterInfo.ClusterName] - pl.betweenScore
+		return pl.prescoring[clusterInfo.ClusterName]
 	}
 	score := pl.prescoring[clusterInfo.ClusterName]
 	return score
-
 }
-
 func leastRequestedScore(requested, allocable int64) int64 {
 	if allocable == 0 {
 		return 0

@@ -38,4 +38,4 @@ spec:
           tolerationSeconds: 0
         - key: node.kubernetes.io/unreachable
           effect: NoExecute
-          tolerationSeconds: 0 
+          tolerationSeconds: 0

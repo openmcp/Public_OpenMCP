@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmcp-namespace-controller
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openmcp-namespace-controller
+  template:
+    metadata:
+      labels:
+        name: openmcp-namespace-controller
+    spec:
+      serviceAccountName: openmcp-namespace-controller
+      containers:
+        - name: openmcp-namespace-controller
+          # Replace this with the built image name
+          image: openmcp/openmcp-namespace-controller:v0.0.1
+          command:
+          - openmcp-namespace-controller
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              #value: ""
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "openmcp-namespace-controller"

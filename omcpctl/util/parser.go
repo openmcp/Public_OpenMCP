@@ -334,7 +334,7 @@ func ApplyLinkParser(metainfo *MetaInfo) string {
 
 	return LINK
 }
-func GetLinkParser(resourceKind, resourceName, clusterContext string) string {
+func GetLinkParser(resourceKind, resourceName, resourceNamespace, clusterContext string) string {
 	LINK := "http://" + OpenMCPAPIServer
 	LINK += apiGroup[ResourceMap[resourceKind]]
 
@@ -349,8 +349,8 @@ func GetLinkParser(resourceKind, resourceName, clusterContext string) string {
 		} else {
 			LINK += "/namespaces"
 
-			if Option_namespace != "" {
-				LINK += "/" + Option_namespace
+			if resourceNamespace != "" {
+				LINK += "/" + resourceNamespace
 			} else {
 				LINK += "/default"
 			}

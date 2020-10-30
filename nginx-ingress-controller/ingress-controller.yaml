@@ -271,6 +271,13 @@ spec:
               exec:
                 command:
                   - /wait-shutdown
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0
 
 ---
 kind: Service

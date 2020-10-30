@@ -44,6 +44,10 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&OpenMCPConfigMapList{},
 		&OpenMCPSecret{},
 		&OpenMCPSecretList{},
+		&OpenMCPJob{},
+		&OpenMCPJobList{},
+		&OpenMCPNamespace{},
+		&OpenMCPNamespaceList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

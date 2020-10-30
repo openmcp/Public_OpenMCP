@@ -7,6 +7,7 @@ import (
 	extv1b1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	policyv1alpha1 "openmcp/openmcp/apis/policy/v1alpha1"
+	batchv1 "k8s.io/api/batch/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -217,7 +218,7 @@ type OpenMCPServiceSpec struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	Template      corev1.Service    `json:"template" protobuf:"bytes,3,opt,name=template"`
-	LabelSelector map[string]string `json:"labelselector" protobuf: "bytes,3,opt,name=labelselector"`
+	LabelSelector map[string]string `json:"labelselector" protobuf:"bytes,3,opt,name=labelselector"`
 	//Replicas int32 `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
 
 	//Placement
@@ -377,6 +378,85 @@ type OpenMCPSecretList struct {
 	Items           []OpenMCPSecret `json:"items"`
 }
 
+
+type OpenMCPJobSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	Template batchv1.Job `json:"template" protobuf:"bytes,3,opt,name=template"`
+}
+
+// OpenMCPJobStatus defines the observed state of OpenMCPJob
+// +k8s:openapi-gen=true
+type OpenMCPJobStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	ClusterMaps map[string]int32 `json:"clusters"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// OpenMCPJob is the Schema for the openmcpjobs API
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+type OpenMCPJob struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   OpenMCPJobSpec   `json:"spec,omitempty"`
+	Status OpenMCPJobStatus `json:"status,omitempty"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// OpenMCPJobList contains a list of OpenMCPJob
+type OpenMCPJobList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []OpenMCPJob `json:"items"`
+}
+
+
+type OpenMCPNamespaceSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	Template appsv1.Deployment `json:"template" protobuf:"bytes,3,opt,name=template"`
+	//Placement
+}
+
+// OpenMCPNamespaceStatus defines the observed state of OpenMCPNamespace
+// +k8s:openapi-gen=true
+type OpenMCPNamespaceStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	ClusterMaps map[string]int32 `json:"clusters"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// OpenMCPNamespace is the Schema for the openmcpnamespaces API
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+type OpenMCPNamespace struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   OpenMCPNamespaceSpec   `json:"spec,omitempty"`
+	Status OpenMCPNamespaceStatus `json:"status,omitempty"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// OpenMCPNamespaceList contains a list of OpenMCPNamespace
+type OpenMCPNamespaceList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []OpenMCPNamespace `json:"items"`
+}
+
 //func init() {
 //	SchemeBuilder.Register(&OpenMCPDeployment{}, &OpenMCPDeploymentList{})
 //	SchemeBuilder.Register(&OpenMCPIngress{}, &OpenMCPIngressList{})
@@ -385,3 +465,4 @@ type OpenMCPSecretList struct {
 //	SchemeBuilder.Register(&OpenMCPPolicyEngine{}, &OpenMCPPolicyEngineList{})
 //
 //}
+

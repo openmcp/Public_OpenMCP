@@ -25,6 +25,7 @@ import (
 	hpav2beta2 "k8s.io/api/autoscaling/v2beta2"
 	corev1 "k8s.io/api/core/v1"
 	extv1b1 "k8s.io/api/extensions/v1beta1"
+	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"openmcp/openmcp/apis"
@@ -108,7 +109,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		// do error check
 		return reconcile.Result{}, err
 	}
-	clusterClient := r.ghosts[clusterName]
+	//clusterClient := r.ghosts[clusterName]
+	clusterClient := cm.Cluster_genClients[clusterName]
+
 
 
 
@@ -127,7 +130,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.V(0).Info("[Error] Cannot Create Deployment : ", err)
 			}
 		} else if command == "delete"{
-			err = clusterClient.Delete(context.TODO(), subInstance)
+			err = clusterClient.Delete(context.TODO(), subInstance, subInstance.Namespace, subInstance.Name)
 			if err == nil {
 				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
 			}else {
@@ -158,7 +161,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.V(0).Info("[Error] Cannot Create Service : ", err)
 			}
 		} else if command == "delete"{
-			err = clusterClient.Delete(context.TODO(), subInstance)
+			err = clusterClient.Delete(context.TODO(), subInstance, subInstance.Namespace, subInstance.Name)
 			if err == nil {
 				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
 			}else {
@@ -188,7 +191,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.V(0).Info("[Error] Cannot Create Ingress : ", err)
 			}
 		} else if command == "delete"{
-			err = clusterClient.Delete(context.TODO(), subInstance)
+			err = clusterClient.Delete(context.TODO(), subInstance, subInstance.Namespace, subInstance.Name)
 			if err == nil {
 				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
 			}else {
@@ -218,7 +221,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.V(0).Info("[Error] Cannot Create HorizontalPodAutoscaler : ", err)
 			}
 		} else if command == "delete"{
-			err = clusterClient.Delete(context.TODO(), subInstance)
+			err = clusterClient.Delete(context.TODO(), subInstance, subInstance.Namespace, subInstance.Name)
 			if err == nil {
 				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
 			}else {
@@ -249,7 +252,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.V(0).Info("[Error] Cannot Create VerticalPodAutoscaler : ", err)
 			}
 		} else if command == "delete"{
-			err = clusterClient.Delete(context.TODO(), subInstance)
+			err = clusterClient.Delete(context.TODO(), subInstance, subInstance.Namespace, subInstance.Name)
 			if err == nil {
 				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
 			}else {
@@ -279,7 +282,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.V(0).Info("[Error] Cannot Create ConfigMap : ", err)
 			}
 		} else if command == "delete"{
-			err = clusterClient.Delete(context.TODO(), subInstance)
+			err = clusterClient.Delete(context.TODO(), subInstance, subInstance.Namespace, subInstance.Name)
 			if err == nil {
 				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
 			}else {
@@ -309,7 +312,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.V(0).Info("[Error] Cannot Create Secret : ", err)
 			}
 		} else if command == "delete"{
-			err = clusterClient.Delete(context.TODO(), subInstance)
+			err = clusterClient.Delete(context.TODO(), subInstance, subInstance.Namespace, subInstance.Name)
 			if err == nil {
 				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
 			}else {
@@ -339,7 +342,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.V(0).Info("[Error] Cannot Create PersistentVolume : ", err)
 			}
 		} else if command == "delete"{
-			err = clusterClient.Delete(context.TODO(), subInstance)
+			err = clusterClient.Delete(context.TODO(), subInstance, subInstance.Namespace, subInstance.Name)
 			if err == nil {
 				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
 			}else {
@@ -369,7 +372,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.V(0).Info("[Error] Cannot Create PersistentVolumeClaim : ", err)
 			}
 		} else if command == "delete"{
-			err = clusterClient.Delete(context.TODO(), subInstance)
+			err = clusterClient.Delete(context.TODO(), subInstance, subInstance.Namespace, subInstance.Name)
 			if err == nil {
 				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
 			}else {
@@ -384,8 +387,65 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			}
 		}
 
+	} else if obj.GetKind() == "Job"{
+		subInstance := &batchv1.Job{}
+		if err := json.Unmarshal(jsonbody, &subInstance); err != nil {
+			// do error check
+			fmt.Println(err)
+			return reconcile.Result{}, err
+		}
+		if command == "create"{
+			err = clusterClient.Create(context.TODO(), subInstance)
+			if err == nil {
+				omcplog.V(2).Info("Created Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
+			}else {
+				omcplog.V(0).Info("[Error] Cannot Create Job : ", err)
+			}
+		} else if command == "delete"{
+			err = clusterClient.Delete(context.TODO(), subInstance)
+			if err == nil {
+				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
+			}else {
+				omcplog.V(0).Info("[Error] Cannot Delete Job : ", err)
+			}
+		} else if command == "update" {
+			err = clusterClient.Update(context.TODO(), subInstance)
+			if err == nil {
+				omcplog.V(2).Info("Updated Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
+			}else {
+				omcplog.V(0).Info("[Error] Cannot Update Job : ", err)
+			}
+		}
+	}else if obj.GetKind() == "Namespace"{
+		subInstance := &corev1.Namespace{}
+		if err := json.Unmarshal(jsonbody, &subInstance); err != nil {
+			// do error check
+			fmt.Println(err)
+			return reconcile.Result{}, err
+		}
+		if command == "create"{
+			err = clusterClient.Create(context.TODO(), subInstance)
+			if err == nil {
+				omcplog.V(2).Info("Created Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
+			}else {
+				omcplog.V(0).Info("[Error] Cannot Create Namespace : ", err)
+			}
+		} else if command == "delete"{
+			err = clusterClient.Delete(context.TODO(), subInstance)
+			if err == nil {
+				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
+			}else {
+				omcplog.V(0).Info("[Error] Cannot Delete Namespace : ", err)
+			}
+		} else if command == "update" {
+			err = clusterClient.Update(context.TODO(), subInstance)
+			if err == nil {
+				omcplog.V(2).Info("Updated Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
+			}else {
+				omcplog.V(0).Info("[Error] Cannot Update Namespace : ", err)
+			}
+		}
 	}
-
 
 	return reconcile.Result{}, nil // err
 }
