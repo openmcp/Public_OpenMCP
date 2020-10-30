@@ -17,7 +17,7 @@ spec:
       containers:
         - name: openmcp-migration
           # Replace this with the built image name
-          image: openmcp/openmcp-migration:v0.0.5
+          image: openmcp/openmcp-migration:v0.0.6
           command:
           - openmcp-migration
           imagePullPolicy: Always

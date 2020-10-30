@@ -384,7 +384,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				// time.Sleep(time.Second * 3)
 				podName := GetCopyPodName(client, sourceResource.Name, nameSpace)
 				mkCommand, copyCommand := CopyToNfsCMD(volumePath, serviceName)
-				omcplog.V(0).Info("podName111111 : ", podName)
+
 				err := LinkShareVolume(client, restconfig, podName, mkCommand, nameSpace)
 				if err != nil {
 					omcplog.V(0).Info("volume make dir error")
