@@ -22,7 +22,7 @@ func AddNode(nodenm string) AddNodeResult {
 	secretkey := "secretkey"
 
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String("ap-northeast-2"),
+		Region:      aws.String(""),
 		Credentials: credentials.NewStaticCredentials(akid, secretkey, ""),
 	})
 
@@ -72,11 +72,11 @@ func AddNode(nodenm string) AddNodeResult {
 
 func GetNodeState(instanceId *string, nodenm string, cluster string) {
 
-	akid := "AKIAIELVTPYOW23AO3KA"
-	secretkey := "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"
+	akid := "accesskey"
+	secretkey := "secretkey"
 
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String("ap-northeast-2"),
+		Region:      aws.String(""),
 		Credentials: credentials.NewStaticCredentials(akid, secretkey, ""),
 	})
 
