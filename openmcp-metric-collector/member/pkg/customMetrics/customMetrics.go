@@ -16,8 +16,8 @@ import (
 func AddToDeployCustomMetricServer(data *storage.Collection, token string, host string, cluster_client *kubernetes.Clientset) {
 	fmt.Println("AddToDeployCustomMetricServer Called")
 	podList := make([]storage.PodMetricsPoint, 0)
-	for i := 0; i < len(data.Matricsbatchs); i++ {
-		podList = append(podList, data.Matricsbatchs[i].Pods...)
+	for i := 0; i < len(data.Metricsbatchs); i++ {
+		podList = append(podList, data.Metricsbatchs[i].Pods...)
 	}
 
 	rs, err := cluster_client.AppsV1().ReplicaSets(metav1.NamespaceAll).List(metav1.ListOptions{})
@@ -100,8 +100,8 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 
 func AddToPodCustomMetricServer(data *storage.Collection, token string, host string) {
 	fmt.Println("AddToPodCustomMetricServer Called")
-	for i := 0; i < len(data.Matricsbatchs); i++ {
-		podList := data.Matricsbatchs[i].Pods
+	for i := 0; i < len(data.Metricsbatchs); i++ {
+		podList := data.Metricsbatchs[i].Pods
 		if podList != nil {
 			tr := &http.Transport{
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},

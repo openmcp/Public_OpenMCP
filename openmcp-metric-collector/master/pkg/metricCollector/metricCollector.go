@@ -11,6 +11,7 @@ import (
 	"openmcp/openmcp/openmcp-metric-collector/master/pkg/protobuf"
 	"openmcp/openmcp/util/clusterManager"
 	"strconv"
+	"time"
 )
 
 type MetricCollector struct {
@@ -29,7 +30,7 @@ func NewMetricCollector(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD
 func (mc *MetricCollector) FindClusterName(data *protobuf.Collection) string {
 	omcplog.V(4).Info("FindClusterName Called")
 	IpList := []string{}
-	for _, Matricsbatch := range data.Matricsbatchs {
+	for _, Matricsbatch := range data.Metricsbatchs {
 		omcplog.V(2).Info("[Recieved Data] NodeName: ", Matricsbatch.Node.Name, ", IP: "+ Matricsbatch.IP)
 		IpList = append(IpList, Matricsbatch.IP)
 	}
@@ -40,6 +41,8 @@ func (mc *MetricCollector) FindClusterName(data *protobuf.Collection) string {
 
 func (mc *MetricCollector) SendMetrics(ctx context.Context, data *protobuf.Collection) (*protobuf.ReturnValue, error) {
 	omcplog.V(4).Info("SendMetrics Called")
+	pTime_start := time.Now()
+
 	clusterName := mc.FindClusterName(data)
 	mc.Influx.SaveMetrics(clusterName, data)
 	var period_int64 int64
@@ -59,9 +62,15 @@ func (mc *MetricCollector) SendMetrics(ctx context.Context, data *protobuf.Colle
 	clustername := "c1"
 
 	klog.V(2).Info("gRPC Return Period")
+
+	pTime_end := time.Since(pTime_start)
+
+	pTime := pTime_end.Seconds()
+
 	return &protobuf.ReturnValue{
 		Tick:        period_int64,
 		ClusterName: clustername,
+		ProcessingTime: pTime,
 	}, nil
 }
 

@@ -53,6 +53,7 @@ func (in *Influx) CreateMeasurements() {
 func (in *Influx) SaveMetrics(clusterName string, data *protobuf.Collection) {
 	omcplog.V(4).Info("SaveMetrics Called")
 	omcplog.V(2).Info("[Save InfluxDB] ClusterName: '", clusterName,"'")
+
 	bp, _ := client.NewBatchPoints(client.BatchPointsConfig{
 		//Precision:        "rfc3339", // yyyy-MM-ddTHH:mm:ss
 		Database:         "Metrics",
@@ -61,7 +62,7 @@ func (in *Influx) SaveMetrics(clusterName string, data *protobuf.Collection) {
 	})
 
 	time_t := time.Now()
-	for _, batch := range data.Matricsbatchs {
+	for _, batch := range data.Metricsbatchs {
 
 		nodeName := batch.Node.Name
 
@@ -71,7 +72,7 @@ func (in *Influx) SaveMetrics(clusterName string, data *protobuf.Collection) {
 			//"region": regions[rand.Intn(len(regions))],
 		}
 
-
+		fmt.Println("Node Info")
 		fields := map[string]interface{}{
 			"CPUUsageNanoCores": batch.Node.MP.CPUUsageNanoCores,
 			"MemoryAvailableBytes": batch.Node.MP.MemoryAvailableBytes,
@@ -82,6 +83,7 @@ func (in *Influx) SaveMetrics(clusterName string, data *protobuf.Collection) {
 			"FsAvailableBytes": batch.Node.MP.FsAvailableBytes,
 			"FsCapacityBytes": batch.Node.MP.FsCapacityBytes,
 			"FsUsedBytes": batch.Node.MP.FsUsedBytes,
+			"NetworkLatency" : batch.Node.MP.NetworkLatency,
 		}
 		pt, err := client.NewPoint(
 			"Nodes",
@@ -95,7 +97,7 @@ func (in *Influx) SaveMetrics(clusterName string, data *protobuf.Collection) {
 		}
 
 		bp.AddPoint(pt)
-
+		fmt.Println("Pod Info")
 		for _, pod := range batch.Pods {
 			podName := pod.Name
 			podNamespace := pod.Namespace
@@ -117,7 +119,7 @@ func (in *Influx) SaveMetrics(clusterName string, data *protobuf.Collection) {
 				"FsAvailableBytes": pod.MP.FsAvailableBytes,
 				"FsCapacityBytes": pod.MP.FsCapacityBytes,
 				"FsUsedBytes": pod.MP.FsUsedBytes,
-
+				"NetworkLatency" : pod.MP.NetworkLatency,
 			}
 			pt2, err := client.NewPoint(
 				"Pods",

@@ -100,7 +100,7 @@ func (ae *AnalyticEngineStruct) CalcResourceScore(cm *clusterManager.ClusterMana
 				// Update Network Data from InfluxDB
 				ae.UpdateNetworkData(cluster.Name, nodes)
 			}
-			time.Sleep(5 * time.Second)
+			time.Sleep(7 * time.Second)
 		}
 
 	}
@@ -165,8 +165,8 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 	if len(result) == 0{
 		return 0
 	}
-	for _, ser := range result[0].Series {
 
+	for _, ser := range result[0].Series {
 		nodeCapacity := &corev1.Node{}
 		err := cm.Cluster_genClients[ser.Tags["cluster"]].Get(context.TODO(), nodeCapacity, "", ser.Tags["node"])
 		if err != nil {
@@ -176,6 +176,7 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 		}
 
 		totalCpuCore = totalCpuCore + nodeCapacity.Status.Capacity.Cpu().Value()
+
 		for c, colName := range ser.Columns {
 			for r, _ := range ser.Values {
 
@@ -183,11 +184,16 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 				QuanVal, _ := resource.ParseQuantity(Strval)
 
 				if r == 0 {
-					if _, ok := MetricsMap[colName]; ok {
-						MetricsMap[colName] = MetricsMap[colName] + float64(QuanVal.Value())
-					} else {
-						MetricsMap[colName] = float64(QuanVal.Value())
+					if colName == "NetworkLatency" {
+						MetricsMap[colName], _ = strconv.ParseFloat(Strval, 64)
+					}else {
+						if _, ok := MetricsMap[colName]; ok {
+							MetricsMap[colName] = MetricsMap[colName] + float64(QuanVal.Value())
+						} else {
+							MetricsMap[colName] = float64(QuanVal.Value())
+						}
 					}
+
 				} else if r == 1 {
 					if _, ok := prevMetricsMap[colName]; ok {
 						prevMetricsMap[colName] = prevMetricsMap[colName] + float64(QuanVal.Value())
@@ -195,21 +201,33 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 						prevMetricsMap[colName] = float64(QuanVal.Value())
 					}
 				}
-
 			}
 		}
+
 	}
 
-	cpuScore := (float64(totalCpuCore) - MetricsMap["CPUUsageNanoCores"]) / float64(totalCpuCore) * 100 // 확인필요
-	memScore := MetricsMap["MemoryAvailableBytes"] / (MetricsMap["MemoryUsageBytes"] + MetricsMap["MemoryAvailableBytes"]) * 100
-	//netScore := (MetricsMap["NetworkRxBytes"] - prevMetricsMap["NetworkRxBytes"]) + (MetricsMap["NetworkTxBytes"] - prevMetricsMap["NetworkTxBytes"]) / float64(totalNet) * 100
-	diskScore := MetricsMap["FsAvailableBytes"] / MetricsMap["FsCapacityBytes"] * 100
+	var netScore float64
 
-	score = cpuScore*ae.MetricsWeight["CPU"] + memScore*ae.MetricsWeight["Memory"] + diskScore*ae.MetricsWeight["FS"]
+	cpuScore :=  MetricsMap["CPUUsageNanoCores"] / float64(totalCpuCore) * 100
+	memScore := (MetricsMap["MemoryUsageBytes"] / (MetricsMap["MemoryUsageBytes"] + MetricsMap["MemoryAvailableBytes"])) * 100
+	netScore = ((MetricsMap["NetworkRxBytes"] - prevMetricsMap["NetworkRxBytes"]) + (MetricsMap["NetworkTxBytes"] - prevMetricsMap["NetworkTxBytes"])) / 1000000
+	diskScore := (MetricsMap["FsUsedBytes"] / MetricsMap["FsCapacityBytes"]) * 100
+	latencyScore := MetricsMap["NetworkLatency"] * 1000
 
-	omcplog.V(2).Info("--------------------------------------------------------------------------------------------")
-	omcplog.V(2).Info("totalScore : ", score)
-	omcplog.V(2).Info("--------------------------------------------------------------------------------------------")
+	score = cpuScore*ae.MetricsWeight["CPU"] + memScore*ae.MetricsWeight["Memory"] + diskScore*ae.MetricsWeight["FS"] + netScore*ae.MetricsWeight["NET"] + latencyScore*ae.MetricsWeight["LATENCY"]
+
+	if score > 0 && clusterName == "cluster1"{
+		omcplog.V(2).Info("--------------------------------------------------------")
+		omcplog.V(2).Info(" rx -> ",MetricsMap["NetworkRxBytes"] - prevMetricsMap["NetworkRxBytes"])
+		omcplog.V(2).Info(" tx -> ",MetricsMap["NetworkTxBytes"] - prevMetricsMap["NetworkTxBytes"])
+		omcplog.V(2).Info(" cpuscore : ",cpuScore)
+		omcplog.V(2).Info(" memScore : ",memScore)
+		omcplog.V(2).Info(" netScore : ",netScore)
+		omcplog.V(2).Info(" diskScore : ",diskScore)
+		omcplog.V(2).Info(" latencyScore : ",latencyScore)
+		omcplog.V(2).Info("\"",clusterName,"\" totalScore : ", score)
+		omcplog.V(2).Info("--------------------------------------------------------")
+	}
 
 	return score
 }
@@ -230,21 +248,25 @@ func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) []strin
 	omcplog.V(4).Info("Func SelectHPACluster Called")
 
 	scoreMap := map[float64]string{}
-	score := []float64{}
-	omcplog.V(5).Info(ae.ResourceScore)
+	scoreT := []float64{}
+
 	for key, value := range ae.ResourceScore {
 		if key != data.ClusterName && value > 0 {
 			scoreMap[value] = key
-			score = append(score, value)
+			scoreT = append(scoreT, value)
 		}
 	}
-	sort.Float64s(score)
+
+	sort.Float64s(scoreT)
 
 	filteringCluster := []string{}
 
-	for i := 0; i < len(score); i++ {
-		filteringCluster = append(filteringCluster, scoreMap[score[i]])
+	for i := 0; i < len(scoreT); i++ {
+		if i == 2 { break }
+		filteringCluster = append(filteringCluster, scoreMap[scoreT[i]])
 	}
+
+	omcplog.V(5).Info(filteringCluster)
 
 	return filteringCluster
 }
