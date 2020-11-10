@@ -305,25 +305,29 @@ func (r *reconciler) createService(req reconcile.Request, cm *clusterManager.Clu
 	svc := r.serviceForOpenMCPService(req, instance)
 
 	for _, cluster_name := range label_include_cluster_list {
+		omcplog.V(5).Info("cluster_name: ", cluster_name)
 		found := &corev1.Service{}
 		cluster_client := cm.Cluster_genClients[cluster_name]
 
 		err := cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 
 		if err != nil && errors.IsNotFound(err) {
+			omcplog.V(5).Info("sendSyc: ", cluster_name)
 			command := "create"
 			_,err = r.sendSync(svc, command, cluster_name)
 			cluster_map[cluster_name] = 1
 			if err != nil {
+				omcplog.V(0).Info("Send Sync err: ", err)
 				return err
 			}
 		}
 	}
-
+	omcplog.V(5).Info("Status Update")
 	instance.Status.LastSpec = instance.Spec
 	instance.Status.ClusterMaps = cluster_map
 
 	err := r.live.Status().Update(context.TODO(), instance)
+	omcplog.V(5).Info("Status Update Result :", err)
 	return err
 
 }
@@ -400,6 +404,7 @@ func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.Clu
 		}
 	}
 	instance.Status.LastSpec = instance.Spec
+	instance.Status.ClusterMaps = cluster_map
 	err := r.live.Status().Update(context.TODO(), instance)
 	return err
 
