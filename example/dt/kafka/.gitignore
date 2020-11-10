@@ -1,0 +1,14 @@
+.*
+!.gitignore
+!.circleci
+!.dockerignore
+
+minikube
+minishift
+kubectl
+oc
+
+*.gz
+*.zip
+*.tar
+*.tgz

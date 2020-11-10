@@ -1,0 +1,88 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: iot-data-collector
+#  namespace: dt
+spec:
+  replicas: 1
+  labels:
+    component: iot-gateway-svc
+  template:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: iot-gateway
+            #imagePullPolicy: IfNotPresent
+            imagePullPolicy: Always
+            image: openmcp/keti-iotgateway:v1.0
+            command: ["/app/start.sh"]
+            resources:
+              requests:
+                memory: 256M
+                cpu: 125m
+              limits:
+                memory: 256M
+                cpu: 125m
+            ports:
+            - containerPort: 8888
+              name: http
+            - containerPort: 5683
+              name: coap
+            - containerPort: 1883
+              name: mqtt
+            env:
+            - name: IOT_SERVICE_CONNECT
+              #value: "iot-gateway-svc.default.svc.cluster.local"
+              #value: "10.96.0.255"
+              value: "0.0.0.0"
+            - name: HTTP_PORT
+              value: "8888"
+            - name: MQTT_PORT
+              value: "1883"
+            - name: COAP_PORT
+              value: "5683"
+            - name: MQTT_TOPIC
+              value: "mqtt"
+            - name:  MQTT_TIMEOUT
+              value: "60"
+            - name:  KAFKA_CONNECT
+              value: "kafka-svc.default.svc.cluster.local"
+            securityContext:
+             capabilities:
+               add:
+               - NET_ADMIN
+          imagePullSecrets:
+          - name: regcred
+---
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPService
+metadata:
+  name: iot-gateway-svc
+#  namespace: dt
+spec:
+  labelselector:
+    component: iot-gateway-svc
+  template:
+    spec:
+      type: LoadBalancer
+      ports:
+      - port: 8888
+        name: http
+      - port: 5683
+        name: coap
+      - port: 1883
+        name: mqtt
+---
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPServiceDNSRecord
+metadata:
+  # The name of the sample service.
+  name: iot-gateway-svc
+  # The namespace of the sample deployment/service.
+spec:
+  # The name of the corresponding Domain.
+  domainRef: openmcp-dt-domain
+  recordTTL: 300
+---
+
