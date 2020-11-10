@@ -1,0 +1,40 @@
+package com.rules
+import com.sample.MyResource
+import java.util.ArrayList;  
+import java.util.HashMap;  
+import java.util.List;  
+import java.util.Map;  
+import java.util.Map.Entry;  
+
+declare MyResource
+@role(event)
+end
+
+declare window NodeRule_CPU_kube1node1
+   MyResource() over window:length(10)
+end
+
+rule "NodeRule_CPU_kube1node1"
+   no-loop true
+   lock-on-active true
+   dialect "mvel"
+   when
+      node_name : String() from "kube1-node1"
+      resource_name : String() from "node_cpu"
+      value_threshold : Double() from 8.5
+
+      m : MyResource($nodeDataMap : nodeDataMap)
+
+      map : HashMap() from $nodeDataMap.get(node_name)
+
+      value : String() from map.get(resource_name)
+
+      Boolean(booleanValue == true) from Double.valueOf(value) >= value_threshold
+   then
+      System.out.println("  [Rule Result] Over Threshold '"+ value_threshold +"'")
+      System.out.println("  ->  NodeName : "+ node_name)
+      System.out.println("  ->  Resource : "+ resource_name)
+      System.out.println("  ->  Value : "+ value)
+
+      m.setRuleErrorCode("1");
+end
