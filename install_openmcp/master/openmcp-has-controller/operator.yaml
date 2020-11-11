@@ -37,3 +37,10 @@ spec:
               value: OAE_GRPC_PORT
             - name: OPERATOR_NAME
               value: "openmcp-has-controller"
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0

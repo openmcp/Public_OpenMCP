@@ -33,7 +33,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: INFLUX_IP
-              value: "10.0.3.20"
+              value: "10.0.0.226"
             - name: INFLUX_PORT
               value: "31051"
             - name: INFLUX_USERNAME
@@ -42,5 +42,12 @@ spec:
               value: "root"
             - name: OPERATOR_NAME
               value: "openmcp-analytic-engine"
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0
 
 

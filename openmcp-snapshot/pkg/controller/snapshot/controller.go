@@ -2,6 +2,7 @@ package snapshot
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 	"time"
 
@@ -81,7 +82,6 @@ type reconciler struct {
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	omcplog.V(3).Info("Function Called Reconcile")
-	omcplog.V(3).Info(time.Now())
 
 	instance := &nanumv1alpha1.Snapshot{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
@@ -92,11 +92,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	//DATE 추출
 	startTime := string(time.Now().Unix())
 
+	omcplog.V(3).Info(time.Now())
+	omcplog.V(4).Info("[Reconcile] startTime : " + startTime)
 	for idx, snapshotSources := range instance.Spec.SnapshotSources {
-		omcplog.V(4).Info(snapshotSources)
+		omcplog.V(4).Info(json.Marshal(snapshotSources))
 
 		resourceType := snapshotSources.ResourceType
-		omcplog.V(4).Info("\n[" + strconv.Itoa(idx) + "] : Resource : " + resourceType)
+		omcplog.V(4).Info("[" + strconv.Itoa(idx) + "] : Resource : " + resourceType)
 		switch resourceType {
 		case config.PV:
 			volumeSnapshotRun(r, &snapshotSources, startTime)

@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   upstreamNameservers: |
-    ["119.65.195.180:5353"]
+    ["10.0.0.226:5353"]
     #["119.65.195.180:5353"]
 kind: ConfigMap
 metadata:

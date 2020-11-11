@@ -32,8 +32,15 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: GRPC_SERVER
-              value: "10.0.3.20"
+              value: "10.0.0.226"
             - name: GRPC_PORT
               value: "32050"
             - name: OPERATOR_NAME
               value: "openmcp-scheduler"
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0

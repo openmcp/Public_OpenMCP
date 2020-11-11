@@ -31,12 +31,19 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: GRPC_SERVER
-              value: "119.65.195.180"
+              value: "10.0.0.226"
             - name: GRPC_PORT
-              value: "32051"
+              value: REPLACE_GRPCPORT
             - name: CLUSTER_NAME
               value: REPLACE_CLUSTER_NAME
             - name: OPERATOR_NAME
               value: "openmcp-metric-collector"
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0
 
 

@@ -8,7 +8,7 @@ spec:
   - port: 8086
     protocol: TCP
     targetPort: 8086
-    nodePort: 31051
+    nodePort: "31051"
   selector:
     app: influxdb
   type: LoadBalancer

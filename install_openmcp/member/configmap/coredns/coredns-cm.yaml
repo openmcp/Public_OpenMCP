@@ -25,6 +25,6 @@ data:
     .:53 {
       errors
       cache 30
-      forward . 119.65.195.180:5353
+      forward . 10.0.0.226:5353
       #forward . 119.65.195.180:5353
     }

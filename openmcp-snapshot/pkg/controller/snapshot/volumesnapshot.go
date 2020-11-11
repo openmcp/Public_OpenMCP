@@ -2,6 +2,7 @@ package snapshot
 
 import (
 	"context"
+	"encoding/json"
 
 	// "openmcp/openmcp/migration/pkg/apis"
 
@@ -17,7 +18,7 @@ import (
 
 //volumeSnapshotRun 내에는 PV 만 들어온다고 가정한다.
 func volumeSnapshotRun(r *reconciler, snapshotSource *nanumv1alpha1.SnapshotSource, startTime string) error {
-	omcplog.V(4).Info(snapshotSource)
+	omcplog.V(4).Info(json.Marshal(snapshotSource))
 	client := cm.Cluster_genClients[snapshotSource.ResourceCluster]
 	omcplog.V(3).Info("volumeSnapshot Start")
 
@@ -40,6 +41,7 @@ func volumeSnapshotRun(r *reconciler, snapshotSource *nanumv1alpha1.SnapshotSour
 	*/
 	pvResourceOri := &corev1.PersistentVolume{}
 
+	omcplog.V(4).Info("get PV { Namespace : " + snapshotSource.ResourceNamespace + ", ResourceName : " + snapshotSource.ResourceName)
 	pvGetErr := client.Get(context.TODO(), pvResourceOri, snapshotSource.ResourceNamespace, snapshotSource.ResourceName)
 	if pvGetErr != nil {
 		omcplog.V(3).Info("get pv_info error")
@@ -50,7 +52,9 @@ func volumeSnapshotRun(r *reconciler, snapshotSource *nanumv1alpha1.SnapshotSour
 	//get PV yaml Info (mountPath) : pvResource
 
 	// Key 생성 후 snapshotSource.volumeDataSource.VolumeSnapshotID 에 넣기. - 로직 끝난 뒤 reconcile 에서 업데이트.
+	omcplog.V(4).Info("makeSnapshotKey { Cluster : " + snapshotSource.ResourceCluster + ", ResourceName : " + snapshotSource.ResourceName)
 	snapshotKey := util.MakeVolumeSnapshotKey(startTime, snapshotSource.ResourceCluster, snapshotSource.ResourceName)
+	omcplog.V(4).Info("snapshotKey : " + snapshotKey)
 	snapshotSource.VolumeDataSource.VolumeSnapshotKey = snapshotKey
 
 	/*
@@ -70,15 +74,15 @@ func volumeSnapshotRun(r *reconciler, snapshotSource *nanumv1alpha1.SnapshotSour
 
 	targetErr := client.Create(context.TODO(), expvResource)
 	if targetErr != nil {
-		omcplog.V(3).Info("expvResource create : " + expvResource.Name)
+		omcplog.V(3).Info("expvResource create error : " + expvResource.Name)
 	}
 	targetErr = client.Create(context.TODO(), expvcResource)
 	if targetErr != nil {
-		omcplog.V(3).Info("expvcResource create : " + expvcResource.Name)
+		omcplog.V(3).Info("expvcResource create error : " + expvcResource.Name)
 	}
 	targetErr = client.Create(context.TODO(), pvcResource)
 	if targetErr != nil {
-		omcplog.V(3).Info("pvcResource create : " + pvcResource.Name)
+		omcplog.V(3).Info("pvcResource create error : " + pvcResource.Name)
 	}
 
 	/*
