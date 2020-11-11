@@ -4,6 +4,9 @@ package main
 import (
 	"context"
 	"github.com/golang/protobuf/ptypes/timestamp"
+
+	//"github.com/golang/protobuf/ptypes/timestamp"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	"github.com/jinzhu/copier"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -28,81 +31,80 @@ import (
 	"time"
 )
 
-func convert(data *storage.Collection) *protobuf.Collection{
+func convert(data *storage.Collection, latencyTime string) *protobuf.Collection{
 	//klog.V(0).Info("Convert GRPC Data Structure")
-
 	grpc_data := &protobuf.Collection{}
 
 	copier.Copy(grpc_data, data)
+	for i, _ := range grpc_data.Metricsbatchs {
 
-	for i, _ := range grpc_data.Matricsbatchs {
-
-		s := int64(data.Matricsbatchs[i].Node.Timestamp.Second()) // from 'int'
-		n := int32(data.Matricsbatchs[i].Node.Timestamp.Nanosecond()) // from 'int'
+		s := int64(data.Metricsbatchs[i].Node.Timestamp.Second()) // from 'int'
+		n := int32(data.Metricsbatchs[i].Node.Timestamp.Nanosecond()) // from 'int'
 
 		ts := &timestamp.Timestamp{Seconds:s, Nanos:n}
 
 		mp := &protobuf.MetricsPoint{
 			Timestamp: ts,
-			CPUUsageNanoCores: data.Matricsbatchs[i].Node.CPUUsageNanoCores.String(),
-			MemoryUsageBytes: data.Matricsbatchs[i].Node.MemoryUsageBytes.String(),
-			MemoryAvailableBytes: data.Matricsbatchs[i].Node.MemoryAvailableBytes.String(),
-			MemoryWorkingSetBytes: data.Matricsbatchs[i].Node.MemoryWorkingSetBytes.String(),
-			NetworkRxBytes: data.Matricsbatchs[i].Node.NetworkRxBytes.String(),
-			NetworkTxBytes: data.Matricsbatchs[i].Node.NetworkTxBytes.String(),
-			FsAvailableBytes: data.Matricsbatchs[i].Node.FsAvailableBytes.String(),
-			FsCapacityBytes: data.Matricsbatchs[i].Node.FsCapacityBytes.String(),
-			FsUsedBytes: data.Matricsbatchs[i].Node.FsUsedBytes.String(),
+			CPUUsageNanoCores: data.Metricsbatchs[i].Node.CPUUsageNanoCores.String(),
+			MemoryUsageBytes: data.Metricsbatchs[i].Node.MemoryUsageBytes.String(),
+			MemoryAvailableBytes: data.Metricsbatchs[i].Node.MemoryAvailableBytes.String(),
+			MemoryWorkingSetBytes: data.Metricsbatchs[i].Node.MemoryWorkingSetBytes.String(),
+			NetworkRxBytes: data.Metricsbatchs[i].Node.NetworkRxBytes.String(),
+			NetworkTxBytes: data.Metricsbatchs[i].Node.NetworkTxBytes.String(),
+			FsAvailableBytes: data.Metricsbatchs[i].Node.FsAvailableBytes.String(),
+			FsCapacityBytes: data.Metricsbatchs[i].Node.FsCapacityBytes.String(),
+			FsUsedBytes: data.Metricsbatchs[i].Node.FsUsedBytes.String(),
+			NetworkLatency: latencyTime,
 		}
-		grpc_data.Matricsbatchs[i].Node.MP = mp
+		grpc_data.Metricsbatchs[i].Node.MP = mp
 
-		//fmt.Println(grpc_data.Matricsbatchs[0].IP)
-		//fmt.Println(grpc_data.Matricsbatchs[0].Node.Name)
-		//fmt.Println(grpc_data.Matricsbatchs[0].Node.MP.Timestamp.String())
-		//fmt.Println(grpc_data.Matricsbatchs[0].Node.MP.Timestamp.Seconds)
-		//fmt.Println(grpc_data.Matricsbatchs[0].Node.MP.CpuUsage)
-		//fmt.Println(grpc_data.Matricsbatchs[0].Node.MP.MemoryUsage)
+		//fmt.Println(grpc_data.Metricsbatchs[0].IP)
+		//fmt.Println(grpc_data.Metricsbatchs[0].Node.Name)
+		//fmt.Println(grpc_data.Metricsbatchs[0].Node.MP.Timestamp.String())
+		//fmt.Println(grpc_data.Metricsbatchs[0].Node.MP.Timestamp.Seconds)
+		//fmt.Println(grpc_data.Metricsbatchs[0].Node.MP.CpuUsage)
+		//fmt.Println(grpc_data.Metricsbatchs[0].Node.MP.MemoryUsage)
 
 		podMetricsPoints := []*protobuf.PodMetricsPoint{}
 
-		for j, _ := range data.Matricsbatchs[i].Pods {
-			s := int64(data.Matricsbatchs[i].Pods[j].Timestamp.Second()) // from 'int'
-			n := int32(data.Matricsbatchs[i].Pods[j].Timestamp.Nanosecond()) // from 'int'
+		for j, _ := range data.Metricsbatchs[i].Pods {
+			s := int64(data.Metricsbatchs[i].Pods[j].Timestamp.Second()) // from 'int'
+			n := int32(data.Metricsbatchs[i].Pods[j].Timestamp.Nanosecond()) // from 'int'
 
-			ts := &timestamp.Timestamp{Seconds:s, Nanos:n}
+			ts := &timestamppb.Timestamp{Seconds:s, Nanos:n}
 		
 			mp2 := &protobuf.MetricsPoint{
 				Timestamp: ts,
-				CPUUsageNanoCores: data.Matricsbatchs[i].Pods[j].CPUUsageNanoCores.String(),
-				MemoryUsageBytes: data.Matricsbatchs[i].Pods[j].MemoryUsageBytes.String(),
-				MemoryAvailableBytes: data.Matricsbatchs[i].Pods[j].MemoryAvailableBytes.String(),
-				MemoryWorkingSetBytes: data.Matricsbatchs[i].Pods[j].MemoryWorkingSetBytes.String(),
-				NetworkRxBytes: data.Matricsbatchs[i].Pods[j].NetworkRxBytes.String(),
-				NetworkTxBytes: data.Matricsbatchs[i].Pods[j].NetworkTxBytes.String(),
-				FsAvailableBytes: data.Matricsbatchs[i].Pods[j].FsAvailableBytes.String(),
-				FsCapacityBytes: data.Matricsbatchs[i].Pods[j].FsCapacityBytes.String(),
-				FsUsedBytes: data.Matricsbatchs[i].Pods[j].FsUsedBytes.String(),
+				CPUUsageNanoCores: data.Metricsbatchs[i].Pods[j].CPUUsageNanoCores.String(),
+				MemoryUsageBytes: data.Metricsbatchs[i].Pods[j].MemoryUsageBytes.String(),
+				MemoryAvailableBytes: data.Metricsbatchs[i].Pods[j].MemoryAvailableBytes.String(),
+				MemoryWorkingSetBytes: data.Metricsbatchs[i].Pods[j].MemoryWorkingSetBytes.String(),
+				NetworkRxBytes: data.Metricsbatchs[i].Pods[j].NetworkRxBytes.String(),
+				NetworkTxBytes: data.Metricsbatchs[i].Pods[j].NetworkTxBytes.String(),
+				FsAvailableBytes: data.Metricsbatchs[i].Pods[j].FsAvailableBytes.String(),
+				FsCapacityBytes: data.Metricsbatchs[i].Pods[j].FsCapacityBytes.String(),
+				FsUsedBytes: data.Metricsbatchs[i].Pods[j].FsUsedBytes.String(),
+				NetworkLatency: latencyTime,
 			}
 			pmp := &protobuf.PodMetricsPoint{
-				Name:       data.Matricsbatchs[i].Pods[j].Name,
-				Namespace:  data.Matricsbatchs[i].Pods[j].Namespace,
+				Name:       data.Metricsbatchs[i].Pods[j].Name,
+				Namespace:  data.Metricsbatchs[i].Pods[j].Namespace,
 				MP:         mp2,
 				Containers: nil,
 			}
 			podMetricsPoints = append(podMetricsPoints, pmp)
 
 		}
-		grpc_data.Matricsbatchs[i].Pods = podMetricsPoints
+		grpc_data.Metricsbatchs[i].Pods = podMetricsPoints
 
-		//fmt.Println(grpc_data.Matricsbatchs[0].IP)
-		//fmt.Println(grpc_data.Matricsbatchs[0].Pods[0].Name)
-		//fmt.Println(grpc_data.Matricsbatchs[0].Pods[0].MP.Timestamp.String())
-		//fmt.Println(grpc_data.Matricsbatchs[0].Pods[0].MP.Timestamp.Seconds)
-		//fmt.Println(grpc_data.Matricsbatchs[0].Pods[0].MP.CpuUsage)
-		//fmt.Println(grpc_data.Matricsbatchs[0].Pods[0].MP.MemoryUsage)
+		//fmt.Println(grpc_data.Metricsbatchs[0].IP)
+		//fmt.Println(grpc_data.Metricsbatchs[0].Pods[0].Name)
+		//fmt.Println(grpc_data.Metricsbatchs[0].Pods[0].MP.Timestamp.String())
+		//fmt.Println(grpc_data.Metricsbatchs[0].Pods[0].MP.Timestamp.Seconds)
+		//fmt.Println(grpc_data.Metricsbatchs[0].Pods[0].MP.CpuUsage)
+		//fmt.Println(grpc_data.Metricsbatchs[0].Pods[0].MP.MemoryUsage)
 
 	}
-
 
 	return grpc_data
 
@@ -118,6 +120,8 @@ func MemberMetricCollector(){
 	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
 	var period_int64 int64 = 5
+	var latencyTime float64 = 0
+
 	for {
 		host_config, _ := rest.InClusterConfig()
 		host_kubeClient := kubernetes.NewForConfigOrDie(host_config)
@@ -133,11 +137,19 @@ func MemberMetricCollector(){
 			continue
 		}
 		fmt.Println("Convert Metric Data For gRPC")
-		grpc_data := convert(data)
 
-		//fmt.Println("GRPC Data Send")
+		latencyTime_string := fmt.Sprintf("%f", latencyTime)
+
+		grpc_data := convert(data, latencyTime_string)
+
 		fmt.Println("[gRPC Start] Send Metric Data")
+
+		rTime_start := time.Now()
 		r, err := grpcClient.SendMetrics(context.TODO(), grpc_data)
+		rTime_end := time.Since(rTime_start)
+
+		latencyTime = rTime_end.Seconds() - r.ProcessingTime
+
 		if err != nil {
 			fmt.Println("check")
 			fmt.Println("could not connect : ", err)
@@ -146,6 +158,9 @@ func MemberMetricCollector(){
 			continue
 		}
 		fmt.Println("[gRPC End] Send Metric Data")
+
+
+
 		//period_int64 := r.Tick
 		// _ = data
 

@@ -15,14 +15,16 @@
 package storage
 
 import (
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 type Collection struct {
-	Matricsbatchs []MetricsBatch
+	Metricsbatchs []MetricsBatch
 	ClusterName string
+	LatencyTime   *timestamppb.Timestamp
 }
 
 // MetricsBatch is a single batch of pod, container, and node metrics from some source.

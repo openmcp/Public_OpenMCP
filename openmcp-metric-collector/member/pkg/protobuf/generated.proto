@@ -2,7 +2,7 @@ syntax = 'proto3';
 
 package protobuf;
 
-import "google/protobuf/Timestamp.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = ".;protobuf";
 
@@ -11,7 +11,7 @@ service SendMetrics {
 }
 
 message Collection {
-    repeated MetricsBatch Matricsbatchs = 1;
+    repeated MetricsBatch Metricsbatchs = 1;
     string ClusterName = 2;
 }
 
@@ -45,9 +45,10 @@ message MetricsPoint {
     string FsAvailableBytes = 8;
     string FsCapacityBytes = 9;
     string FsUsedBytes = 10;
-
+    string NetworkLatency = 11;
 }
 message ReturnValue {
 	int64 Tick = 1;
 	string ClusterName = 2;
+	double ProcessingTime = 3;
 }

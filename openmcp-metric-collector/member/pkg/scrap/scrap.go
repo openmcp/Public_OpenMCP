@@ -51,7 +51,7 @@ func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nod
 		if srcBatch == nil {
 			continue
 		}
-		res.Matricsbatchs = append(res.Matricsbatchs, *srcBatch)
+		res.Metricsbatchs = append(res.Metricsbatchs, *srcBatch)
 
 		nodeNum += 1
 		podNum += len(srcBatch.Pods)

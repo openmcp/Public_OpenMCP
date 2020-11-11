@@ -11,13 +11,19 @@ spec:
       policies:
         - type: CPU
           value:
-            - "0.5"
+            - "0.2"
         - type: Memory
           value:
-            - "2.0"
+            - "0.2"
         - type: FS
           value:
             - "0.2"
+        - type: NET
+          value:
+            - "0.8"
+        - type: LATENCY
+          value:
+            - "0.5"
         - type: GeoRate
           value:
             - "0.8"

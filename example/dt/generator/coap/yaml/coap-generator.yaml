@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coap-generator
+  namespace: dt
+  labels:
+    app: coap-generator
+    component: coap-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coap-generator
+      component: coap-generator
+  template:
+    metadata:
+      labels:
+        app: coap-generator
+        component: coap-generator
+    spec:
+      #securityContext:
+        #runAsUser: 1001
+        #fsGroup: 1001
+      containers:
+      - name: coap-generator
+        #imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
+        image: openmcp/keti-coap-generator:v1.1
+        command: ["/app/start_coap.sh"]
+        resources:
+          requests:
+            memory: 256M
+            cpu: 125m
+          limits:
+            memory: 256M
+            cpu: 125m
+        env:
+        - name: COMPANY_NAME
+          value: "SHINHAN"
+        - name: CRANE_NAME
+          value: "Crane_1"
+        - name: IOT_GATEWAY_IP
+          value: "iot-gateway-svc.dt.svc.cluster.local"
+        - name: COAP_PORT
+          value: "5683"
+        - name: GEN_PERIOD_SEC
+          value: "3"
+      imagePullSecrets:
+      - name: regcred
+

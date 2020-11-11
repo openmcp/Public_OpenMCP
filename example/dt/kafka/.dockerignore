@@ -1,0 +1,4 @@
+*.*
+!README.md
+!Dockerfile
+!kafka_*.sh
