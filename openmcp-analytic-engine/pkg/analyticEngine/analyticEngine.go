@@ -165,7 +165,7 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 	if len(result) == 0{
 		return 0
 	}
-
+	time_t := ""
 	for _, ser := range result[0].Series {
 		nodeCapacity := &corev1.Node{}
 		err := cm.Cluster_genClients[ser.Tags["cluster"]].Get(context.TODO(), nodeCapacity, "", ser.Tags["node"])
@@ -186,7 +186,9 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 				if r == 0 {
 					if colName == "NetworkLatency" {
 						MetricsMap[colName], _ = strconv.ParseFloat(Strval, 64)
-					}else {
+					} else if colName == "time"{
+						time_t = Strval
+					} else{
 						if _, ok := MetricsMap[colName]; ok {
 							MetricsMap[colName] = MetricsMap[colName] + float64(QuanVal.Value())
 						} else {
@@ -213,6 +215,11 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 	netScore = ((MetricsMap["NetworkRxBytes"] - prevMetricsMap["NetworkRxBytes"]) + (MetricsMap["NetworkTxBytes"] - prevMetricsMap["NetworkTxBytes"])) / 1000000
 	diskScore := (MetricsMap["FsUsedBytes"] / MetricsMap["FsCapacityBytes"]) * 100
 	latencyScore := MetricsMap["NetworkLatency"] * 1000
+
+
+	if len(result[0].Series) != 0{
+		ae.Influx.InsertClusterStatus(clusterName, time_t, cpuScore, memScore, netScore, diskScore, latencyScore)
+	}
 
 	score = cpuScore*ae.MetricsWeight["CPU"] + memScore*ae.MetricsWeight["Memory"] + diskScore*ae.MetricsWeight["FS"] + netScore*ae.MetricsWeight["NET"] + latencyScore*ae.MetricsWeight["LATENCY"]
 
