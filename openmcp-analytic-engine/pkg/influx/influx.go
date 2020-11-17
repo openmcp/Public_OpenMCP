@@ -1,8 +1,10 @@
 package influx
 
 import (
+	"fmt"
 	"github.com/influxdata/influxdb/client/v2"
 	"openmcp/openmcp/omcplog"
+	"time"
 )
 
 type Influx struct {
@@ -74,5 +76,77 @@ func (in *Influx) GetNetworkData(clusterName, nodeName string) []client.Result {
 		return nil
 	}
 
-	return nil
 }
+
+func (in * Influx) InsertClusterStatus(clusterName, time_t string, cpuScore, memScore, netScore, diskScore, latencyScore float64){
+	omcplog.V(4).Info("InsertClusterStatus Called")
+	omcplog.V(2).Info("[Save InfluxDB] ClusterName: '", clusterName,"'")
+
+	cpuWarning := false
+	memWarning := false
+	netWarning := false
+	diskWarning := false
+	latencyWarning := false
+
+	if cpuScore >= 30 {
+		cpuWarning = true
+	}
+	if memScore >= 30 {
+		memWarning = true
+	}
+	if netScore >= 10 {
+		netWarning = true
+	}
+	if diskScore >= 30 {
+		diskWarning = true
+	}
+	if latencyScore >= 5 {
+		latencyWarning = true
+	}
+
+	bp, _ := client.NewBatchPoints(client.BatchPointsConfig{
+		//Precision:        "rfc3339", // yyyy-MM-ddTHH:mm:ss
+		Database:         "Metrics",
+		RetentionPolicy:  "",
+		WriteConsistency: "",
+	})
+
+	tags := map[string]string{
+		"cluster": clusterName,
+	}
+
+
+	fields := map[string]interface{}{
+		"cpuScore": cpuScore,
+		"memScore": memScore,
+		"netScore": netScore,
+		"diskScore": diskScore,
+		"latencyScore": latencyScore,
+		"cpuWarning": cpuWarning,
+		"memWarning": memWarning,
+		"netWarning": netWarning,
+		"diskWarning": diskWarning,
+		"latencyWarning" : latencyWarning,
+	}
+	t, err:= time.Parse(time.RFC3339, time_t)
+	if err != nil {
+		fmt.Println("err!", err)
+	}
+	pt, err := client.NewPoint(
+		"ClusterStatus",
+		tags,
+		fields,
+		t,
+	)
+
+	if err != nil {
+		fmt.Println("err!", err)
+	}
+
+	bp.AddPoint(pt)
+
+
+	in.inClient.Write(bp)
+
+}
+
