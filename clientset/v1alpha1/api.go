@@ -15,6 +15,7 @@ type ExampleV1Alpha1Interface interface {
 	OpenMCPPolicy(namespace string) OpenMCPPolicyInterface
 	OpenMCPService(namespace string) OpenMCPServiceInterface
 	OpenMCPIngress(namespace string) OpenMCPIngressInterface
+	OpenMCPNamespace(namespace string) OpenMCPNamespaceInterface
 }
 
 type ExampleV1Alpha1Client struct {
@@ -65,6 +66,12 @@ func (c *ExampleV1Alpha1Client) OpenMCPService(namespace string) OpenMCPServiceI
 }
 func (c *ExampleV1Alpha1Client) OpenMCPIngress(namespace string) OpenMCPIngressInterface {
 	return &OpenMCPIngressClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPNamespace(namespace string) OpenMCPNamespaceInterface {
+	return &OpenMCPNamespaceClient{
 		restClient: c.restClient,
 		ns:         namespace,
 	}
