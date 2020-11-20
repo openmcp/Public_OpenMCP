@@ -13,6 +13,11 @@ import (
 	"strings"
 )
 
+var prev_networkrxusage = make(map[string]int)
+var prev_networktxusage = make(map[string]int)
+var diff_networkrxusage = make(map[string]int)
+var diff_networktxusage = make(map[string]int)
+
 func AddToDeployCustomMetricServer(data *storage.Collection, token string, host string, cluster_client *kubernetes.Clientset) {
 	fmt.Println("AddToDeployCustomMetricServer Called")
 	podList := make([]storage.PodMetricsPoint, 0)
@@ -47,11 +52,50 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 								sum_memoryusage += tmp_mem
 							}
 
+							_, rxexists := prev_networkrxusage[value.Name]
+							if !rxexists {
+								prev_networkrxusage[value.Name] = 0
+							}
+							_, txexists := prev_networktxusage[value.Name]
+							if !txexists {
+								prev_networkrxusage[value.Name] = 0
+							}
+							_, rxexists2 := diff_networkrxusage[value.Name]
+							if !rxexists2 {
+								prev_networkrxusage[value.Name] = 0
+							}
+							_, txexists2 := diff_networktxusage[value.Name]
+							if !txexists2 {
+								prev_networkrxusage[value.Name] = 0
+							}
+
 							tmp_rx, _ := strconv.Atoi(value.NetworkRxBytes.String())
-							sum_networkrxusage += tmp_rx
+							diff_networkrx := tmp_rx - prev_networkrxusage[value.Name]
+							//fmt.Println("[rx] ",value.Name, " - ", diff_networkrx)
+							if prev_networkrxusage[value.Name] == 0 {
+								//fmt.Println(".. 1 init")
+								diff_networkrx = 0
+							}else if tmp_rx == 0 || diff_networkrx == 0 {
+								//fmt.Println(".. 2 not change")
+								diff_networkrx = diff_networkrxusage[value.Name]
+							}
+							sum_networkrxusage += diff_networkrx
+							prev_networkrxusage[value.Name] = tmp_rx
+							diff_networkrxusage[value.Name] = diff_networkrx
 
 							tmp_tx, _ := strconv.Atoi(value.NetworkTxBytes.String())
-							sum_networktxusage += tmp_tx
+							diff_networktx := tmp_tx - prev_networktxusage[value.Name]
+							//fmt.Println("[tx] ",value.Name, " - ", diff_networktx)
+							if prev_networktxusage[value.Name] == 0 {
+								//fmt.Println(".. 1 init")
+								diff_networktx = 0
+							}else if tmp_tx == 0 || diff_networktx == 0 {
+								//fmt.Println(".. 2 not change")
+								diff_networktx = diff_networktxusage[value.Name]
+							}
+							sum_networktxusage += diff_networktx
+							prev_networktxusage[value.Name] = tmp_tx
+							diff_networktxusage[value.Name] = diff_networktx
 
 							if len(value.FsUsedBytes.String()) > 1 {
 								tmp_fs, _ := strconv.Atoi(value.FsUsedBytes.String()[:len(value.FsUsedBytes.String())-2])
@@ -75,21 +119,23 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 			if check_exist > 0 {
 				namespace := replicaset.Namespace
 				name := replicaset.Name[:strings.LastIndexAny(replicaset.Name, "-")]
-
+				fmt.Println("[",name,"/",namespace,"]")
+				fmt.Println("--------------------------")
 				fmt.Println("Post CpuUsage :", strconv.Itoa(sum_cpuusage/check_exist)+"n")
 				PostData(host, token, client, namespace, name, "CpuUsage", strconv.Itoa(sum_cpuusage/check_exist)+"n")
-
+				fmt.Println("--------------------------")
 				fmt.Println("Post MemoryUsage :", strconv.Itoa(sum_memoryusage/check_exist)+"Ki")
 				PostData(host, token, client, namespace, name, "MemoryUsage", strconv.Itoa(sum_memoryusage/check_exist)+"Ki")
-
+				fmt.Println("--------------------------")
 				fmt.Println("Post NetworkRxUsage :", strconv.Itoa(sum_networkrxusage/check_exist))
 				PostData(host, token, client, namespace, name, "NetworkRxUsage", strconv.Itoa(sum_networkrxusage/check_exist))
-
+				fmt.Println("--------------------------")
 				fmt.Println("Post NetworkTxUsage :", strconv.Itoa(sum_networktxusage/check_exist))
 				PostData(host, token, client, namespace, name, "NetworkTxUsage", strconv.Itoa(sum_networktxusage/check_exist))
-
+				fmt.Println("--------------------------")
 				fmt.Println("Post FsUsage :", strconv.Itoa(sum_fsusage/check_exist)+"Ki")
 				PostData(host, token, client, namespace, name, "FsUsage", strconv.Itoa(sum_fsusage/check_exist)+"Ki")
+				fmt.Println("--------------------------")
 			}
 
 		}

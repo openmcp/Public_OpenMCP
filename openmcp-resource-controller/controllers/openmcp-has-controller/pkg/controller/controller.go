@@ -224,10 +224,13 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 				cluster_client := cm.Cluster_genClients[cluster.Name]
 				dep_err := cluster_client.Get(context.TODO(), dep, hasInstance.Namespace, hasInstance.Spec.HpaTemplate.Spec.ScaleTargetRef.Name)
 				if dep_err == nil {
-					if dep.Spec.Template.Spec.Containers[0].Resources.Requests == nil {
-						cluster_dep_request[cluster.Name] = false
-					} else {
-						cluster_dep_request[cluster.Name] = true
+					for i, _ := range dep.Spec.Template.Spec.Containers {
+						if dep.Spec.Template.Spec.Containers[i].Resources.Requests == nil {
+							cluster_dep_request[cluster.Name] = false
+							break
+						} else {
+							cluster_dep_request[cluster.Name] = true
+						}
 					}
 					cluster_dep_replicas[cluster.Name] = *dep.Spec.Replicas
 					dep_list_for_hpa = append(dep_list_for_hpa, cluster.Name)
@@ -506,11 +509,16 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			cluster_client := cm.Cluster_genClients[cluster.Name]
 			dep_err := cluster_client.Get(context.TODO(), dep, hasInstance.Namespace, hasInstance.Spec.HpaTemplate.Spec.ScaleTargetRef.Name)
 			if dep_err == nil {
-				if dep.Spec.Template.Spec.Containers[0].Resources.Requests == nil {
-					cluster_dep_request[cluster.Name] = false
-				} else {
-					cluster_dep_request[cluster.Name] = true
+
+				for i, _ := range dep.Spec.Template.Spec.Containers {
+					if dep.Spec.Template.Spec.Containers[i].Resources.Requests == nil {
+						cluster_dep_request[cluster.Name] = false
+						break
+					} else {
+						cluster_dep_request[cluster.Name] = true
+					}
 				}
+
 				cluster_dep_replicas[cluster.Name] = *dep.Spec.Replicas
 				dep_list_for_hpa = append(dep_list_for_hpa, cluster.Name)
 			}

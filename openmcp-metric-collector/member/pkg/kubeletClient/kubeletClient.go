@@ -105,7 +105,8 @@ func (kc *KubeletClient) makeRequestAndGetValue(client *http.Client, req *http.R
 	if req.URL != nil {
 		kubeletAddr = req.URL.Host
 	}
-	fmt.Println("Raw response from Kubelet at %s: %s", kubeletAddr, string(body))
+	fmt.Println("Raw response from Kubelet at ", kubeletAddr)
+	//fmt.Println("Raw response from Kubelet at %s: %s", kubeletAddr, string(body))
 
 	//////////////////////////////////////////
 	var prettyJSON bytes.Buffer
@@ -114,8 +115,8 @@ func (kc *KubeletClient) makeRequestAndGetValue(client *http.Client, req *http.R
 		fmt.Println( err)
 		panic(err.Error())
 	}
-	fmt.Println("%s%s\n", prettyJSON.Bytes()[:400],"...................")
-	fmt.Println("%s\n", prettyJSON.Bytes())
+	//fmt.Println("%s%s\n", prettyJSON.Bytes()[:400],"...................")
+	//fmt.Println("%s\n", prettyJSON.Bytes())
 	//////////////////////////////////////////
 
 
