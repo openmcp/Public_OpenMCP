@@ -20,6 +20,7 @@ type Registry interface {
 	Failure(host, path, endpoint string, err error) // Mark an endpoint as failed.
 	Lookup(serviceName string) ([]string, error)
 	EndpointCheck(serviceName string, endpoint string) bool
+	Init()
 }
 
 // DefaultRegistry is a basic registry using the following format:
@@ -31,6 +32,15 @@ type Registry interface {
 // }
 
 type DefaultRegistry map[string][]string
+
+func (r DefaultRegistry) Init() {
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ServiceRegistry)] Function Cluster Init")
+	lock.RLock()
+	for k := range r {
+		delete(r, k)
+	}
+	lock.RUnlock()
+}
 
 
 func (r DefaultRegistry) EndpointCheck(serviceName string, endpoint string) bool {
