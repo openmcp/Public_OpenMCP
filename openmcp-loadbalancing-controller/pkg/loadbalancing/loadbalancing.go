@@ -71,8 +71,6 @@ var SERVER_IP = os.Getenv("GRPC_SERVER")
 var SERVER_PORT = os.Getenv("GRPC_PORT")
 var grpcClient = protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
-var TEST_IP = os.Getenv("TEST_IP")
-
 var ResourceScore = map[string]float64{}
 
 func RequestResourceScore(clusters []string, clientIP string) {
@@ -227,31 +225,13 @@ func getCountry(clientIP string) string {
 	if GeoErr != nil {
 		log.Fatal(GeoErr)
 	}
-	//clientIP = TEST_IP
-	//clientIP = "119.65.195.180"
+
 	ip := net.ParseIP(clientIP)
 	record, err := GeoDB.City(ip)
 	if err != nil {
 		log.Fatal(err)
 	}
 	omcplog.V(5).Info("ISO country code: %v\n", record.Country.IsoCode)
-	//fmt.Printf("Time zone: %v\n", record.Location.TimeZone)
-	//fmt.Printf("Time zone: %v\n", record.Location)
-	//fmt.Println("test")
-	//fmt.Println(record.City.Names)
-	//fmt.Println("test")
-	//fmt.Println(record.City)
-	//fmt.Println("test")
-	//fmt.Println(record.Continent)
-	//fmt.Println("test")
-	//fmt.Println(record.Country)
-	//fmt.Println("test")
-	//fmt.Println(record.RegisteredCountry)
-	//fmt.Println("test")
-	//fmt.Println(record.RepresentedCountry)
-	//fmt.Println("test")
-	//fmt.Println(record.Subdivisions)
-
 
 
 	return record.Country.IsoCode
@@ -358,8 +338,6 @@ func NewMultipleHostReverseProxy(reg loadbalancingregistry.Registry, creg cluste
 		host := req.Host
 		fmt.Println(req)
 		ip, _ := ExtractIP(req.RemoteAddr)
-		//test:= getCountry(ip)
-		//fmt.Println(test)
 		path, err := ExtractPath(req.URL)
 		omcplog.V(4).Info("Extract Host, IP, Path")
 
