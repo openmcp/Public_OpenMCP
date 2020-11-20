@@ -291,7 +291,7 @@ func (r *reconciler) ingressForOpenMCPIngress(req reconcile.Request, m *resource
 	}
 	deepcopy.Copy(&host_ing.Spec, &m.Spec.Template.Spec)
 
-	host_ing.Namespace = "openmcp"
+	host_ing.Namespace = m.Namespace
 
 	for i, _ := range host_ing.Spec.Rules {
 		for j, _ := range host_ing.Spec.Rules[i].HTTP.Paths {

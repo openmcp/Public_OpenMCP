@@ -37,9 +37,24 @@ type Registry interface {
 	Continent(ClusterName string) (string, error)
 	ResourceScore(ClusterName string) (float64, error)
 	HopScore(ClusterName string) (float64, error)
+	Init()
 }
 
 type DefaultClusterInfo map[string]map[string]string
+
+
+func (c DefaultClusterInfo) Init()  {
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster Init")
+	lock.RLock()
+	//c = make(map[string]map[string]string)
+
+	for k := range c {
+		delete(c, k)
+	}
+
+	lock.RUnlock()
+}
+
 
 func (c DefaultClusterInfo) Lookup(cluster string) (bool, error) {
 	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster Lookup")

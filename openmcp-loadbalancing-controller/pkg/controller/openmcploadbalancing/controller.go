@@ -40,6 +40,7 @@ import (
 	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 	"sigs.k8s.io/kubefed/pkg/controller/util"
 	"strings"
+	"sync"
 )
 
 var cm *clusterManager.ClusterManager
@@ -221,6 +222,15 @@ var OPENMCP_IP = ""
 func initRegistry() {
 	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Function Called initRegistry")
 
+	fmt.Println(loadbalancing.ClusterRegistry)
+
+	loadbalancing.ClusterRegistry.Init()
+	loadbalancing.IngressRegistry.Init()
+	loadbalancing.LoadbalancingRegistry.Init()
+	loadbalancing.ServiceRegistry.Init()
+
+	fmt.Println(loadbalancing.ClusterRegistry)
+
 	for _, cluster := range cm.Cluster_list.Items {
 		loadbalancing.ClusterRegistry[cluster.Name] = map[string]string{}
 
@@ -267,26 +277,29 @@ func initRegistry() {
 
 }
 
-func Loadbalancer(openmcpIP string) {
+func Loadbalancer(openmcpIP string, wg *sync.WaitGroup) *http.Server {
 	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Function Called Reconcile")
 
-	initRegistry()
 
+	initRegistry()
 	lb := os.Getenv("LB")
 
+	mux := http.NewServeMux()
+
+
 	if lb == "RR" {
-		http.HandleFunc("/", loadbalancing.NewMultipleHostReverseProxyRR(loadbalancing.LoadbalancingRegistry, loadbalancing.ClusterRegistry, loadbalancing.CountryRegistry, loadbalancing.ServiceRegistry, openmcpIP))
+		mux.HandleFunc("/", loadbalancing.NewMultipleHostReverseProxyRR(loadbalancing.LoadbalancingRegistry, loadbalancing.ClusterRegistry, loadbalancing.CountryRegistry, loadbalancing.ServiceRegistry, openmcpIP))
 
 	} else {
-		http.HandleFunc("/", loadbalancing.NewMultipleHostReverseProxy(loadbalancing.LoadbalancingRegistry, loadbalancing.ClusterRegistry, loadbalancing.CountryRegistry, loadbalancing.ServiceRegistry, openmcpIP))
+		mux.HandleFunc("/", loadbalancing.NewMultipleHostReverseProxy(loadbalancing.LoadbalancingRegistry, loadbalancing.ClusterRegistry, loadbalancing.CountryRegistry, loadbalancing.ServiceRegistry, openmcpIP))
 	}
-	http.HandleFunc("/add", func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/add", func(writer http.ResponseWriter, request *http.Request) {
 		fmt.Fprintf(writer, "add")
 	})
-	http.HandleFunc("/delete", func(writer http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc("/delete", func(writer http.ResponseWriter, request *http.Request) {
 		fmt.Fprintf(writer, "delete")
 	})
-	http.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "%v\n", loadbalancing.LoadbalancingRegistry)
 		fmt.Fprintf(w, "")
 		fmt.Fprintf(w, "%v\n", loadbalancing.IngressRegistry)
@@ -295,6 +308,51 @@ func Loadbalancer(openmcpIP string) {
 		fmt.Fprintf(w, "")
 		fmt.Fprintf(w, "%v\n", loadbalancing.ClusterRegistry)
 	})
+	srv := &http.Server{Addr: ":80", Handler: mux}
 	omcplog.V(3).Info("ready")
-	log.Fatal(http.ListenAndServe(":80", nil))
+	go func() {
+		defer wg.Done()
+
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatal("ListenAndServer(): %v",err)
+		}
+	}()
+
+	return srv
+	//log.Fatal(http.ListenAndServe(":80", nil))
 }
+
+//func Loadbalancer(openmcpIP string) {
+//	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Function Called Reconcile")
+//
+//	initRegistry()
+//
+//	lb := os.Getenv("LB")
+//
+//	mux := http.NewServeMux()
+//	if lb == "RR" {
+//		mux.HandleFunc("/", loadbalancing.NewMultipleHostReverseProxyRR(loadbalancing.LoadbalancingRegistry, loadbalancing.ClusterRegistry, loadbalancing.CountryRegistry, loadbalancing.ServiceRegistry, openmcpIP))
+//
+//	} else {
+//		mux.HandleFunc("/", loadbalancing.NewMultipleHostReverseProxy(loadbalancing.LoadbalancingRegistry, loadbalancing.ClusterRegistry, loadbalancing.CountryRegistry, loadbalancing.ServiceRegistry, openmcpIP))
+//	}
+//	mux.HandleFunc("/add", func(writer http.ResponseWriter, request *http.Request) {
+//		fmt.Fprintf(writer, "add")
+//	})
+//	mux.HandleFunc("/delete", func(writer http.ResponseWriter, request *http.Request) {
+//		fmt.Fprintf(writer, "delete")
+//	})
+//	mux.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
+//		fmt.Fprintf(w, "%v\n", loadbalancing.LoadbalancingRegistry)
+//		fmt.Fprintf(w, "")
+//		fmt.Fprintf(w, "%v\n", loadbalancing.IngressRegistry)
+//		fmt.Fprintf(w, "")
+//		fmt.Fprintf(w, "%v\n", loadbalancing.ServiceRegistry)
+//		fmt.Fprintf(w, "")
+//		fmt.Fprintf(w, "%v\n", loadbalancing.ClusterRegistry)
+//	})
+//	omcplog.V(3).Info("ready")
+//	log.Fatal(http.ListenAndServe(":80", mux))
+//
+//
+//}
