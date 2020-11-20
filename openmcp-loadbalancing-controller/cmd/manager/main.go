@@ -20,7 +20,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 
+	//"sync"
+	//"time"
+
+	"context"
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -44,7 +49,7 @@ func main() {
 		namespace := "openmcp"
 
 		host_cfg := cm.Host_config
-		live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+		live := cluster.New(host_ctx, host_cfg, cluster.Options{})
 
 		ghosts := []*cluster.Cluster{}
 
@@ -54,7 +59,7 @@ func main() {
 			ghost_ctx := ghost_cluster.Name
 			ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
-			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{Namespace: namespace}})
+			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
 
 			ghosts = append(ghosts, ghost)
 		}
@@ -71,7 +76,16 @@ func main() {
 		m.AddController(serviceWatch)
 		m.AddController(reshape_cont)
 		m.AddController(loglevel_cont)
-		go openmcploadbalancing.Loadbalancer(SERVER_IP)
+
+		go loadbalancing.GetPolicy()
+
+
+
+		//go openmcploadbalancing.Loadbalancer(SERVER_IP)
+		httpServerExitDone := &sync.WaitGroup{}
+		httpServerExitDone.Add(1)
+		srv := openmcploadbalancing.Loadbalancer(SERVER_IP, httpServerExitDone)
+
 		tempCluster := []string{}
 
 		isAnalytic := os.Getenv("isAnalytic")
@@ -80,12 +94,17 @@ func main() {
 			go loadbalancing.RequestResourceScore(tempCluster, SERVER_IP)
 		}
 
-		go loadbalancing.GetPolicy()
 
 		stop := reshape.SetupSignalHandler()
 
 		if err := m.Start(stop); err != nil {
 			log.Fatal(err)
 		}
+		fmt.Println("http server kill")
+		if err := srv.Shutdown(context.TODO()); err != nil {
+			panic(err)
+		}
+		//httpServerExitDone.Wait()
+		//time.Sleep(10 * time.Second)
 	}
 }

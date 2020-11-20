@@ -14,7 +14,6 @@ limitations under the License.
 package openmcpnamespace
 
 import (
-
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
@@ -52,8 +51,9 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		}
 		ghostclients = append(ghostclients, ghostclient)
 	}
+	r := &reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}
 
-	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{})
+	co := controller.New(r, controller.Options{})
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
@@ -69,9 +69,43 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 			return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
 		}
 	}
+
+	r.newClusterDeployNamespace()
 	return co, nil
 }
+func (r *reconciler)newClusterDeployNamespace() error {
+	omcplog.V(4).Info("Function Called newClusterDeployNamespace")
 
+	ns := &corev1.Namespace{}
+	onList, err := cm.Crd_client.OpenMCPNamespace("default").List(metav1.ListOptions{})
+
+	if err != nil && errors.IsNotFound(err){
+		omcplog.V(2).Info("Not Exist OpenMCPNamespaceList Resource")
+		return err
+	} else if err != nil {
+		return err
+	}
+	omcplog.V(2).Info("Exist OpenMCPNamespaceList Resource ",len(onList.Items))
+	for _, ons := range onList.Items {
+		for _, cl := range cm.Cluster_list.Items {
+
+			err = cm.Cluster_genClients[cl.Name].Get(context.TODO(), ns, metav1.NamespaceDefault, ons.Name)
+			if err != nil && errors.IsNotFound(err){
+				ons.Status.ChangeNeed = true
+				err = r.live.Status().Update(context.TODO(), &ons)
+				if err != nil {
+					omcplog.V(1).Info("Failed to update instance status", err)
+					return err
+				}
+				return nil
+
+			} else if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
 type reconciler struct {
 	live           client.Client
 	ghosts         []client.Client
@@ -104,7 +138,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		return reconcile.Result{}, err
 	}
 
-	if instance.Status.ClusterMaps == nil {
+	if  instance.Status.ClusterMaps == nil {
 		err := r.createNamespace(req, cm, instance)
 		if err != nil {
 			omcplog.V(1).Info(err)
@@ -120,13 +154,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		return reconcile.Result{}, nil
 	}
 
-	err = r.live.Status().Update(context.TODO(), instance)
-	if err != nil {
-		omcplog.V(1).Info("Failed to update instance status", err)
-		return reconcile.Result{}, err
-	}
-
-	return reconcile.Result{}, nil // err
+	//err = r.live.Status().Update(context.TODO(), instance)
+	//if err != nil {
+	//	omcplog.V(1).Info("Failed to update instance status", err)
+	//	return reconcile.Result{}, err
+	//}
+	//
+	//return reconcile.Result{}, nil // err
 }
 
 
@@ -152,6 +186,36 @@ func (r *reconciler) namespaceForOpenMCPNamespace(req reconcile.Request, m *reso
 }
 
 
+
+var syncIndex int = 0
+func (r *reconciler) sendSync(secret *corev1.Namespace, command string, clusterName string) (string, error) {
+	omcplog.V(4).Info("Function Called sendSync")
+
+	syncIndex += 1
+
+	s := &syncv1alpha1.Sync{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "openmcp-namespace-sync-" + strconv.Itoa(syncIndex),
+			Namespace: "openmcp",
+		},
+		Spec: syncv1alpha1.SyncSpec{
+			ClusterName: clusterName,
+			Command:     command,
+			Template:    *secret,
+		},
+	}
+	omcplog.V(5).Info("Delete Check ", s.Spec.Template.(corev1.Namespace).Name, s.Spec.Template.(corev1.Namespace).Namespace)
+
+	err := r.live.Create(context.TODO(), s)
+
+	if err != nil {
+		omcplog.V(0).Info(err)
+	}
+
+	omcplog.V(0).Info(s.Name)
+	return s.Name, err
+}
+
 func (r *reconciler) createNamespace(req reconcile.Request, cm *clusterManager.ClusterManager, instance *resourcev1alpha1.OpenMCPNamespace) error {
 	omcplog.V(4).Info("Function Called createNamespace")
 	cluster_map := make(map[string]int32)
@@ -167,6 +231,7 @@ func (r *reconciler) createNamespace(req reconcile.Request, cm *clusterManager.C
 		}
 	}
 	instance.Status.ClusterMaps = cluster_map
+	instance.Status.ChangeNeed = false
 	err := r.live.Status().Update(context.TODO(), instance)
 	return err
 }
@@ -200,50 +265,40 @@ func (r *reconciler) DeleteNamespace(cm *clusterManager.ClusterManager, name str
 	return nil
 }
 
-
-var syncIndex int = 0
-func (r *reconciler) sendSync(secret *corev1.Namespace, command string, clusterName string) (string, error) {
-	omcplog.V(4).Info("Function Called sendSync")
-
-	syncIndex += 1
-
-	s := &syncv1alpha1.Sync{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "openmcp-namespace-sync-" + strconv.Itoa(syncIndex),
-			Namespace: "openmcp",
-		},
-		Spec: syncv1alpha1.SyncSpec{
-			ClusterName: clusterName,
-			Command:     command,
-			Template:    *secret,
-		},
-	}
-	omcplog.V(5).Info("Delete Check ", s.Spec.Template.(corev1.Namespace).Name, s.Spec.Template.(corev1.Namespace).Namespace)
-
-	err := r.live.Create(context.TODO(), s)
-
-	if err != nil {
-		omcplog.V(0).Info(err)
-	}
-
-	omcplog.V(0).Info(s.Name)
-	return s.Name, err
-}
-
 func (r *reconciler) updateNamespace(req reconcile.Request, cm *clusterManager.ClusterManager, instance *resourcev1alpha1.OpenMCPNamespace) error {
 	omcplog.V(4).Info("Function Called updateNamespace")
-
+	cluster_map := make(map[string]int32)
+	obj := &corev1.Namespace{}
 	for _, cluster := range cm.Cluster_list.Items {
-
-		omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
-		dep := r.namespaceForOpenMCPNamespace(req, instance)
-		command := "update"
-		_, err := r.sendSync(dep, command, cluster.Name)
-		if err != nil {
-			return err
+		err := cm.Cluster_genClients[cluster.Name].Get(context.TODO(), obj, instance.Namespace, instance.Name)
+		if err != nil && errors.IsNotFound(err) {
+			omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
+			dep := r.namespaceForOpenMCPNamespace(req, instance)
+			command := "create"
+			_, err := r.sendSync(dep, command, cluster.Name)
+			cluster_map[cluster.Name] = 1
+			if err != nil {
+				return err
+			}
+		} else if err != nil {
+			omcplog.V(2).Info("Error :", err)
+		} else {
+			omcplog.V(3).Info("Cluster '" + cluster.Name + "' updated")
+			dep := r.namespaceForOpenMCPNamespace(req, instance)
+			command := "update"
+			_, err := r.sendSync(dep, command, cluster.Name)
+			cluster_map[cluster.Name] = 1
+			if err != nil {
+				return err
+			}
 		}
+
 	}
-	return nil
+	instance.Status.ClusterMaps = cluster_map
+	instance.Status.ChangeNeed = false
+	err := r.live.Status().Update(context.TODO(), instance)
+	return err
+
 }
 
 

@@ -20,6 +20,7 @@ type Registry interface {
 	Failure(host, path, endpoint string, err error) // Mark an endpoint as failed.
 	Lookup(host, path string) (string, error)       // Return the endpoint list for the given service name/version
 	IngressDelete(host, path string)
+	Init()
 }
 
 
@@ -34,6 +35,15 @@ type Registry interface {
 
 type DefaultRegistry map[string]map[string]string
 
+
+func (r DefaultRegistry) Init() {
+	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(LoadbalancingRegistry)] Function Cluster Init")
+	lock.RLock()
+	for k := range r {
+		delete(r, k)
+	}
+	lock.RUnlock()
+}
 
 func (r DefaultRegistry) Lookup(host string, path string) (string, error) {
 	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(LoadbalancingRegistry)] Function Lookup")

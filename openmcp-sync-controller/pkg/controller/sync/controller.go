@@ -402,7 +402,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.V(0).Info("[Error] Cannot Create Job : ", err)
 			}
 		} else if command == "delete"{
-			err = clusterClient.Delete(context.TODO(), subInstance)
+			err = clusterClient.Delete(context.TODO(), subInstance, subInstance.Namespace, subInstance.Name)
 			if err == nil {
 				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
 			}else {
@@ -431,7 +431,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.V(0).Info("[Error] Cannot Create Namespace : ", err)
 			}
 		} else if command == "delete"{
-			err = clusterClient.Delete(context.TODO(), subInstance)
+			err = clusterClient.Delete(context.TODO(), subInstance, subInstance.Namespace, subInstance.Name)
 			if err == nil {
 				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
 			}else {

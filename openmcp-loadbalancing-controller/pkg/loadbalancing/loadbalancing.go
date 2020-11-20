@@ -225,13 +225,15 @@ func getCountry(clientIP string) string {
 	if GeoErr != nil {
 		log.Fatal(GeoErr)
 	}
-	ip := net.ParseIP(clientIP)
 
+	ip := net.ParseIP(clientIP)
 	record, err := GeoDB.City(ip)
 	if err != nil {
 		log.Fatal(err)
 	}
 	omcplog.V(5).Info("ISO country code: %v\n", record.Country.IsoCode)
+
+
 	return record.Country.IsoCode
 }
 
@@ -239,7 +241,9 @@ func getContinent(country string) string {
 	return Geo.Geo[country]
 }
 
-var Policy = map[string]float64{}
+var Policy = map[string]float64{
+	"Period" : 10.0,
+}
 
 func GetPolicy() {
 	for {
