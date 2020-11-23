@@ -36,7 +36,7 @@ func JSON2Pv(resourceInfoJSON string) (*apiv1.PersistentVolume, error) {
 	//	}
 	//resourceInfo.ObjectMeta.Name = resourceInfo.ObjectMeta.Name + SnapshotTailName
 	resourceInfo.ObjectMeta.ResourceVersion = ""
-
+	resourceInfo.Spec.ClaimRef = nil
 	/*
 		pvc := &apiv1.PersistentVolume{
 			ObjectMeta: metav1.ObjectMeta{

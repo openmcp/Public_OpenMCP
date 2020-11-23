@@ -19,7 +19,6 @@ import (
 func etcdSnapshotRestoreRun(r *reconciler, snapshotRestoreSource *nanumv1alpha1.SnapshotRestoreSource, startTime string) error {
 	omcplog.V(4).Info(snapshotRestoreSource)
 
-	omcplog.V(3).Info("snapshot start")
 	snapshotKey := snapshotRestoreSource.SnapshotKey
 
 	//ETCD 에서 데이터 가져오기.

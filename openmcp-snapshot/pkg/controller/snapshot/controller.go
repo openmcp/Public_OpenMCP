@@ -2,7 +2,6 @@ package snapshot
 
 import (
 	"context"
-	"encoding/json"
 	"strconv"
 	"time"
 
@@ -88,15 +87,16 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	if err != nil {
 		omcplog.V(0).Info("get instance error")
 	}
+	if len(instance.Spec.SnapshotSources) < 1 {
+		omcplog.V(0).Info("========= SnapshotSources size 0")
+		return reconcile.Result{}, nil
+	}
 
 	//DATE 추출
-	startTime := string(time.Now().Unix())
-
+	startTime := strconv.Itoa(int(time.Now().Unix()))
 	omcplog.V(3).Info(time.Now())
 	omcplog.V(4).Info("[Reconcile] startTime : " + startTime)
 	for idx, snapshotSources := range instance.Spec.SnapshotSources {
-		omcplog.V(4).Info(json.Marshal(snapshotSources))
-
 		resourceType := snapshotSources.ResourceType
 		omcplog.V(4).Info("[" + strconv.Itoa(idx) + "] : Resource : " + resourceType)
 		switch resourceType {
@@ -109,10 +109,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 
 	// 작업 후 업데이트
-	updateErr := r.live.Update(context.TODO(), instance, &client.UpdateOptions{})
-	if updateErr != nil {
-		omcplog.V(3).Info("update error : " + string(startTime))
-	}
+	// updateErr := r.live.Update(context.TODO(), instance, &client.UpdateOptions{})
+	// if updateErr != nil {
+	// 	omcplog.V(3).Info("update error : " + string(startTime))
+	// }
 	return reconcile.Result{}, nil
 
 }

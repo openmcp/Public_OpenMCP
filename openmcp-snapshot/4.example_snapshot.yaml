@@ -7,12 +7,12 @@ spec:
   - resourceCluster: cluster1
     resourceNamespace: default
     resourceType: PersistentVolume
-    resourceName: test-pv
+    resourceName: snapshot-test-pv
   - resourceCluster: cluster1
     resourceNamespace: default
     resourceType: PersistentVolumeClaim
-    resourceName: test-pvc
+    resourceName: snapshot-test-pvc
   - resourceCluster: cluster1
     resourceNamespace: default
     resourceType: Deployment
-    resourceName: test-dp
+    resourceName: snapshot-test-dp

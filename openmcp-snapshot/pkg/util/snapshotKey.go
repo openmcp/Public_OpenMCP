@@ -40,6 +40,6 @@ func GetStartTimeBySnapshotKey(snapshotKey string) string {
 
 func GetResourceNameBySnapshotKey(snapshotKey string) string {
 	tmp := strings.Split(snapshotKey, "-")
-	resourceName := tmp[len(tmp)-1]
+	resourceName := strings.Join(tmp[3:len(tmp)], "-")
 	return resourceName
 }

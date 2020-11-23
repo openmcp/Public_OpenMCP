@@ -3,18 +3,16 @@ kind: SnapshotRestore
 metadata:
   name: example-snapshotrestore
 spec:
-  snapshotSources:
+  snapshotRestoreSource:
   - resourceCluster: cluster1
     resourceNamespace: default
-    resourceType: pv
-    snapshotKey: pv-test-pv-snapshot
+    resourceType: PersistentVolume
+    snapshotKey: 1605230624-cluster1-PersistentVolume-snapshot-test-pv
   - resourceCluster: cluster1
     resourceNamespace: default
-    resourceType: pvc
-    resourceName: pvc-test-pvc-snapshot
-    snapshotKey: pvc-test-pvc-snapshot
+    resourceType: PersistentVolumeClaim
+    snapshotKey: 1605230624-cluster1-PersistentVolumeClaim-snapshot-test-pvc
   - resourceCluster: cluster1
     resourceNamespace: default
-    resourceType: deployment
-    resourceName: dp-test-dp-snapshot
-    snapshotKey: dp-test-dp-snapshot
+    resourceType: Deployment
+    snapshotKey: 1605230624-cluster1-Deployment-snapshot-test-dp
