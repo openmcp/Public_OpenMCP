@@ -6,6 +6,7 @@ ENV OPERATOR=/usr/local/bin/openmcp-snapshot \
 
 # install operator binary
 COPY _output/bin/openmcp-snapshot ${OPERATOR}
+COPY template /root/template
 
 COPY bin /usr/local/bin
 RUN /usr/local/bin/user_setup

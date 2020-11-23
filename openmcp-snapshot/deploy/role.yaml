@@ -68,7 +68,7 @@ rules:
   verbs:
   - get
 - apiGroups:
-  - nanum.co.kr
+  - openmcp.k8s.io
   resources:
   - '*'
   - snapshotrestores

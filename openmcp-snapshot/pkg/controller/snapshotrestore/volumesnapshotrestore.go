@@ -2,6 +2,7 @@ package snapshotrestore
 
 import (
 	"context"
+	"fmt"
 
 	// "openmcp/openmcp/migration/pkg/apis"
 
@@ -9,7 +10,10 @@ import (
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-snapshot/pkg/util"
 
-	corev1 "k8s.io/api/core/v1"
+	"openmcp/openmcp/openmcp-snapshot/pkg/controller/snapshotrestore/resources"
+	"openmcp/openmcp/openmcp-snapshot/pkg/util/etcd"
+
+	apiv1 "k8s.io/api/core/v1"
 	// "sigs.k8s.io/controller-runtime/pkg/client"
 	// "sigs.k8s.io/kubefed/pkg/controller/util"
 	// "openmcp/openmcp/migration/pkg/controller"
@@ -21,6 +25,7 @@ func volumeSnapshotRestoreRun(r *reconciler, snapshotRestoreSource *nanumv1alpha
 	client := cm.Cluster_genClients[snapshotRestoreSource.ResourceCluster]
 	omcplog.V(3).Info("volumeSnapshot Restore Start")
 
+	runType := util.RunTypeSnapshotRestore
 	/*
 
 		1. 정보추출
@@ -39,18 +44,28 @@ func volumeSnapshotRestoreRun(r *reconciler, snapshotRestoreSource *nanumv1alpha
 		```
 
 	*/
-	pvResourceOri := &corev1.PersistentVolume{}
 
 	// Key 추출 (crd)
 	snapshotKey := snapshotRestoreSource.SnapshotKey
 	// Key로 resource Name 추출
 	resourceName := util.GetResourceNameBySnapshotKey(snapshotKey)
+	snapshotKey = util.GetStartTimeBySnapshotKey(snapshotKey)
+	omcplog.V(3).Info("  * resourceName : " + resourceName)
+	omcplog.V(3).Info("  * snapshotKey : " + snapshotKey)
 
-	pvGetErr := client.Get(context.TODO(), pvResourceOri, "default", resourceName)
-	if pvGetErr != nil {
-		omcplog.V(3).Info("get pv_info error")
-	}
-	pvResource := pvResourceOri.DeepCopy()
+	// TODO ETCD Get 으로 변경.
+	// pvResourceOri := &apiv1.PersistentVolume{}
+	// pvGetErr := util.GetPVAPIOri(snapshotKey, pvResource)
+	// if pvGetErr != nil {
+	// 	omcplog.V(3).Info("get pv_info error")
+	// }
+
+	//pvResource := pvResourceOri.DeepCopy()
+	//pvResource.Name = resourceName
+
+	pvResource := getEtcdSnapshotRestoreForPV(r, snapshotRestoreSource, snapshotKey)
+	pvResource.ClusterName = snapshotRestoreSource.ResourceCluster
+	//pvcResource := getEtcdSnapshotRestoreForPVC(r, snapshotRestoreSource, snapshotKey)
 	//get Date : startTime
 	//get PVNAME : snapshotRestoreSource.ResourceName
 	//get PV yaml Info (mountPath) : pvResource
@@ -66,21 +81,41 @@ func volumeSnapshotRestoreRun(r *reconciler, snapshotRestoreSource *nanumv1alpha
 		# PV 와 연결되는 job, pvc 의 이름은 각각  sns-DATE-CLUSTERNAME-volume-job, sns-DATE-CLUSTERNAME-volume-pvc
 		path (바인딩은 /data/)
 	*/
-	expvResource := util.GetExternalNfsPVAPI(snapshotKey, *pvResource)
-	expvcResource := util.GetExternalNfsPVCAPI(snapshotKey)
-	pvcResource := util.GetPVCAPI(snapshotKey, *pvResource)
+	expvResource, mountPath := util.GetExternalNfsPVAPI(snapshotKey, *pvResource, runType)
+	expvcResource := util.GetExternalNfsPVCAPI(snapshotKey, runType)
+	pvcResource := util.GetPVCAPI(snapshotKey, *pvResource, runType)
+	oriPvResource := util.GetPVAPI(snapshotKey, *pvResource, runType)
 
 	targetErr := client.Create(context.TODO(), expvResource)
 	if targetErr != nil {
-		omcplog.V(3).Info("expvResource create : " + expvResource.Name)
+		omcplog.V(3).Info("expvResource create error : " + expvResource.Name)
+		omcplog.V(3).Info(targetErr)
+	} else {
+		omcplog.V(3).Info("expvResource create")
 	}
+
 	targetErr = client.Create(context.TODO(), expvcResource)
 	if targetErr != nil {
-		omcplog.V(3).Info("expvcResource create : " + expvcResource.Name)
+		omcplog.V(3).Info("expvcResource create error : " + expvcResource.Name)
+		omcplog.V(3).Info(targetErr)
+	} else {
+		omcplog.V(3).Info("expvcResource create")
 	}
+
 	targetErr = client.Create(context.TODO(), pvcResource)
 	if targetErr != nil {
-		omcplog.V(3).Info("pvcResource create : " + pvcResource.Name)
+		omcplog.V(3).Info("pvcResource create error : " + pvcResource.Name)
+		omcplog.V(3).Info(targetErr)
+	} else {
+		omcplog.V(3).Info("pvcResource create")
+	}
+
+	targetErr = client.Create(context.TODO(), oriPvResource)
+	if targetErr != nil {
+		omcplog.V(3).Info("oriPvResource create error : " + oriPvResource.Name)
+		omcplog.V(3).Info(targetErr)
+	} else {
+		omcplog.V(3).Info("oriPvResource create")
 	}
 
 	/*
@@ -106,14 +141,55 @@ func volumeSnapshotRestoreRun(r *reconciler, snapshotRestoreSource *nanumv1alpha
 	*/
 
 	// startTime 를 이용하여 cmd 내용 작성
-	snapshotCmd := util.GetSnapshotRestoreTemplate(startTime)
+	snapshotCmd := util.GetSnapshotRestoreTemplate(startTime, mountPath)
 
 	// 잡생성
-	jobResource := util.GetJobAPI(snapshotKey, snapshotCmd)
+	jobResource := util.GetJobAPI(snapshotKey, snapshotCmd, runType)
 	targetErr = client.Create(context.TODO(), jobResource)
 	if targetErr != nil {
-		omcplog.V(3).Info("job create : " + jobResource.Name)
+		omcplog.V(3).Info("job create error : " + jobResource.Name)
+		omcplog.V(3).Info(targetErr)
+	} else {
+		omcplog.V(3).Info("jobResource create")
 	}
 
 	return nil
+}
+
+//volumeSnapshotRun 내에는 PV 만 들어온다고 가정한다.
+func getEtcdSnapshotRestoreForPV(r *reconciler, snapshotRestoreSource *nanumv1alpha1.SnapshotRestoreSource, startTime string) *apiv1.PersistentVolume {
+	omcplog.V(4).Info("# getEtcdSnapshotRestoreForPV")
+
+	snapshotKey := snapshotRestoreSource.SnapshotKey
+
+	//ETCD 에서 데이터 가져오기.
+	etcdCtl := etcd.InitEtcd()
+	fmt.Println("snapshotKey : " + snapshotKey)
+	resp := etcdCtl.Get(snapshotKey)
+	resourceJSONString := string(resp.Kvs[0].Value)
+
+	resourceObj, err := resources.JSON2Pv(resourceJSONString)
+	if err != nil {
+		omcplog.V(2).Info("CreateResource for JSON error")
+	}
+	return resourceObj
+}
+
+//volumeSnapshotRun 내에는 PV 만 들어온다고 가정한다.
+func getEtcdSnapshotRestoreForPVC(r *reconciler, snapshotRestoreSource *nanumv1alpha1.SnapshotRestoreSource, startTime string) *apiv1.PersistentVolumeClaim {
+	omcplog.V(4).Info("# getEtcdSnapshotRestoreForPVC")
+
+	snapshotKey := snapshotRestoreSource.SnapshotKey
+
+	//ETCD 에서 데이터 가져오기.
+	etcdCtl := etcd.InitEtcd()
+	fmt.Println("snapshotKey : " + snapshotKey)
+	resp := etcdCtl.Get(snapshotKey)
+	resourceJSONString := string(resp.Kvs[0].Value)
+
+	resourceObj, err := resources.JSON2Pvc(resourceJSONString)
+	if err != nil {
+		omcplog.V(2).Info("CreateResource for JSON error")
+	}
+	return resourceObj
 }

@@ -63,7 +63,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		omcplog.V(0).Info("adding APIs to live cluster's scheme: ", err)
 		return nil, err
 	}
-	if err := co.WatchResourceReconcileObject(live, &nanumv1alpha1.Snapshot{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(live, &nanumv1alpha1.SnapshotRestore{}, controller.WatchOptions{}); err != nil {
 		omcplog.V(0).Info("setting up Pod watch in live cluster: ", err)
 		return nil, err
 	}
@@ -86,6 +86,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	if err != nil {
 		omcplog.V(0).Info("get instance error")
 	}
+	if len(instance.Spec.SnapshotRestoreSource) < 1 {
+		omcplog.V(0).Info("========= SnapshotRestoreSource size 0")
+		return reconcile.Result{}, nil
+	}
 
 	//DATE 추출
 	snapshotKey := instance.Spec.SnapshotRestoreSource[0].SnapshotKey
@@ -98,6 +102,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		omcplog.V(4).Info("\n[" + strconv.Itoa(idx) + "] : Resource : " + resourceType)
 		switch resourceType {
 		case config.PV:
+			//etcdSnapshotRestoreRun(r, &snapshotRestoreSource, startTime)
 			volumeSnapshotRestoreRun(r, &snapshotRestoreSource, startTime)
 			fallthrough // 이어서 default 실행
 		default:
@@ -106,10 +111,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 
 	// 작업 후 업데이트
-	updateErr := r.live.Update(context.TODO(), instance, &client.UpdateOptions{})
-	if updateErr != nil {
-		omcplog.V(3).Info("update error : " + string(startTime))
-	}
+	// updateErr := r.live.Update(context.TODO(), instance, &client.UpdateOptions{})
+	// if updateErr != nil {
+	// 	omcplog.V(3).Info("update error : " + string(startTime))
+	// }
 	return reconcile.Result{}, nil
 
 }

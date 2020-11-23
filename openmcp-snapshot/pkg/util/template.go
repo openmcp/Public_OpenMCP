@@ -1,39 +1,53 @@
 package util
 
 import (
-	"fmt"
 	"io/ioutil"
+	"openmcp/openmcp/omcplog"
 	"path"
-	"runtime"
 	"strings"
 )
 
 //GetTemplate ./template/FILENAME 의 경로에 있는 text 를 가져오는 함수.
 func GetTemplate(fileName string) string {
-	fmt.Printf("--- GetSnapshotTemplate start")
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		panic("No caller information")
-	}
+	omcplog.V(5).Info("--- GetSnapshotTemplate start")
+	// _, filepath, _, ok := runtime.Caller(0)
+	// if !ok {
+	// 	panic("No caller information")
+	// }
+	// filepath, err := os.Getwd()
+	// if err != nil {
+	// 	omcplog.V(4).Info("Get File Path Error!")
+	// }
+	// filepath, err := os.Executable()
+	// if err != nil {
+	// 	omcplog.V(4).Info("Get File Path Error!")
+	// }
 
-	shellPath := path.Join(path.Dir(filename), "template", fileName)
-	fmt.Printf("Filename : %q, Dir : %q\n", filename, shellPath)
+	//projectPath := strings.Split(path.Dir(filepath), "/")
+	//pathLen := len(projectPath) - 2
+	filepath := "/root/template"
+	shellPath := path.Join(filepath, fileName)
+
 	file, err := ioutil.ReadFile(shellPath)
 	if err != nil {
 		panic("Not ReadFile: " + shellPath)
 	}
-	fmt.Printf("--- GetSnapshotTemplate end")
+	omcplog.V(5).Info("--- GetSnapshotTemplate end")
 	return string(file)
 }
-func GetSnapshotTemplate(snapshotTime string) string {
+func GetSnapshotTemplate(snapshotTime string, mountPath string) string {
 	cmd := GetTemplate("volumesnapshot.sh")
 
-	ret := strings.ReplaceAll(cmd, "!DATE", snapshotTime)
+	ret1 := strings.ReplaceAll(cmd, "!DATE", snapshotTime)
+	ret := strings.ReplaceAll(ret1, "!PATH", mountPath)
+
 	return ret
 }
-func GetSnapshotRestoreTemplate(snapshotTime string) string {
+func GetSnapshotRestoreTemplate(snapshotTime string, mountPath string) string {
 	cmd := GetTemplate("volumesnapshot-restore.sh")
 
-	ret := strings.ReplaceAll(cmd, "!DATE", snapshotTime)
+	ret1 := strings.ReplaceAll(cmd, "!DATE", snapshotTime)
+	ret := strings.ReplaceAll(ret1, "!PATH", mountPath)
+
 	return ret
 }
