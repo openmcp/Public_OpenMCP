@@ -5,7 +5,6 @@ import (
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	clientV1alpha1 "openmcp/openmcp/clientset/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -107,6 +106,7 @@ func KubeFedClusterDynClients(clusterList *fedv1b1.KubeFedClusterList, cluster_c
 	return cluster_clients
 }
 func NewClusterManager() *ClusterManager {
+
 	fed_namespace := "kube-federation-system"
 	host_config, _ := rest.InClusterConfig()
 	host_client := genericclient.NewForConfigOrDie(host_config)

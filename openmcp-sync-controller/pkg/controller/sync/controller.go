@@ -111,6 +111,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 	//clusterClient := r.ghosts[clusterName]
 	clusterClient := cm.Cluster_genClients[clusterName]
+	clusterClient2 := r.ghosts[clusterName]
 
 
 
@@ -245,21 +246,24 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 
 		if command == "create"{
-			err = clusterClient.Create(context.TODO(), subInstance)
+			//err = clusterClient.Create(context.TODO(), subInstance)
+			err = clusterClient2.Create(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Created Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
 			}else {
 				omcplog.V(0).Info("[Error] Cannot Create VerticalPodAutoscaler : ", err)
 			}
 		} else if command == "delete"{
-			err = clusterClient.Delete(context.TODO(), subInstance, subInstance.Namespace, subInstance.Name)
+			//err = clusterClient.Delete(context.TODO(), subInstance, subInstance.Namespace, subInstance.Name)
+			err = clusterClient2.Delete(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
 			}else {
 				omcplog.V(0).Info("[Error] Cannot Delete VerticalPodAutoscaler : ", err)
 			}
 		} else if command == "update" {
-			err = clusterClient.Update(context.TODO(), subInstance)
+			//err = clusterClient.Update(context.TODO(), subInstance)
+			err = clusterClient2.Update(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Updated Resource '" + obj.GetKind() +  "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() +"', in Cluster'" + clusterName + "'")
 			}else {
