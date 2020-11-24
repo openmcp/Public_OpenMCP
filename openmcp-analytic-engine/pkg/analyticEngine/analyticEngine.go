@@ -46,7 +46,7 @@ func NewAnalyticEngine(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD 
 	return ae
 }
 
-func (ae *AnalyticEngineStruct) CalcResourceScore(cm *clusterManager.ClusterManager, quit chan bool) {
+func (ae *AnalyticEngineStruct) CalcResourceScore(cm *clusterManager.ClusterManager, quit, quitok chan bool) {
 	omcplog.V(4).Info("Func CalcResourceScore Called")
 	//cm := clusterManager.NewClusterManager()
 	ae.MetricsWeight = make(map[string]float64)
@@ -70,6 +70,7 @@ func (ae *AnalyticEngineStruct) CalcResourceScore(cm *clusterManager.ClusterMana
 		select {
 		case <- quit:
 			omcplog.V(2).Info("CalcResourceScore Quit")
+			quitok <- true
 			return
 		default:
 			omcplog.V(2).Info("Cluster Metric Score Refresh")
@@ -196,7 +197,7 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 						}
 					}
 
-				} else if r == 1 {
+				} else if r == 4 {
 					if _, ok := prevMetricsMap[colName]; ok {
 						prevMetricsMap[colName] = prevMetricsMap[colName] + float64(QuanVal.Value())
 					} else {

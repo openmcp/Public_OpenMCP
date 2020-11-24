@@ -33,7 +33,7 @@ func InfluxDBClient(INFLUX_IP, INFLUX_PORT, username, password string) client.Cl
 
 func (in *Influx) GetClusterMetricsData(clusterName string) []client.Result {
 	omcplog.V(4).Info("Func GetClusterMetricsData Called")
-	q := client.NewQuery("SELECT * FROM Nodes WHERE cluster = '"+clusterName+"' GROUP BY * ORDER BY DESC LIMIT 2", "Metrics", "")
+	q := client.NewQuery("SELECT * FROM Nodes WHERE cluster = '"+clusterName+"' GROUP BY * ORDER BY DESC LIMIT 5", "Metrics", "")
 
 	response, err := in.inClient.Query(q)
 
