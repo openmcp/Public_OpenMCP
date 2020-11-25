@@ -1,0 +1,54 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: keti-ruleengine
+  labels:
+    component: keti-ruleengine
+spec:
+  #serviceName: "keti-ruleengine"
+  replicas: 1
+  labels:
+    component: keti-ruleengine
+  template:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: keti-ruleengine
+            image: openmcp/keti-ruleengine:v0.0.1
+            imagePullPolicy: Always
+            #command: ["/bin/bash"]
+            #args: ["-c", "while true; do echo hello; sleep 10;done"]
+            command: ["./start.sh"]
+            #command: ["java","-jar","/app/target/keti-ruleengine.jar"]
+            ports:
+            - containerPort: 7077
+            - containerPort: 8080
+            env:
+            - name: RABBITMQ_SERVICE
+              value: "mu-rabbit-rabbitmq.default.openmcp-dt-domain.svc.openmcp.dt.org"
+            - name: QUEUE_NAME
+              value: "data"
+            - name: QUEUE_TOPIC
+              value: "data"
+            - name: INFLUXDB
+              value: "influxdb.default.openmcp-dt-domain.svc.openmcp.dt.org"
+            - name: INFLUX_PORT
+              value: "8086"
+            - name: INFLUX_USER
+              value: "root"
+            - name: INFLUX_PW
+              value: "root"
+            - name: MKDRL_PATH
+              value: "./Mkdrl/KETI_MKdrl.py"
+            - name: RULE_DIR
+              value: "./rule"
+            volumeMounts:
+            - mountPath: /etc/localtime
+              name: timezone-config
+          volumes:
+          - name: timezone-config
+            hostPath:
+              path: /usr/share/zoneinfo/Asia/Seoul
+          imagePullSecrets:
+          - name: regcred

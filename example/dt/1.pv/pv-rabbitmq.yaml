@@ -1,0 +1,16 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: k8s-pv-rabbitmq1
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteOnce
+  nfs:
+    path: /home/nfs/pv/8Gi/a01
+    server: "10.0.3.12"
+    readOnly: false
+  persistentVolumeReclaimPolicy: Retain

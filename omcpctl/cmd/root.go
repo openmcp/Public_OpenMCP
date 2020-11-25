@@ -16,13 +16,18 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"github.com/juju/fslock"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/tools/clientcmd"
+	"log"
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
+	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 )
 
 var cfgFile string
@@ -67,13 +72,32 @@ func init() {
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
+	//c := cobrautil.GetOmcpctlConf("/var/lib/omcpctl/config.yaml")
+	//cobrautil.OpenMCPAPIServer = c.OpenmcpApiServer
 
-	cobrautil.OpenMCPAPIServer = c.OpenmcpApiServer
+	cobrautil.OpenMCPAPIServer = getSvcLB()
 
 	Lock = fslock.New("/tmp/mntlock.txt")
 }
 
+func getSvcLB() string{
+
+	resourceName := "openmcp-apiserver"
+	resourceNamespace := "openmcp"
+
+
+	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
+	genClient := genericclient.NewForConfigOrDie(kubeconfig)
+
+	svc := &corev1.Service{}
+	err := genClient.Get(context.TODO(), svc, resourceNamespace, resourceName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	lbip := svc.Status.LoadBalancer.Ingress[0].IP
+	return lbip + ":" + "8080"
+}
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	if cfgFile != "" {
