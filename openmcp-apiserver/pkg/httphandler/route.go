@@ -21,6 +21,8 @@ func (h *HttpManager) RouteHandler(w http.ResponseWriter, r *http.Request) {
 		h.MetricsHandler(w, r, splitUrl)
 	} else if splitUrl[0] == "status" {
 		h.StatusHandler(w, r)
+	} else if splitUrl[0] == "joinable" {
+		h.JoinableHandler(w, r)
 	}
 
 }
