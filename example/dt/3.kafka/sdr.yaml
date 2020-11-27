@@ -1,0 +1,10 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPServiceDNSRecord
+metadata:
+  # The name of the sample service.
+  name: kafka-svc
+  # The namespace of the sample deployment/service.
+spec:
+  # The name of the corresponding Domain.
+  domainRef: openmcp-dt-domain
+  recordTTL: 300

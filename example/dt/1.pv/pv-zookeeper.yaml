@@ -1,0 +1,56 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: k8s-pv-zk1
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "anything"
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 3Gi
+  accessModes:
+    - ReadWriteOnce
+  nfs:
+    path: /home/nfs/pv/3Gi/a04
+    server: "10.0.3.12"
+    readOnly: false
+  persistentVolumeReclaimPolicy: Retain
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: k8s-pv-zk2
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "anything"
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 3Gi
+  accessModes:
+    - ReadWriteOnce
+  nfs:
+    path: /home/nfs/pv/3Gi/a05
+    server: "10.0.3.12"
+    readOnly: false
+  persistentVolumeReclaimPolicy: Retain
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: k8s-pv-zk3
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "anything"
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 3Gi
+  accessModes:
+    - ReadWriteOnce
+  nfs:
+    path: /home/nfs/pv/3Gi/a06
+    server: "10.0.3.12"
+    readOnly: false
+  persistentVolumeReclaimPolicy: Retain

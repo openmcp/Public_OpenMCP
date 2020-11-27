@@ -13,6 +13,7 @@ require (
 	github.com/go-logr/logr v0.1.0
 	github.com/go-logr/zapr v0.1.1 // indirect
 	github.com/go-openapi/spec v0.19.8
+	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2
 	github.com/googleapis/gnostic v0.4.0 // indirect
@@ -21,6 +22,7 @@ require (
 	github.com/influxdata/influxdb v1.8.0
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/juju/fslock v0.0.0-20160525022230-4d5c94c67b4b
+	github.com/kr/pty v1.1.5 // indirect
 	github.com/kubernetes-incubator/custom-metrics-apiserver v0.0.0-20200618121405-54026617ec44 // indirect
 	github.com/kubernetes/autoscaler v0.0.0-20191021073337-3f137fde4f66
 	github.com/mitchellh/go-homedir v1.1.0
@@ -34,6 +36,7 @@ require (
 	github.com/stretchr/testify v1.4.0
 	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
 	go.uber.org/zap v1.14.1 // indirect
+	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6 // indirect
 	google.golang.org/grpc v1.31.0
 	google.golang.org/grpc/examples v0.0.0-20200902210233-8630cac324bf // indirect
 	google.golang.org/protobuf v1.25.0
