@@ -53,23 +53,6 @@ import (
 
 var cm *clusterManager.ClusterManager
 
-//pod 이름 찾기
-func GetPodName(targetClient generic.Client, dpName string, namespace string) string {
-	podInfo := &corev1.Pod{}
-
-	listOption := &client.ListOptions{
-		LabelSelector: labels.SelectorFromSet(labels.Set{
-			"name": dpName,
-		}),
-	}
-
-	targetClient.List(context.TODO(), podInfo, namespace, listOption)
-
-	podName := podInfo.ObjectMeta.Name
-
-	return podName
-}
-
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
 	cm = myClusterManager
 	omcplog.V(4).Info("NewController start")
@@ -104,6 +87,106 @@ type reconciler struct {
 	live           client.Client
 	ghosts         []client.Client
 	ghostNamespace string
+}
+
+func sortResource(migraionSource v1alpha1.MigrationServiceSource) ([]v1alpha1.MigrationSource, bool) {
+	resourceList := migraionSource.MigrationSources
+	pvCheck := false
+	for i, j := range resourceList {
+		if j.ResourceType == config.DEPLOY {
+			tmp := resourceList[i]
+			resourceList[i] = resourceList[0]
+			resourceList[0] = tmp
+		} else if j.ResourceType == config.PV {
+			pvCheck = true
+		}
+	}
+	return resourceList, pvCheck
+}
+
+type MigrationControllerResource struct {
+	resourceList    []v1alpha1.MigrationSource
+	targetCluster   string
+	sourceCluster   string
+	nameSpace       string
+	volumePath      string
+	serviceName     string
+	pvCheck         bool
+	sourceClient    generic.Client
+	targetClient    generic.Client
+	resourceRequire corev1.ResourceList
+}
+
+func MigrationControllerResourceInit(migraionSource v1alpha1.MigrationServiceSource) MigrationControllerResource {
+	migSource := MigrationControllerResource{}
+
+	migSource.resourceList, migSource.pvCheck = sortResource(migraionSource)
+	migSource.targetCluster = migraionSource.TargetCluster
+	migSource.sourceCluster = migraionSource.SourceCluster
+	migSource.nameSpace = migraionSource.NameSpace
+	migSource.volumePath, migSource.resourceRequire = getVolumePath(migraionSource)
+	migSource.targetClient = cm.Cluster_genClients[migraionSource.TargetCluster]
+	migSource.sourceClient = cm.Cluster_genClients[migraionSource.SourceCluster]
+	migSource.serviceName = migraionSource.ServiceName
+
+	return migSource
+}
+func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
+	omcplog.V(3).Info("Function Called Reconcile")
+	instance := &v1alpha1.Migration{}
+	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
+	if err != nil {
+		omcplog.V(0).Info("get instance error : ", err)
+	}
+	for _, migraionSource := range instance.Spec.MigrationServiceSources {
+		omcplog.V(4).Info(migraionSource)
+		migSource := MigrationControllerResourceInit(migraionSource)
+		checkNameSpace(migSource.targetClient, migSource.nameSpace)
+		if migSource.pvCheck == true {
+			for _, resource := range migSource.resourceList {
+				resourceType := resource.ResourceType
+				if resourceType == config.DEPLOY {
+					migdeploy(migSource, resource)
+				} else if resourceType == config.SERVICE {
+					migservice(migSource, resource)
+				} else if resourceType == config.PV {
+					migpv(migSource, resource)
+				} else if resourceType == config.PVC {
+					migpvc(migSource, resource)
+				} else {
+					omcplog.V(0).Info("Resource Type Error!")
+					return reconcile.Result{}, fmt.Errorf("Resource Type Error!")
+				}
+			}
+		} else {
+			for _, resource := range migSource.resourceList {
+				resourceType := resource.ResourceType
+				if resourceType == config.DEPLOY {
+					migdeployNotVolume(migSource, resource)
+				} else if resourceType == config.SERVICE {
+					migserviceNotVolume(migSource, resource)
+				}
+			}
+		}
+	}
+	return reconcile.Result{}, nil
+}
+
+//pod 이름 찾기
+func GetPodName(targetClient generic.Client, dpName string, namespace string) string {
+	podInfo := &corev1.Pod{}
+
+	listOption := &client.ListOptions{
+		LabelSelector: labels.SelectorFromSet(labels.Set{
+			"name": dpName,
+		}),
+	}
+
+	targetClient.List(context.TODO(), podInfo, namespace, listOption)
+
+	podName := podInfo.ObjectMeta.Name
+
+	return podName
 }
 
 func GetCopyPodName(clusterClient *kubernetes.Clientset, dpName string, namespace string) string {
@@ -341,187 +424,6 @@ func checkNameSpace(client generic.Client, namespace string) bool {
 	omcplog.V(4).Info("Create namespace: ", namespace)
 	return true
 }
-func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
-	omcplog.V(3).Info("Function Called Reconcile")
-	instance := &v1alpha1.Migration{}
-	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
-	if err != nil {
-		omcplog.V(0).Info("get instance error")
-	}
-	for _, migraionSource := range instance.Spec.MigrationServiceSources {
-		omcplog.V(4).Info(migraionSource)
-		targetCluster := migraionSource.TargetCluster
-		sourceCluster := migraionSource.SourceCluster
-		nameSpace := migraionSource.NameSpace
-		resourceList := migraionSource.MigrationSources
-		// volumePath := migraionSource.VolumePath
-		volumePath, resourceRequire := getVolumePath(migraionSource)
-		targetClient := cm.Cluster_genClients[targetCluster]
-		sourceClient := cm.Cluster_genClients[sourceCluster]
-		serviceName := migraionSource.ServiceName
-		checkNameSpace(targetClient, nameSpace)
-
-		for _, resource := range resourceList {
-			resourceType := resource.ResourceType
-			if resourceType == config.DEPLOY {
-				omcplog.V(3).Info("deploy migration start")
-				targetResource := &appsv1.Deployment{}
-				sourceResource := &appsv1.Deployment{}
-
-				sourceGetErr := sourceClient.Get(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
-				if sourceGetErr != nil {
-					omcplog.V(3).Info("get source cluster")
-				}
-				targetResource = sourceResource.DeepCopy()
-				client := cm.Cluster_kubeClients[sourceCluster]
-				restconfig := cm.Cluster_configs[sourceCluster]
-
-				addpvcErr, _, newPv, newPvc := CreateLinkShare(sourceClient, sourceResource, volumePath, serviceName, resourceRequire)
-				//addpvcErr, _ := CreateLinkShare(sourceClient, sourceResource, volumePath, serviceName)
-				if addpvcErr != true {
-					omcplog.V(0).Info("add pvc error!")
-				}
-				// time.Sleep(time.Second * 3)
-				podName := GetCopyPodName(client, sourceResource.Name, nameSpace)
-				mkCommand, copyCommand := CopyToNfsCMD(volumePath, serviceName)
-
-				err := LinkShareVolume(client, restconfig, podName, mkCommand, nameSpace)
-				if err != nil {
-					omcplog.V(0).Info("volume make dir error")
-				} else {
-					copyErr := LinkShareVolume(client, restconfig, podName, copyCommand, nameSpace)
-					if copyErr != nil {
-						omcplog.V(0).Info("volume linkshare error")
-					} else {
-						omcplog.V(3).Info("volume linkshare complete")
-					}
-				}
-				targetResource.ObjectMeta.ResourceVersion = ""
-				targetResource.Spec.Template.ResourceVersion = ""
-				targetResource.ResourceVersion = ""
-				targetErr := targetClient.Create(context.TODO(), targetResource)
-				if targetErr != nil {
-					omcplog.V(3).Info("target cluster create : " + serviceName)
-				}
-				// nfsPvc := []corev1.Volume{
-				// 	{
-				// 		Name: config.EXTERNAL_NFS_NAME_PVC + "-" + serviceName,
-				// 		VolumeSource: corev1.VolumeSource{
-				// 			PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-				// 				ClaimName: config.EXTERNAL_NFS_NAME_PVC + "-" + serviceName,
-				// 				ReadOnly:  false,
-				// 			},
-				// 		},
-				// 	},
-				// }
-
-				// targetResource.Spec.Template.Spec.Volumes = nfsPvc
-
-				// nfsMount := []corev1.VolumeMount{
-				// 	{
-				// 		Name:      config.EXTERNAL_NFS_NAME_PVC + "-" + serviceName,
-				// 		ReadOnly:  false,
-				// 		MountPath: volumePath,
-				// 	},
-				// }
-				// // targetResource.Spec.Template.Spec.Containers[0].VolumeMounts = append(targetResource.Spec.Template.Spec.Containers[0].VolumeMounts, nfsMount)
-				// targetResource.Spec.Template.Spec.Containers[0].VolumeMounts = nfsMount
-
-				sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
-				if sourceErr != nil {
-					omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
-				}
-				pvErr := sourceClient.Delete(context.TODO(), newPv, nameSpace, newPv.Name)
-				if pvErr != nil {
-					omcplog.V(3).Info("source cluster delete : " + newPv.Name)
-				}
-				pvcError := sourceClient.Delete(context.TODO(), newPvc, nameSpace, newPvc.Name)
-				if pvcError != nil {
-					omcplog.V(3).Info("source cluster delete : " + newPvc.Name)
-				}
-			} else if resourceType == config.SERVICE {
-				omcplog.V(3).Info("service migration")
-				targetResource := &corev1.Service{}
-				sourceResource := &corev1.Service{}
-
-				sourceGetErr := sourceClient.Get(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
-				if sourceGetErr != nil {
-					omcplog.V(3).Info("get source cluster")
-				}
-				targetResource = sourceResource
-				targetResource.ObjectMeta.ResourceVersion = ""
-				targetResource.ResourceVersion = ""
-				targetErr := targetClient.Create(context.TODO(), targetResource)
-				if targetErr != nil {
-					omcplog.V(3).Info("target cluster create : " + resource.ResourceName)
-				}
-
-				sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
-				if sourceErr != nil {
-					omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
-				}
-			} else if resourceType == config.PV {
-				omcplog.V(3).Info("pv migration")
-				targetResource := &corev1.PersistentVolume{}
-				sourceResource := &corev1.PersistentVolume{}
-
-				sourceGetErr := sourceClient.Get(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
-				if sourceGetErr != nil {
-					omcplog.V(3).Info("get source cluster")
-				}
-
-				targetResource = GetLinkSharePv(sourceResource, volumePath, serviceName)
-				targetResource.Spec.Capacity = sourceResource.Spec.Capacity
-				targetResource.ObjectMeta.ResourceVersion = ""
-				targetResource.ResourceVersion = ""
-				targetResource.Spec.ClaimRef = nil
-
-				targetErr := targetClient.Create(context.TODO(), targetResource)
-				if targetErr != nil {
-					omcplog.V(3).Info("target cluster create : " + resource.ResourceName)
-				}
-
-				sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
-				if sourceErr != nil {
-					omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
-				}
-			} else if resourceType == config.PVC {
-				omcplog.V(3).Info("pvc migration")
-				targetResource := &corev1.PersistentVolumeClaim{}
-				sourceResource := &corev1.PersistentVolumeClaim{}
-
-				// targetGetErr := targetClient.Get(context.TODO(), targetResource, nameSpace, resource.ResourceName)
-				// if targetGetErr != nil {
-				// 	omcplog.V(3).Info("get target cluster")
-				// }
-				sourceGetErr := sourceClient.Get(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
-				if sourceGetErr != nil {
-					omcplog.V(3).Info("get source cluster")
-				}
-
-				//targetResource = sourceResource
-				targetResource = GetLinkSharePvc(sourceResource, volumePath, serviceName)
-				targetResource.ObjectMeta.ResourceVersion = ""
-				targetResource.ResourceVersion = ""
-
-				targetErr := targetClient.Create(context.TODO(), targetResource)
-				if targetErr != nil {
-					omcplog.V(3).Info("target cluster create : " + resource.ResourceName)
-				}
-
-				sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
-				if sourceErr != nil {
-					omcplog.V(3).Info("source cluster delete : " + resource.ResourceName)
-				}
-			} else {
-				omcplog.V(0).Info("Resource Type Error!")
-				return reconcile.Result{}, fmt.Errorf("Resource Type Error!")
-			}
-		}
-	}
-	return reconcile.Result{}, nil
-}
-
 func GetLinkSharePvc(sourceResource *corev1.PersistentVolumeClaim, volumePath string, serviceName string) *corev1.PersistentVolumeClaim {
 	linkSharePvc := &corev1.PersistentVolumeClaim{}
 	linkSharePvc = sourceResource.DeepCopy()
