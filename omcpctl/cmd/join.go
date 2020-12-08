@@ -205,14 +205,16 @@ func joinCluster(memberIP string) {
 
 	cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
 
-	// namespace terminating stuck force delete
-	util.CmdExec2("kubectl get namespace kube-federation-system --context "+ cluster.Name+" -o json |jq '.spec = {\"finalizers\":[]}' >temp.json")
-	util.CmdExec2("kubectl replace --raw \"/api/v1/namespaces/kube-federation-system/finalize\" -f ./temp.json --context "+ cluster.Name)
-	util.CmdExec2("rm temp.json")
 
 	elapsed1 := time.Since(start1)
 	log.Printf("Cluster Config Merge Time : %s", elapsed1)
 	fmt.Println("***** [End] 1. Cluster Config Merge ***** ")
+
+	// namespace terminating stuck force delete
+	fmt.Println("If namespace A is stopped in the Terminating state, force it to be terminated.")
+	util.CmdExec("kubectl get namespace kube-federation-system --context "+ cluster.Name+" -o json |jq '.spec = {\"finalizers\":[]}' >temp.json")
+	util.CmdExec("kubectl replace --raw \"/api/v1/namespaces/kube-federation-system/finalize\" -f ./temp.json --context "+ cluster.Name)
+	util.CmdExec("rm temp.json")
 
 
 	start2 := time.Now()
@@ -286,6 +288,8 @@ func joinGKECluster(memberName string) {
 	}
 
 
+	start1 := time.Now()
+	fmt.Println("***** [Start] 1. Cluster Config Merge *****")
 
 	_, err = util.CmdExec("gcloud container clusters get-credentials " + memberName)
 	if err != nil {
@@ -323,28 +327,33 @@ func joinGKECluster(memberName string) {
 	kc.CurrentContext = "openmcp"
 	cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
 
+	elapsed1 := time.Since(start1)
+	log.Printf("Cluster Config Merge Time : %s", elapsed1)
+	fmt.Println("***** [End] 1. Cluster Config Merge ***** ")
+
 	// namespace terminating stuck force delete
-	util.CmdExec2("kubectl get namespace kube-federation-system --context "+ memberName+" -o json |jq '.spec = {\"finalizers\":[]}' >temp.json")
-	util.CmdExec2("kubectl replace --raw \"/api/v1/namespaces/kube-federation-system/finalize\" -f ./temp.json --context "+ memberName)
-	util.CmdExec2("rm temp.json")
+	fmt.Println("If namespace A is stopped in the Terminating state, force it to be terminated.")
+	util.CmdExec("kubectl get namespace kube-federation-system --context "+ memberName+" -o json |jq '.spec = {\"finalizers\":[]}' >temp.json")
+	util.CmdExec("kubectl replace --raw \"/api/v1/namespaces/kube-federation-system/finalize\" -f ./temp.json --context "+ memberName)
+	util.CmdExec("rm temp.json")
 
 	start2 := time.Now()
-	fmt.Println("***** [Start] 1. Cluster Join *****")
+	fmt.Println("***** [Start] 2. Cluster Join *****")
 	util.CmdExec2("kubefedctl join " + memberName + " --cluster-context " + memberName + " --host-cluster-context openmcp --v=2")
 
 	elapsed2 := time.Since(start2)
 	log.Printf("Cluster Join Time : %s", elapsed2)
-	fmt.Println("***** [End] 1. Cluster Join ***** ")
+	fmt.Println("***** [End] 2. Cluster Join ***** ")
 
 
 	start3 := time.Now()
-	fmt.Println("***** [Start] 2. Init Service Deployments *****")
+	fmt.Println("***** [Start] 3. Init Service Deployments *****")
 
 	installInitCluster(memberName, c.OpenmcpDir,"kube-dns")
 
 	elapsed3 := time.Since(start3)
 	log.Printf("Init Service Deployments Time : %s", elapsed3)
-	fmt.Println("***** [End] 2. Init Service Deployments ***** ")
+	fmt.Println("***** [End] 3. Init Service Deployments ***** ")
 
 
 	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
@@ -403,11 +412,7 @@ func joinEKSCluster(memberName string) {
 	}
 	Lock.Unlock()
 
-	_, err := util.CmdExec("aws eks update-kubeconfig --name " + memberName)
-	if err != nil {
-		fmt.Println("[",err, "] No cluster found for name: " + memberName)
-		return
-	}
+
 
 	alreadyJoined, err := cobrautil.CheckAlreadyJoinClusterWithPublicClusterName(memberName, "eks", "")
 	if err != nil {
@@ -416,6 +421,14 @@ func joinEKSCluster(memberName string) {
 	}
 
 	if alreadyJoined {
+		return
+	}
+	start1 := time.Now()
+	fmt.Println("***** [Start] 1. Cluster Config Merge *****")
+
+	_, err = util.CmdExec("aws eks update-kubeconfig --name " + memberName)
+	if err != nil {
+		fmt.Println("[",err, "] No cluster found for name: " + memberName)
 		return
 	}
 
@@ -455,29 +468,33 @@ func joinEKSCluster(memberName string) {
 	kc.CurrentContext = "openmcp"
 	cobrautil.WriteKubeConfig(kc, "/root/.kube/config")
 
+	elapsed1 := time.Since(start1)
+	log.Printf("Cluster Config Merge Time : %s", elapsed1)
+	fmt.Println("***** [End] 1. Cluster Config Merge ***** ")
 
 	// namespace terminating stuck force delete
-	util.CmdExec2("kubectl get namespace kube-federation-system --context "+ memberName+" -o json |jq '.spec = {\"finalizers\":[]}' >temp.json")
-	util.CmdExec2("kubectl replace --raw \"/api/v1/namespaces/kube-federation-system/finalize\" -f ./temp.json --context "+ memberName)
-	util.CmdExec2("rm temp.json")
+	fmt.Println("If namespace A is stopped in the Terminating state, force it to be terminated.")
+	util.CmdExec("kubectl get namespace kube-federation-system --context "+ memberName+" -o json |jq '.spec = {\"finalizers\":[]}' >temp.json")
+	util.CmdExec("kubectl replace --raw \"/api/v1/namespaces/kube-federation-system/finalize\" -f ./temp.json --context "+ memberName)
+	util.CmdExec("rm temp.json")
 
 	start2 := time.Now()
-	fmt.Println("***** [Start] 1. Cluster Join *****")
+	fmt.Println("***** [Start] 2. Cluster Join *****")
 	util.CmdExec2("kubefedctl join " + memberName + " --cluster-context " + memberName + " --host-cluster-context openmcp --v=2")
 
 	elapsed2 := time.Since(start2)
 	log.Printf("Cluster Join Time : %s", elapsed2)
-	fmt.Println("***** [End] 1. Cluster Join ***** ")
+	fmt.Println("***** [End] 2. Cluster Join ***** ")
 
 
 	start3 := time.Now()
-	fmt.Println("***** [Start] 2. Init Service Deployments *****")
+	fmt.Println("***** [Start] 3. Init Service Deployments *****")
 
 	installInitCluster(memberName, c.OpenmcpDir, "coredns")
 
 	elapsed3 := time.Since(start3)
 	log.Printf("Init Service Deployments Time : %s", elapsed3)
-	fmt.Println("***** [End] 2. Init Service Deployments ***** ")
+	fmt.Println("***** [End] 3. Init Service Deployments ***** ")
 
 
 	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
@@ -578,9 +595,9 @@ func joinAKSCluster(memberName string, resourceGroupName string) {
 
 
 	// namespace terminating stuck force delete
-	util.CmdExec2("kubectl get namespace kube-federation-system --context "+ memberName+" -o json |jq '.spec = {\"finalizers\":[]}' >temp.json")
-	util.CmdExec2("kubectl replace --raw \"/api/v1/namespaces/kube-federation-system/finalize\" -f ./temp.json --context "+ memberName)
-	util.CmdExec2("rm temp.json")
+	util.CmdExec("kubectl get namespace kube-federation-system --context "+ memberName+" -o json |jq '.spec = {\"finalizers\":[]}' >temp.json")
+	util.CmdExec("kubectl replace --raw \"/api/v1/namespaces/kube-federation-system/finalize\" -f ./temp.json --context "+ memberName)
+	util.CmdExec("rm temp.json")
 
 	start2 := time.Now()
 	fmt.Println("***** [Start] 1. Cluster Join *****")
@@ -633,7 +650,7 @@ func installInitCluster(clusterName, openmcpDir, dnsKind string) {
 	util.CmdExec2("sed -i 's|REPLACE_CLUSTER_NAME|\""+clusterName+"\"|g' "+install_dir+"/metric-collector/operator.yaml")
 	initYamls := []string{"namespace", "custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap"}
 
-	util.CmdExec2("kubectl create ns openmcp --context " + clusterName)
+	util.CmdExec("kubectl create ns openmcp --context " + clusterName)
 	for _, initYaml := range initYamls {
 
 		if initYaml == "configmap"{

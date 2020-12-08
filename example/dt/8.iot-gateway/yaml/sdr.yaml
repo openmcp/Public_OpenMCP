@@ -6,6 +6,6 @@ metadata:
   # The namespace of the sample deployment/service.
 spec:
   # The name of the corresponding Domain.
-  domainRef: openmcp-dt-domain
+  domainRef: openmcp-keti-domain
   recordTTL: 300
 

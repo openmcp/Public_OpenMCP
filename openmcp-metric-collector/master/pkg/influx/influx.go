@@ -72,7 +72,6 @@ func (in *Influx) SaveMetrics(clusterName string, data *protobuf.Collection) {
 			//"region": regions[rand.Intn(len(regions))],
 		}
 
-		fmt.Println("Node Info")
 		fields := map[string]interface{}{
 			"CPUUsageNanoCores": batch.Node.MP.CPUUsageNanoCores,
 			"MemoryAvailableBytes": batch.Node.MP.MemoryAvailableBytes,
@@ -97,7 +96,6 @@ func (in *Influx) SaveMetrics(clusterName string, data *protobuf.Collection) {
 		}
 
 		bp.AddPoint(pt)
-		fmt.Println("Pod Info")
 		for _, pod := range batch.Pods {
 			podName := pod.Name
 			podNamespace := pod.Namespace

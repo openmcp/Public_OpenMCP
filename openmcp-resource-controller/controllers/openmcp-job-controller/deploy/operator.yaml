@@ -14,6 +14,8 @@ spec:
         name: openmcp-job-controller
     spec:
       serviceAccountName: openmcp-job-controller
+      imagePullSecrets:
+        - name: dockerlogin
       containers:
         - name: openmcp-job-controller
           # Replace this with the built image name

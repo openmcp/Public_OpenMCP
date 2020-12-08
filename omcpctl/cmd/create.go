@@ -43,11 +43,12 @@ omcpctl create -f <FILENAME>
 omcpctl create -f <FILENAME> --context <CLUSTERNAME>`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			fmt.Println("Run 'omcpctl create --help' to view all commands")
-		}else {
-			CreateResource(args)
-		}
+		CreateResource(args)
+		//if len(args) == 0 {
+		//	fmt.Println("Run 'omcpctl create --help' to view all commands")
+		//}else {
+		//	CreateResource(args)
+		//}
 	},
 }
 func CreateResource(args []string){

@@ -20,6 +20,8 @@ import (
 	bytes2 "bytes"
 	"fmt"
 	"io/ioutil"
+	"log"
+	"net"
 	"net/http"
 	"openmcp/openmcp/util"
 	"time"
@@ -134,7 +136,10 @@ func getValue(rType, level string) string{
 func (h *HttpManager) help(w http.ResponseWriter, r *http.Request){
 	fmt.Println("Connect Service")
 
-	w.Write([]byte("OpenMCP Service Response\n"))
+	myIP := GetOutboundIP()
+	w.Write([]byte("IotGateway Pod Response\n"))
+	w.Write([]byte("Host : "+r.Host+"\n"))
+	w.Write([]byte("myIP(Pod) : "+myIP+"\n\n"))
 
 }
 func (h *HttpManager)sysbench_daemon_cpu() {
@@ -507,6 +512,18 @@ func (h *HttpManager) networktx_stop(w http.ResponseWriter, r *http.Request){
 
 	}
 	h.printStatus(w, r)
+}
+
+func GetOutboundIP() string {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+	return localAddr.IP.String()
 }
 
 func main() {

@@ -14,6 +14,8 @@ spec:
         name: openmcp-dns-controller
     spec:
       serviceAccountName: openmcp-dns-controller-sa
+      imagePullSecrets:
+        - name: dockerlogin
       containers:
         - name: openmcp-dns-controller
           # Replace this with the built image name

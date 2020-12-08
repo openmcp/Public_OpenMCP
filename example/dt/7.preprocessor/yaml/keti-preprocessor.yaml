@@ -2,7 +2,6 @@ apiVersion: openmcp.k8s.io/v1alpha1
 kind: OpenMCPDeployment
 metadata:
   name: keti-preprocessor
-#  namespace: dt
 spec:
   #serviceName: "keti-preprocessor"
   replicas: 3
@@ -12,16 +11,16 @@ spec:
     spec:
       template:
         spec:
+          imagePullSecrets:
+            - name: dockerlogin
           containers:
           - name: keti-preprocessor
-    #        image: ramhiser/spark:2.0.1
             image: openmcp/keti-preprocessor:v0.0.1
             imagePullPolicy: Always
             #command: ["/bin/sh"]
             #args: ["-c", "while true; do echo hello; sleep 10;done"]
             #command: ["./start.sh"]
             command: ["./start_spark.sh"]
-            #command: ["ls"]
             ports:
             - containerPort: 7077
             - containerPort: 8080
@@ -33,13 +32,13 @@ spec:
             - name: QUEUE_TOPIC
               value: "data"
             - name: ZKQUORUM
-              value: "zk-cs.default.openmcp-dt-domain.svc.openmcp.dt.org:2181"
+              value: "zk-cs.default.openmcp-keti-domain.svc.openmcp.keti.org:2181"
             - name: RABITMQ
-              value: "mu-rabbit-rabbitmq.default.openmcp-dt-domain.svc.openmcp.dt.org"
+              value: "mu-rabbit-rabbitmq.default.openmcp-keti-domain.svc.openmcp.keti.org"
             - name: SPARK_PERIOD_SEC
               value: "3"
             - name: INFLUXDB_SERVICE
-              value: "influxdb.default.openmcp-dt-domain.svc.openmcp.dt.org"
+              value: "influxdb.default.openmcp-keti-domain.svc.openmcp.keti.org"
             #volumeMounts:
             #- name: hadoop-conf
             #  mountPath: /etc/config/hadoop-conf
@@ -47,5 +46,4 @@ spec:
           #- name: hadoop-conf
           #  configMap:
           #    name: hadoop-config
-          imagePullSecrets:
-          - name: regcred
+

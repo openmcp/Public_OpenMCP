@@ -14,6 +14,8 @@ spec:
         name: openmcp-analytic-engine
     spec:
       serviceAccountName: openmcp-analytic-engine
+      imagePullSecrets:
+        - name: dockerlogin
       containers:
         - name: openmcp-analytic-engine
           # Replace this with the built image name

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"k8s.io/client-go/rest"
 	"log"
 	"net/http"
@@ -20,7 +19,7 @@ type JoinableCluster struct {
 	Name      		string      `json:"name"`
 	ENDPOINT  	 	string      `json:"endpoint"`
 
-	PlatForm  		string		`json:"platfrom"`
+	PlatForm  		string		`json:"platform"`
 	Region 			string 		`json:"region"`
 	Zone  			string		`json:"zone"`
 
@@ -30,7 +29,7 @@ type JoinableCluster struct {
 func (h *HttpManager)JoinableHandler(w http.ResponseWriter, r *http.Request) {
 	// GET http://10.0.3.20:31635/joinable1
 
-	fmt.Println("check1")
+
 	host_config, _ := rest.InClusterConfig()
 	host_client := genericclient.NewForConfigOrDie(host_config)
 
@@ -39,7 +38,7 @@ func (h *HttpManager)JoinableHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("check2")
+
 	defineClusterNames := []string{"cluster1", "cluster2", "cluster3", "gke-cluster1", "eks-cluster1"}
 	joinableClusterNames := []string{}
 
@@ -55,7 +54,7 @@ func (h *HttpManager)JoinableHandler(w http.ResponseWriter, r *http.Request) {
 			joinableClusterNames = append(joinableClusterNames, defineClusterName)
 		}
 	}
-	fmt.Println("check3")
+
 	jcl := JoinableClusterList{}
 	for _, joinableClusterName := range joinableClusterNames {
 		jc := JoinableCluster{}
@@ -89,7 +88,7 @@ func (h *HttpManager)JoinableHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		jcl.Items = append(jcl.Items, jc)
 	}
-	fmt.Println("check4")
+
 	bytesJson, _ := json.Marshal(jcl)
 	var prettyJSON bytes.Buffer
 	err = json.Indent(&prettyJSON, bytesJson, "", "\t")
@@ -97,7 +96,7 @@ func (h *HttpManager)JoinableHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 
-	fmt.Println("check5")
+
 
 
 

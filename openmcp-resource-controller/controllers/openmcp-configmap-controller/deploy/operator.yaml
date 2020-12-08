@@ -14,6 +14,8 @@ spec:
         name: openmcp-configmap-controller
     spec:
       serviceAccountName: openmcp-configmap-controller
+      imagePullSecrets:
+        - name: dockerlogin
       containers:
         - name: openmcp-configmap-controller
           # Replace this with the built image name

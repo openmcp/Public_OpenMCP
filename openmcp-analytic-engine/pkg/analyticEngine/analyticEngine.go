@@ -171,7 +171,8 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 		nodeCapacity := &corev1.Node{}
 		err := cm.Cluster_genClients[ser.Tags["cluster"]].Get(context.TODO(), nodeCapacity, "", ser.Tags["node"])
 		if err != nil {
-			omcplog.V(0).Info("nodelist err : ", err)
+			omcplog.V(0).Info("nodelist err!  : ", err)
+			continue
 		} else {
 			omcplog.V(2).Info("[CPU Capacity] ", ser.Tags["cluster"], "/", ser.Tags["node"], "/", nodeCapacity.Status.Capacity.Cpu().Value())
 		}
@@ -224,11 +225,11 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 
 	score = cpuScore*ae.MetricsWeight["CPU"] + memScore*ae.MetricsWeight["Memory"] + diskScore*ae.MetricsWeight["FS"] + netScore*ae.MetricsWeight["NET"] + latencyScore*ae.MetricsWeight["LATENCY"]
 
-	if score > 0 && clusterName == "cluster1"{
+	if score > 0 && clusterName == "eks-cluster1"{
 		omcplog.V(2).Info("--------------------------------------------------------")
 		omcplog.V(2).Info(" rx -> ",MetricsMap["NetworkRxBytes"] - prevMetricsMap["NetworkRxBytes"])
 		omcplog.V(2).Info(" tx -> ",MetricsMap["NetworkTxBytes"] - prevMetricsMap["NetworkTxBytes"])
-		omcplog.V(2).Info(" cpuscore : ",cpuScore)
+		omcplog.V(2).Info(" cpuscore : ",cpuScore, MetricsMap["CPUUsageNanoCores"], float64(totalCpuCore))
 		omcplog.V(2).Info(" memScore : ",memScore)
 		omcplog.V(2).Info(" netScore : ",netScore)
 		omcplog.V(2).Info(" diskScore : ",diskScore)
