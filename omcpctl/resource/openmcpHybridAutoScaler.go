@@ -21,13 +21,18 @@ func OpenMCPHybridAutoScalerInfo(ohas *resourcev1alpha1.OpenMCPHybridAutoScaler)
 	resources := []string{}
 
 	for _, metric := range ohas.Spec.HpaTemplate.Spec.Metrics {
-		resource := string(metric.Resource.Name) + "/"
-		if metric.Resource.Target.Type == "Utilization" {
-			resource += "averageUtilization(" + strconv.Itoa(int(*metric.Resource.Target.AverageUtilization)) + ")"
-		} else if metric.Resource.Target.Type == "averagevalue" {
-			resource += "averageValue(" + metric.Resource.Target.AverageValue.String()+ ")"
-		} else if metric.Resource.Target.Type == "value"{
-			resource += "value(" + metric.Resource.Target.Value.String()+ ")"
+		resource := ""
+		if metric.Type == "Resource" {
+			resource = string(metric.Resource.Name) + "/"
+			if metric.Resource.Target.Type == "Utilization" {
+				resource += "averageUtilization(" + strconv.Itoa(int(*metric.Resource.Target.AverageUtilization)) + ")"
+			} else if metric.Resource.Target.Type == "averagevalue" {
+				resource += "averageValue(" + metric.Resource.Target.AverageValue.String()+ ")"
+			} else if metric.Resource.Target.Type == "value"{
+				resource += "value(" + metric.Resource.Target.Value.String()+ ")"
+			}
+		} else if metric.Type == "Object" {
+			resource = metric.Object.Metric.Name + "(" + metric.Object.Target.Value.String() + " )"
 		}
 
 		resources = append(resources, resource)
@@ -38,11 +43,10 @@ func OpenMCPHybridAutoScalerInfo(ohas *resourcev1alpha1.OpenMCPHybridAutoScaler)
 	policies := []string{}
 	for _, policy := range ohas.Status.Policies{
 		policyStr := policy.Type + "(" + strings.Join(policy.Value, "/") + ")"
-
 		policies = append(policies, policyStr)
 	}
 	age := cobrautil.GetAge(ohas.CreationTimestamp.Time)
-	data := []string{namespace, name,  min_replica, max_replica,  strings.Join(resources, "\n"), reference_odeploy, vpa_mode, strings.Join(policies, "\n"), age}
+	data := []string{namespace, name,  min_replica, max_replica, strings.Join(resources, "\n"), reference_odeploy, vpa_mode, strings.Join(policies, "\n"), age}
 
 	return data
 }

@@ -14,6 +14,8 @@ spec:
         name: openmcp-metric-collector
     spec:
       serviceAccountName: openmcp-metric-collector
+      imagePullSecrets:
+        - name: dockerlogin
       containers:
         - name: openmcp-metric-collector
           # Replace this with the built image name

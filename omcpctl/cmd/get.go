@@ -354,6 +354,10 @@ func getCore(resourceKind, resourceName, resourceNamespace, clusterContext strin
 			resource.PrintOpenMCPSecret(body)
 		} else if  metainfo.Kind == "OpenMCPSecretList"{
 			resource.PrintOpenMCPSecretList(body)
+		} else if  metainfo.Kind == "OpenMCPDNSEndpoint"{
+			resource.PrintOpenMCPDNSEndpoint(body)
+		} else if  metainfo.Kind == "OpenMCPDNSEndpointList"{
+			resource.PrintOpenMCPDNSEndpointList(body)
 		} else {
 			fmt.Println("error: the server doesn't have a resource type \""+resourceKind+"\"")
 			return cobrautil.NewError("")

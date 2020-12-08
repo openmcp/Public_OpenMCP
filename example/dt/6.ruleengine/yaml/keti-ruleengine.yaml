@@ -13,6 +13,8 @@ spec:
     spec:
       template:
         spec:
+          imagePullSecrets:
+            - name: dockerlogin
           containers:
           - name: keti-ruleengine
             image: openmcp/keti-ruleengine:v0.0.1
@@ -26,13 +28,13 @@ spec:
             - containerPort: 8080
             env:
             - name: RABBITMQ_SERVICE
-              value: "mu-rabbit-rabbitmq.default.openmcp-dt-domain.svc.openmcp.dt.org"
+              value: "mu-rabbit-rabbitmq.default.openmcp-keti-domain.svc.openmcp.keti.org"
             - name: QUEUE_NAME
               value: "data"
             - name: QUEUE_TOPIC
               value: "data"
             - name: INFLUXDB
-              value: "influxdb.default.openmcp-dt-domain.svc.openmcp.dt.org"
+              value: "influxdb.default.openmcp-keti-domain.svc.openmcp.keti.org"
             - name: INFLUX_PORT
               value: "8086"
             - name: INFLUX_USER
@@ -50,5 +52,4 @@ spec:
           - name: timezone-config
             hostPath:
               path: /usr/share/zoneinfo/Asia/Seoul
-          imagePullSecrets:
-          - name: regcred
+

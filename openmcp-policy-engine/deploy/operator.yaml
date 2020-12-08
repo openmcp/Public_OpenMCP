@@ -14,6 +14,8 @@ spec:
         name: openmcp-policy-engine
     spec:
       serviceAccountName: openmcp-policy-engine
+      imagePullSecrets:
+        - name: dockerlogin
       containers:
         - name: openmcp-policy-engine
           # Replace this with the built image name

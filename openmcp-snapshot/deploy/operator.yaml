@@ -14,6 +14,8 @@ spec:
         name: openmcp-snapshot
     spec:
       serviceAccountName: openmcp-snapshot-sa
+      imagePullSecrets:
+        - name: dockerlogin
       containers:
         - name: openmcp-snapshot
           # Replace this with the built image name

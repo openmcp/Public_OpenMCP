@@ -21,12 +21,12 @@ func OpenMCPPolicyInfo(opol *policyv1alpha1.OpenMCPPolicy) []string{
 		policy := pol.Type + "("+ strings.Join(pol.Value,",") + ")"
 		policies = append(policies, policy)
 	}
-	rangeApp := opol.Spec.RangeOfApplication
-	targetCont := opol.Spec.Template.Spec.TargetController.Kind
+	//rangeApp := opol.Spec.RangeOfApplication
+	//targetCont := opol.Spec.Template.Spec.TargetController.Kind
 	age := cobrautil.GetAge(opol.CreationTimestamp.Time)
 
-	data := []string{namespace, name, status, strings.Join(policies,"\n"), rangeApp, targetCont, age}
-	
+	//data := []string{namespace, name, status, strings.Join(policies,"\n"), rangeApp, targetCont, age}
+	data := []string{namespace, name, status, strings.Join(policies,"\n"), age}
 
 	return data
 }
@@ -77,7 +77,8 @@ func PrintOpenMCPPolicyList(body []byte) {
 
 func DrawOpenMCPPolicyTable(datas [][]string){
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"NS", "NAME", "STATUS", "POLICIES", "RANGE_APP", "TARGET_CONT","AGE"})
+	//table.SetHeader([]string{"NS", "NAME", "STATUS", "POLICIES", "RANGE_APP", "TARGET_CONT","AGE"})
+	table.SetHeader([]string{"NS", "NAME", "STATUS", "POLICIES","AGE"})
 	table.SetBorder(false)
 	table.AppendBulk(datas)
 	table.Render()

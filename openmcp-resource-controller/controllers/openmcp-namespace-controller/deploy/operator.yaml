@@ -14,6 +14,8 @@ spec:
         name: openmcp-namespace-controller
     spec:
       serviceAccountName: openmcp-namespace-controller
+      imagePullSecrets:
+        - name: dockerlogin
       containers:
         - name: openmcp-namespace-controller
           # Replace this with the built image name

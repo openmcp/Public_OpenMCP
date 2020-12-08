@@ -14,6 +14,8 @@ spec:
         name: openmcp-sync-controller
     spec:
       serviceAccountName: openmcp-sync-controller
+      imagePullSecrets:
+        - name: dockerlogin
       containers:
         - name: openmcp-sync-controller
           # Replace this with the built image name

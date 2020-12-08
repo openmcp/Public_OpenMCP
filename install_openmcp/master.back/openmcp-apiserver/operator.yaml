@@ -14,6 +14,8 @@ spec:
         name: openmcp-apiserver
     spec:
       serviceAccountName: openmcp-apiserver-sa
+      imagePullSecrets:
+        - name: dockerlogin
       containers:
         - name: openmcp-apiserver
           # Replace this with the built image name

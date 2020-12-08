@@ -185,8 +185,8 @@ func decodeNetwork(target *storage.MetricsPoint, netStats *stats.NetworkStats) e
 
 func decodeFs(target *storage.MetricsPoint, FsStats *stats.FsStats) error {
 	fmt.Println("Func decodeFs Called")
-	if FsStats == nil || FsStats.UsedBytes == nil {
-		return fmt.Errorf("missing memory usage metric")
+	if FsStats == nil {
+		return fmt.Errorf("missing FS usage metric")
 	}
 
 	target.FsAvailableBytes = *uint64Quantity(*FsStats.AvailableBytes, 0)
@@ -195,7 +195,12 @@ func decodeFs(target *storage.MetricsPoint, FsStats *stats.FsStats) error {
 	target.FsCapacityBytes = *uint64Quantity(*FsStats.CapacityBytes, 0)
 	target.FsCapacityBytes.Format = resource.BinarySI
 
-	target.FsUsedBytes = *uint64Quantity(*FsStats.UsedBytes, 0)
+	if FsStats.UsedBytes == nil {
+		target.FsUsedBytes = *uint64Quantity(0, 0)
+	} else {
+		target.FsUsedBytes = *uint64Quantity(*FsStats.UsedBytes, 0)
+	}
+
 	target.FsUsedBytes.Format = resource.BinarySI
 
 	return nil

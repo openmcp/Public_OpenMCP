@@ -1,8 +1,7 @@
 apiVersion: openmcp.k8s.io/v1alpha1
 kind: OpenMCPDeployment
 metadata:
-  name: iot-data-collector
-#  namespace: dt
+  name: iot-gateway
 spec:
   replicas: 3
   labels:
@@ -12,6 +11,8 @@ spec:
     spec:
       template:
         spec:
+          imagePullSecrets:
+            - name: dockerlogin
           containers:
           - name: iot-gateway
             #imagePullPolicy: IfNotPresent
@@ -49,7 +50,7 @@ spec:
               value: "60"
             - name:  KAFKA_CONNECT
               #value: "kafka-svc.default.svc.cluster.local"
-              value: "kafka-svc.default.openmcp-dt-domain.svc.openmcp.dt.org"
+              value: "kafka-svc.default.openmcp-keti-domain.svc.openmcp.keti.org"
             securityContext:
              capabilities:
                add:
@@ -82,14 +83,11 @@ spec:
             ports:
               - containerPort: 80
                 name: http
-          imagePullSecrets:
-          - name: regcred
 ---
 apiVersion: openmcp.k8s.io/v1alpha1
 kind: OpenMCPService
 metadata:
   name: iot-gateway-svc
-#  namespace: dt
 spec:
   labelselector:
     component: iot-gateway-svc
@@ -115,7 +113,7 @@ metadata:
   # The namespace of the sample deployment/service.
 spec:
   # The name of the corresponding Domain.
-  domainRef: openmcp-dt-domain
+  domainRef: openmcp-keti-domain
   recordTTL: 300
 ---
 

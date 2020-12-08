@@ -14,6 +14,8 @@ spec:
         name: openmcp-deployment-controller
     spec:
       serviceAccountName: openmcp-deployment-controller
+      imagePullSecrets:
+        - name: dockerlogin
       containers:
         - name: openmcp-deployment-controller
           image: openmcp/openmcp-deployment-controller:v0.0.1
