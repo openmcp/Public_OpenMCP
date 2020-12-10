@@ -35,6 +35,8 @@ type Registry interface {
 	IngressIP(ClusterName string) (string, error)
 	Country(ClusterName string) (string, error)
 	Continent(ClusterName string) (string, error)
+	Region(ClusterName string) (string, error)
+	Zone(ClusterName string) (string, error)
 	ResourceScore(ClusterName string) (float64, error)
 	HopScore(ClusterName string) (float64, error)
 	Init()
@@ -114,6 +116,31 @@ func (c DefaultClusterInfo) Country(ClusterName string) (string, error) {
 	country := cluster["Country"]
 	return country, nil
 }
+
+func (c DefaultClusterInfo) Region(ClusterName string) (string, error) {
+	//	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster Continent")
+	lock.RLock()
+	cluster, ok := c[ClusterName]
+	lock.RUnlock()
+	if !ok {
+		return "", ErrClusterNotFound
+	}
+	continent := cluster["Region"]
+	return continent, nil
+}
+
+func (c DefaultClusterInfo) Zone(ClusterName string) (string, error) {
+	//	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster Continent")
+	lock.RLock()
+	cluster, ok := c[ClusterName]
+	lock.RUnlock()
+	if !ok {
+		return "", ErrClusterNotFound
+	}
+	continent := cluster["Zone"]
+	return continent, nil
+}
+
 
 func (c DefaultClusterInfo) Continent(ClusterName string) (string, error) {
 //	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller(ClusterRegistry)] Function Cluster Continent")
