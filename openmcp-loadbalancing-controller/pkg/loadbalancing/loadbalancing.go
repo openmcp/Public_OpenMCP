@@ -26,6 +26,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	//"math"
 )
 
 var lock sync.RWMutex
@@ -71,6 +72,8 @@ var SERVER_IP = os.Getenv("GRPC_SERVER")
 var SERVER_PORT = os.Getenv("GRPC_PORT")
 var grpcClient = protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
+var TEST_IP = os.Getenv("TEST_IP")
+
 var ResourceScore = map[string]float64{}
 
 func RequestResourceScore(clusters []string, clientIP string) {
@@ -89,6 +92,7 @@ func RequestResourceScore(clusters []string, clientIP string) {
 			ResourceScore = response.ScoreMap
 		}
 		omcplog.V(5).Info(ResourceScore)
+
 		time.Sleep(time.Second * time.Duration(Policy["Period"]))
 	}
 }
@@ -120,6 +124,12 @@ func Score(clusters []string, clientIP string, creg clusterregistry.Registry) ma
 	omcplog.V(0).Info("Geo Score")
 	omcplog.V(0).Info(GeoScore)
 
+	omcplog.V(-1).Info("Geo Score")
+
+	for cluster,_ := range GeoScore {
+		omcplog.V(-1).Info(cluster," Geo Score : ", GeoScore[cluster])
+	}
+
 	var sumScore = map[string]float64{}
 
 	isAnalytic := os.Getenv("isAnalytic")
@@ -135,8 +145,15 @@ func Score(clusters []string, clientIP string, creg clusterregistry.Registry) ma
 		}
 	}
 
-	omcplog.V(3).Info("Response Geo, Resource Score")
-	omcplog.V(3).Info(sumScore)
+	omcplog.V(3).Info("Resource Score")
+	omcplog.V(3).Info(ResourceScore)
+
+
+	omcplog.V(-1).Info("Resource Score")
+
+	for cluster,_ := range ResourceScore {
+		omcplog.V(-1).Info(cluster," Resource Score : ", ResourceScore[cluster])
+	}
 
 	return sumScore
 }
@@ -169,6 +186,24 @@ func endpointCluster(score map[string]float64) string {
 		sumScore[cluster] = score[cluster]
 		totalScore = totalScore + sumScore[cluster]
 	}
+        var clusterRatio = map[string]float64{}
+
+        for cluster,_ := range  score {
+		clusterRatio[cluster] = (sumScore[cluster] / totalScore) * 100
+	}
+
+
+	omcplog.V(-1).Info("Traffic Ratio")
+
+	for cluster,_ := range clusterRatio {
+		test := float64(int(clusterRatio[cluster] * 100)) / 100
+
+		//vv := fmt.Sprint("%.2f", clusterRatio[cluster])
+		omcplog.V(-1).Info(cluster," Traffic Ratio : ", test, "%")
+	}
+
+	//omcplog.V(5).Info("Traffic Ratio")
+    //    omcplog.V(5).Info(clusterRatio)
 	rand.Seed(time.Now().UnixNano())
 	n := rand.Float64() * totalScore
 	omcplog.V(4).Info("Random Num : ", n)
@@ -225,17 +260,59 @@ func getCountry(clientIP string) string {
 	if GeoErr != nil {
 		log.Fatal(GeoErr)
 	}
-
+	clientIP = TEST_IP
+	//clientIP = "119.65.195.180"
 	ip := net.ParseIP(clientIP)
 	record, err := GeoDB.City(ip)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	//국가코드
 	omcplog.V(5).Info("ISO country code: %v\n", record.Country.IsoCode)
 
+//	fmt.Println("국가 코드")
+//	fmt.Println(record.Country.IsoCode)
+//	fmt.Println("국가/지역1")
+//	fmt.Println(record.Subdivisions)
+
+	if len(record.Subdivisions) > 0 {
+		fmt.Println(record.Subdivisions[0].Names["en"])
+	} else {
+		fmt.Println("Not Exist")
+	}
+
+//	fmt.Println("국가/지역2")
+//	fmt.Println(record.RepresentedCountry)
 
 	return record.Country.IsoCode
 }
+
+func getGeo(clientIP string) (string, string) {
+	omcplog.V(4).Info("Function Called getGeo")
+	if GeoErr != nil {
+		log.Fatal(GeoErr)
+	}
+	clientIP = TEST_IP
+	//clientIP = "119.65.195.180"
+	ip := net.ParseIP(clientIP)
+	record, err := GeoDB.City(ip)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//region 이 국가, zone 이 지역
+	region := record.Country.IsoCode
+	zone := ""
+
+	if len(record.Subdivisions) > 0 {
+		zone = record.Subdivisions[0].Names["en"]
+	} else {
+		zone = "Seoul"
+	}
+	return region, zone
+}
+
 
 func getContinent(country string) string {
 	return Geo.Geo[country]
@@ -271,30 +348,51 @@ func geoScore(clusters []string, creg clusterregistry.Registry, clientIP string)
 	baseScore := 100.0
 	policy := Policy["GeoRate"]
 
-	clientCountry := getCountry(clientIP)
-	clientContinent := getContinent(clientCountry)
+	clientRegion, clientZone := getGeo(clientIP)
+
+	//clientCountry := getCountry(clientIP)
+	//clientContinent := getContinent(clientCountry)
 
 	score := map[string]float64{}
-	for _, cluster := range clusters {
 
-		clustercountry, err := creg.Country(cluster)
+	for _, cluster := range clusters{
+		clusterRegion, err := creg.Region(cluster)
 		if err != nil {
 			omcplog.V(0).Info(cluster + " Not set Country")
 		}
-
-		clustercontinent, err := creg.Continent(cluster)
+		clusterZone, err := creg.Zone(cluster)
 		if err != nil {
-			omcplog.V(0).Info(cluster + " Not set Continent")
+			omcplog.V(0).Info(cluster + " Not set Region")
 		}
 
-		if clientCountry == clustercountry {
+		if clientZone == clusterZone {
 			score[cluster] = baseScore + (baseScore * policy)
-		} else if clientContinent == clustercontinent {
+		} else if clientRegion == clusterRegion {
 			score[cluster] = baseScore
 		} else {
 			score[cluster] = baseScore - (baseScore * policy)
 		}
 	}
+	//for _, cluster := range clusters {
+	//
+	//	clustercountry, err := creg.Country(cluster)
+	//	if err != nil {
+	//		omcplog.V(0).Info(cluster + " Not set Country")
+	//	}
+	//
+	//	clustercontinent, err := creg.Continent(cluster)
+	//	if err != nil {
+	//		omcplog.V(0).Info(cluster + " Not set Continent")
+	//	}
+	//
+	//	if clientCountry == clustercountry {
+	//		score[cluster] = baseScore + (baseScore * policy)
+	//	} else if clientContinent == clustercontinent {
+	//		score[cluster] = baseScore
+	//	} else {
+	//		score[cluster] = baseScore - (baseScore * policy)
+	//	}
+	//}
 	omcplog.V(5).Info(score)
 	return score
 }
@@ -302,10 +400,12 @@ func geoScore(clusters []string, creg clusterregistry.Registry, clientIP string)
 func loadbalancing(host, tip, path string, reg loadbalancingregistry.Registry, creg clusterregistry.Registry, countryreg countryregistry.Registry, sreg serviceregistry.Registry, openmcpIP string) (string, error) {
 	omcplog.V(4).Info("Function Called loadbalancing")
 
+	omcplog.V(-1).Info("Extract Host from Traffic : ", host)
+
 	serviceName, err := reg.Lookup(host, path)
 	endpoints, err := sreg.Lookup(serviceName)
-	omcplog.V(5).Info("Service Discovery, Endpoint(Cluster)")
-	omcplog.V(5).Info(endpoints)
+	omcplog.V(-1).Info("Service Discovery, Endpoint(Cluster)")
+	omcplog.V(-1).Info(endpoints)
 
 	if err != nil {
 		return "", err
@@ -326,7 +426,7 @@ func loadbalancing(host, tip, path string, reg loadbalancingregistry.Registry, c
 		omcplog.V(5).Info("Apply Algorithm : Geo, Resource Score")
 		endpoint = scoring(endpoints, tip, creg)
 	}
-
+	omcplog.V(-1).Info("Select Endpoint : " + endpoint)
 	omcplog.V(3).Info("Select Endpoint : " + endpoint)
 	return endpoint, err
 }
@@ -338,6 +438,8 @@ func NewMultipleHostReverseProxy(reg loadbalancingregistry.Registry, creg cluste
 		host := req.Host
 		fmt.Println(req)
 		ip, _ := ExtractIP(req.RemoteAddr)
+		//test:= getCountry(ip)
+		//fmt.Println(test)
 		path, err := ExtractPath(req.URL)
 		omcplog.V(4).Info("Extract Host, IP, Path")
 
@@ -350,6 +452,7 @@ func NewMultipleHostReverseProxy(reg loadbalancingregistry.Registry, creg cluste
 		if path == "/" {
 			path = ""
 		}
+		omcplog.V(-1).Info("Exec Redirect (Code : 307)")
 		omcplog.V(3).Info("Exec Redirect (Code : 307)")
 		url := "http://" + endpoint + "." + host + "/" + path
 		http.Redirect(w, req, url, 307)

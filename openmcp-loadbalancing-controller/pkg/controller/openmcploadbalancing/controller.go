@@ -242,12 +242,29 @@ func initRegistry() {
 			omcplog.V(0).Info(err)
 		}
 
-		if len(nodes.Items) > 1 {
+		fmt.Println("check!!!!!!!!!!!!!!!!")
+		fmt.Println(len(nodes.Items))
+		if len(nodes.Items) > 0 {
 			node := nodes.Items[0]
-			country := node.Labels["failure-domain.beta.kubernetes.io/zone"]
-			continent := node.Labels["failure-domain.beta.kubernetes.io/region"]
-			loadbalancing.ClusterRegistry[cluster.Name]["Country"] = country
-			loadbalancing.ClusterRegistry[cluster.Name]["Continent"] = continent
+			zone := node.Labels["failure-domain.beta.kubernetes.io/zone"]
+			region := node.Labels["failure-domain.beta.kubernetes.io/region"]
+			loadbalancing.ClusterRegistry[cluster.Name]["Zone"] = zone
+			loadbalancing.ClusterRegistry[cluster.Name]["Region"] = region
+			//country := node.Labels["failure-domain.beta.kubernetes.io/zone"]
+			//continent := node.Labels["failure-domain.beta.kubernetes.io/region"]
+			//loadbalancing.ClusterRegistry[cluster.Name]["Country"] = country
+			//loadbalancing.ClusterRegistry[cluster.Name]["Continent"] = continent
+			if region == "us-central1" {
+				region = "US"
+			} else if region == "eu-west-2" {
+				region = "GB"
+			}
+
+			if zone == "us-central1-c" {
+				zone = "Iowa"
+			} else if zone == "eu-west-2b" {
+				zone = "England"
+			}
 
 			found := &corev1.Service{}
 			cluster_client := cm.Cluster_genClients[cluster.Name]
