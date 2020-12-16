@@ -1,0 +1,31 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: example-openmcpdeployment2
+  namespace: openmcp
+spec:
+  replicas: 7
+  affinity: 
+    region: 
+      - eu-west-2
+      - us-central1
+    zone: 
+      - eu-west-2c
+      - us-central1-c
+  labels:
+      app: openmcp-nginx
+      test: "yes"
+  template:
+    spec:
+      template:
+        spec:
+          containers:
+          - image: nginx
+            name: nginx
+            imagePullPolicy: IfNotPresent
+            imagePullSecrets:
+            - name: docker-registry-login
+            resources:
+              requests:
+                memory: "100"
+                cpu: "0.5"
