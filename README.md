@@ -97,11 +97,12 @@ Enter the previously set value for PowerDNS Server API Key. (https://github.com/
 ```bash
 $ cd ./install_openmcp
 $ ./SETTING.sh
-OpenMCP Analytic Engine GRPC Server IP -> 10.0.3.20
+Docker Registry IP:PORT -> 10.0.3.30:5005
+OpenMCP Analytic Engine GRPC Server IP -> 10.0.3.30
 OpenMCP Analytic Engine GRPC Server Port -> 32050
 OpenMCP Metric Collector GRPC Server IP(Public) -> 119.65.195.180
 OpenMCP Metric Collector GRPC Server Port(Public) -> 32051
-InfluxDB Server IP -> 10.0.3.20
+InfluxDB Server IP -> 10.0.3.30
 InfluxDB Server Port -> 31051
 InfluxDB User Name -> root
 InfluxDB User Password -> root
