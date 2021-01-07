@@ -13,7 +13,7 @@ cp -r member.back member
 
 #MYIP=`ip route get 8.8.8.8 | head -1 | cut -d' ' -f8`
 
-echo -n "Docker Secret Name for Authentication ->"
+echo -n "Docker Secret Name for Authentication -> "
 read DOCKER_SECRET_NAME
 
 echo -n "Docker Registry IP:PORT -> "
