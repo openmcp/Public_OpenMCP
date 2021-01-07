@@ -15,11 +15,11 @@ spec:
     spec:
       serviceAccountName: openmcp-sync-controller
       imagePullSecrets:
-        - name: dockerlogin
+        - name: REPLACE_DOCKERSECRETNAME
       containers:
         - name: openmcp-sync-controller
           # Replace this with the built image name
-          image: openmcp/openmcp-sync-controller:v0.0.1
+          image: REPLACE_DOCKERREGISTRYIP/openmcp/openmcp-sync-controller:v0.0.1
           command:
           - openmcp-sync-controller
           imagePullPolicy: Always

@@ -15,11 +15,11 @@ spec:
     spec:
       serviceAccountName: openmcp-analytic-engine
       imagePullSecrets:
-        - name: dockerlogin
+        - name: REPLACE_DOCKERSECRETNAME
       containers:
         - name: openmcp-analytic-engine
           # Replace this with the built image name
-          image: openmcp/openmcp-analytic-engine:v0.0.1
+          image: REPLACE_DOCKERREGISTRYIP/openmcp/openmcp-analytic-engine:v0.0.1
           command:
           - openmcp-analytic-engine
           imagePullPolicy: Always

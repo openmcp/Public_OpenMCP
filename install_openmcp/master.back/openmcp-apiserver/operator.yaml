@@ -15,11 +15,11 @@ spec:
     spec:
       serviceAccountName: openmcp-apiserver-sa
       imagePullSecrets:
-        - name: dockerlogin
+        - name: REPLACE_DOCKERSECRETNAME
       containers:
         - name: openmcp-apiserver
           # Replace this with the built image name
-          image: openmcp/openmcp-apiserver:v0.0.1
+          image: REPLACE_DOCKERREGISTRYIP/openmcp/openmcp-apiserver:v0.0.1
           command:
           - openmcp-apiserver
           imagePullPolicy: Always

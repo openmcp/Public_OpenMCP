@@ -15,10 +15,10 @@ spec:
     spec:
       serviceAccountName: openmcp-apiserver-sa
       imagePullSecrets:
-        - name: dockerlogin
+        - name: openmcp-private-registry
       containers:
         - name: openmcp-apiserver
-          image: openmcp/openmcp-apiserver:v0.0.1
+          image: 10.0.3.40:5005/openmcp/openmcp-apiserver:v0.0.1
           command:
           - openmcp-apiserver
           imagePullPolicy: Always
