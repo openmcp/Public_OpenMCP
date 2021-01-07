@@ -97,6 +97,7 @@ Enter the previously set value for PowerDNS Server API Key. (https://github.com/
 ```bash
 $ cd ./install_openmcp
 $ ./SETTING.sh
+Docker Secret Name for Authentication -> openmcp-private-registry
 Docker Registry IP:PORT -> 10.0.3.30:5005
 OpenMCP Analytic Engine GRPC Server IP -> 10.0.3.30
 OpenMCP Analytic Engine GRPC Server Port -> 32050
