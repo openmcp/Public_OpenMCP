@@ -14,11 +14,11 @@ spec:
         name: openmcp-deployment-controller
     spec:
       serviceAccountName: openmcp-deployment-controller
-      imagePullSecrets:
-        - name: dockerlogin
+#      imagePullSecrets:
+#        - name: dockerlogin
       containers:
         - name: openmcp-deployment-controller
-          image: openmcp/openmcp-deployment-controller:v0.0.1
+          image: 10.0.3.40:5005/openmcp/openmcp-deployment-controller:v0.0.1
           command:
           - openmcp-deployment-controller
           imagePullPolicy: Always
@@ -34,6 +34,8 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "openmcp-deployment-controller"
+      imagePullSecrets:
+        - name: openmcp-private-registry
       tolerations:
         - key: node.kubernetes.io/not-ready
           effect: NoExecute

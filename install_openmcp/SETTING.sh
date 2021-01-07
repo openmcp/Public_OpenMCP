@@ -13,6 +13,12 @@ cp -r member.back member
 
 #MYIP=`ip route get 8.8.8.8 | head -1 | cut -d' ' -f8`
 
+echo -n "Docker Secret Name for Authentication ->"
+read DOCKER_SECRET_NAME
+
+echo -n "Docker Registry IP:PORT -> "
+read DOCKER_REGISTRY_IP
+
 echo -n "OpenMCP Analytic Engine GRPC Server IP -> "
 read OAE_GRPC_IP
 
@@ -54,6 +60,38 @@ read ADDRESS_FROM
 
 echo -n "OpenMCP MetalLB Address IP Range (TO) -> "
 read ADDRESS_TO
+
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-has-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-scheduler/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-loadbalancing-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-sync-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-configmap-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-apiserver/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-metric-collector/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-ingress-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-analytic-engine/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-secret-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-deployment-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-dns-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-service-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-policy-engine/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' member/metric-collector/operator/operator.yaml
+
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-has-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-scheduler/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-loadbalancing-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-sync-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-configmap-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-apiserver/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-metric-collector/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-ingress-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-analytic-engine/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-secret-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-deployment-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-dns-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-service-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-policy-engine/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' member/metric-collector/operator/operator.yaml
 
 sed -i 's|REPLACE_GRPCIP|'\"$OAE_GRPC_IP\"'|g' master/openmcp-has-controller/operator.yaml
 sed -i 's|REPLACE_GRPCIP|'\"$OAE_GRPC_IP\"'|g' master/openmcp-scheduler/operator.yaml
