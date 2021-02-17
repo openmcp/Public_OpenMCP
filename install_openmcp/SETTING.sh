@@ -19,6 +19,9 @@ read DOCKER_SECRET_NAME
 echo -n "Docker Registry IP:PORT -> "
 read DOCKER_REGISTRY_IP
 
+echo -n "Docker imagePullPolicy -> "
+read DOCKER_IMAGE_PULL_POLICY
+
 echo -n "OpenMCP Analytic Engine GRPC Server IP -> "
 read OAE_GRPC_IP
 
@@ -92,6 +95,22 @@ sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-dns-c
 sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-service-controller/operator.yaml
 sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-policy-engine/operator.yaml
 sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' member/metric-collector/operator/operator.yaml
+
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-has-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-scheduler/operator.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-loadbalancing-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-sync-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-configmap-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-apiserver/operator.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-metric-collector/operator.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-ingress-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-analytic-engine/operator.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-secret-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-deployment-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-dns-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-service-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-policy-engine/operator.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' member/metric-collector/operator/operator.yaml
 
 sed -i 's|REPLACE_GRPCIP|'\"$OAE_GRPC_IP\"'|g' master/openmcp-has-controller/operator.yaml
 sed -i 's|REPLACE_GRPCIP|'\"$OAE_GRPC_IP\"'|g' master/openmcp-scheduler/operator.yaml
