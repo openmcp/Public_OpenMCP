@@ -46,6 +46,7 @@ require (
 	k8s.io/apimachinery v0.18.6
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20200710055348-ddb8ec8980e1
 	k8s.io/client-go v12.0.0+incompatible
+	k8s.io/cluster-registry v0.0.6
 	k8s.io/component-base v0.18.6
 	k8s.io/klog v1.0.0
 	k8s.io/kube-aggregator v0.18.6
@@ -53,7 +54,6 @@ require (
 	k8s.io/metrics v0.18.2
 	sigs.k8s.io/controller-runtime v0.6.0
 	sigs.k8s.io/kubefed v0.3.0
-
 )
 
 replace (

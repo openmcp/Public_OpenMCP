@@ -969,6 +969,8 @@ k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20200710055348-ddb8ec8980e1/go.
 k8s.io/cli-runtime v0.17.3/go.mod h1:X7idckYphH4SZflgNpOOViSxetiMj6xI0viMAjM81TA=
 k8s.io/client-go v0.17.3 h1:deUna1Ksx05XeESH6XGCyONNFfiQmDdqeqUvicvP6nU=
 k8s.io/client-go v0.17.3/go.mod h1:cLXlTMtWHkuK4tD360KpWz2gG2KtdWEr/OT02i3emRQ=
+k8s.io/cluster-registry v0.0.6 h1:zSzuBlDybN72jty3veddOALhWyzeXfF80u8NZg3FMFM=
+k8s.io/cluster-registry v0.0.6/go.mod h1:/F+o1rvzjBdLbg782rR8eKrOb20hPy7us+Zu/pjBtAY=
 k8s.io/code-generator v0.0.0-20191109100332-a9a0d9c0b3aa/go.mod h1:fRFrKVixH946mn5PeglV2fvxbE86JesGi16bsWZ1xz4=
 k8s.io/code-generator v0.17.2/go.mod h1:DVmfPQgxQENqDIzVR2ddLXMH34qeszkKSdH/N+s+38s=
 k8s.io/code-generator v0.17.3/go.mod h1:l8BLVwASXQZTo2xamW5mQNFCe1XPiAesVq7Y1t7PiQQ=

@@ -1,6 +1,7 @@
 package apis
 
 import (
+	clusterv1alpha1 "openmcp/openmcp/apis/cluster/v1alpha1"
 	dnsv1alpha1 "openmcp/openmcp/apis/dns/v1alpha1"
 	globalcachev1alpha1 "openmcp/openmcp/apis/globalcache/v1alpha1"
 	loadbalancingv1alpha1 "openmcp/openmcp/apis/loadbalancing/v1alpha1"
@@ -21,4 +22,5 @@ func init() {
 	AddToSchemes = append(AddToSchemes, policyv1alpha1.SchemeBuilder.AddToScheme)
 	AddToSchemes = append(AddToSchemes, snapshotv1alpha1.SchemeBuilder.AddToScheme)
 	AddToSchemes = append(AddToSchemes, globalcachev1alpha1.SchemeBuilder.AddToScheme)
+	AddToSchemes = append(AddToSchemes, clusterv1alpha1.SchemeBuilder.AddToScheme)
 }
