@@ -22,7 +22,7 @@ spec:
           image: REPLACE_DOCKERREGISTRYIP/openmcp/openmcp-dns-controller:v0.0.1
           command:
           - openmcp-dns-controller
-          imagePullPolicy: Always
+          imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
           env:
             - name: WATCH_NAMESPACE
               value: ""
