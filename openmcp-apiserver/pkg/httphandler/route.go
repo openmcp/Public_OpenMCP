@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 )
+
 func PopLeftSlice(splitUrl []string) []string {
 	splitUrl = append(splitUrl[:0], splitUrl[1:]...)
 	return splitUrl
@@ -24,5 +25,4 @@ func (h *HttpManager) RouteHandler(w http.ResponseWriter, r *http.Request) {
 	} else if splitUrl[0] == "joinable" {
 		h.JoinableHandler(w, r)
 	}
-
 }

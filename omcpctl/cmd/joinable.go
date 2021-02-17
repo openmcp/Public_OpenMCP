@@ -53,14 +53,13 @@ omcpctl joinable list`,
 	},
 }
 
-
 func GetJoinableClusterList() {
 	for {
 		lockErr := Lock.TryLock()
 		if lockErr != nil {
 			fmt.Println("Mount Dir Using Another Works. Wait...")
 			time.Sleep(time.Second)
-		}else {
+		} else {
 			break
 		}
 	}
@@ -104,7 +103,6 @@ func GetJoinableClusterList() {
 		datas = append(datas, aks_data)
 	}
 
-
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"ClusterName", "apiEndpoint", "Platform"})
 	table.SetBorder(false)
@@ -112,8 +110,7 @@ func GetJoinableClusterList() {
 	table.Render()
 }
 
-func getGKEClusterData() [][]string{
-
+func getGKEClusterData() [][]string {
 	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
 	genClient := genericclient.NewForConfigOrDie(kubeconfig)
 
@@ -125,43 +122,47 @@ func getGKEClusterData() [][]string{
 		fmt.Println(err)
 	}
 	gkeClusterInfo := strings.Split(s, "\n")
-
-	for i := 1; i< len(gkeClusterInfo)-1; i++ {
-
+	for i := 1; i < len(gkeClusterInfo)-1; i++ {
 		ss := strings.Fields(gkeClusterInfo[i])
 
-		if len(ss) < 8 {
+		/*if len(ss) < 8{
 			continue
-		}
+		}*/
+
 		clusterName := ss[0]
 		masterIP := ss[3]
 		platform := "gke"
-		status := ss[7]
 
-		if status != "RUNNING"{
+		check := ""
+
+		for j := 0; j < len(ss); j++ {
+			if ss[j] == "RUNNING" {
+				check = "OK"
+			}
+		}
+
+		if check == "" {
 			continue
 		}
+
 		isAlreadyJoined := false
-		for _, joinedCluster := range clusterList.Items{
-			if clusterName == joinedCluster.Name && strings.Contains(joinedCluster.Spec.APIEndpoint, masterIP){
+		for _, joinedCluster := range clusterList.Items {
+			if clusterName == joinedCluster.Name && strings.Contains(joinedCluster.Spec.APIEndpoint, masterIP) {
 				isAlreadyJoined = true
 				break
 			}
 		}
 		if !isAlreadyJoined {
-			data := []string{clusterName, "https://"+masterIP, platform}
+			data := []string{clusterName, "https://" + masterIP, platform}
 			datas = append(datas, data)
 		}
 
-
-
 	}
-
 
 	return datas
 }
 
-func getEKSClusterData() [][]string{
+func getEKSClusterData() [][]string {
 
 	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
 	genClient := genericclient.NewForConfigOrDie(kubeconfig)
@@ -185,9 +186,9 @@ func getEKSClusterData() [][]string{
 		return datas
 	}
 	eksClusterNamesInteface := jsonData["clusters"].([]interface{})
-	for _, clusterNameInterface := range eksClusterNamesInteface{
+	for _, clusterNameInterface := range eksClusterNamesInteface {
 		clusterName := clusterNameInterface.(string)
-		ss, err := util.CmdExec("aws eks describe-cluster --name "+clusterName+" | cat")
+		ss, err := util.CmdExec("aws eks describe-cluster --name " + clusterName + " | cat")
 
 		if err != nil {
 			fmt.Println(err)
@@ -210,8 +211,8 @@ func getEKSClusterData() [][]string{
 		platform := "eks"
 
 		isAlreadyJoined := false
-		for _, joinedCluster := range clusterList.Items{
-			if clusterName == joinedCluster.Name && strings.Contains(joinedCluster.Spec.APIEndpoint, apiEndpoint){
+		for _, joinedCluster := range clusterList.Items {
+			if clusterName == joinedCluster.Name && strings.Contains(joinedCluster.Spec.APIEndpoint, apiEndpoint) {
 				isAlreadyJoined = true
 				break
 			}
@@ -226,7 +227,7 @@ func getEKSClusterData() [][]string{
 	return datas
 }
 
-func getAKSClusterData() [][]string{
+func getAKSClusterData() [][]string {
 
 	kubeconfig, _ := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
 	genClient := genericclient.NewForConfigOrDie(kubeconfig)
@@ -240,13 +241,13 @@ func getAKSClusterData() [][]string{
 		return datas
 	}
 
-	jsonData := make([]map[string]interface{},0)
+	jsonData := make([]map[string]interface{}, 0)
 	err = json.Unmarshal([]byte(s), &jsonData)
 	if err != nil {
 		return datas
 	}
 
-	for _, jsonData2 := range jsonData{
+	for _, jsonData2 := range jsonData {
 
 		clusterName := jsonData2["name"].(string)
 		clusterAPI := jsonData2["fqdn"].(string)
@@ -258,14 +259,14 @@ func getAKSClusterData() [][]string{
 		platform := "aks"
 
 		isAlreadyJoined := false
-		for _, joinedCluster := range clusterList.Items{
-			if clusterName == joinedCluster.Name && strings.Contains(joinedCluster.Spec.APIEndpoint, clusterAPI){
+		for _, joinedCluster := range clusterList.Items {
+			if clusterName == joinedCluster.Name && strings.Contains(joinedCluster.Spec.APIEndpoint, clusterAPI) {
 				isAlreadyJoined = true
 				break
 			}
 		}
 		if !isAlreadyJoined {
-			data := []string{clusterName, "https://"+clusterAPI+":443", platform}
+			data := []string{clusterName, "https://" + clusterAPI + ":443", platform}
 			datas = append(datas, data)
 		}
 

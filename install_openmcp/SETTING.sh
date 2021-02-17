@@ -77,40 +77,41 @@ sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-s
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-policy-engine/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' member/metric-collector/operator/operator.yaml
 
-sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-has-controller/operator.yaml
-sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-scheduler/operator.yaml
-sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-loadbalancing-controller/operator.yaml
-sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-sync-controller/operator.yaml
-sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-configmap-controller/operator.yaml
-sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-apiserver/operator.yaml
-sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-metric-collector/operator.yaml
-sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-ingress-controller/operator.yaml
-sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-analytic-engine/operator.yaml
-sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-secret-controller/operator.yaml
-sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-deployment-controller/operator.yaml
-sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-dns-controller/operator.yaml
-sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-service-controller/operator.yaml
-sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' master/openmcp-policy-engine/operator.yaml
-sed -i 's|REPLACE_DOCKERREGISTRYIP|'\"$DOCKER_REGISTRY_IP\"'|g' member/metric-collector/operator/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-has-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-scheduler/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-loadbalancing-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-sync-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-configmap-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-apiserver/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-metric-collector/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-ingress-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-analytic-engine/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-secret-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-deployment-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-dns-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-service-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-policy-engine/operator.yaml
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' member/metric-collector/operator/operator.yaml
 
 sed -i 's|REPLACE_GRPCIP|'\"$OAE_GRPC_IP\"'|g' master/openmcp-has-controller/operator.yaml
 sed -i 's|REPLACE_GRPCIP|'\"$OAE_GRPC_IP\"'|g' master/openmcp-scheduler/operator.yaml
 sed -i 's|REPLACE_GRPCIP|'\"$OAE_GRPC_IP\"'|g' master/openmcp-loadbalancing-controller/operator.yaml
 
-sed -i 's|REPLACE_GRPCPORT|'\"$OAE_GRPC_PORT\"'|g' master/openmcp-analytic-engine/service.yaml
+sed -i 's|REPLACE_GRPCPORT|'$OAE_GRPC_PORT'|g' master/openmcp-analytic-engine/service.yaml
 
 sed -i 's|REPLACE_GRPCPORT|'\"$OAE_GRPC_PORT\"'|g' master/openmcp-has-controller/operator.yaml
 sed -i 's|REPLACE_GRPCPORT|'\"$OAE_GRPC_PORT\"'|g' master/openmcp-scheduler/operator.yaml
 sed -i 's|REPLACE_GRPCPORT|'\"$OAE_GRPC_PORT\"'|g' master/openmcp-loadbalancing-controller/operator.yaml
 
 sed -i 's|REPLACE_GRPCIP|'\"$OME_GRPC_PUBLIC_IP\"'|g' member/metric-collector/operator/operator.yaml
-sed -i 's|REPLACE_GRPCPORT|'\"$OME_GRPC_PUBLIC_PORT\"'|g' member/metric-collector/operator/service.yaml
+sed -i 's|REPLACE_GRPCPORT|'$OME_GRPC_PUBLIC_PORT'|g' member/metric-collector/service.yaml
+sed -i 's|REPLACE_GRPCPORT|'$OME_GRPC_PUBLIC_PORT'|g' master/openmcp-metric-collector/service.yaml
 
 sed -i 's|REPLACE_INFLUXDBIP|'\"$INFLUXDB_IP\"'|g' master/openmcp-analytic-engine/operator.yaml
 sed -i 's|REPLACE_INFLUXDBIP|'\"$INFLUXDB_IP\"'|g' master/openmcp-metric-collector/operator.yaml
 sed -i 's|REPLACE_INFLUXDBIP|'\"$INFLUXDB_IP\"'|g' master/openmcp-apiserver/operator.yaml
 
-sed -i 's|REPLACE_INFLUXDBPORT|'\"$INFLUXDB_PORT\"'|g' master/influxdb/service.yaml
+sed -i 's|REPLACE_INFLUXDBPORT|'$INFLUXDB_PORT'|g' master/influxdb/service.yaml
 
 sed -i 's|REPLACE_INFLUXDBPORT|'\"$INFLUXDB_PORT\"'|g' master/openmcp-analytic-engine/operator.yaml
 sed -i 's|REPLACE_INFLUXDBPORT|'\"$INFLUXDB_PORT\"'|g' master/openmcp-metric-collector/operator.yaml

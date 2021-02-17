@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: openmcp-cluster-manager
+  namespace: openmcp
+  labels:
+    name: openmcp-cluster-manager
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 2052
+    targetPort: 2052
+    nodePort: 32052
+    protocol: TCP
+  selector:
+    name: openmcp-cluster-manager
