@@ -13,6 +13,9 @@ cp -r member.back member
 
 #MYIP=`ip route get 8.8.8.8 | head -1 | cut -d' ' -f8`
 
+echo -n "OpenMCP Install Type [debug/learning]-> "
+read OMCP_INSTALL_TYPE
+
 echo -n "OpenMCP Server IP -> "
 read OMCP_IP
 
@@ -72,6 +75,14 @@ read ADDRESS_FROM
 
 echo -n "OpenMCP MetalLB Address IP Range (TO) -> "
 read ADDRESS_TO
+
+if [ OMCP_INSTALL_TYPE == "learning" ]; then
+  rm master/openmcp-cluster-manager/operator.yaml
+  rm master/influxdb/deployment.yaml
+else
+  rm master/openmcp-cluster-manager/operator-learningmcp.yaml
+  rm master/influxdb/deployment-learningmcp.yaml
+fi
 
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-has-controller/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-scheduler/operator.yaml
@@ -168,7 +179,6 @@ sed -i 's|REPLACE_PDNSIP|'$PDNS_PUBLIC_IP':'$PDNS_PUBLIC_PORT'|g' member/configm
 sed -i 's|REPLACE_PDNSIP|'$PDNS_PUBLIC_IP':'$PDNS_PUBLIC_PORT'|g' member/configmap/kubedns/kube-dns-cm.yaml
 
 sed -i 's|REPLACE_PDNSIP|'\"$NFS_PDNS_IP\"'|g' master/openmcp-dns-controller/operator.yaml
-#sed -i 's|REPLACE_PDNSPORT|'\"$PDNS_PORT\"'|g' master/openmcp-dns-controller/operator.yaml
 sed -i 's|REPLACE_PDNSAPIKEY|'\"$PDNS_API_KEY\"'|g' master/openmcp-dns-controller/operator.yaml
 
 sed -i 's|REPLACE_ADDRESS_FROM|'"$ADDRESS_FROM"'|g' master/metallb/configmap.yaml

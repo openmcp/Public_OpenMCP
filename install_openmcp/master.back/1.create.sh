@@ -1,6 +1,8 @@
 kubectl create ns openmcp
 kubectl create ns metallb-system
 
+echo "--- openmcp-cluster-manager"
+kubectl create -f openmcp-cluster-manager/.
 echo "--- openmcp-analytic-engine"
 kubectl create -f openmcp-analytic-engine/.
 echo "--- openmcp-apiserver"

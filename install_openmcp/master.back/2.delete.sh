@@ -1,3 +1,5 @@
+echo "--- openmcp-cluster-manager"
+kubectl delete -f openmcp-cluster-manager/.
 echo "--- openmcp-analytic-engine"
 kubectl delete -f openmcp-analytic-engine/.
 echo "--- openmcp-apiserver"
