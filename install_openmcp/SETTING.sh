@@ -76,7 +76,7 @@ read ADDRESS_FROM
 echo -n "OpenMCP MetalLB Address IP Range (TO) -> "
 read ADDRESS_TO
 
-if [ OMCP_INSTALL_TYPE == "learning" ]; then
+if [ $OMCP_INSTALL_TYPE == "learning" ]; then
   rm master/openmcp-cluster-manager/operator.yaml
   rm master/influxdb/deployment.yaml
 else
