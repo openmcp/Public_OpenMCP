@@ -40,10 +40,10 @@ read OCM_PORT
 echo -n "OpenMCP Analytic Engine GRPC Server Port -> "
 read OAE_GRPC_PORT
 
-#echo -n "OpenMCP Metric Collector GRPC Server IP -> "
-#read OME_GRPC_PUBLIC_IP
+echo -n "OpenMCP Metric Collector GRPC Server IP (Public) -> "
+read OME_GRPC_PUBLIC_IP
 
-echo -n "OpenMCP Metric Collector GRPC Server Port -> "
+echo -n "OpenMCP Metric Collector GRPC Server Port (Public) -> "
 read OME_GRPC_PUBLIC_PORT
 
 #echo -n "InfluxDB Server IP -> "
@@ -61,10 +61,10 @@ read INFLUXDB_USERPWD
 echo -n "NFS & PowerDNS Server IP -> "
 read NFS_PDNS_IP
 
-echo -n "PowerDNS Server IP(Public) -> "
+echo -n "PowerDNS Server IP (Public) -> "
 read PDNS_PUBLIC_IP
 
-echo -n "PowerDNS Server Port(public) -> "
+echo -n "PowerDNS Server Port (public) -> "
 read PDNS_PUBLIC_PORT
 
 echo -n "PowerDNS Server API Key -> "
@@ -149,7 +149,7 @@ sed -i 's|REPLACE_GRPCPORT|'\"$OAE_GRPC_PORT\"'|g' master/openmcp-has-controller
 sed -i 's|REPLACE_GRPCPORT|'\"$OAE_GRPC_PORT\"'|g' master/openmcp-scheduler/operator.yaml
 sed -i 's|REPLACE_GRPCPORT|'\"$OAE_GRPC_PORT\"'|g' master/openmcp-loadbalancing-controller/operator.yaml
 
-sed -i 's|REPLACE_GRPCIP|'\"$OMCP_IP\"'|g' member/metric-collector/operator/operator.yaml
+sed -i 's|REPLACE_GRPCIP|'\"$OME_GRPC_PUBLIC_IP\"'|g' member/metric-collector/operator/operator.yaml
 sed -i 's|REPLACE_GRPCPORT|'$OME_GRPC_PUBLIC_PORT'|g' member/metric-collector/service.yaml
 sed -i 's|REPLACE_GRPCPORT|'$OME_GRPC_PUBLIC_PORT'|g' master/openmcp-metric-collector/service.yaml
 
