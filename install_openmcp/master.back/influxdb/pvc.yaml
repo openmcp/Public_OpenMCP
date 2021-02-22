@@ -4,6 +4,7 @@ metadata:
   name: pvc-influxdb
   namespace: openmcp
 spec:
+  storageClassName: standard
   accessModes:
   - ReadWriteMany
   resources:

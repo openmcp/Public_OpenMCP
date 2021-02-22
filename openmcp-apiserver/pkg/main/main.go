@@ -20,7 +20,6 @@ import (
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
 	"context"
-	"fmt"
 	"io/ioutil"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"log"
@@ -55,7 +54,7 @@ func CreateClusterResource(name string, config []byte) (string, error) {
 		//Status: clusterv1alpha1.OpenMCPClusterStatus{ClusterStatus: "STANDBY"},
 	}
 
-	fmt.Println("clusterCR : ", clusterCR.Spec.ClusterStatus)
+	//fmt.Println("clusterCR : ", clusterCR.Spec.ClusterStatus)
 
 	liveClient, _ := live.GetDelegatingClient()
 
@@ -128,8 +127,8 @@ func main() {
 
 		go func() {
 			omcplog.V(2).Info("Start OpenMCP API Server")
-			err := server.ListenAndServe()
-			//err := server.ListenAndServeTLS("ca.crt","ca.key")
+			//err := server.ListenAndServe()
+			err := server.ListenAndServeTLS("/tmp/cert/server.crt", "/tmp/cert/server.key")
 			if err != nil {
 				omcplog.V(0).Info(err)
 			}
