@@ -25,7 +25,7 @@ read DOCKER_SECRET_NAME
 echo -n "Docker Registry IP:PORT -> "
 read DOCKER_REGISTRY_IP
 
-echo -n "Docker imagePullPolicy -> "
+echo -n "Docker imagePullPolicy [Always/IfNotPresent] -> "
 read DOCKER_IMAGE_PULL_POLICY
 
 #echo -n "OpenMCP Analytic Engine GRPC Server IP -> "
@@ -79,6 +79,8 @@ read ADDRESS_TO
 if [ $OMCP_INSTALL_TYPE == "learning" ]; then
   rm master/openmcp-cluster-manager/operator.yaml
   rm master/influxdb/deployment.yaml
+  mv master/openmcp-cluster-manager/operator-learningmcp.yaml master/openmcp-cluster-manager/operator.yaml
+  mv master/influxdb/deployment-learningmcp.yaml master/influxdb/deployment.yaml
 else
   rm master/openmcp-cluster-manager/operator-learningmcp.yaml
   rm master/influxdb/deployment-learningmcp.yaml
