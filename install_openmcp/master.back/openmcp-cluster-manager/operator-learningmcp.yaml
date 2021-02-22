@@ -45,7 +45,7 @@ spec:
             path: /kube
         - name: initmodule
           hostPath:
-            path: /mnt/cluster-manager/initmodule
+            path: /init
       tolerations:
         - key: node.kubernetes.io/not-ready
           effect: NoExecute
