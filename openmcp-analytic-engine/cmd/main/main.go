@@ -3,6 +3,7 @@ package main
 import (
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
+	"fmt"
 	"log"
 	"openmcp/openmcp/openmcp-analytic-engine/pkg/analyticEngine"
 	"openmcp/openmcp/util/clusterManager"
@@ -46,6 +47,10 @@ func main() {
 			ghosts = append(ghosts, ghost)
 		}
 
+		fmt.Println(live)
+		fmt.Println(ghosts)
+		fmt.Println(namespace)
+
 		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
@@ -60,8 +65,8 @@ func main() {
 		}
 		quit <- true
 		quit <- true
-		<- quitok
-		<- quitok
+		<-quitok
+		<-quitok
 		//time.Sleep(3600 * time.Second)
 
 	}
@@ -85,14 +90,13 @@ func AnalyticEngine(cm *clusterManager.ClusterManager, quit, quitok chan bool) {
 	//ae.SelectHPACluster(&a)
 	//mc.Influx.CreateDatabase()
 	//mc.Influx.CreateMeasurements()
-	go func(){
+	go func() {
 		ae.StartGRPC(GRPC_PORT)
 	}()
 
-	if <- quit {
+	if <-quit {
 		ae.StopGRPC()
 		quitok <- true
 	}
-
 
 }

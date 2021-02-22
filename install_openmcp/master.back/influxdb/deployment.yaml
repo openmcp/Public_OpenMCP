@@ -16,7 +16,7 @@ spec:
       containers:
       - name: influxdb
         image: docker.io/influxdb:1.6.4
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
         envFrom:
         - secretRef:
             name: influxdb-creds
@@ -26,9 +26,12 @@ spec:
         - mountPath: /etc/localtime
           name: timezone-config
       volumes:
+      #- name: var-lib-influxdb
+      # persistentVolumeClaim:
+      #    claimName: pvc-influxdb
       - name: var-lib-influxdb
-        persistentVolumeClaim:
-          claimName: pvc-influxdb
+        hostPath:
+          path: /mnt
       - name: timezone-config
         hostPath:
           path: /usr/share/zoneinfo/Asia/Seoul
