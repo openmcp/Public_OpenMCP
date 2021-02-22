@@ -27,8 +27,8 @@ spec:
           name: timezone-config
       volumes:
       - name: var-lib-influxdb
-       persistentVolumeClaim:
-          claimName: pvc-influxdb
+        hostPath:
+          path: /mnt/influx
       - name: timezone-config
         hostPath:
           path: /usr/share/zoneinfo/Asia/Seoul
