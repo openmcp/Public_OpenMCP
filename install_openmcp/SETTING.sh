@@ -186,3 +186,9 @@ sed -i 's|REPLACE_PDNSAPIKEY|'\"$PDNS_API_KEY\"'|g' master/openmcp-dns-controlle
 
 sed -i 's|REPLACE_ADDRESS_FROM|'"$ADDRESS_FROM"'|g' master/metallb/configmap.yaml
 sed -i 's|REPLACE_ADDRESS_TO|'"$ADDRESS_TO"'|g' master/metallb/configmap.yaml
+
+USERNAME = 'whoami'
+
+if [ $OMCP_INSTALL_TYPE == "learning" ]; then
+  cp -r member /home/$USERNAME/.init/member
+fi
