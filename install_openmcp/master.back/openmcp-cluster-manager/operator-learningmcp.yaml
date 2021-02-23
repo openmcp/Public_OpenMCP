@@ -45,7 +45,7 @@ spec:
             path: /kube
         - name: initmodule
           hostPath:
-            path: /init
+            path: /init/member
       tolerations:
         - key: node.kubernetes.io/not-ready
           effect: NoExecute
