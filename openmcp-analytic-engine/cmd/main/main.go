@@ -51,7 +51,7 @@ func main() {
 		fmt.Println(ghosts)
 		fmt.Println(namespace)
 
-		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
+		reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
 		m := manager.New()

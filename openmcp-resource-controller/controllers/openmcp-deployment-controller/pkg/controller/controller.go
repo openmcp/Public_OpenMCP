@@ -87,7 +87,16 @@ var i int = 0
 var syncIndex int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
+	/*org_cm.Mutex.Lock()
+	var cm *clusterManager.ClusterManager
+	copier.Copy(cm, org_cm)
+	org_cm.Mutex.Unlock()
+
+	omcplog.V(4).Info("CM : ", len(cm.Cluster_list.Items))
+	*/
+
 	omcplog.V(4).Info("[OpenMCP Deployment] Function Called Reconcile")
+
 	i += 1
 
 	// Fetch the OpenMCPDeployment instance
@@ -146,6 +155,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 				found := &appsv1.Deployment{}
 				err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+				omcplog.V(2).Info("/// cluster_client : ", cluster_client)
 
 				if err != nil && errors.IsNotFound(err) {
 					// Not Exist Deployment.
@@ -161,6 +171,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					}
 
 				} else if err != nil {
+					omcplog.V(2).Info("err : ", err)
 					return reconcile.Result{}, err
 				} else {
 					// Already Exist Deployment.

@@ -128,6 +128,7 @@ func main() {
 		go func() {
 			omcplog.V(2).Info("Start OpenMCP API Server")
 			//err := server.ListenAndServe()
+			//err := server.ListenAndServeTLS("/tmp/cert/10.0.3.40/server.crt", "/tmp/cert/10.0.3.40/server.key")
 			err := server.ListenAndServeTLS("/tmp/cert/server.crt", "/tmp/cert/server.key")
 			if err != nil {
 				omcplog.V(0).Info(err)
@@ -150,7 +151,7 @@ func main() {
 			ghosts = append(ghosts, ghost)
 		}
 
-		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
+		reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
 		m := manager.New()

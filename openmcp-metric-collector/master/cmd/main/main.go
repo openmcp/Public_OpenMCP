@@ -16,6 +16,7 @@ import (
 const (
 	GRPC_PORT = "2051"
 )
+
 func main() {
 	logLevel.KetiLogInit()
 
@@ -42,7 +43,7 @@ func main() {
 			ghosts = append(ghosts, ghost)
 		}
 
-		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
+		reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
 		m := manager.New()

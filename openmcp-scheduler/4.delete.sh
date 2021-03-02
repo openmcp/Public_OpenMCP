@@ -1,3 +1,3 @@
 #!/bin/bash
 
-k delete -f deploy/
+kubectl delete -f deploy/
