@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-
 	"log"
 	"openmcp/openmcp/util/clusterManager"
 
@@ -28,9 +27,8 @@ import (
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-ingress-controller/pkg/controller"
-	"openmcp/openmcp/util/controller/reshape"
 	"openmcp/openmcp/util/controller/logLevel"
-
+	"openmcp/openmcp/util/controller/reshape"
 )
 
 func main() {
@@ -60,7 +58,7 @@ func main() {
 		}
 
 		co, _ := openmcpingress.NewController(live, ghosts, namespace, cm)
-		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
+		reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
 		m := manager.New()

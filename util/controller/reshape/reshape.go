@@ -6,7 +6,9 @@ import (
 	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"context"
 	"fmt"
+	"github.com/jinzhu/copier"
 	"k8s.io/klog"
+	"openmcp/openmcp/util/clusterManager"
 	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	fedapis "sigs.k8s.io/kubefed/pkg/apis"
@@ -17,9 +19,12 @@ var c chan string
 
 var prev_length int = 0
 
-func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string) (*controller.Controller, error) {
+var cm *clusterManager.ClusterManager
+
+func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
 	fmt.Println("Reshape New Controller")
 	c = make(chan string)
+	cm = myClusterManager
 
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
@@ -52,10 +57,10 @@ type reconciler struct {
 	ghostNamespace string
 }
 
-var i int = 0
+//var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
-	i += 1
+	//i += 1
 
 	// Fetch the instance
 	kubeFedClusterList := &v1beta1.KubeFedClusterList{}
@@ -64,13 +69,21 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		klog.V(0).Info(err)
 	}
 
-	if i != 1 && len(kubeFedClusterList.Items) != prev_length {
-		fmt.Println("Reshape Cluster")
-		i = 0
-		c <- "reshape"
-	}
+	//fmt.Println("Reshape Cluster [len(kubeFedClusterList.Items)] -> ", len(kubeFedClusterList.Items))
+	//fmt.Println("Reshape Cluster [prev_length] -> ", prev_length)
 
-	prev_length = len(kubeFedClusterList.Items)
+	if len(kubeFedClusterList.Items) != prev_length {
+		fmt.Println("Reshape Cluster")
+		//i = 0
+
+		newCm := clusterManager.NewClusterManager()
+		//cm.Mutex.Lock()
+		copier.Copy(cm, newCm)
+		//cm.Mutex.Unlock()
+
+		prev_length = len(kubeFedClusterList.Items)
+		//c <- "reshape"
+	}
 
 	return reconcile.Result{}, nil // err
 }

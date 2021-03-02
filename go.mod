@@ -46,7 +46,7 @@ require (
 	k8s.io/apimachinery v0.18.6
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20200710055348-ddb8ec8980e1
 	k8s.io/client-go v12.0.0+incompatible
-	k8s.io/cluster-registry v0.0.6
+	k8s.io/cluster-registry v0.0.6 // indirect
 	k8s.io/component-base v0.18.6
 	k8s.io/klog v1.0.0
 	k8s.io/kube-aggregator v0.18.6
@@ -61,10 +61,9 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible // Required by OLM
 	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.10.0
 	github.com/pkg/errors => github.com/pkg/errors v0.9.1
-	google.golang.org/grpc => google.golang.org/grpc v1.27.0
+	google.golang.org/grpc => google.golang.org/grpc v1.26.0
 	k8s.io/apimachinery => k8s.io/apimachinery v0.17.3
 	//k8s.io/client-go => k8s.io/client-go v0.18.2
 	k8s.io/client-go => k8s.io/client-go v0.17.3
-
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.5.0
 )

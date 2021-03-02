@@ -17,8 +17,8 @@ limitations under the License.
 package main
 
 import (
-	"log"
 	"fmt"
+	"log"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
@@ -26,10 +26,9 @@ import (
 
 	"openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-secret-controller/pkg/controller/openmcpsecret"
 
-	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/clusterManager"
+	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
-
 )
 
 func main() {
@@ -60,7 +59,7 @@ func main() {
 			fmt.Println(ghost.Name)
 		}
 		co, _ := openmcpsecret.NewController(live, ghosts, namespace, cm)
-		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
+		reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
 		m := manager.New()

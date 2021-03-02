@@ -65,7 +65,7 @@ func NewControllers(cm *clusterManager.ClusterManager, scheduler *openmcpschedul
 	if err != nil {
 		omcplog.V(0).Info("err New Controller - Scheduler", err)
 	}
-	reshape_cont, err := reshape.NewController(live, ghosts, namespace)
+	reshape_cont, err := reshape.NewController(live, ghosts, namespace, cm)
 	if err != nil {
 		omcplog.V(0).Info("err New Controller - Reshape", err)
 	}
