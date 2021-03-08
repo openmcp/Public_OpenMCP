@@ -1,0 +1,7 @@
+#!/bin/bash
+
+kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/STANDBY/$2/g" | kubectl replace -f - &>-
+
+kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/UNJOIN/$2/g" | kubectl replace -f - &>-
+
+kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/JOIN/$2/g" | kubectl replace -f -

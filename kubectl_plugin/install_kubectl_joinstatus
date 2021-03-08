@@ -1,0 +1,11 @@
+#!/bin/bash
+
+cat <<EOF > kubectl-join_status
+###
+EOF
+
+chmod +x kubectl-join_status
+
+mv kubectl-join_status /usr/local/bin
+
+echo "--Install kubectl-join_status plugin--"

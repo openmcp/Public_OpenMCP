@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if [ "$1" == "GKE" ]; then
+  echo "Cloud Cluster"
+elif [ "$1" == "EKS" ]; then
+  echo "Cloud Cluster"
+elif [ "$1" == "AKS" ]; then
+  echo "Cloud Cluster"
+else
+  echo "Error : Input Cloud Cluster Type"
+  exit 1
+fi
+
+if [ "$2" = "" ]; then
+  echo "Error : Input Cluster Name"
+  exit 1
+fi
+
+if [ "$3" = "" ]; then
+  echo "Error : Input OpenMCP IP:PORT"
+  exit 1
+fi
+
+cat >> kubeconfig <<EOF
+EOF
+export KUBECONFIG=./kubeconfig
+#gcloud container clusters get-credentials $2
+#kubectl get pods
+#aws eks update-kubeconfig --name $2
+az aks get-credentials --resource-group openmcpResourceGroup --name $2 --file ./kubeconfig
+export KUBECONFIG=~/.kube/config
+echo -n | openssl s_client -connect $3 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt
+curl -F file=@"kubeconfig" "https://$3/joinCloud?clustername=$2&clustertype=$1" --cacert server.crt
+rm server.crt
+rm kubeconfig

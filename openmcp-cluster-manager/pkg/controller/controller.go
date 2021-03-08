@@ -14,6 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"openmcp/openmcp/apis"
@@ -105,11 +106,12 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	}
 
 	//조건 추가 - STATUS 비교
-	if clusterInstance.Spec.ClusterStatus == "STANDBY" {
+	if clusterInstance.Spec.ClusterJoinStatus == "STANDBY" {
 		omcplog.V(4).Info(clusterInstance.Name + " [ STANDBY ]")
 
-	} else if clusterInstance.Spec.ClusterStatus == "JOIN" {
+	} else if clusterInstance.Spec.ClusterJoinStatus == "JOIN" {
 		omcplog.V(4).Info(clusterInstance.Name + " [ JOIN ]")
+		omcplog.V(4).Info("Cluster Join---")
 		joinCheck := MergeConfigAndJoin(*clusterInstance)
 
 		if joinCheck == "TRUE" {
@@ -120,16 +122,19 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			}
 
 			util.CmdExec2("cp /mnt/config $HOME/.kube/config")
+
+			util.CmdExec2("chmod 755 " + "/init/vertical-pod-autoscaler/hack/*")
+			util.CmdExec2("/init/vertical-pod-autoscaler/hack/vpa-up.sh " + clusterInstance.Name)
 			InstallInitModule(moduleDirectory, clusterInstance.Name)
 			omcplog.V(4).Info("--- JOIN Complete ---")
 		}
 
-	} else if clusterInstance.Spec.ClusterStatus == "UNJOIN" {
+	} else if clusterInstance.Spec.ClusterJoinStatus == "UNJOIN" {
 		omcplog.V(4).Info(clusterInstance.Name + " [ UNJOIN ]")
 
 		//config 파일 확인 (클러스터 조인 유무)
 		memberkc := &cobrautil.KubeConfig{}
-		err := yaml.Unmarshal(clusterInstance.Spec.ClusterInfo, memberkc)
+		err := yaml.Unmarshal(clusterInstance.Spec.KubeconfigInfo, memberkc)
 		memberIP := memberkc.Clusters[0].Cluster.Server
 
 		openmcpkc := &cobrautil.KubeConfig{}
@@ -146,7 +151,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		unjoinCheck := ""
 
 		for _, cluster := range openmcpkc.Clusters {
-			if strings.Contains(cluster.Cluster.Server, memberIP) {
+			lower_memberIP := strings.ToLower(memberIP)
+			if strings.Contains(cluster.Cluster.Server, lower_memberIP) {
 				unjoinCheck = cluster.Name
 				break
 			}
@@ -159,8 +165,12 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 				moduleDirectory[i] = "/init/" + dirname
 			}
 			util.CmdExec2("cp /mnt/config $HOME/.kube/config")
+			util.CmdExec2("chmod 755 " + "/init/vertical-pod-autoscaler/hack/*")
+			util.CmdExec2("/init/vertical-pod-autoscaler/hack/vpa-down.sh " + clusterInstance.Name)
 			UninstallInitModule(moduleDirectory, clusterInstance.Name)
-			UnjoinAndDeleteConfig(*clusterInstance, memberkc, openmcpkc)
+
+			omcplog.V(4).Info("Cluster Unjoin---")
+			UnjoinAndDeleteConfig(memberkc, openmcpkc)
 
 			omcplog.V(4).Info("--- UNJOIN Complete ---")
 		} else {
@@ -206,9 +216,6 @@ func InstallInitModule(directory []string, clustername string) {
 
 	}
 
-	util.CmdExec2("chmod 755 " + "/init/vertical-pod-autoscaler/hack/*")
-	util.CmdExec2("/init/vertical-pod-autoscaler/hack/vpa-up.sh " + clustername)
-
 }
 
 func UninstallInitModule(directory []string, clustername string) {
@@ -234,7 +241,7 @@ func UninstallInitModule(directory []string, clustername string) {
 				}
 
 				if fi.Mode().IsDir() {
-					InstallInitModule([]string{dirname + "/" + f.Name()}, clustername)
+					UninstallInitModule([]string{dirname + "/" + f.Name()}, clustername)
 				} else {
 					if filepath.Ext(f.Name()) == ".yaml" || filepath.Ext(f.Name()) == ".yml" {
 						util.CmdExec2("/usr/local/bin/kubectl delete -f " + dirname + "/" + f.Name() + " --context " + clustername)
@@ -243,15 +250,14 @@ func UninstallInitModule(directory []string, clustername string) {
 			}
 		}
 	}
-	util.CmdExec2("chmod 755 " + "/init/vertical-pod-autoscaler/hack/*")
-	util.CmdExec2("/init/vertical-pod-autoscaler/hack/vpa-down.sh " + clustername)
 }
 
 func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 	//config파일에 해당 정보가 저장되어 있는지 확인
 	memberkc := &cobrautil.KubeConfig{}
-	err := yaml.Unmarshal(clusterInstance.Spec.ClusterInfo, memberkc)
+	err := yaml.Unmarshal(clusterInstance.Spec.KubeconfigInfo, memberkc)
 	memberIP := memberkc.Clusters[0].Cluster.Server
+	//memberName := memberkc.Clusters[0].Name
 
 	openmcpkc := &cobrautil.KubeConfig{}
 	yamlFile, err := ioutil.ReadFile("/mnt/config")
@@ -279,14 +285,27 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 	} else {
 		//없으면 추가
 		mem_context := memberkc.Contexts[0]
+		mem_context.Name = clusterInstance.Name
+		mem_context.Context.Cluster = clusterInstance.Name
+		mem_context.Context.User = clusterInstance.Name
+
 		mem_cluster := memberkc.Clusters[0]
+		mem_cluster.Name = clusterInstance.Name
+		mem_cluster.Cluster.Server = strings.ToLower(memberIP)
+
 		mem_user := memberkc.Users[0]
+		mem_user.Name = clusterInstance.Name
+
+		/*if clusterInstance.Spec.ClusterPlatformType == "GKE" {
+			mem_user.User.AuthProvider.Config.AccessToken = clusterInstance.Spec.GkeAccessToken
+		}*/
 
 		openmcpkc.Clusters = append(openmcpkc.Clusters, mem_cluster)
 		openmcpkc.Contexts = append(openmcpkc.Contexts, mem_context)
 		openmcpkc.Users = append(openmcpkc.Users, mem_user)
 
 		cobrautil.WriteKubeConfig(openmcpkc, "/mnt/config")
+		util.CmdExec2("cp /mnt/config $HOME/.kube/config")
 
 		omcplog.V(4).Info("Ready to Join.")
 		omcplog.V(4).Info("Join Start---")
@@ -318,7 +337,16 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 			if err_ns != nil {
 				omcplog.V(4).Info("Fail to Create Namespace Resource in " + mem_cluster.Name)
 				omcplog.V(4).Info("err: ", err_ns)
-				return "FALSE"
+				var err_ns_get error
+				ns, err_ns_get = cluster_client.CoreV1().Namespaces().Get("kube-federation-system", metav1.GetOptions{})
+
+				if err_ns_get != nil {
+					omcplog.V(4).Info("err_ns_get: ", ns)
+					return "FALSE"
+				} else {
+					omcplog.V(4).Info("Get Namespace Resource [" + ns.Name + "] in " + mem_cluster.Name)
+				}
+
 			} else {
 				omcplog.V(4).Info("[Step 1] Create Namespace Resource [" + ns.Name + "] in " + mem_cluster.Name)
 			}
@@ -340,7 +368,16 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 			if err_sa != nil {
 				omcplog.V(4).Info("Fail to Create ServiceAccount Resource in " + mem_cluster.Name)
 				omcplog.V(4).Info("err: ", err_sa)
-				return "FALSE"
+				var err_sa_get error
+				sa, err_sa_get = cluster_client.CoreV1().ServiceAccounts("kube-federation-system").Get(mem_cluster.Name+"-openmcp", metav1.GetOptions{})
+
+				if err_sa_get != nil {
+					omcplog.V(4).Info("err_sa_get: ", err_sa_get)
+					return "FALSE"
+				} else {
+					omcplog.V(4).Info("Get ServiceAccount Resource [" + sa.Name + "] in " + mem_cluster.Name)
+				}
+
 			} else {
 				omcplog.V(4).Info("[Step 2] Create ServiceAccount Resource [" + sa.Name + "] in " + mem_cluster.Name)
 			}
@@ -372,7 +409,17 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 			if err_cr != nil {
 				omcplog.V(4).Info("Fail to Create ClusterRole Resource in ", mem_cluster.Name)
 				omcplog.V(4).Info("err: ", err_cr)
-				return "FALSE"
+
+				var err_cr_get error
+				cr, err_cr_get = cluster_client.RbacV1().ClusterRoles().Get("kubefed-controller-manager:"+ServiceAccount.Name, metav1.GetOptions{})
+
+				if err_cr_get != nil {
+					omcplog.V(4).Info("err_cr_get: ", err_cr_get)
+					return "FALSE"
+				} else {
+					omcplog.V(4).Info("Get ClusterRole Resource [" + cr.Name + "] in " + mem_cluster.Name)
+				}
+
 			} else {
 				omcplog.V(4).Info("[Step 3] Create ClusterRole Resource [" + cr.Name + "] in " + mem_cluster.Name)
 			}
@@ -405,7 +452,17 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 			if err_crb != nil {
 				omcplog.V(4).Info("Fail to Create ClusterRoleBinding Resource in ", mem_cluster.Name)
 				omcplog.V(4).Info("err: ", err_crb)
-				return "FALSE"
+
+				var err_crb_get error
+				crb, err_crb_get = cluster_client.RbacV1().ClusterRoleBindings().Get("kubefed-controller-manager:"+ServiceAccount.Name, metav1.GetOptions{})
+
+				if err_crb_get != nil {
+					omcplog.V(4).Info("err_crb_get: ", err_crb_get)
+					return "FALSE"
+				} else {
+					omcplog.V(4).Info("Get ClusterRoleBinding Resource [" + crb.Name + "] in " + mem_cluster.Name)
+				}
+
 			} else {
 				omcplog.V(4).Info("[Step 4] Create ClusterRoleBinding Resource [" + crb.Name + "] in " + mem_cluster.Name)
 			}
@@ -414,13 +471,16 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 
 			//5. Get & CREATE secret (in openmcp)
 			cluster_sa, err_sa1 := cluster_client.CoreV1().ServiceAccounts("kube-federation-system").Get(sa.Name, metav1.GetOptions{})
+			if err_sa1 != nil {
+				omcplog.V(4).Info("Fail to Get Secret Resource From ", mem_cluster.Name)
+				omcplog.V(4).Info("err: ", err_sa1)
+				return "FALSE"
+			}
 
 			cluster_secret, err_sc := cluster_client.CoreV1().Secrets("kube-federation-system").Get(cluster_sa.Secrets[0].Name, metav1.GetOptions{})
-
-			if err_sc != nil || err_sa1 != nil {
+			if err_sc != nil {
 				omcplog.V(4).Info("Fail to Get Secret Resource From ", mem_cluster.Name)
 				omcplog.V(4).Info("err: ", err_sc)
-				omcplog.V(4).Info("err: ", err_sa1)
 				return "FALSE"
 			} else {
 				omcplog.V(4).Info("[Step 5-1] Get Secret Resource [" + cluster_secret.Name + "] From " + mem_cluster.Name)
@@ -445,9 +505,19 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 			if err_secret != nil {
 				omcplog.V(4).Info("Fail to Create secret Resource in openmcp")
 				omcplog.V(4).Info("err: ", err_secret)
-				return "FALSE"
+
+				var err_secret_get error
+				secret_instance, err_secret_get = openmcp_client.CoreV1().Secrets("kube-federation-system").Get(Secret.Name, metav1.GetOptions{})
+
+				if err_secret_get != nil {
+					omcplog.V(4).Info("err_secret_get: ", err_secret_get)
+					return "FALSE"
+				} else {
+					omcplog.V(4).Info("Get Secret Resource [" + secret_instance.Name + "] in openmcp")
+				}
+
 			} else {
-				omcplog.V(4).Info("[Step 5-2] Create Secret Resource [" + mem_cluster.Name + "] in openmcp")
+				omcplog.V(4).Info("[Step 5-2] Create Secret Resource [" + secret_instance.Name + "] in openmcp")
 			}
 
 			//6. CREATE kubefedcluster (in openmcp)
@@ -481,7 +551,7 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 			if err_kubefed != nil {
 				omcplog.V(4).Info("Fail to Create KubefedCluster Resource in openmcp")
 				omcplog.V(4).Info("err: ", err_kubefed)
-				return "FALSE"
+
 			} else {
 				omcplog.V(4).Info("[Step 6] Create KubefedCluster Resource [" + KubefedCluster.Name + "] in openmcp")
 			}
@@ -490,9 +560,8 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 	}
 }
 
-func UnjoinAndDeleteConfig(clusterInstance clusterv1alpha1.OpenMCPCluster, memberkc *cobrautil.KubeConfig, openmcpkc *cobrautil.KubeConfig) {
+func UnjoinAndDeleteConfig(memberkc *cobrautil.KubeConfig, openmcpkc *cobrautil.KubeConfig) {
 	memberIP := memberkc.Clusters[0].Cluster.Server
-
 	target_name := ""
 	target_user := ""
 
@@ -521,8 +590,7 @@ func UnjoinAndDeleteConfig(clusterInstance clusterv1alpha1.OpenMCPCluster, membe
 		}
 	}
 
-	mem_cluster := memberkc.Clusters[0]
-	cluster_config, _ := BuildConfigFromFlags(mem_cluster.Name, "/mnt/config")
+	cluster_config, _ := BuildConfigFromFlags(target_name, "/mnt/config")
 	cluster_client := kubernetes.NewForConfigOrDie(cluster_config)
 
 	//1. DELETE cluster role binding / cluster role / namespace
@@ -577,6 +645,6 @@ func UnjoinAndDeleteConfig(clusterInstance clusterv1alpha1.OpenMCPCluster, membe
 
 	cobrautil.WriteKubeConfig(openmcpkc, "/mnt/config")
 
-	omcplog.V(4).Info("Complete to Delete" + target_name + " Info")
+	omcplog.V(4).Info("Complete to Delete " + target_name + " Info")
 
 }

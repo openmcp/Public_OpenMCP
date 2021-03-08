@@ -16,8 +16,10 @@ type OpenMCPCluster struct {
 }
 
 type OpenMCPClusterSpec struct {
-	ClusterStatus string `json:"clusterStatus,omitempty"`
-	ClusterInfo   []byte `json:"clusterInfo,omitempty"`
+	ClusterPlatformType string `json:"clusterPlatformType"`
+	ClusterJoinStatus   string `json:"joinStatus"`
+	GkeAccessToken      string `json:"gkeAccessToken,omitempty"`
+	KubeconfigInfo      []byte `json:"kubeconfigInfo,omitempty"`
 }
 
 /*type ClusterInfo struct {

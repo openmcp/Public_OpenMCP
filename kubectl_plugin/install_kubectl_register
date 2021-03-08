@@ -1,0 +1,11 @@
+#!/bin/bash
+
+cat <<EOF > kubectl-register
+###
+EOF
+
+chmod +x kubectl-register
+
+mv kubectl-register /usr/local/bin
+
+echo "--Install kubectl-register plugin--"
