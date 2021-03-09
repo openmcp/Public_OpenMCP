@@ -6,6 +6,7 @@ import (
 	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"context"
 	"fmt"
+	"github.com/jinzhu/copier"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	corev1 "k8s.io/api/core/v1"
@@ -271,6 +272,9 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 		return "FALSE"
 	}
 
+	openmcpkc_org := &cobrautil.KubeConfig{}
+	copier.Copy(openmcpkc_org, openmcpkc)
+
 	clusterName := ""
 	for _, cluster := range openmcpkc.Clusters {
 		if strings.Contains(cluster.Cluster.Server, memberIP) {
@@ -316,6 +320,8 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 		if err_config != nil || err_oconfig != nil {
 			omcplog.V(4).Info("err - ", err_config)
 			omcplog.V(4).Info("err - ", err_oconfig)
+			omcplog.V(2).Info("rollback KubeConfig")
+			cobrautil.WriteKubeConfig(openmcpkc_org, "/mnt/config")
 			return "FALSE"
 		} else {
 			cluster_client := kubernetes.NewForConfigOrDie(cluster_config)
@@ -342,6 +348,8 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 
 				if err_ns_get != nil {
 					omcplog.V(4).Info("err_ns_get: ", ns)
+					omcplog.V(2).Info("rollback KubeConfig")
+					cobrautil.WriteKubeConfig(openmcpkc_org, "/mnt/config")
 					return "FALSE"
 				} else {
 					omcplog.V(4).Info("Get Namespace Resource [" + ns.Name + "] in " + mem_cluster.Name)
@@ -373,6 +381,8 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 
 				if err_sa_get != nil {
 					omcplog.V(4).Info("err_sa_get: ", err_sa_get)
+					omcplog.V(2).Info("rollback KubeConfig")
+					cobrautil.WriteKubeConfig(openmcpkc_org, "/mnt/config")
 					return "FALSE"
 				} else {
 					omcplog.V(4).Info("Get ServiceAccount Resource [" + sa.Name + "] in " + mem_cluster.Name)
@@ -415,6 +425,8 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 
 				if err_cr_get != nil {
 					omcplog.V(4).Info("err_cr_get: ", err_cr_get)
+					omcplog.V(2).Info("rollback KubeConfig")
+					cobrautil.WriteKubeConfig(openmcpkc_org, "/mnt/config")
 					return "FALSE"
 				} else {
 					omcplog.V(4).Info("Get ClusterRole Resource [" + cr.Name + "] in " + mem_cluster.Name)
@@ -458,6 +470,8 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 
 				if err_crb_get != nil {
 					omcplog.V(4).Info("err_crb_get: ", err_crb_get)
+					omcplog.V(2).Info("rollback KubeConfig")
+					cobrautil.WriteKubeConfig(openmcpkc_org, "/mnt/config")
 					return "FALSE"
 				} else {
 					omcplog.V(4).Info("Get ClusterRoleBinding Resource [" + crb.Name + "] in " + mem_cluster.Name)
@@ -474,6 +488,8 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 			if err_sa1 != nil {
 				omcplog.V(4).Info("Fail to Get Secret Resource From ", mem_cluster.Name)
 				omcplog.V(4).Info("err: ", err_sa1)
+				omcplog.V(2).Info("rollback KubeConfig")
+				cobrautil.WriteKubeConfig(openmcpkc_org, "/mnt/config")
 				return "FALSE"
 			}
 
@@ -481,6 +497,8 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 			if err_sc != nil {
 				omcplog.V(4).Info("Fail to Get Secret Resource From ", mem_cluster.Name)
 				omcplog.V(4).Info("err: ", err_sc)
+				omcplog.V(2).Info("rollback KubeConfig")
+				cobrautil.WriteKubeConfig(openmcpkc_org, "/mnt/config")
 				return "FALSE"
 			} else {
 				omcplog.V(4).Info("[Step 5-1] Get Secret Resource [" + cluster_secret.Name + "] From " + mem_cluster.Name)
@@ -511,6 +529,8 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 
 				if err_secret_get != nil {
 					omcplog.V(4).Info("err_secret_get: ", err_secret_get)
+					omcplog.V(2).Info("rollback KubeConfig")
+					cobrautil.WriteKubeConfig(openmcpkc_org, "/mnt/config")
 					return "FALSE"
 				} else {
 					omcplog.V(4).Info("Get Secret Resource [" + secret_instance.Name + "] in openmcp")

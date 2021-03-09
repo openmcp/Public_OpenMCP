@@ -1,7 +1,20 @@
 #!/bin/bash
 
 cat <<EOF > kubectl-join_status
-###
+#!/bin/bash
+if [ "\$1" == "" ]; then
+  echo "Please Input Cluster Name"
+  echo "ex) kubectl join-status cluster1 JOIN"
+  exit 1
+fi
+
+if [ "\$2" == "" ]; then
+  echo "Please Input Cluster Join Status (JOIN/UNJOIN)"
+  echo "ex) kubectl join-status cluster1 JOIN"
+  exit 1
+fi
+
+kubectl get openmcpcluster \$1 -n openmcp -o yaml | sed "s/STANDBY/\$2/g" | kubectl replace -f -
 EOF
 
 chmod +x kubectl-join_status
