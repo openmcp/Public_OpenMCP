@@ -9,6 +9,14 @@ COPY _output/bin/openmcp-cluster-manager ${OPERATOR}
 
 COPY bin /usr/local/bin
 
+RUN microdnf install unzip openssl
+
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+
+RUN unzip awscliv2.zip
+
+RUN ./aws/install
+
 RUN  /usr/local/bin/user_setup
 
 RUN chmod +x /usr/local/bin/entrypoint

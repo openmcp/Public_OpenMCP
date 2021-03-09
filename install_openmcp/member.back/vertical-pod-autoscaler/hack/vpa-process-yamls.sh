@@ -37,9 +37,9 @@ fi
 ACTION=$1
 CLUSTER=$2
 COMPONENTS="vpa-beta2-crd vpa-rbac updater-deployment recommender-deployment admission-controller-deployment"
-if [ ${ACTION} == delete ]; then
-  COMPONENTS+=" vpa-beta2-crd"
-fi
+#if [ ${ACTION} == delete ]; then
+  #COMPONENTS+=" vpa-beta2-crd"
+#fi
 
 for i in $COMPONENTS; do
   echo $i
@@ -48,7 +48,7 @@ for i in $COMPONENTS; do
       (bash ${SCRIPT_ROOT}/pkg/admission-controller/gencerts.sh $CLUSTER || true)
     elif [ ${ACTION} == delete ] ; then
       (bash ${SCRIPT_ROOT}/pkg/admission-controller/rmcerts.sh $CLUSTER || true)
-      (bash ${SCRIPT_ROOT}/pkg/admission-controller/delete-webhook.sh $CLUSTER || true)
+      #(bash ${SCRIPT_ROOT}/pkg/admission-controller/delete-webhook.sh $CLUSTER || true)
     fi
   fi
   ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/deploy/$i.yaml | kubectl ${ACTION} -f - --context $CLUSTER || true

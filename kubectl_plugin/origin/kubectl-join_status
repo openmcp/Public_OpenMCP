@@ -1,7 +1,19 @@
 #!/bin/bash
 
-kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/STANDBY/$2/g" | kubectl replace -f - &>-
+#kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/i/$2/g" | kubectl replace -f - &>-
+#kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/UNJOIN/$2/g" | kubectl replace -f - &>-
+#kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/JOIN/$2/g" | kubectl replace -f -
 
-kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/UNJOIN/$2/g" | kubectl replace -f - &>-
+if [ "$1" == "" ]; then
+  echo "Please Input Cluster Name"
+  echo "ex) kubectl join-status cluster1 JOIN"
+  exit 1
+fi
 
-kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/JOIN/$2/g" | kubectl replace -f -
+if [ "$2" == "" ]; then
+  echo "Please Input Cluster Join Status (JOIN/UNJOIN)"
+  echo "ex) kubectl join-status cluster1 JOIN"
+  exit 1
+fi
+
+kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/STANDBY/$2/g" | kubectl replace -f -
