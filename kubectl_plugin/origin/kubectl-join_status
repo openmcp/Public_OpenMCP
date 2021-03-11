@@ -10,7 +10,9 @@ if [ "$1" == "" ]; then
   exit 1
 fi
 
-if [ "$2" == "" ]; then
+if [[ "$2" == "JOIN" ]] || [[ "$2" == "UNJOIN" ]] || [[ "$2" == "STANDBY" ]]; then
+  echo "Change Cluster Status - $2"
+elif
   echo "Please Input Cluster Join Status (JOIN/UNJOIN)"
   echo "ex) kubectl join-status cluster1 JOIN"
   exit 1
