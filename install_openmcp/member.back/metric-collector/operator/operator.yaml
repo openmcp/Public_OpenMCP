@@ -36,8 +36,8 @@ spec:
               value: REPLACE_GRPCIP
             - name: GRPC_PORT
               value: REPLACE_GRPCPORT
-            - name: CLUSTER_NAME
-              value: REPLACE_CLUSTER_NAME
+            #- name: CLUSTER_NAME
+            #  value: REPLACE_CLUSTER_NAME
             - name: OPERATOR_NAME
               value: "openmcp-metric-collector"
       tolerations:

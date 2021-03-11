@@ -9,11 +9,10 @@ import (
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/decode"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/kubeletClient"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/storage"
-	"os"
 )
 
 func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nodes []corev1.Node) (*storage.Collection, error) {
-	fmt.Println( "Func Scrap Called")
+	fmt.Println("Func Scrap Called")
 
 	responseChannel := make(chan *storage.MetricsBatch, len(nodes))
 	errChannel := make(chan error, len(nodes))
@@ -21,7 +20,6 @@ func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nod
 	defer close(errChannel)
 
 	startTime := clock.MyClock.Now()
-
 
 	for _, node := range nodes {
 		go func(node corev1.Node) {
@@ -56,9 +54,12 @@ func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nod
 		nodeNum += 1
 		podNum += len(srcBatch.Pods)
 	}
-	res.ClusterName = os.Getenv("CLUSTER_NAME")
 
-	fmt.Println("ScrapeMetrics: time: ",clock.MyClock.Since(startTime), "nodes: ", nodeNum, "pods: ", podNum)
+	fmt.Println("------------ CLUSTER_NAME : ", config.Username)
+
+	res.ClusterName = config.Username
+
+	fmt.Println("ScrapeMetrics: time: ", clock.MyClock.Since(startTime), "nodes: ", nodeNum, "pods: ", podNum)
 	return res, utilerrors.NewAggregate(errs)
 }
 
