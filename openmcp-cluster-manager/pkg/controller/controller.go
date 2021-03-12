@@ -210,14 +210,14 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 					InstallInitModule([]string{dirname + "/" + f.Name()}, clustername, ipaddressfrom, ipaddressto)
 				} else {
 					if filepath.Ext(f.Name()) == ".yaml" || filepath.Ext(f.Name()) == ".yml" {
-						if filepath.Ext(dirname) == "metric-collector/operator" {
-							fmt.Println(dirname + "/" + f.Name())
+						if strings.Contains(dirname, "metric-collector/operator") {
+							fmt.Println("*** ", dirname+"/"+f.Name())
 							util.CmdExec2("cp " + dirname + "/operator.yaml " + dirname + "/operator_" + clustername + ".yaml")
 							util.CmdExec2("sed -i 's|REPLACE_CLUSTER_NAME|\"" + clustername + "\"|g' " + dirname + "/operator_" + clustername + ".yaml")
 							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/operator_" + clustername + ".yaml --context " + clustername)
 							util.CmdExec2("rm " + dirname + "/operator_" + clustername + ".yaml")
-						} else if filepath.Ext(dirname) == "metallb/configmap" {
-							fmt.Println(dirname + "/" + f.Name())
+						} else if strings.Contains(dirname, "metallb/configmap") {
+							fmt.Println("*** ", dirname+"/"+f.Name())
 							util.CmdExec2("cp " + dirname + "/metallb_configmap.yaml " + dirname + "/metallb_configmap_" + clustername + ".yaml")
 							util.CmdExec2("sed -i 's|IP_ADDRESS_FROM|\"" + ipaddressfrom + "\"|g' " + dirname + "/metallb_configmap_" + clustername + ".yaml")
 							util.CmdExec2("sed -i 's|IP_ADDRESS_TO|\"" + ipaddressto + "\"|g' " + dirname + "/metallb_configmap_" + clustername + ".yaml")

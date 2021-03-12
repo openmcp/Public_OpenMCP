@@ -153,8 +153,7 @@ sed -i 's|REPLACE_GRPCPORT|'\"$OAE_GRPC_PORT\"'|g' master/openmcp-scheduler/oper
 sed -i 's|REPLACE_GRPCPORT|'\"$OAE_GRPC_PORT\"'|g' master/openmcp-loadbalancing-controller/operator.yaml
 
 sed -i 's|REPLACE_GRPCIP|'\"$OME_GRPC_PUBLIC_IP\"'|g' member/metric-collector/operator/operator.yaml
-sed -i 's|REPLACE_GRPCPORT|'$OME_GRPC_PUBLIC_PORT'|g' member/metric-collector/operator/operator.yaml
-#sed -i 's|REPLACE_GRPCPORT|'$OME_GRPC_PUBLIC_PORT'|g' member/metric-collector/service.yaml
+sed -i 's|REPLACE_GRPCPORT|'\"$OME_GRPC_PUBLIC_PORT\"'|g' member/metric-collector/operator/operator.yaml
 sed -i 's|REPLACE_GRPCPORT|'$OME_GRPC_PUBLIC_PORT'|g' master/openmcp-metric-collector/service.yaml
 
 sed -i 's|REPLACE_INFLUXDBIP|'\"$OMCP_IP\"'|g' master/openmcp-analytic-engine/operator.yaml
@@ -191,5 +190,7 @@ sed -i 's|REPLACE_ADDRESS_TO|'"$ADDRESS_TO"'|g' master/metallb/configmap.yaml
 USERNAME=`whoami`
 
 if [ $OMCP_INSTALL_TYPE == "learning" ]; then
+  echo "Copy 'member' directory"
+  rm -rf /home/$USERNAME/.init/member
   cp -r member /home/$USERNAME/.init/member
 fi
