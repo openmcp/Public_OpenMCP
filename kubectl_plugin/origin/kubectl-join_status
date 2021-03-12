@@ -14,9 +14,22 @@ elif
   exit 1
 fi
 
-read -p "Input MetalLB IP Address Range (FROM) : " address_from
-read -p "Input MetalLB IP Address Range (TO) : " address_to
+if [ "$2" == "JOIN" ]; then
+  read -p "Input MetalLB IP Address Range (FROM) : " address_from
+  read -p "Input MetalLB IP Address Range (TO) : " address_to
+fi
 
 kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/IP_ADDRESS_FROM/$address_from/g" | kubectl replace -f -
 kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/IP_ADDRESS_TO/$address_to/g" | kubectl replace -f -
-kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/STANDBY/$2/g" | kubectl replace -f -
+
+if [ "$2" == "JOIN" ]; then
+  kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/STANDBY/$2/g" | kubectl replace -f -
+fi
+
+if [ "$2" == "UNJOIN" ]; then
+  kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/JOIN/$2/g" | kubectl replace -f -
+fi
+
+if [ "$2" == "STANDBY" ]; then
+  kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/UNJOIN/$2/g" | kubectl replace -f -
+fi

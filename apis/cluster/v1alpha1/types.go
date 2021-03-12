@@ -18,7 +18,7 @@ type OpenMCPCluster struct {
 type OpenMCPClusterSpec struct {
 	ClusterPlatformType string       `json:"clusterPlatformType"`
 	ClusterJoinStatus   string       `json:"joinStatus"`
-	ClusterMetalLBRange MetalLBRange `json:"clusterPlatformType"`
+	ClusterMetalLBRange MetalLBRange `json:"metalLBRange"`
 	KubeconfigInfo      []byte       `json:"kubeconfigInfo,omitempty"`
 }
 
