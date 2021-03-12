@@ -29,7 +29,7 @@ type KubeletClient struct {
 }
 
 func NewKubeletClient() (*KubeletClient, error) {
-	fmt.Println( "Func NewKubeletClient Called")
+	fmt.Println("Func NewKubeletClient Called")
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -47,8 +47,8 @@ func NewKubeletClient() (*KubeletClient, error) {
 }
 
 func (kc *KubeletClient) GetSummary(host, token string) (*stats.Summary, error) {
-	fmt.Println( "Func GetSummary Called")
-	fmt.Println( "GetSummary HTTP New Request, only_cpu_and_memory=false")
+	fmt.Println("Func GetSummary Called")
+	fmt.Println("GetSummary HTTP New Request, only_cpu_and_memory=false")
 
 	scheme := "https"
 	port := kc.port
@@ -58,7 +58,7 @@ func (kc *KubeletClient) GetSummary(host, token string) (*stats.Summary, error) 
 		Path:   "/stats/summary",
 		//RawQuery: "only_cpu_and_memory=true",
 	}
-	fmt.Println( "GetSummary URL: ", url.String())
+	fmt.Println("GetSummary URL: ", url.String())
 	req, err := http.NewRequest("GET", url.String(), nil)
 	if err != nil {
 		fmt.Println(err)
@@ -77,18 +77,18 @@ func (kc *KubeletClient) GetSummary(host, token string) (*stats.Summary, error) 
 }
 
 func (kc *KubeletClient) makeRequestAndGetValue(client *http.Client, req *http.Request, token string, value interface{}) error {
-	fmt.Println( "Func makeRequestAndGetValue Called")
+	fmt.Println("Func makeRequestAndGetValue Called")
 
 	// TODO(directxman12): support validating certs by hostname
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
 
-	fmt.Println( "Request Host:", req.Host)
+	fmt.Println("Request Host:", req.Host)
 	response, err := client.Do(req)
-	fmt.Println( "Status: ", response.Status)
+	fmt.Println("Status: ", response.Status)
 	if err != nil {
-		fmt.Println( err)
+		fmt.Println(err)
 		return err
 	}
 	defer response.Body.Close()
@@ -112,13 +112,12 @@ func (kc *KubeletClient) makeRequestAndGetValue(client *http.Client, req *http.R
 	var prettyJSON bytes.Buffer
 	err = json.Indent(&prettyJSON, body, "", "\t")
 	if err != nil {
-		fmt.Println( err)
+		fmt.Println(err)
 		panic(err.Error())
 	}
 	//fmt.Println("%s%s\n", prettyJSON.Bytes()[:400],"...................")
-	//fmt.Println("%s\n", prettyJSON.Bytes())
+	//fmt.Printf("%s\n", prettyJSON.Bytes())
 	//////////////////////////////////////////
-
 
 	err = json.Unmarshal(body, value)
 	if err != nil {

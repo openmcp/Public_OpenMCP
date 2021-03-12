@@ -8,12 +8,19 @@ if [ "\$1" == "" ]; then
   exit 1
 fi
 
-if [ "\$2" == "" ]; then
+if [[ "\$2" == "JOIN" ]] || [[ "\$2" == "UNJOIN" ]] || [[ "\$2" == "STANDBY" ]]; then
+  echo "Change Cluster Status [ \$2 ]"
+else
   echo "Please Input Cluster Join Status (JOIN/UNJOIN)"
   echo "ex) kubectl join-status cluster1 JOIN"
   exit 1
 fi
 
+read -p "Input MetalLB IP Address Range (FROM) : " address_from
+read -p "Input MetalLB IP Address Range (TO) : " address_to
+
+kubectl get openmcpcluster \$1 -n openmcp -o yaml | sed "s/IP_ADDRESS_FROM/\$address_from/g" | kubectl replace -f -
+kubectl get openmcpcluster \$1 -n openmcp -o yaml | sed "s/IP_ADDRESS_TO/\$address_to/g" | kubectl replace -f -
 kubectl get openmcpcluster \$1 -n openmcp -o yaml | sed "s/STANDBY/\$2/g" | kubectl replace -f -
 EOF
 
