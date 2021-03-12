@@ -126,7 +126,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 			util.CmdExec2("chmod 755 " + "/init/vertical-pod-autoscaler/hack/*")
 			util.CmdExec2("/init/vertical-pod-autoscaler/hack/vpa-up.sh " + clusterInstance.Name)
-			InstallInitModule(moduleDirectory, clusterInstance.Name)
+
+			InstallInitModule(moduleDirectory, clusterInstance.Name, clusterInstance.Spec.ClusterMetalLBRange.AddressFrom, clusterInstance.Spec.ClusterMetalLBRange.AddressTo)
 			omcplog.V(4).Info("--- JOIN Complete ---")
 		}
 
@@ -182,7 +183,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	return reconcile.Result{}, nil
 }
 
-func InstallInitModule(directory []string, clustername string) {
+func InstallInitModule(directory []string, clustername string, ipaddressfrom string, ipaddressto string) {
 
 	for i := 0; i < len(directory); i++ {
 		dirname, _ := filepath.Abs(directory[i])
@@ -206,10 +207,25 @@ func InstallInitModule(directory []string, clustername string) {
 				}
 
 				if fi.Mode().IsDir() {
-					InstallInitModule([]string{dirname + "/" + f.Name()}, clustername)
+					InstallInitModule([]string{dirname + "/" + f.Name()}, clustername, ipaddressfrom, ipaddressto)
 				} else {
 					if filepath.Ext(f.Name()) == ".yaml" || filepath.Ext(f.Name()) == ".yml" {
-						util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/" + f.Name() + " --context " + clustername)
+						if filepath.Ext(dirname) == "metric-collector/operator" {
+							fmt.Println(dirname + "/" + f.Name())
+							util.CmdExec2("cp " + dirname + "/operator.yaml " + dirname + "/operator_" + clustername + ".yaml")
+							util.CmdExec2("sed -i 's|REPLACE_CLUSTER_NAME|\"" + clustername + "\"|g' " + dirname + "/operator_" + clustername + ".yaml")
+							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/operator_" + clustername + ".yaml --context " + clustername)
+							util.CmdExec2("rm " + dirname + "/operator_" + clustername + ".yaml")
+						} else if filepath.Ext(dirname) == "metallb/configmap" {
+							fmt.Println(dirname + "/" + f.Name())
+							util.CmdExec2("cp " + dirname + "/metallb_configmap.yaml " + dirname + "/metallb_configmap_" + clustername + ".yaml")
+							util.CmdExec2("sed -i 's|IP_ADDRESS_FROM|\"" + ipaddressfrom + "\"|g' " + dirname + "/metallb_configmap_" + clustername + ".yaml")
+							util.CmdExec2("sed -i 's|IP_ADDRESS_TO|\"" + ipaddressto + "\"|g' " + dirname + "/metallb_configmap_" + clustername + ".yaml")
+							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/metallb_configmap_" + clustername + ".yaml --context " + clustername)
+							util.CmdExec2("rm " + dirname + "/metallb_configmap_" + clustername + ".yaml")
+						} else {
+							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/" + f.Name() + " --context " + clustername)
+						}
 					}
 				}
 			}

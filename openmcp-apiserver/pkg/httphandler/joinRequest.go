@@ -83,7 +83,11 @@ func CreateClusterResource(name string, config []byte) (string, error) {
 		Spec: clusterv1alpha1.OpenMCPClusterSpec{
 			ClusterPlatformType: "On-Premise",
 			ClusterJoinStatus:   "STANDBY",
-			KubeconfigInfo:      config,
+			ClusterMetalLBRange: clusterv1alpha1.MetalLBRange{
+				AddressFrom: "IP_ADDRESS_FROM",
+				AddressTo:   "IP_ADDRESS_TO",
+			},
+			KubeconfigInfo: config,
 		},
 	}
 

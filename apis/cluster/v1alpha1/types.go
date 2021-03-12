@@ -16,8 +16,15 @@ type OpenMCPCluster struct {
 }
 
 type OpenMCPClusterSpec struct {
-	ClusterPlatformType string `json:"clusterPlatformType"`
-	ClusterJoinStatus   string `json:"joinStatus"`
+	ClusterPlatformType string       `json:"clusterPlatformType"`
+	ClusterJoinStatus   string       `json:"joinStatus"`
+	ClusterMetalLBRange MetalLBRange `json:"clusterPlatformType"`
+	KubeconfigInfo      []byte       `json:"kubeconfigInfo,omitempty"`
+}
+
+type MetalLBRange struct {
+	AddressFrom string `json:"addressFrom,omitempty"`
+	AddressTo   string `json:"addressTo,omitempty"`
 }
 
 /*type ClusterInfo struct {

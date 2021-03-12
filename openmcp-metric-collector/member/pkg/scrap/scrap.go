@@ -55,8 +55,6 @@ func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nod
 		podNum += len(srcBatch.Pods)
 	}
 
-	fmt.Println("------------ CLUSTER_NAME : ", config.Username)
-
 	res.ClusterName = config.Username
 
 	fmt.Println("ScrapeMetrics: time: ", clock.MyClock.Since(startTime), "nodes: ", nodeNum, "pods: ", podNum)
