@@ -82,7 +82,7 @@ func CreateClusterResource(name string, config []byte) (string, error) {
 		},
 		Spec: clusterv1alpha1.OpenMCPClusterSpec{
 			ClusterPlatformType: "On-Premise",
-			ClusterJoinStatus:   "STANDBY",
+			ClusterJoinStatus:   "UNJOIN",
 			ClusterMetalLBRange: clusterv1alpha1.MetalLBRange{
 				AddressFrom: "IP_ADDRESS_FROM",
 				AddressTo:   "IP_ADDRESS_TO",
@@ -118,7 +118,7 @@ func CreateCloudClusterResource(c_name string, c_type string, access_token strin
 		},
 		Spec: clusterv1alpha1.OpenMCPClusterSpec{
 			ClusterPlatformType: c_type,
-			ClusterJoinStatus:   "STANDBY",
+			ClusterJoinStatus:   "UNJOIN",
 			KubeconfigInfo:      config,
 		},
 	}

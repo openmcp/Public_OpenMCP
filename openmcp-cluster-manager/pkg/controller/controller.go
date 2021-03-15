@@ -107,10 +107,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	}
 
 	//조건 추가 - STATUS 비교
-	if clusterInstance.Spec.ClusterJoinStatus == "STANDBY" {
-		omcplog.V(4).Info(clusterInstance.Name + " [ STANDBY ]")
-
-	} else if clusterInstance.Spec.ClusterJoinStatus == "JOIN" {
+	if clusterInstance.Spec.ClusterJoinStatus == "JOIN" {
 		omcplog.V(4).Info(clusterInstance.Name + " [ JOIN ]")
 		omcplog.V(4).Info("Cluster Join---")
 		joinCheck := MergeConfigAndJoin(*clusterInstance)

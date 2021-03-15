@@ -8,7 +8,7 @@ if [ "\$1" == "" ]; then
   exit 1
 fi
 
-if [[ "\$2" == "JOIN" ]] || [[ "\$2" == "UNJOIN" ]] || [[ "\$2" == "STANDBY" ]]; then
+if [[ "\$2" == "JOIN" ]] || [[ "\$2" == "UNJOIN" ]] ; then
   echo "Change Cluster Status [ \$2 ]"
 else
   echo "Please Input Cluster Join Status (JOIN/UNJOIN)"
@@ -25,16 +25,13 @@ kubectl get openmcpcluster \$1 -n openmcp -o yaml | sed "s/IP_ADDRESS_FROM/\$add
 kubectl get openmcpcluster \$1 -n openmcp -o yaml | sed "s/IP_ADDRESS_TO/\$address_to/g" | kubectl replace -f -
 
 if [ "\$2" == "JOIN" ]; then
-  kubectl get openmcpcluster \$1 -n openmcp -o yaml | sed "s/STANDBY/\$2/g" | kubectl replace -f -
+  kubectl get openmcpcluster \$1 -n openmcp -o yaml | sed "s/UNJOIN/\$2/g" | kubectl replace -f -
 fi
 
 if [ "\$2" == "UNJOIN" ]; then
   kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/JOIN/\$2/g" | kubectl replace -f -
 fi
 
-if [ "\$2" == "STANDBY" ]; then
-  kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/UNJOIN/\$2/g" | kubectl replace -f -
-fi
 
 EOF
 
