@@ -38,10 +38,9 @@
 
 ## Requirement
 
-Before you install OpenMCP, 'federation' and 'external server' as NFS server are required.
+Before you install OpenMCP, Federation is required.
 1. GO v1.14
 1. Install [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) (Version: 0.1.0-rc6)
-1. Install [nfs server](https://github.com/openmcp/Public_OpenMCP_ExternalServer)
 
 -----------------------------------------------------------------------------------------------
 [ Test Environment ]
@@ -49,7 +48,6 @@ Before you install OpenMCP, 'federation' and 'external server' as NFS server are
 OpenMCP   Master IP : 10.0.3.30  
 Cluster1  Master IP : 10.0.3.40  
 Cluster2  Master IP : 10.0.3.50  
-NFS       Server IP : 10.0.3.12  
 ```
 
 ## 1. Rename OpenMCP cluster name
@@ -82,18 +80,6 @@ users:
 ```
 
 ## 2. Deploy init modules for OpenMCP
-
-Before you deploy modules, set environment variables first.
-
-If you are using a private network, enter the IP and Port through port forwarding for the Public input box.
-
-If you are not using a private network, enter the IP of the OpenMCP Cluster Node in the Public input box.
-
-Enter the IP of the OpenMCP Master Cluster Node in the non-public IP text box except NFS. (It doesn't matter if it's not Public)
-
-PowerDNS Server Port means the PowerDNS query/response port, and enter the value that port port number 53 is forwarded to.
-
-Enter the previously set value for PowerDNS Server API Key. (https://github.com/openmcp/Public_OpenMCP_ExternalServer#how-to-install)
 ```bash
 $ cd ./install_openmcp
 $ ./SETTING.sh
@@ -101,18 +87,17 @@ OpenMCP Install Type [debug/learning] -> debug
 OpenMCP Server IP -> 10.0.3.30
 Docker Secret Name for Authentication -> openmcp-private-registry
 Docker Registry IP:PORT -> 10.0.3.30:5005
-Docker imagePullPolicy -> IfNotPresent
+Docker imagePullPolicy [Always/IfNotPresent] -> IfNotPresent
 OpenMCP API Server Port -> 30000
 OpenMCP Cluster Manager Port ->30001
 OpenMCP Analytic Engine GRPC Server Port -> 30002
-OpenMCP Metric Collector GRPC Server IP (Public) -> 119.65.195.180
+OpenMCP Metric Collector GRPC Server IP (Public) -> 10.0.3.30
 OpenMCP Metric Collector GRPC Server Port (Public) -> 30003
 InfluxDB Server Port -> 30004
 InfluxDB User Name -> root
 InfluxDB User Password -> root
-NFS & PowerDNS Server IP -> 10.0.3.12
-PowerDNS Server IP (Public) -> 119.65.195.180
-PowerDNS Server Port (Public) -> 5353
+PowerDNS Server IP (Public) -> 10.0.3.30
+PowerDNS Server Port (Public) -> 53
 PowerDNS Server API Key -> 1234
 OpenMCP MetalLB Address IP Range (FROM) -> 10.0.3.241
 OpenMCP MetalLB Address IP Range (TO) -> 10.0.3.250
@@ -126,6 +111,7 @@ $ ./1.create.sh
 ```
 > list of installed Deployment
 
+> - Cluster Manager
 > - Sync Controller
 > - Resource Controller (Deployment, HybridAutoScaler, Ingress, Service, Configmap, Secret)
 > - LoadBalancing Controller
@@ -143,6 +129,7 @@ NAME                                                READY   STATUS    RESTARTS  
 influxdb-68bff77cbd-f9p6k                           1/1     Running   0          3m11s
 openmcp-analytic-engine-cbbcfd7f4-fjrvb             1/1     Running   0          3m12s
 openmcp-apiserver-56bf4c7bd-7q4vw                   1/1     Running   0          3m12s
+openmcp-cluster-manager-69c9ccc499-wjcqt            1/1     Running   0          3m12s
 openmcp-configmap-controller-6c97c8cd57-ww7x8       1/1     Running   0          3m11s
 openmcp-deployment-controller-747cf6d76-2xr52       1/1     Running   0          3m9s
 openmcp-dns-controller-78ff9bcdd5-5fkpq             1/1     Running   0          3m2s
@@ -157,31 +144,17 @@ openmcp-service-controller-776cc6574-b8wsm          1/1     Running   0         
 openmcp-sync-controller-769b85d4b4-crnxc            1/1     Running   0          3m1s
 
 $ kubectl get openmcppolicy -n openmcp
-NAME                           AGE
-analytic-metrics-weight        3m16s
-has-target-cluster             3m15s
-hpa-minmax-distribution-mode   3m15s
-log-level                      3m16s
-metric-collector-period        3m16s
+NAME                            AGE
+analytic-metrics-weight         3m16s
+has-target-cluster              3m15s
+hpa-minmax-distribution-mode    3m15s
+loadbalancing-controller-policy 3m15s
+log-level                       3m16s
+metric-collector-period         3m16s
 ```
 
 ### OpenMCP Architecture
 ![Architecture of the openmcp](/images/openmcp_architecture_2.png)
-
-
-## 3. Register OpenMCP server on external storage
-
-Before you register OpenMCP, install [omcpctl](https://github.com/openmcp/Public_OpenMCP/tree/master/omcpctl) and add a external server with /etc/resolv.conf.
-```bash
-$ vi /etc/resolv.conf
-nameserver 10.0.3.12
-```
-
-And then, register OpenMCP server on NFS server.
-```bash
-$ omcpctl register openmcp
-Success OpenMCP Master Register '10.0.3.30'
-```
 
 ---
 
@@ -190,6 +163,7 @@ Success OpenMCP Master Register '10.0.3.30'
 1. How to join Kubernetes Cluster to OpenMCP
 2. How to join GKE Cluster to OpenMCP
 3. How to join EKS Cluster to OpenMCP
+4. How to join AKS Cluster to OpenMCP
 
 --------------------------------------------------------------------------------------------
 ## 1. How to join Kubernetes Cluster to OpenMCP
@@ -225,20 +199,24 @@ users:
 
 ### (2) Register sub-cluster to external storage [In sub-cluster]
 
-After installing [omctl](https://github.com/openmcp/Public_OpenMCP_Member_CLI) on each cluster, use omctl to register sub-cluster to nfs server.
+Install 'kubectl join' plugin on sub-cluster.
+Before execute join command, you must set KUBECONFIG file and ~/.hosts file. 
 
 ```bash
-$ OPENMCP_IP="10.0.3.30"
-$ omctl register member ${OPENMCP_IP}
-Success Register '10.0.3.40' in OpenMCP Master: 10.0.3.30
+$ cd kubectl-plugin
+$ ./install_kubectl_join
+$ kubectl join ${OPENMCP_IP_PORT}
 ```
 
 ### (3) Join sub-cluster to OpenMCP [In OpenMCP]
 
-From OpenMPC server, use omcptl to join sub-cluster you want to use.
+Install 'kubectl join-status' plugin on OpenMCP.
 ```bash
-$ CLUSTER_IP="10.0.3.40"
-$ omcpctl join cluster ${CLUSTER_IP}
+$ cd kubectl-plugin
+$ ./install_kubectl_joinstatus
+$ kubectl join-status ${SUB_CLUSTER_NAME} JOIN
+Input MetalLB IP Address Range (FROM) : 10.0.3.251
+Input MetalLB IP Address Range (TO) : 10.0.3.260
 ```
 
 ### (4) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]
@@ -259,29 +237,6 @@ $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> 
 > Zone (ISO 3166-1 alpha-2)  
 > - https://ko.wikipedia.org/wiki/ISO_3166-1
 ---
-
-### (5) Create MetalLB Config in sub-cluster [In OpenMCP]
-
-Create a new file 'metallb_config.yaml' to set the assigned IP range for the LoadBalancer of sub-cluster, and deploy it to the sub-cluster.
-
-```
-$ vim metallb_config.yaml 
-apiVersion: v1
-kind: ConfigMap
-metadata:
- namespace: metallb-system
- name: config
-data:
- config: |
-   address-pools:
-   - name: default
-     protocol: layer2
-     addresses:
-     - <<REPLACE_ADDRESS_FROM>>-<<REPLACE_ADDRESS_TO>>
-
-
-$ kubectl create -f metallb_config.yaml --context=<cluster-name>
-```
 
 ## 2. How to join GKE Cluster to OpenMCP
 
