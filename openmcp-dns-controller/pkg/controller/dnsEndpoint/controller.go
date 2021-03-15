@@ -29,6 +29,7 @@ import (
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strings"
 )
 
 var cm *clusterManager.ClusterManager
@@ -196,7 +197,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 }
 func CreateEndpoint(dnsName string, recordTTL dnsv1alpha1.TTL, recordType string, targets []string) *dnsv1alpha1.Endpoint {
 	endpoint := &dnsv1alpha1.Endpoint{
-		DNSName:    dnsName,
+		DNSName:    strings.ToLower(dnsName),
 		Targets:    targets,
 		RecordType: recordType,
 		RecordTTL:  recordTTL,
