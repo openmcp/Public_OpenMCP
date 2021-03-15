@@ -287,10 +287,8 @@ $ kubectl join-status ${GKE_CLUSTER_NAME} JOIN
 
 ### (2) aws configure
 
-You should execute 'openmcp-cluster-manager' container, and set aws configure.
 ```
-$ kubectl exec -it openmcp-cluster-manager-69c9ccc499-wjcqt -n openmcp bash
-bash-4.2# aws configure
+$ aws configure
 AWS Access Key ID [None]: AKIAVJTB7UPJPEMHUAJR
 AWS Secret Access Key [None]: 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
 Default region name [None]: eu-west-2
@@ -317,6 +315,16 @@ $ kubectl register EKS ${EKS_CLUSTER_NAME} ${OPENMCP_IP_PORT}
 ```
 
 ### (5) Join EKS cluster to OpenMCP
+
+Before trying to join EKS cluster, you should execute 'openmcp-cluster-manager' container, and set aws configure.
+```
+$ kubectl exec -it openmcp-cluster-manager-69c9ccc499-wjcqt -n openmcp bash
+bash-4.2# aws configure
+AWS Access Key ID [None]: AKIAVJTB7UPJPEMHUAJR
+AWS Secret Access Key [None]: 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
+Default region name [None]: eu-west-2
+Default output format [None]: json
+```
 
 Install 'kubectl join-status' plugin on OpenMCP.
 ```
