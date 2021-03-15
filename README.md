@@ -26,7 +26,7 @@
     - [(2) az login](#2-az-login)
     - [(3) az aks list](#3-az-aks-list)
     - [(4) Register AKS cluster to OpenMCP](#4-Register-AKS-cluster-to-OpenMCP)
-    - [(5) join AKS cluster to OpenMCP](#5-join-AKS-cluster-to-OpenMCP)
+    - [(5) Join AKS cluster to OpenMCP](#5-Join-AKS-cluster-to-OpenMCP)
 - [OpenMCP EXAMPLE](#openmcp-example)
   - [Deploy OpenMCPDeployment resource](#Deploy-OpenMCPDeployment-resource)
   - [Deploy OpenMCPService resource](#Deploy-OpenMCPService-resource)
