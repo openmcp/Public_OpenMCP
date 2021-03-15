@@ -20,13 +20,13 @@ if [ "$3" = "" ]; then
   exit 1
 fi
 
-cat >> kubeconfig <<EOF
-EOF
+touch kubeconfig
 export KUBECONFIG=./kubeconfig
 
 if [ "$1" == "GKE" ]; then
   gcloud container clusters get-credentials $2
   kubectl get pods &>-
+  rm -
 elif [ "$1" == "EKS" ]; then
   aws eks update-kubeconfig --name $2
 elif [ "$1" == "AKS" ]; then
