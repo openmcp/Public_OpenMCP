@@ -3,24 +3,30 @@
 - [How To Install](#how-to-install)
   - [1. Rename OpenMCP cluster name](#1-Rename-openmcp-cluster-name)
   - [2. Deploy init modules for OpenMCP](#2-Deploy-init-modules-for-OpenMCP)
-  - [3. Register OpenMCP server on external storage](#3-Register-OpenMCP-server-on-external-storage)
 - [How To Join Cluster](#how-to-join-cluster)
   - [1. How to join Kubernetes Cluster to OpenMCP](#1-How-to-join-Kubernetes-Cluster-to-OpenMCP)
     - [(1) (option) Rename cluster name [In sub-cluster]](#1-option-Rename-cluster-name-In-sub-cluster)
-    - [(2) Register sub-cluster to external storage [In sub-cluster]](#2-Register-sub-cluster-to-external-storage-In-sub-cluster)
+    - [(2) Register sub-cluster to OpenMCP [In sub-cluster]](#2-Register-sub-cluster-to-OpenMCP-In-sub-cluster)
     - [(3) Join sub-cluster to OpenMCP [In OpenMCP]](#3-Join-sub-cluster-to-OpenMCP-In-OpenMCP)
     - [(4) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]](#4-Register-Region-and-Zone-to-Master-Node-of-sub-cluster-In-OpenMCP)
-    - [(5) Create MetalLB Config in sub-cluster [In OpenMCP]](#5-Create-MetalLB-Config-in-sub-cluster-In-OpenMCP)
   - [2. How to join GKE Cluster to OpenMCP](#2-How-to-join-GKE-Cluster-to-OpenMCP)
     - [(1) Install Cloud SDK](#1-Install-Cloud-SDK)
     - [(2) gcloud init](#2-gcloud-init)
     - [(3) gcloud container clusters list](#3-gcloud-container-clusters-list)
     - [(4) Join GKE cluster to OpenMCP](#4-Join-GKE-cluster-to-OpenMCP)
+    - [(5) Register GKE cluster to OpenMCP](#5-Register-GKE-cluster-to-OpenMCP)
   - [3. How to join EKS Cluster to OpenMCP](#3-How-to-join-EKS-Cluster-to-OpenMCP)
     - [(1) Install AWS CLI](#1-Install-AWS-CLI)
     - [(2) aws configure](#2-aws-configure)
     - [(3) aws eks list-clusters](#3-aws-eks-list-clusters)
     - [(4) Join EKS cluster to OpenMCP](#4-Join-EKS-cluster-to-OpenMCP)
+    - [(5) Register EKS cluster to OpenMCP](#5-Register-EKS-cluster-to-OpenMCP)
+   - [4. How to join AKS Cluster to OpenMCP](#4-How-to-join-AKS-Cluster-to-OpenMCP)
+    - [(1) Install Azure CLI](#1-Install-AWS-CLI)
+    - [(2) az login](#2-az-login)
+    - [(3) az aks list](#3-az-aks-list)
+    - [(4) Join AKS cluster to OpenMCP](#4-Join-AKS-cluster-to-OpenMCP)
+    - [(5) Register AKS cluster to OpenMCP](#5-Register-AKS-cluster-to-OpenMCP)
 - [OpenMCP EXAMPLE](#openmcp-example)
   - [Deploy OpenMCPDeployment resource](#Deploy-OpenMCPDeployment-resource)
   - [Deploy OpenMCPService resource](#Deploy-OpenMCPService-resource)
@@ -197,7 +203,7 @@ users:
     client-key-data: ...
 ```
 
-### (2) Register sub-cluster to external storage [In sub-cluster]
+### (2) Register sub-cluster to OpenMCP [In sub-cluster]
 
 Install 'kubectl join' plugin on sub-cluster.
 Before execute join command, you must set KUBECONFIG file and ~/.hosts file. 
@@ -321,8 +327,8 @@ $ kubectl join-status ${EKS_CLUSTER_NAME} JOIN
 
 ## 4. How to join AKS Cluster to OpenMCP
 
-### (1) Install AWS CLI
-[https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/getting-started-console.html](https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/getting-started-console.html)
+### (1) Install Azure CLI
+[https://docs.microsoft.com/ko-kr/cli/azure/install-azure-cli-linux?pivots=apt](https://docs.microsoft.com/ko-kr/cli/azure/install-azure-cli-linux?pivots=apt)
 
 ### (2) az login
 ```
