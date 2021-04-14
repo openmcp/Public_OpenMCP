@@ -3,11 +3,11 @@ package v1alpha1
 import (
 	appsv1 "k8s.io/api/apps/v1"
 	hpav2beta1 "k8s.io/api/autoscaling/v2beta2"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	extv1b1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	policyv1alpha1 "openmcp/openmcp/apis/policy/v1alpha1"
-	batchv1 "k8s.io/api/batch/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -217,8 +217,8 @@ type OpenMCPServiceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	Template      corev1.Service    `json:"template" protobuf:"bytes,3,opt,name=template"`
-	LabelSelector map[string]string `json:"labelselector" protobuf:"bytes,3,opt,name=labelselector"`
+	LabelSelector map[string]string `json:"labelselector" protobuf:"bytes,1,opt,name=labelselector"`
+	Template      corev1.Service    `json:"template" protobuf:"bytes,2,opt,name=template"`
 	//Replicas int32 `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
 
 	//Placement
@@ -263,9 +263,31 @@ type OpenMCPHybridAutoScalerSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	HpaTemplate hpav2beta1.HorizontalPodAutoscaler `json:"hpaTemplate" protobuf:"bytes,3,opt,name=hpaTemplate"`
+	MainController string         `json:"mainController" protobuf:"bytes,1,opt,name=maincontroller"`
+	ScalingOptions ScalingOptions `json:"scalingOptions,omitempty" protobuf:"bytes,2,opt,name=scalingoptions"`
+}
+
+type ScalingOptions struct {
+	CpaTemplate CpaTemplate                        `json:"cpaTemplate,omitempty" protobuf:"bytes,1,opt,name=cpatemplate"`
+	HpaTemplate hpav2beta1.HorizontalPodAutoscaler `json:"hpaTemplate,omitempty" protobuf:"bytes,2,opt,name=hpatemplate"`
+	VpaTemplate string                             `json:"vpaTemplate,omitempty" protobuf:"bytes,3,opt,name=vpatemplate"`
 	//VpaTemplate vpav1beta2.VerticalPodAutoscaler `json:"vpaTemplate" protobuf:"bytes,3,opt,name=vpaTemplate"`
-	VpaMode string `json:"vpaMode"`
+}
+
+type CpaTemplate struct {
+	ScaleTargetRef ScaleTargetRef `json:"scaleTargetRef" protobuf:"bytes,1,opt,name=scaletargetref"`
+	MinReplicas    int32          `json:"minReplicas" protobuf:"varint,2,opt,name=minreplicas"`
+	MaxReplicas    int32          `json:"maxReplicas" protobuf:"varint,3,opt,name=maxreplicas"`
+}
+
+type ScaleTargetRef struct {
+	// Kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"
+	Kind string `json:"kind" protobuf:"bytes,1,opt,name=kind"`
+	// Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names
+	Name string `json:"name" protobuf:"bytes,2,opt,name=name"`
+	// API version of the referent
+	// +optional
+	APIVersion string `json:"apiVersion,omitempty" protobuf:"bytes,3,opt,name=apiVersion"`
 }
 
 // OpenMCPHybridAutoScalerStatus defines the observed state of OpenMCPHybridAutoScaler
@@ -378,7 +400,6 @@ type OpenMCPSecretList struct {
 	Items           []OpenMCPSecret `json:"items"`
 }
 
-
 type OpenMCPJobSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
@@ -417,7 +438,6 @@ type OpenMCPJobList struct {
 	Items           []OpenMCPJob `json:"items"`
 }
 
-
 type OpenMCPNamespaceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
@@ -433,7 +453,7 @@ type OpenMCPNamespaceStatus struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	ClusterMaps map[string]int32 `json:"clusters"`
-	ChangeNeed bool `json:"changeneed"`
+	ChangeNeed  bool             `json:"changeneed"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -466,4 +486,3 @@ type OpenMCPNamespaceList struct {
 //	SchemeBuilder.Register(&OpenMCPPolicyEngine{}, &OpenMCPPolicyEngineList{})
 //
 //}
-

@@ -1,5 +1,5 @@
 #!/bin/bash
-docker_registry_ip="10.0.3.40:5005"
+docker_registry_ip="10.0.3.20:5005"
 docker_id="openmcp"
 controller_name="openmcp-loadbalancing-controller"
 

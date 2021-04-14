@@ -86,6 +86,7 @@ else
   rm master/influxdb/deployment-learningmcp.yaml
 fi
 
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/1.create.sh
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-has-controller/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-scheduler/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-loadbalancing-controller/operator.yaml
@@ -102,6 +103,7 @@ sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-s
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-policy-engine/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' member/metric-collector/operator/operator.yaml
 
+sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/1.create.sh
 sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-has-controller/operator.yaml
 sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-scheduler/operator.yaml
 sed -i 's|REPLACE_DOCKERREGISTRYIP|'$DOCKER_REGISTRY_IP'|g' master/openmcp-loadbalancing-controller/operator.yaml

@@ -2,6 +2,7 @@ apiVersion: openmcp.k8s.io/v1alpha1
 kind: OpenMCPHybridAutoScaler
 metadata:
   name: has-iot-gateway
+  namespace: openmcp
 spec:
   hpaTemplate:
     spec:
@@ -9,7 +10,7 @@ spec:
         kind: OpenMCPDeployment
         name: iot-gateway
       minReplicas: 1
-      maxReplicas: 15
+      maxReplicas: 10
       metrics:
         - type: Resource
           resource:

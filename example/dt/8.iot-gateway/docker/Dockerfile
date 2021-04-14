@@ -26,7 +26,7 @@ RUN chmod 755 start.sh
 
 RUN pip3 install -r requirements.txt
 RUN git clone https://github.com/Tanganelli/CoAPthon3.git
-RUN cd CoAPthon3 && python3 setup.py sdist && pip3 install dist/CoAPthon3-1.0.1.tar.gz -r requirements.txt
+RUN cd CoAPthon3 && python3 setup.py sdist && pip3 install dist/CoAPthon3-1.0.1* -r requirements.txt
 
 ENV PYTHONUNBUFFERED=0
 

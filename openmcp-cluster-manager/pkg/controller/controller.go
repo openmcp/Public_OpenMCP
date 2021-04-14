@@ -107,7 +107,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	}
 
 	//조건 추가 - STATUS 비교
-	if clusterInstance.Spec.ClusterJoinStatus == "JOIN" {
+	if clusterInstance.Spec.JoinStatus == "JOIN" {
 		omcplog.V(4).Info(clusterInstance.Name + " [ JOIN ]")
 		omcplog.V(4).Info("Cluster Join---")
 		joinCheck := MergeConfigAndJoin(*clusterInstance)
@@ -124,11 +124,11 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			util.CmdExec2("chmod 755 " + "/init/vertical-pod-autoscaler/hack/*")
 			util.CmdExec2("/init/vertical-pod-autoscaler/hack/vpa-up.sh " + clusterInstance.Name)
 
-			InstallInitModule(moduleDirectory, clusterInstance.Name, clusterInstance.Spec.ClusterMetalLBRange.AddressFrom, clusterInstance.Spec.ClusterMetalLBRange.AddressTo)
+			InstallInitModule(moduleDirectory, clusterInstance.Name, clusterInstance.Spec.MetalLBRange.AddressFrom, clusterInstance.Spec.MetalLBRange.AddressTo)
 			omcplog.V(4).Info("--- JOIN Complete ---")
 		}
 
-	} else if clusterInstance.Spec.ClusterJoinStatus == "UNJOIN" {
+	} else if clusterInstance.Spec.JoinStatus == "UNJOIN" {
 		omcplog.V(4).Info(clusterInstance.Name + " [ UNJOIN ]")
 
 		//config 파일 확인 (클러스터 조인 유무)

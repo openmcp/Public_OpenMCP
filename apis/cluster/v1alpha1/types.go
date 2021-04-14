@@ -16,10 +16,10 @@ type OpenMCPCluster struct {
 }
 
 type OpenMCPClusterSpec struct {
-	ClusterPlatformType string       `json:"clusterPlatformType"`
-	ClusterJoinStatus   string       `json:"joinStatus"`
-	ClusterMetalLBRange MetalLBRange `json:"metalLBRange"`
-	KubeconfigInfo      []byte       `json:"kubeconfigInfo,omitempty"`
+	ClusterPlatformType string       `json:"clusterPlatformType" protobuf:"bytes,1,opt,name=clusterplatformtype"`
+	JoinStatus          string       `json:"joinStatus" protobuf:"bytes,2,opt,name=joinstatus"`
+	MetalLBRange        MetalLBRange `json:"metalLBRange" protobuf:"bytes,3,opt,name=metallbrange"`
+	KubeconfigInfo      []byte       `json:"kubeconfigInfo,omitempty" protobuf:"bytes,4,opt,name=kubeconfiginfo"`
 }
 
 type MetalLBRange struct {

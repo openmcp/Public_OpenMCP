@@ -1,4 +1,4 @@
-registry="10.0.6.230:5000"
+registry="10.0.3.20:5005"
 imagename="keti-iotgateway"
 version="v1.0"
 docker_id="openmcp"
@@ -15,9 +15,11 @@ docker_id="openmcp"
 # push image
 #docker push $registry/$imagename:$version
 
+#docker build -t $docker_registry_ip/$docker_id/$controller_name:v0.0.1 build && \
+#docker push $docker_registry_ip/$docker_id/$controller_name:v0.0.1
 
-docker build -t $docker_id/$imagename:$version . && \
-docker push $docker_id/$imagename:$version
+docker build -t $registry/$docker_id/$imagename:$version . && \
+docker push $registry/$docker_id/$imagename:$version
 
 
 

@@ -22,6 +22,7 @@ import (
 	"fmt"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"log"
+	"openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-has-controller/pkg/analyticResource"
 	openmcphas "openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-has-controller/pkg/controller"
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/logLevel"
@@ -31,6 +32,7 @@ import (
 func main() {
 	logLevel.KetiLogInit()
 	for {
+
 		cm := clusterManager.NewClusterManager()
 
 		host_ctx := "openmcp"
@@ -39,6 +41,8 @@ func main() {
 		host_cfg := cm.Host_config
 		live := cluster.New(host_ctx, host_cfg, cluster.Options{})
 		ghosts := []*cluster.Cluster{}
+
+		go analyticResource.CalcPodMetrics(cm, live)
 
 		for _, ghost_cluster := range cm.Cluster_list.Items {
 			ghost_ctx := ghost_cluster.Name

@@ -68,7 +68,7 @@ func (ae *AnalyticEngineStruct) CalcResourceScore(cm *clusterManager.ClusterMana
 	}
 	for {
 		select {
-		case <- quit:
+		case <-quit:
 			omcplog.V(2).Info("CalcResourceScore Quit")
 			quitok <- true
 			return
@@ -99,7 +99,7 @@ func (ae *AnalyticEngineStruct) CalcResourceScore(cm *clusterManager.ClusterMana
 				}
 
 				// Update Network Data from InfluxDB
-				ae.UpdateNetworkData(cluster.Name, nodes)
+				//ae.UpdateNetworkData(cluster.Name, nodes)
 			}
 			time.Sleep(7 * time.Second)
 		}
@@ -163,7 +163,7 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 	var totalCpuCore int64 = 0
 
 	//cm := clusterManager.NewClusterManager()
-	if len(result) == 0{
+	if len(result) == 0 {
 		return 0
 	}
 	time_t := ""
@@ -188,9 +188,9 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 				if r == 0 {
 					if colName == "NetworkLatency" {
 						MetricsMap[colName], _ = strconv.ParseFloat(Strval, 64)
-					} else if colName == "time"{
+					} else if colName == "time" {
 						time_t = Strval
-					} else{
+					} else {
 						if _, ok := MetricsMap[colName]; ok {
 							MetricsMap[colName] = MetricsMap[colName] + float64(QuanVal.Value())
 						} else {
@@ -212,29 +212,28 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 
 	var netScore float64
 
-	cpuScore :=  MetricsMap["CPUUsageNanoCores"] / float64(totalCpuCore) * 100
+	cpuScore := MetricsMap["CPUUsageNanoCores"] / float64(totalCpuCore) * 100
 	memScore := (MetricsMap["MemoryUsageBytes"] / (MetricsMap["MemoryUsageBytes"] + MetricsMap["MemoryAvailableBytes"])) * 100
 	netScore = ((MetricsMap["NetworkRxBytes"] - prevMetricsMap["NetworkRxBytes"]) + (MetricsMap["NetworkTxBytes"] - prevMetricsMap["NetworkTxBytes"])) / 1000000
 	diskScore := (MetricsMap["FsUsedBytes"] / MetricsMap["FsCapacityBytes"]) * 100
 	latencyScore := MetricsMap["NetworkLatency"] * 1000
 
-
-	if len(result[0].Series) != 0{
+	if len(result[0].Series) != 0 {
 		ae.Influx.InsertClusterStatus(clusterName, time_t, cpuScore, memScore, netScore, diskScore, latencyScore)
 	}
 
 	score = cpuScore*ae.MetricsWeight["CPU"] + memScore*ae.MetricsWeight["Memory"] + diskScore*ae.MetricsWeight["FS"] + netScore*ae.MetricsWeight["NET"] + latencyScore*ae.MetricsWeight["LATENCY"]
 
-	if score > 0 && clusterName == "eks-cluster1"{
+	if score > 0 && clusterName == "eks-cluster1" {
 		omcplog.V(2).Info("--------------------------------------------------------")
-		omcplog.V(2).Info(" rx -> ",MetricsMap["NetworkRxBytes"] - prevMetricsMap["NetworkRxBytes"])
-		omcplog.V(2).Info(" tx -> ",MetricsMap["NetworkTxBytes"] - prevMetricsMap["NetworkTxBytes"])
-		omcplog.V(2).Info(" cpuscore : ",cpuScore, MetricsMap["CPUUsageNanoCores"], float64(totalCpuCore))
-		omcplog.V(2).Info(" memScore : ",memScore)
-		omcplog.V(2).Info(" netScore : ",netScore)
-		omcplog.V(2).Info(" diskScore : ",diskScore)
-		omcplog.V(2).Info(" latencyScore : ",latencyScore)
-		omcplog.V(2).Info("\"",clusterName,"\" totalScore : ", score)
+		omcplog.V(2).Info(" rx -> ", MetricsMap["NetworkRxBytes"]-prevMetricsMap["NetworkRxBytes"])
+		omcplog.V(2).Info(" tx -> ", MetricsMap["NetworkTxBytes"]-prevMetricsMap["NetworkTxBytes"])
+		omcplog.V(2).Info(" cpuscore : ", cpuScore, MetricsMap["CPUUsageNanoCores"], float64(totalCpuCore))
+		omcplog.V(2).Info(" memScore : ", memScore)
+		omcplog.V(2).Info(" netScore : ", netScore)
+		omcplog.V(2).Info(" diskScore : ", diskScore)
+		omcplog.V(2).Info(" latencyScore : ", latencyScore)
+		omcplog.V(2).Info("\"", clusterName, "\" totalScore : ", score)
 		omcplog.V(2).Info("--------------------------------------------------------")
 	}
 
@@ -271,7 +270,9 @@ func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) []strin
 	filteringCluster := []string{}
 
 	for i := 0; i < len(scoreT); i++ {
-		if i == 2 { break }
+		if i == 2 {
+			break
+		}
 		filteringCluster = append(filteringCluster, scoreMap[scoreT[i]])
 	}
 
@@ -405,7 +406,7 @@ func (ae *AnalyticEngineStruct) SendHASMinAnalysis(ctx context.Context, data *pr
 	return &protobuf.ResponseHAS{TargetCluster: result}, nil
 }
 
-func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *protobuf.NodeInfo) (*protobuf.ReponseNetwork, error) {
+func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *protobuf.NodeInfo) (*protobuf.ResponseNetwork, error) {
 	omcplog.V(4).Info("Func SendNetworkAnalysis Called")
 	startTime := time.Now()
 
@@ -421,7 +422,7 @@ func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *p
 	omcplog.V(2).Info("%-30s [", elapsedTime, "]", "=> Total Anlysis time")
 	omcplog.V(2).Info("***** [End] Network Analysis *****")
 
-	return &protobuf.ReponseNetwork{RX: diff_rx, TX: diff_tx}, nil
+	return &protobuf.ResponseNetwork{RX: diff_rx, TX: diff_tx}, nil
 }
 
 var grpcServer *grpc.Server
@@ -442,10 +443,56 @@ func (ae *AnalyticEngineStruct) StartGRPC(GRPC_PORT string) {
 		log.Fatalf("fail to serve: %v", err)
 	}
 
-
 }
 func (ae *AnalyticEngineStruct) StopGRPC() {
 	omcplog.V(4).Info("Func StopGRPC Called")
 	grpcServer.Stop()
 
+}
+
+func (ae *AnalyticEngineStruct) SendCPAAnalysis(ctx context.Context, deploy *protobuf.CPADeployList) (*protobuf.ResponseCPADeployList, error) {
+	omcplog.V(4).Info("Func SendCPAAnalysis Called")
+
+	fmt.Println(deploy.CPADeployInfo)
+	deployList := protobuf.ResponseCPADeployList{}
+
+	for _, cDeploy := range deploy.CPADeployInfo {
+
+		target, todo := ae.AnalyzeCPADeployment(cDeploy)
+
+		if todo == "Scale-out" || todo == "Scale-in" {
+			d := &protobuf.ResponseCPADeploy{
+				Name:          cDeploy.Name,
+				Namespace:     cDeploy.Namespace,
+				CPAName:       cDeploy.CPAName,
+				PodState:      "Warning",
+				Action:        todo,
+				TargetCluster: target,
+			}
+			deployList.ResponseCPADeploy = append(deployList.ResponseCPADeploy, d)
+		}
+	}
+
+	return &deployList, nil
+
+	//sample
+	/*if len(deploy.CPADeployInfo) > 0 {
+		for _, cdeploy := range deploy.CPADeployInfo {
+			d := &protobuf.ResponseCPADeploy{
+				Name:          cdeploy.Name,
+				Namespace:     cdeploy.Namespace,
+				CPAName:       cdeploy.CPAName,
+				PodState:      "Warning",
+				Action:        "Scale-out",
+				TargetCluster: "cluster1",
+			}
+			deployList.ResponseCPADeploy = append(deployList.ResponseCPADeploy, d)
+		}
+		fmt.Println(deployList)
+	} */
+}
+
+func (ae *AnalyticEngineStruct) AnalyzeCPADeployment(cDeploy *protobuf.CPADeployInfo) (string, string) {
+
+	return "", ""
 }

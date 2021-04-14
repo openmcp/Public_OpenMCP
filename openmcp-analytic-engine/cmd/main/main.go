@@ -20,8 +20,6 @@ const (
 func main() {
 	logLevel.KetiLogInit()
 
-	//go AnalyticEngine()
-
 	for {
 		cm := clusterManager.NewClusterManager()
 
