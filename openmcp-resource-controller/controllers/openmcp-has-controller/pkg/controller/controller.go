@@ -76,20 +76,20 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	fmt.Printf("%T, %s\n", live, live.GetClusterName())
+	//fmt.Printf("%T, %s\n", live, live.GetClusterName())
 	if err := co.WatchResourceReconcileObject(live, &resourcev1alpha1.OpenMCPHybridAutoScaler{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
 	for _, ghost := range ghosts {
-		fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
+		//fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
 		if err := co.WatchResourceReconcileController(ghost, &hpav2beta2.HorizontalPodAutoscaler{}, controller.WatchOptions{}); err != nil {
 			return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
 		}
 	}
 
 	for _, ghost := range ghosts {
-		fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
+		//fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
 		if err := co.WatchResourceReconcileController(ghost, &vpav1beta2.VerticalPodAutoscaler{}, controller.WatchOptions{}); err != nil {
 			return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
 		}
@@ -245,10 +245,30 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 						Name:      hasInstance.Spec.ScalingOptions.CpaTemplate.ScaleTargetRef.Name},
 					openmcpDep)
 
+				var totalCpuRequest int64
+				var totalMemRequest int64
+
+				totalCpuRequest = 0
+				totalMemRequest = 0
+
+				for _, container := range openmcpDep.Spec.Template.Spec.Template.Spec.Containers {
+
+					cpuInt64 := container.Resources.Requests.Cpu().MilliValue()
+					memInt64 := container.Resources.Requests.Memory().MilliValue()
+
+					if cpuInt64 > 0 {
+						totalCpuRequest += cpuInt64
+					}
+					if memInt64 > 0 {
+						totalMemRequest += memInt64
+					}
+				}
+
 				if openmcpDep_err == nil {
 					cpaCluster := make([]string, 0)
 					var totalReplicas int32
 					totalReplicas = 0
+
 					//어느 클러스터에 배포되어있는지 확인
 					for _, cluster := range cm.Cluster_list.Items {
 						dep := &appsv1.Deployment{}
@@ -260,16 +280,20 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 						}
 					}
 					deployInfo := &protobuf.CPADeployInfo{
-						Name:      openmcpDep.Name,
-						Namespace: openmcpDep.Namespace,
-						CPAName:   hasInstance.Name,
-						Clusters:  cpaCluster,
+						Name:        openmcpDep.Name,
+						Namespace:   openmcpDep.Namespace,
+						ReplicasNum: totalReplicas,
+						CPAName:     hasInstance.Name,
+						Clusters:    cpaCluster,
+						//containers total Request 계산해서 put
+						CpuRequest: totalCpuRequest,
+						MemRequest: totalMemRequest,
 					}
 
 					cpaValue := analyticResource.CPAValue{}
 
 					cpaValue.OmcpdeployInfo = deployInfo
-					cpaValue.OmcpdeployReplicas = openmcpDep.Spec.Replicas
+					//cpaValue.InitReplicas = openmcpDep.Spec.Replicas
 					cpaValue.ReplicasAfterScaling = totalReplicas
 					cpaValue.CpaMin = hasInstance.Spec.ScalingOptions.CpaTemplate.MinReplicas
 					cpaValue.CpaMax = hasInstance.Spec.ScalingOptions.CpaTemplate.MaxReplicas

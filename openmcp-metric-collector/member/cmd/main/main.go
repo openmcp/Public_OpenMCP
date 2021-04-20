@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -6,8 +5,8 @@ import (
 	"github.com/golang/protobuf/ptypes/timestamp"
 
 	//"github.com/golang/protobuf/ptypes/timestamp"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	"github.com/jinzhu/copier"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/customMetrics"
@@ -31,30 +30,30 @@ import (
 	"time"
 )
 
-func convert(data *storage.Collection, latencyTime string) *protobuf.Collection{
+func convert(data *storage.Collection, latencyTime string) *protobuf.Collection {
 	//klog.V(0).Info("Convert GRPC Data Structure")
 	grpc_data := &protobuf.Collection{}
 
 	copier.Copy(grpc_data, data)
 	for i, _ := range grpc_data.Metricsbatchs {
 
-		s := int64(data.Metricsbatchs[i].Node.Timestamp.Second()) // from 'int'
+		s := int64(data.Metricsbatchs[i].Node.Timestamp.Second())     // from 'int'
 		n := int32(data.Metricsbatchs[i].Node.Timestamp.Nanosecond()) // from 'int'
 
-		ts := &timestamp.Timestamp{Seconds:s, Nanos:n}
+		ts := &timestamp.Timestamp{Seconds: s, Nanos: n}
 
 		mp := &protobuf.MetricsPoint{
-			Timestamp: ts,
-			CPUUsageNanoCores: data.Metricsbatchs[i].Node.CPUUsageNanoCores.String(),
-			MemoryUsageBytes: data.Metricsbatchs[i].Node.MemoryUsageBytes.String(),
-			MemoryAvailableBytes: data.Metricsbatchs[i].Node.MemoryAvailableBytes.String(),
+			Timestamp:             ts,
+			CPUUsageNanoCores:     data.Metricsbatchs[i].Node.CPUUsageNanoCores.String(),
+			MemoryUsageBytes:      data.Metricsbatchs[i].Node.MemoryUsageBytes.String(),
+			MemoryAvailableBytes:  data.Metricsbatchs[i].Node.MemoryAvailableBytes.String(),
 			MemoryWorkingSetBytes: data.Metricsbatchs[i].Node.MemoryWorkingSetBytes.String(),
-			NetworkRxBytes: data.Metricsbatchs[i].Node.NetworkRxBytes.String(),
-			NetworkTxBytes: data.Metricsbatchs[i].Node.NetworkTxBytes.String(),
-			FsAvailableBytes: data.Metricsbatchs[i].Node.FsAvailableBytes.String(),
-			FsCapacityBytes: data.Metricsbatchs[i].Node.FsCapacityBytes.String(),
-			FsUsedBytes: data.Metricsbatchs[i].Node.FsUsedBytes.String(),
-			NetworkLatency: latencyTime,
+			NetworkRxBytes:        data.Metricsbatchs[i].Node.NetworkRxBytes.String(),
+			NetworkTxBytes:        data.Metricsbatchs[i].Node.NetworkTxBytes.String(),
+			FsAvailableBytes:      data.Metricsbatchs[i].Node.FsAvailableBytes.String(),
+			FsCapacityBytes:       data.Metricsbatchs[i].Node.FsCapacityBytes.String(),
+			FsUsedBytes:           data.Metricsbatchs[i].Node.FsUsedBytes.String(),
+			NetworkLatency:        latencyTime,
 		}
 		grpc_data.Metricsbatchs[i].Node.MP = mp
 
@@ -68,23 +67,23 @@ func convert(data *storage.Collection, latencyTime string) *protobuf.Collection{
 		podMetricsPoints := []*protobuf.PodMetricsPoint{}
 
 		for j, _ := range data.Metricsbatchs[i].Pods {
-			s := int64(data.Metricsbatchs[i].Pods[j].Timestamp.Second()) // from 'int'
+			s := int64(data.Metricsbatchs[i].Pods[j].Timestamp.Second())     // from 'int'
 			n := int32(data.Metricsbatchs[i].Pods[j].Timestamp.Nanosecond()) // from 'int'
 
-			ts := &timestamppb.Timestamp{Seconds:s, Nanos:n}
-		
+			ts := &timestamppb.Timestamp{Seconds: s, Nanos: n}
+
 			mp2 := &protobuf.MetricsPoint{
-				Timestamp: ts,
-				CPUUsageNanoCores: data.Metricsbatchs[i].Pods[j].CPUUsageNanoCores.String(),
-				MemoryUsageBytes: data.Metricsbatchs[i].Pods[j].MemoryUsageBytes.String(),
-				MemoryAvailableBytes: data.Metricsbatchs[i].Pods[j].MemoryAvailableBytes.String(),
+				Timestamp:             ts,
+				CPUUsageNanoCores:     data.Metricsbatchs[i].Pods[j].CPUUsageNanoCores.String(),
+				MemoryUsageBytes:      data.Metricsbatchs[i].Pods[j].MemoryUsageBytes.String(),
+				MemoryAvailableBytes:  data.Metricsbatchs[i].Pods[j].MemoryAvailableBytes.String(),
 				MemoryWorkingSetBytes: data.Metricsbatchs[i].Pods[j].MemoryWorkingSetBytes.String(),
-				NetworkRxBytes: data.Metricsbatchs[i].Pods[j].NetworkRxBytes.String(),
-				NetworkTxBytes: data.Metricsbatchs[i].Pods[j].NetworkTxBytes.String(),
-				FsAvailableBytes: data.Metricsbatchs[i].Pods[j].FsAvailableBytes.String(),
-				FsCapacityBytes: data.Metricsbatchs[i].Pods[j].FsCapacityBytes.String(),
-				FsUsedBytes: data.Metricsbatchs[i].Pods[j].FsUsedBytes.String(),
-				NetworkLatency: latencyTime,
+				NetworkRxBytes:        data.Metricsbatchs[i].Pods[j].NetworkRxBytes.String(),
+				NetworkTxBytes:        data.Metricsbatchs[i].Pods[j].NetworkTxBytes.String(),
+				FsAvailableBytes:      data.Metricsbatchs[i].Pods[j].FsAvailableBytes.String(),
+				FsCapacityBytes:       data.Metricsbatchs[i].Pods[j].FsCapacityBytes.String(),
+				FsUsedBytes:           data.Metricsbatchs[i].Pods[j].FsUsedBytes.String(),
+				NetworkLatency:        latencyTime,
 			}
 			pmp := &protobuf.PodMetricsPoint{
 				Name:       data.Metricsbatchs[i].Pods[j].Name,
@@ -113,7 +112,7 @@ func main() {
 	MemberMetricCollector()
 }
 
-func MemberMetricCollector(){
+func MemberMetricCollector() {
 	SERVER_IP := os.Getenv("GRPC_SERVER")
 	SERVER_PORT := os.Getenv("GRPC_PORT")
 	fmt.Println("ClusterMetricCollector Start")
@@ -130,7 +129,9 @@ func MemberMetricCollector(){
 		nodes := Node_list.Items
 		fmt.Println("Get Metric Data From Kubelet")
 		kubeletClient, _ := kubeletClient.NewKubeletClient()
+
 		data, errs := scrap.Scrap(host_config, kubeletClient, nodes)
+
 		if errs != nil {
 			fmt.Println(errs)
 			time.Sleep(time.Duration(period_int64) * time.Second)
@@ -151,15 +152,13 @@ func MemberMetricCollector(){
 		latencyTime = rTime_end.Seconds() - r.ProcessingTime
 
 		if err != nil {
-			fmt.Println("check")
+			//fmt.Println("check")
 			fmt.Println("could not connect : ", err)
 			time.Sleep(time.Duration(period_int64) * time.Second)
-			fmt.Println("check2")
+			//fmt.Println("check2")
 			continue
 		}
 		fmt.Println("[gRPC End] Send Metric Data")
-
-
 
 		//period_int64 := r.Tick
 		// _ = data
@@ -181,9 +180,9 @@ func MemberMetricCollector(){
 		if period_int64 > 0 && err == nil {
 
 			//fmt.Println("period : ",time.Duration(period_int64))
-			fmt.Println("Wait ", time.Duration(period_int64)* time.Second, "...")
+			fmt.Println("Wait ", time.Duration(period_int64)*time.Second, "...")
 			time.Sleep(time.Duration(period_int64) * time.Second)
-		}else {
+		} else {
 			fmt.Println("--- Fail to get period")
 			time.Sleep(5 * time.Second)
 		}

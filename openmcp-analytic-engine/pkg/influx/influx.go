@@ -31,6 +31,23 @@ func InfluxDBClient(INFLUX_IP, INFLUX_PORT, username, password string) client.Cl
 	return c
 }
 
+func (in *Influx) GetCPAMetricsData(cluster string, namespace string, depname string, podnum string) []client.Result {
+	omcplog.V(4).Info("Func GetCPAMetricsData Called")
+
+	q := client.NewQuery("select \"CPUUsageNanoCores\", \"MemoryUsageBytes\", \"NetworkLatency\"  from (select * from Pods where \"cluster\"='"+cluster+"' and \"namespace\"='"+namespace+"' and \"pod\"=~/"+depname+"/ order by time DESC limit "+podnum+") order by time desc", "Metrics", "")
+
+	response, err := in.inClient.Query(q)
+
+	if err == nil && response.Error() == nil {
+		return response.Results
+	} else {
+		fmt.Println(err)
+		fmt.Println(response.Error())
+	}
+
+	return nil
+}
+
 func (in *Influx) GetClusterMetricsData(clusterName string) []client.Result {
 	omcplog.V(4).Info("Func GetClusterMetricsData Called")
 	q := client.NewQuery("SELECT * FROM Nodes WHERE cluster = '"+clusterName+"' GROUP BY * ORDER BY DESC LIMIT 5", "Metrics", "")
@@ -39,6 +56,9 @@ func (in *Influx) GetClusterMetricsData(clusterName string) []client.Result {
 
 	if err == nil && response.Error() == nil {
 		return response.Results
+	} else {
+		fmt.Println(err)
+		fmt.Println(response.Error())
 	}
 
 	return nil
@@ -71,16 +91,16 @@ func (in *Influx) GetNetworkData(clusterName, nodeName string) []client.Result {
 
 	if err == nil && response.Error() == nil {
 		return response.Results
-	}else {
+	} else {
 		omcplog.V(0).Infof("Cannot get data from InfluxDB: ", err)
 		return nil
 	}
 
 }
 
-func (in * Influx) InsertClusterStatus(clusterName, time_t string, cpuScore, memScore, netScore, diskScore, latencyScore float64){
+func (in *Influx) InsertClusterStatus(clusterName, time_t string, cpuScore, memScore, netScore, diskScore, latencyScore float64) {
 	omcplog.V(4).Info("InsertClusterStatus Called")
-	omcplog.V(2).Info("[Save InfluxDB] ClusterName: '", clusterName,"'")
+	omcplog.V(2).Info("[Save InfluxDB] ClusterName: '", clusterName, "'")
 
 	cpuWarning := false
 	memWarning := false
@@ -115,20 +135,19 @@ func (in * Influx) InsertClusterStatus(clusterName, time_t string, cpuScore, mem
 		"cluster": clusterName,
 	}
 
-
 	fields := map[string]interface{}{
-		"cpuScore": cpuScore,
-		"memScore": memScore,
-		"netScore": netScore,
-		"diskScore": diskScore,
-		"latencyScore": latencyScore,
-		"cpuWarning": cpuWarning,
-		"memWarning": memWarning,
-		"netWarning": netWarning,
-		"diskWarning": diskWarning,
-		"latencyWarning" : latencyWarning,
+		"cpuScore":       cpuScore,
+		"memScore":       memScore,
+		"netScore":       netScore,
+		"diskScore":      diskScore,
+		"latencyScore":   latencyScore,
+		"cpuWarning":     cpuWarning,
+		"memWarning":     memWarning,
+		"netWarning":     netWarning,
+		"diskWarning":    diskWarning,
+		"latencyWarning": latencyWarning,
 	}
-	t, err:= time.Parse(time.RFC3339, time_t)
+	t, err := time.Parse(time.RFC3339, time_t)
 	if err != nil {
 		fmt.Println("err!", err)
 	}
@@ -145,8 +164,6 @@ func (in * Influx) InsertClusterStatus(clusterName, time_t string, cpuScore, mem
 
 	bp.AddPoint(pt)
 
-
 	in.inClient.Write(bp)
 
 }
-

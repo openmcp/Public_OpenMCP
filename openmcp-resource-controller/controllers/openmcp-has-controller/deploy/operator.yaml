@@ -14,12 +14,12 @@ spec:
         name: openmcp-has-controller
     spec:
       serviceAccountName: openmcp-has-controller
-#      imagePullSecrets:
-#        - name: dockerlogin
+      imagePullSecrets:
+        - name: openmcp-private-registry
       containers:
         - name: openmcp-has-controller
           # Replace this with the built image name
-          image: 10.0.3.40:5005/openmcp/openmcp-has-controller:v0.0.1
+          image: 10.0.3.20:5005/openmcp/openmcp-has-controller:v0.0.1
           command:
           - openmcp-has-controller
           imagePullPolicy: Always
@@ -34,13 +34,11 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: GRPC_SERVER
-              value: "10.0.3.40"
+              value: 10.0.3.20
             - name: GRPC_PORT
-              value: "32050"
+              value: "30002"
             - name: OPERATOR_NAME
               value: "openmcp-has-controller"
-      imagePullSecrets:
-        - name: openmcp-private-registry
       tolerations:
         - key: node.kubernetes.io/not-ready
           effect: NoExecute

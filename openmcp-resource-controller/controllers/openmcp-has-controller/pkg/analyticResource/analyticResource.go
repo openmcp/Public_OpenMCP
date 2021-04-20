@@ -8,12 +8,13 @@ import (
 	"openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-has-controller/pkg/protobuf"
 	"openmcp/openmcp/util/clusterManager"
 	"os"
+	"strings"
 	"time"
 )
 
 type CPAValue struct {
-	OmcpdeployInfo       *protobuf.CPADeployInfo
-	OmcpdeployReplicas   int32
+	OmcpdeployInfo *protobuf.CPADeployInfo
+	//	InitReplicas         int32
 	ReplicasAfterScaling int32
 	CpaMin               int32
 	CpaMax               int32
@@ -36,6 +37,7 @@ Exit:
 		if len(CPAInfoList) > 0 {
 			var CPADeployList = protobuf.CPADeployList{}
 			for _, v := range CPAInfoList {
+				v.OmcpdeployInfo.ReplicasNum = v.ReplicasAfterScaling
 				CPADeployList.CPADeployInfo = append(CPADeployList.CPADeployInfo, v.OmcpdeployInfo)
 			}
 			grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
@@ -51,8 +53,8 @@ Exit:
 						cpaKey.HASName = deploy.CPAName
 						cpaKey.HASNamespace = deploy.Namespace
 						lastTime := CPAInfoList[cpaKey].autoscalingTime
-						if lastTime.IsZero() || (!lastTime.IsZero() && time.Since(lastTime) > time.Second*20) {
-							if deploy.PodState == "Warning" {
+						if lastTime.IsZero() || (!lastTime.IsZero() && time.Since(lastTime) > time.Second*300) {
+							if strings.Contains(deploy.PodState, "Warning") {
 								todo := deploy.Action
 								targetCluster := deploy.TargetCluster
 								beforeScaling := CPAInfoList[cpaKey].ReplicasAfterScaling
@@ -137,9 +139,8 @@ Exit:
 			} else {
 				fmt.Println(gRPC_err)
 			}
-		} else {
-			//fmt.Println("Empty")
 		}
-		time.Sleep(time.Second * 3)
+
+		time.Sleep(time.Second * 5)
 	}
 }
