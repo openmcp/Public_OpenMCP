@@ -9,6 +9,7 @@ import (
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/decode"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/kubeletClient"
 	"openmcp/openmcp/openmcp-metric-collector/member/pkg/storage"
+	"os"
 )
 
 func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nodes []corev1.Node) (*storage.Collection, error) {
@@ -55,7 +56,7 @@ func Scrap(config *rest.Config, kubelet_client *kubeletClient.KubeletClient, nod
 		podNum += len(srcBatch.Pods)
 	}
 
-	res.ClusterName = config.Username
+	res.ClusterName = os.Getenv("CLUSTER_NAME") //config.Username
 
 	fmt.Println("ScrapeMetrics: time: ", clock.MyClock.Since(startTime), "nodes: ", nodeNum, "pods: ", podNum)
 	return res, utilerrors.NewAggregate(errs)
@@ -67,6 +68,7 @@ func CollectNode(config *rest.Config, kubelet_client *kubeletClient.KubeletClien
 	host := node.Status.Addresses[0].Address
 	token := config.BearerToken
 	summary, err := kubelet_client.GetSummary(host, token)
+	fmt.Println("summary : ", summary)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fetch metrics from Kubelet %s (%s): %v", node.Name, node.Status.Addresses[0].Address, err)
 	}

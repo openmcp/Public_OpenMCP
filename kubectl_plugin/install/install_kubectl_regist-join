@@ -1,25 +1,25 @@
 #!/bin/bash
 
-cat <<EOF > kubectl-register_join
+cat <<EOF > kubectl-regist_join
 #!/bin/bash
 
 if [[ "\$1" == "GKE" ]] || [[ "\$1" == "EKS" ]] || [[ "\$1" == "AKS" ]]; then
   echo "Cloud Cluster"
 else
   echo "Error : Input Cloud Cluster Type"
-  echo "ex) kubectl register-join gke-cluster1 openmcp:8080"
+  echo "ex) kubectl regist-join gke-cluster1 openmcp:8080"
   exit 1
 fi
 
 if [ "\$2" = "" ]; then
   echo "Error : Input Cluster Name"
-  echo "ex) kubectl register-join gke-cluster1 openmcp:8080"
+  echo "ex) kubectl regist-join gke-cluster1 openmcp:8080"
   exit 1
 fi
 
 if [ "\$3" = "" ]; then
   echo "Error : Input OpenMCP IP:PORT"
-  echo "ex) kubectl register-join gke-cluster1 openmcp:8080"
+  echo "ex) kubectl regist-join gke-cluster1 openmcp:8080"
   exit 1
 fi
 
@@ -43,8 +43,8 @@ rm server.crt
 rm kubeconfig
 EOF
 
-chmod +x kubectl-register_join
+chmod +x kubectl-regist_join
 
-mv kubectl-register_join /usr/local/bin
+mv kubectl-regist_join /usr/local/bin
 
-echo "--Install kubectl-register_join plugin--"
+echo "--Install kubectl-regist_join plugin--"

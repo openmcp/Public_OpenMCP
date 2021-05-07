@@ -4,46 +4,48 @@ metadata:
   name: has-iot-gateway
   namespace: openmcp
 spec:
-  hpaTemplate:
-    spec:
-      scaleTargetRef:
-        kind: OpenMCPDeployment
-        name: iot-gateway
-      minReplicas: 1
-      maxReplicas: 10
-      metrics:
-        - type: Resource
-          resource:
-            name: cpu
-            target:
-              type: Utilization
-              averageUtilization: 80
-        - type: Resource
-          resource:
-            name: memory
-            target:
-              type: Utilization
-              averageUtilization: 80
-        - type: Object
-          object:
-            metric:
-              name: FsUsage
-            describedObject:
-              apiVersion: v1
-              kind: Pod
-              name: iot-gateway
-            target:
-              type: Value
-              value: 60000
-        - type: Object
-          object:
-            metric:
-              name: NetworkTxUsage
-            describedObject:
-              apiVersion: v1
-              kind: Pod
-              name: iot-gateway
-            target:
-              type: Value
-              value: 60000
-  vpaMode: Auto
+  mainController: MemberCluster
+  scalingOptions:  
+    hpaTemplate:
+      spec:
+        scaleTargetRef:
+          kind: OpenMCPDeployment
+          name: iot-gateway
+        minReplicas: 1
+        maxReplicas: 10
+        metrics:
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                type: Utilization
+                averageUtilization: 80
+          - type: Resource
+            resource:
+              name: memory
+              target:
+                type: Utilization
+                averageUtilization: 80
+          - type: Object
+            object:
+              metric:
+                name: FsUsage
+              describedObject:
+                apiVersion: v1
+                kind: Pod
+                name: iot-gateway
+              target:
+                type: Value
+                value: 60000
+          - type: Object
+            object:
+              metric:
+                name: NetworkTxUsage
+              describedObject:
+                apiVersion: v1
+                kind: Pod
+                name: iot-gateway
+              target:
+                type: Value
+                value: 60000
+    vpaTemplate: Always

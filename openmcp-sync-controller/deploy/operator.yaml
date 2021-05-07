@@ -18,7 +18,7 @@ spec:
         - name: openmcp-private-registry
       containers:
         - name: openmcp-sync-controller
-          image: 10.0.3.40:5005/openmcp/openmcp-sync-controller:v0.0.1
+          image: 10.0.3.20:5005/openmcp/openmcp-sync-controller:v0.0.1
           command:
           - openmcp-sync-controller
           imagePullPolicy: Always

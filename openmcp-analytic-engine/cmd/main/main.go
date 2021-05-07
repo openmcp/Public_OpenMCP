@@ -3,7 +3,6 @@ package main
 import (
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
-	"fmt"
 	"log"
 	"openmcp/openmcp/openmcp-analytic-engine/pkg/analyticEngine"
 	"openmcp/openmcp/util/clusterManager"
@@ -45,9 +44,11 @@ func main() {
 			ghosts = append(ghosts, ghost)
 		}
 
-		fmt.Println(live)
-		fmt.Println(ghosts)
-		fmt.Println(namespace)
+		/*
+			fmt.Println(live)
+			fmt.Println(ghosts)
+			fmt.Println(namespace)
+		*/
 
 		reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
