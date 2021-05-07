@@ -212,14 +212,14 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 							util.CmdExec2("cp " + dirname + "/operator.yaml " + dirname + "/operator_" + clustername + ".yaml")
 							util.CmdExec2("sed -i 's|REPLACE_CLUSTER_NAME|\"" + clustername + "\"|g' " + dirname + "/operator_" + clustername + ".yaml")
 							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/operator_" + clustername + ".yaml --context " + clustername)
-							//util.CmdExec2("rm " + dirname + "/operator_" + clustername + ".yaml")
+							util.CmdExec2("rm " + dirname + "/operator_" + clustername + ".yaml")
 						} else if strings.Contains(dirname, "metallb/configmap") {
 							fmt.Println("*** ", dirname+"/"+f.Name())
 							util.CmdExec2("cp " + dirname + "/metallb_configmap.yaml " + dirname + "/metallb_configmap_" + clustername + ".yaml")
-							util.CmdExec2("sed -i 's|CLUSTER_ADDRESS_FROM|\"" + ipaddressfrom + "\"|g' " + dirname + "/metallb_configmap_" + clustername + ".yaml")
-							util.CmdExec2("sed -i 's|CLUSTER_ADDRESS_TO|\"" + ipaddressto + "\"|g' " + dirname + "/metallb_configmap_" + clustername + ".yaml")
+							util.CmdExec2("sed -i 's|CLUSTER_ADDRESS_FROM|" + ipaddressfrom + "|g' " + dirname + "/metallb_configmap_" + clustername + ".yaml")
+							util.CmdExec2("sed -i 's|CLUSTER_ADDRESS_TO|" + ipaddressto + "|g' " + dirname + "/metallb_configmap_" + clustername + ".yaml")
 							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/metallb_configmap_" + clustername + ".yaml --context " + clustername)
-							//util.CmdExec2("rm " + dirname + "/metallb_configmap_" + clustername + ".yaml")
+							util.CmdExec2("rm " + dirname + "/metallb_configmap_" + clustername + ".yaml")
 						} else {
 							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/" + f.Name() + " --context " + clustername)
 						}

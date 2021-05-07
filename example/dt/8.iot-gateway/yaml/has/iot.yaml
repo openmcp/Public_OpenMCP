@@ -63,13 +63,13 @@ spec:
             image: 10.0.3.20:5005/openmcp/sysbench-test:v0.0.1
             command:
             - sysbench-test
-            #resources:
-            #  requests:
-            #    memory: 256M
-            #    cpu: 500m
-            #  limits:
-            #    memory: 1024M
-            #    cpu: 500m
+            resources:
+              requests:
+                memory: 256M
+                cpu: 500m
+              limits:
+                memory: 1024M
+                cpu: 500m
             imagePullPolicy: Always
             env:
               - name: WATCH_NAMESPACE

@@ -494,7 +494,7 @@ func (ae *AnalyticEngineStruct) AnalyzeCPADeployment(cDeploy *protobuf.CPADeploy
 	//cpuusage/cpurequest < 10 or memusage/memrequest < 10 이면 Warning
 	//'scale-in'
 
-	//네트워크 문제면 cluster 간
+	//네트워크 문제면 (서비스 문제) cluster 간
 	//networkLatency > x 인 경우 Warning
 	//클러스터 ResourceScore를 비교해서 점수가 낮은 클러스터에 'scale-out' (낮을수록 좋음)
 

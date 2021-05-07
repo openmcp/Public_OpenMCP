@@ -1,0 +1,282 @@
+#!/bin/bash
+
+if [ "$1" == "list" ]; then
+  #echo "[NodePool List]"
+  filename='/root/.kube/nodepool.txt'
+
+  if [ ! -f $filename ]; then
+          touch $filename
+  fi
+
+  echo "[NodePool List]"
+  while read p;
+  do
+          echo "$p"
+  done < $filename
+
+elif [ "$1" == "regist" ]; then
+  if [ "$2" == "" ]; then
+    echo "Input Cluster IP"  
+    echo "ex) kubectl node-pool regist 0.0.0.0"
+  else
+    #echo "[Success Register]"
+
+    filename='/root/.kube/nodepool.txt'
+
+    function valid_ip()
+    {   
+        local  ip=$1
+        local  stat=1
+    
+        if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            OIFS=$IFS
+            IFS='.'
+            ip=($ip)
+            IFS=$OIFS
+            [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 \
+                && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
+            stat=$?
+        fi
+        return $stat
+    }
+    
+    if [ ! -f $filename ]; then
+            touch $filename
+    fi
+
+    if valid_ip $2;
+    then
+            stat='good';
+    else
+            stat='bad';
+    fi
+
+    if [[ "$stat" == "bad" ]];
+    then
+            echo "Input Must be IP Type"
+            exit
+    fi
+
+    find=false
+    while read p;
+    do
+            if [[ "$p" == "$2" ]];
+            then
+                    find=true
+                    break
+            fi
+    done < $filename
+
+    if $find;
+    then
+            echo "Already Register '$2' in Nodepool"
+    else
+            ssh-copy-id -i /root/.ssh/id_rsa.pub $2
+            if [ $? -eq 0 ];
+            then
+                    echo $2 >> $filename
+                    echo "Success Register '$2' in Nodepool"
+            else
+                    echo "[Error] ssh-copy-id Failed '$2' in Nodepool"
+
+            fi
+
+    fi
+
+  fi
+elif [ "$1" == "unregist" ]; then
+  if [ "$2" == "" ]; then
+    echo "Input Cluster IP"  
+    echo "ex) kubectl node-pool unregist 0.0.0.0"
+  else
+    #echo "[Success Unregister]"
+   
+    filename='/root/.kube/nodepool.txt'
+
+    function valid_ip()
+    {
+        local  ip=$1
+        local  stat=1
+
+        if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            OIFS=$IFS
+            IFS='.'
+            ip=($ip)
+            IFS=$OIFS
+            [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 \
+                && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
+            stat=$?
+        fi
+        return $stat
+    }
+    
+    if [ ! -f $filename ]; then
+            touch $filename
+    fi
+
+    if valid_ip $2;
+    then
+            stat='good';
+    else
+            stat='bad';
+    fi    
+    
+    if [[ "$stat" == "bad" ]];
+    then
+            echo "Input Must be IP Type"
+            exit
+    fi
+    
+    find=false
+    while read p;
+    do
+            if [[ "$p" == "$2" ]];
+            then
+                    find=true
+                    break
+            fi
+    done < $filename
+    
+    if $find;
+    then
+            sed -i "/$2/d" $filename
+            echo "Success UnRegister '$2' in Nodepool"
+    else
+            echo "Not exist '$2' in Nodepool"
+    fi
+    
+    
+  fi
+elif [ "$1" == "size" ]; then
+  if [ "$2" == "" ]; then
+      echo "Input Node-Pool Size" 
+      echo "ex) kubectl node-pool size 2"
+  else
+        #echo "[Success Expand/Reduce Node]"
+    
+        filename='/root/.kube/nodepool.txt'
+
+    function valid_ip()
+    {   
+        local  ip=$1
+        local  stat=1
+        
+        if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            OIFS=$IFS
+            IFS='.'
+            ip=($ip)
+            IFS=$OIFS
+            [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 \
+                && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
+            stat=$?
+        fi
+        return $stat
+    }
+
+
+    if [ ! -f $filename ]; then
+            touch $filename
+    fi
+
+
+    joinNodeIPTemp=($(kubectl get node -o wide | awk '{print $6}'))
+    joinNodeIPs=()
+    
+    joinNodeNameTemp=($(kubectl get node -o wide | awk '{print $1}'))
+    joinNodeNames=()
+    
+    joinNodeRoleTemp=($(kubectl get node -o wide | awk '{print $3}'))
+    
+    for ((i=0; i<${#joinNodeIPTemp[@]}; i++)); do
+            ip=${joinNodeIPTemp[i]}
+            name=${joinNodeNameTemp[i]}
+            role=${joinNodeRoleTemp[i]}
+    
+            if valid_ip $ip;
+            then
+                    if [[ ! "$role" == "master" ]];
+                    then
+                            joinNodeIPs+=($ip)
+                            joinNodeNames+=($name)
+                    fi
+            fi
+    
+    done
+    
+    target_worker_node_num=$2
+    current_worker_node_num=${#joinNodeIPs[@]}
+
+    change_worker_node_num=$(($target_worker_node_num-$current_worker_node_num))
+
+
+    if [ "$change_worker_node_num" -gt 0 ]; then
+            for ((i=0; i<$change_worker_node_num; i++))
+            do
+                    while read p;
+                    do
+                            if [[ ! " ${joinNodeIPs[*]} " == *$p* ]];
+                            then
+                                    echo "Node Join Start : $p"
+    
+                                    token=`kubeadm token create`
+                                    hash=`openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
+                                    myip=`ip route get 8.8.8.8 | head -1 | cut -d' ' -f8`
+    
+                                    ssh root@$p "swapoff -a"
+                                    ssh root@$p "kubeadm join $myip:6443 --token $token --discovery-token-ca-cert-hash sha256:$hash"
+                                    joinNodeIPs+=($p)
+    
+                                    kubeadm token delete $token
+                                    echo "Success Node Join: $p"
+                                    break
+
+                            fi
+                    done < $filename
+            done
+    elif [ "$change_worker_node_num" -eq 0 ]; then
+            echo "Already Current Worker Node Num: $target_worker_node_num"
+    else
+    
+            for ((i=0; i<$(($change_worker_node_num * -1)); i++))
+            do
+
+                    ip=${joinNodeIPs[i]}
+                    name=${joinNodeNames[i]}
+    
+                    echo "Node Delete Start: $name ($ip)"
+
+
+                    #kubectl drain $name
+                    kubectl delete node $name
+
+                    ssh root@$ip << EOF
+                            kubeadm reset --force
+                            systemctl stop kubelet
+                            systemctl stop docker
+                            rm -rf /var/lib/cni/
+                            rm -rf /var/lib/kubelet/*
+                            rm -rf /etc/cni/
+                                ifconfig cni0 down
+                            ifconfig flannel.1 down
+                            ifconfig docker0 down
+
+                            systemctl start kubelet
+                            systemctl start docker
+EOF
+
+                    if [ $? -eq 0 ];
+                    then
+                            echo "Success Node Delete '$name'"
+                    fi
+            done
+    fi
+
+
+  fi
+else
+  echo "Basic Commands :"
+  echo "list          ex) kubectl node-pool list"
+  echo "regist        ex) kubectl node-pool regist 0.0.0.0"
+  echo "unregist      ex) kubectl node-pool unregist 0.0.0.0"
+  echo "size          ex) kubectl node-pool size 2"
+fi

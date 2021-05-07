@@ -19,7 +19,7 @@ spec:
       containers:
         - name: openmcp-cluster-manager
           # Replace this with the built image name
-          image: 10.0.3.40:5005/openmcp/openmcp-cluster-manager:v0.0.1
+          image: 10.0.3.20:5005/openmcp/openmcp-cluster-manager:v0.0.1
           command:
           - openmcp-cluster-manager
           imagePullPolicy: Always
