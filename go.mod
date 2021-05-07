@@ -40,6 +40,7 @@ require (
 	google.golang.org/grpc v1.31.0
 	google.golang.org/grpc/examples v0.0.0-20200902210233-8630cac324bf // indirect
 	google.golang.org/protobuf v1.25.0
+	gopkg.in/unrolled/render.v1 v1.0.0
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.18.6
 	k8s.io/apiextensions-apiserver v0.17.3
