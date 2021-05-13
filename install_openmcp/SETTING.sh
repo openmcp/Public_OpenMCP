@@ -49,6 +49,9 @@ read OME_GRPC_PUBLIC_PORT
 #echo -n "InfluxDB Server IP -> "
 #read INFLUXDB_IP
 
+echo -n "NFS Server IP -> "
+read NFS_PDNS_IP
+
 echo -n "InfluxDB Server Port -> "
 read INFLUXDB_PORT
 
@@ -57,9 +60,6 @@ read INFLUXDB_USERNAME
 
 echo -n "InfluxDB User Password -> "
 read INFLUXDB_USERPWD
-
-echo -n "NFS & PowerDNS Server IP -> "
-read NFS_PDNS_IP
 
 echo -n "PowerDNS Server IP (Public) -> "
 read PDNS_PUBLIC_IP
