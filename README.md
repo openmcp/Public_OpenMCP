@@ -99,6 +99,7 @@ OpenMCP Cluster Manager Port ->30001
 OpenMCP Analytic Engine GRPC Server Port -> 30002
 OpenMCP Metric Collector GRPC Server IP (Public) -> 10.0.3.30
 OpenMCP Metric Collector GRPC Server Port (Public) -> 30003
+NFS Server IP -> 10.0.3.12
 InfluxDB Server Port -> 30004
 InfluxDB User Name -> root
 InfluxDB User Password -> root
