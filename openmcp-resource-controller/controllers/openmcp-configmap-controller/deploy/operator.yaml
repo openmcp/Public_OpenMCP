@@ -15,11 +15,11 @@ spec:
     spec:
       serviceAccountName: openmcp-configmap-controller
       imagePullSecrets:
-        - name: openmcp-private-registry
+        - name: regcred
       containers:
         - name: openmcp-configmap-controller
           # Replace this with the built image name
-          image: 10.0.3.40:5005/openmcp/openmcp-configmap-controller:v0.0.1
+          image: ketidevit/openmcp-configmap-controller:v0.0.1
           command:
           - openmcp-configmap-controller
           imagePullPolicy: Always

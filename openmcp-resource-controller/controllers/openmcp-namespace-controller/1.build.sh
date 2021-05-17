@@ -1,5 +1,5 @@
 #!/bin/bash
-docker_id="openmcp"
+docker_id="ketidevit"
 controller_name="openmcp-namespace-controller"
 
 export GO111MODULE=on

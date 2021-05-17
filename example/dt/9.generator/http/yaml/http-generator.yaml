@@ -15,7 +15,7 @@ spec:
             #runAsUser: 1001
             #fsGroup: 1001
           imagePullSecrets:
-            - name: dockerlogin
+            - name: regcred
           containers:
           - name: http-generator
             #imagePullPolicy: IfNotPresent

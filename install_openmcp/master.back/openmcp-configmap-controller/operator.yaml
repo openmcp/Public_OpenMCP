@@ -19,7 +19,7 @@ spec:
       containers:
         - name: openmcp-configmap-controller
           # Replace this with the built image name
-          image: REPLACE_DOCKERREGISTRYIP/openmcp/openmcp-configmap-controller:v0.0.1
+          image: ketidevit/openmcp-configmap-controller:v0.0.1
           command:
           - openmcp-configmap-controller
           imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY

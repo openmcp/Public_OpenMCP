@@ -19,7 +19,7 @@ spec:
       containers:
         - name: openmcp-deployment-controller
           # Replace this with the built image name
-          image: REPLACE_DOCKERREGISTRYIP/openmcp/openmcp-deployment-controller:v0.0.1
+          image: ketidevit/openmcp-deployment-controller:v0.0.1
           command:
           - openmcp-deployment-controller
           imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY

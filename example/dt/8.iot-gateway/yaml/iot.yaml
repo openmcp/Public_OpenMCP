@@ -13,7 +13,7 @@ spec:
       template:
         spec:
           imagePullSecrets:
-            - name: dockerlogin
+            - name: regcred
           containers:
           - name: iot-gateway
             #imagePullPolicy: IfNotPresent

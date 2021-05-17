@@ -14,7 +14,7 @@ spec:
       template:
         spec:
           imagePullSecrets:
-            - name: dockerlogin
+            - name: regcred
           containers:
           - name: keti-ruleengine
             image: openmcp/keti-ruleengine:v0.0.1

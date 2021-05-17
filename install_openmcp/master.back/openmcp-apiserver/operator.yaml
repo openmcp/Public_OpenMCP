@@ -19,7 +19,7 @@ spec:
       containers:
         - name: openmcp-apiserver
           # Replace this with the built image name
-          image: REPLACE_DOCKERREGISTRYIP/openmcp/openmcp-apiserver:v0.0.1
+          image: ketidevit/openmcp-apiserver:v0.0.1
           command:
           - openmcp-apiserver
           imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
@@ -38,9 +38,9 @@ spec:
             - name: INFLUX_PORT
               value: REPLACE_INFLUXDBPORT
             - name: INFLUX_USERNAME
-              value: REPLACE_INFLUXDBUSERNAME
+              value: "root"
             - name: INFLUX_PASSWORD
-              value: REPLACE_INFLUXDBUSERPWD
+              value: "root"
             - name: OPERATOR_NAME
               value: "openmcp-apiserver"
           ports:

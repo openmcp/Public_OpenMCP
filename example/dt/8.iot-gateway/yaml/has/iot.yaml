@@ -15,7 +15,7 @@ spec:
           imagePullSecrets:
             - name: openmcp-private-registry
           #imagePullSecrets:
-          #  - name: dockerlogin
+          #  - name: regcred
           containers:
           - name: iot-gateway
             #imagePullPolicy: IfNotPresent

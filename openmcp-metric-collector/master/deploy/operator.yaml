@@ -15,11 +15,11 @@ spec:
     spec:
       serviceAccountName: openmcp-metric-collector
       imagePullSecrets:
-        - name: openmcp-private-registry
+        - name: regcred
       containers:
         - name: openmcp-metric-collector
           # Replace this with the built image name
-          image: 10.0.3.20:5005/openmcp/openmcp-metric-collector:v0.0.1
+          image: ketidevit/openmcp-metric-collector:v0.0.1
           command:
           - openmcp-metric-collector
           imagePullPolicy: Always

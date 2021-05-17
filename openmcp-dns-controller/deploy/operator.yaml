@@ -15,10 +15,10 @@ spec:
     spec:
       serviceAccountName: openmcp-dns-controller-sa
       imagePullSecrets:
-        - name: openmcp-private-registry
+        - name: regcred
       containers:
         - name: openmcp-dns-controller
-          image: 10.0.3.40:5005/openmcp/openmcp-dns-controller:v0.0.1
+          image: ketidevit/openmcp-dns-controller:v0.0.1
           command:
           - openmcp-dns-controller
           imagePullPolicy: Always

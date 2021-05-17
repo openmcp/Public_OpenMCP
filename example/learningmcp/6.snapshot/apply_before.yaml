@@ -80,7 +80,7 @@ spec:
           name: http
           protocol: TCP
       imagePullSecrets:
-        - name: dockerlogin
+        - name: regcred
 ---
 apiVersion: v1
 kind: Service

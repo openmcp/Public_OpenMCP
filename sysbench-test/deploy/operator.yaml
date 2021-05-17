@@ -15,7 +15,7 @@ spec:
     spec:
       serviceAccountName: sysbench-test
       imagePullSecrets:
-        - name: dockerlogin
+        - name: regcred
       containers:
         - name: sysbench-test
           # Replace this with the built image name

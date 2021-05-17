@@ -1,9 +1,11 @@
 kubectl create ns openmcp
 kubectl create ns metallb-system
-kubectl create secret docker-registry REPLACE_DOCKERSECRETNAME \
- --docker-server=REPLACE_DOCKERREGISTRYIP \
- --docker-username=openmcp --docker-password=openmcp \
- --namespace=openmcp
+
+kubectl create secret generic REPLACE_DOCKERSECRETNAME \
+    --from-file=.dockerconfigjson=/root/.docker/config.json \
+    --type=kubernetes.io/dockerconfigjson \
+    --namespace=openmcp
+
 
 echo "--- openmcp-cluster-manager"
 kubectl create -f openmcp-cluster-manager/.

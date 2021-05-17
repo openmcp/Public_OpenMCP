@@ -15,10 +15,10 @@ spec:
     spec:
       serviceAccountName: openmcp-apiserver-sa
       imagePullSecrets:
-        - name: openmcp-private-registry
+        - name: regcred
       containers:
         - name: openmcp-apiserver
-          image: 10.0.3.40:5005/openmcp/openmcp-apiserver:v0.0.1
+          image: ketidevit/openmcp-apiserver:v0.0.1
           command:
           - openmcp-apiserver
           imagePullPolicy: Always

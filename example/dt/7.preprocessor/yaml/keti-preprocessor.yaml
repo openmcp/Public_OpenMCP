@@ -12,7 +12,7 @@ spec:
       template:
         spec:
           imagePullSecrets:
-            - name: dockerlogin
+            - name: regcred
           containers:
           - name: keti-preprocessor
             image: openmcp/keti-preprocessor:v0.0.1

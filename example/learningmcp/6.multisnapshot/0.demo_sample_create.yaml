@@ -65,7 +65,7 @@ spec:
         persistentVolumeClaim:
           claimName: snapshot-example-pvc 
       imagePullSecrets:
-      - name: dockerlogin
+      - name: regcred
       nodeSelector:
         kubernetes.io/hostname: kube1-worker1
 ---

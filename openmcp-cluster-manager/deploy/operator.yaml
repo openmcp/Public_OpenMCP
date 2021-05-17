@@ -15,11 +15,11 @@ spec:
     spec:
       serviceAccountName: openmcp-cluster-manager
       imagePullSecrets:
-        - name: openmcp-private-registry
+        - name: regcred
       containers:
         - name: openmcp-cluster-manager
           # Replace this with the built image name
-          image: 10.0.3.20:5005/openmcp/openmcp-cluster-manager:v0.0.1
+          image: ketidevit/openmcp-cluster-manager:v0.0.1
           command:
           - openmcp-cluster-manager
           imagePullPolicy: Always
