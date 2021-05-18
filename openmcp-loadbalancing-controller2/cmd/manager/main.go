@@ -44,7 +44,7 @@ func ExtractIP(target string) (string, error) {
 
 func main() {
 	//origin, _ := url.Parse("http://10.0.3.20:8812/")
-	origin, _ := url.Parse("http://10.0.3.196")
+	origin, _ := url.Parse("http://10.0.3.195")
 
 	director := func(req *http.Request) {
 		req.Header.Add("X-Forwarded-Host", req.Host)
@@ -55,7 +55,7 @@ func main() {
 		fmt.Println(req)
 
 		clientIP, _ := ExtractIP(req.RemoteAddr)
-		//clientIP = "119.65.195.180"
+		clientIP = "119.65.195.180"
 		ip := net.ParseIP(clientIP)
 		fmt.Println(req.RemoteAddr, clientIP, ip)
 		record, err := GeoDB.City(ip)

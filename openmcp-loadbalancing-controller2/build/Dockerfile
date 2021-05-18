@@ -8,6 +8,7 @@ ENV OPERATOR=/usr/local/bin/openmcp-loadbalancing-controller2 \
 COPY _output/bin/openmcp-loadbalancing-controller2 ${OPERATOR}
 
 COPY bin /usr/local/bin
+COPY GeoLite2-City.mmdb /root/
 RUN  /usr/local/bin/user_setup
 
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
