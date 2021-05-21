@@ -98,7 +98,7 @@ default:
 
 master:
   internal:
-    ip: 10.0.3.20
+    ip: 10.0.3.30
     ports:
       apiServerPort: 30000
       clusterManagerPort: 30001
