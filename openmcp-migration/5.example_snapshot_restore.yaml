@@ -1,0 +1,14 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: SnapshotRestore
+metadata:
+  name: snapshot-example-snapshotrestore
+spec:
+  snapshotRestoreSource:
+  - resourceCluster: cluster1
+    resourceNamespace: openmcp
+    resourceType: Deployment
+    snapshotKey: 1607258246-cluster1-Deployment-iot-gateway
+  - resourceCluster: cluster1
+    resourceNamespace: openmcp
+    resourceType: Service
+    snapshotKey: 1607258246-cluster1-Service-iot-gateway-sv

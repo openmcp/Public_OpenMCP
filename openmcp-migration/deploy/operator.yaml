@@ -13,7 +13,9 @@ spec:
       labels:
         name: openmcp-migration
     spec:
-      serviceAccountName: openmcp-migration-sa
+      serviceAccountName: openmcp-snapshot-sa
+      imagePullSecrets:
+        - name: dockerlogin
       containers:
         - name: openmcp-migration
           # Replace this with the built image name

@@ -1,0 +1,14 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: Snapshot
+metadata:
+  name: snapshot-example-snapshot
+spec:
+  snapshotSources:
+  - resourceCluster: cluster1
+    resourceNamespace: openmcp
+    resourceType: Deployment
+    resourceName: snapshot-example
+  - resourceCluster: cluster1
+    resourceNamespace: openmcp
+    resourceType: Service
+    resourceName: snapshot-example-svc
