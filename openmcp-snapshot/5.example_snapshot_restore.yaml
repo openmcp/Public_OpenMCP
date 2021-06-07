@@ -7,12 +7,16 @@ spec:
   - resourceCluster: cluster1
     resourceNamespace: default
     resourceType: PersistentVolume
-    snapshotKey: 1605230624-cluster1-PersistentVolume-snapshot-test-pv
+    snapshotKey: 1607258246-cluster1-PersistentVolume-iot-gateway-pv
   - resourceCluster: cluster1
     resourceNamespace: default
     resourceType: PersistentVolumeClaim
-    snapshotKey: 1605230624-cluster1-PersistentVolumeClaim-snapshot-test-pvc
+    snapshotKey: 1607258246-cluster1-PersistentVolumeClaim-iot-gateway-pvc
   - resourceCluster: cluster1
     resourceNamespace: default
     resourceType: Deployment
-    snapshotKey: 1605230624-cluster1-Deployment-snapshot-test-dp
+    snapshotKey: 1607258246-cluster1-Deployment-iot-gateway
+  - resourceCluster: cluster1
+    resourceNamespace: default
+    resourceType: Service
+    snapshotKey: 1607258246-cluster1-Service-iot-gateway-sv
