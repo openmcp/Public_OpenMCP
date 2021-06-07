@@ -17,7 +17,6 @@ package migration
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"regexp"
 	"time"
@@ -132,8 +131,9 @@ func MigrationControllerResourceInit(migraionSource v1alpha1.MigrationServiceSou
 	return migSource
 }
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
-	omcplog.V(3).Info("Function Called Reconcile")
+	omcplog.V(3).Info("Migration Start : Reconcile")
 	instance := &v1alpha1.Migration{}
+	checkResourceName := ""
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 	if err != nil {
 		omcplog.V(0).Info("get instance error : ", err)
@@ -147,6 +147,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				resourceType := resource.ResourceType
 				if resourceType == config.DEPLOY {
 					migdeploy(migSource, resource)
+					checkResourceName = resource.ResourceName
 				} else if resourceType == config.SERVICE {
 					migservice(migSource, resource)
 				} else if resourceType == config.PV {
@@ -155,7 +156,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					migpvc(migSource, resource)
 				} else {
 					omcplog.V(0).Info("Resource Type Error!")
-					return reconcile.Result{}, fmt.Errorf("Resource Type Error!")
+					//return reconcile.Result{}, fmt.Errorf("Resource Type Error!")
+					return reconcile.Result{}, nil
 				}
 			}
 		} else {
@@ -163,12 +165,51 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				resourceType := resource.ResourceType
 				if resourceType == config.DEPLOY {
 					migdeployNotVolume(migSource, resource)
+					checkResourceName = resource.ResourceName
 				} else if resourceType == config.SERVICE {
 					migserviceNotVolume(migSource, resource)
 				}
 			}
 		}
+
+		targetListClient := *cm.Cluster_kubeClients[migSource.targetCluster]
+		timeoutcheck := 0
+	START:
+		pods, _ := targetListClient.CoreV1().Pods(migSource.nameSpace).List(metav1.ListOptions{})
+		podName := ""
+
+		for _, pod := range pods.Items {
+			result, err := regexp.MatchString(checkResourceName, pod.Name)
+
+			if err == nil && result == true && pod.Status.Phase == corev1.PodRunning {
+				//omcplog.V(4).Info("pod STATUS:  ", pod.Status.ContainerStatuses)
+				podName = pod.Name
+				break
+			} else if err != nil {
+				//omcplog.V(0).Info("pod name error", err)
+				continue
+			} else {
+				continue
+			}
+		}
+
+		/*if timeoutcheck == 10 {
+			//omcplog.V(0).Info("error stream: ", timeoutcheck)
+			omcplog.V(3).Info("connected")
+			omcplog.V(3).Info("get source cluster info : " + checkResourceName)
+			break
+		}*/
+		timeoutcheck = timeoutcheck + 5
+		if podName == "" {
+			omcplog.V(4).Info("connecting... : " + checkResourceName)
+			time.Sleep(time.Second * 5)
+			goto START
+		} else {
+			omcplog.V(3).Info("get source cluster info : " + checkResourceName)
+		}
 	}
+	//omcplog.V(3).Info("Function Called Reconcile Complete")
+	omcplog.V(3).Info("Migration Complete")
 	return reconcile.Result{}, nil
 }
 
@@ -207,8 +248,8 @@ START:
 		}
 	}
 	if podName == "" {
-		omcplog.V(4).Info("can not found podName")
-		time.Sleep(time.Second * 1)
+		omcplog.V(4).Info(" Pod hasn't created yet")
+		time.Sleep(time.Second * 2)
 		goto START
 	} else {
 		omcplog.V(4).Info("podName :  ", podName)
@@ -263,7 +304,7 @@ START:
 			return err
 		}
 		omcplog.V(4).Info("connecting: ", podName)
-		time.Sleep(time.Second * 1)
+		time.Sleep(time.Second * 2)
 		goto START
 	} else {
 		return err
