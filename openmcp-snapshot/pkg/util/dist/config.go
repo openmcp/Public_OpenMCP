@@ -54,6 +54,7 @@ func (r *RegistryManager) getAppName(nodeName string) string {
 	return appName
 }
 
+//genUlid is deprecated
 func (r *RegistryManager) genUlid() string {
 	t := time.Now().UTC()
 	entropy := rand.New(rand.NewSource(t.UnixNano()))

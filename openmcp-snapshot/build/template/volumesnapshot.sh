@@ -5,7 +5,7 @@ cd /storage    # externalNFS 의 /home/nfs/storage/CLUSTERNAME/volume/PVNAME/ �
 mkdir -p !PATH
 cd !PATH
 
-export lastDir=`ls -tr | tail -1`  #가장 최근 스냅샷 폴더
+export lastDir=`ls -tr | grep -v backup | tail -1`  #가장 최근 스냅샷 폴더
 
 # 2. newerthan, 을 구한다. 폴더가 비어있을 경우 newerthan 는 1970년1월1일이다.
 echo "newerthan init"

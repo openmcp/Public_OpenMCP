@@ -28,7 +28,15 @@ func MakeSnapshotKeyForSnapshotRestore(startTime string, snapshotSourceRestore *
 }
 
 func MakeSnapshotKey(startTime string, clusterName string, SnapshotType string, resourceName string) string {
-	ret := strings.Join([]string{startTime, clusterName, SnapshotType, resourceName}, "-")
+
+	head := startTime
+	ret := strings.Join([]string{head, clusterName, SnapshotType, resourceName}, "-")
+	return ret
+}
+
+func MakeSnapshotKeyAllPath(startTime, snapshotKey string) string {
+
+	ret := strings.Join([]string{startTime, snapshotKey}, "/")
 	return ret
 }
 

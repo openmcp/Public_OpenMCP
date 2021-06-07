@@ -94,10 +94,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	//DATE 추출
 	snapshotKey := instance.Spec.SnapshotRestoreSource[0].SnapshotKey
 	startTime := util.GetStartTimeBySnapshotKey(snapshotKey)
-
 	for idx, snapshotRestoreSource := range instance.Spec.SnapshotRestoreSource {
-		omcplog.V(4).Info(snapshotRestoreSource)
-
 		resourceType := snapshotRestoreSource.ResourceType
 		omcplog.V(4).Info("\n[" + strconv.Itoa(idx) + "] : Resource : " + resourceType)
 		switch resourceType {
@@ -109,7 +106,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			etcdSnapshotRestoreRun(r, &snapshotRestoreSource, startTime)
 		}
 	}
-
+	omcplog.V(3).Info("Snapshot complete")
 	// 작업 후 업데이트
 	// updateErr := r.live.Update(context.TODO(), instance, &client.UpdateOptions{})
 	// if updateErr != nil {

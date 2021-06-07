@@ -2,7 +2,6 @@ package snapshotrestore
 
 import (
 	"context"
-	"fmt"
 
 	// "openmcp/openmcp/migration/pkg/apis"
 
@@ -49,7 +48,10 @@ func volumeSnapshotRestoreRun(r *reconciler, snapshotRestoreSource *nanumv1alpha
 	snapshotKey := snapshotRestoreSource.SnapshotKey
 	// Key로 resource Name 추출
 	resourceName := util.GetResourceNameBySnapshotKey(snapshotKey)
-	snapshotKey = util.GetStartTimeBySnapshotKey(snapshotKey)
+	if len(resourceName) > 63 {
+		resourceName = resourceName[0:60]
+	}
+	//snapshotKey = util.GetStartTimeBySnapshotKey(snapshotKey)
 	omcplog.V(3).Info("  * resourceName : " + resourceName)
 	omcplog.V(3).Info("  * snapshotKey : " + snapshotKey)
 
@@ -63,7 +65,7 @@ func volumeSnapshotRestoreRun(r *reconciler, snapshotRestoreSource *nanumv1alpha
 	//pvResource := pvResourceOri.DeepCopy()
 	//pvResource.Name = resourceName
 
-	pvResource := getEtcdSnapshotRestoreForPV(r, snapshotRestoreSource, snapshotKey)
+	pvResource := getEtcdSnapshotRestoreForPV(r, snapshotRestoreSource, startTime)
 	pvResource.ClusterName = snapshotRestoreSource.ResourceCluster
 	//pvcResource := getEtcdSnapshotRestoreForPVC(r, snapshotRestoreSource, snapshotKey)
 	//get Date : startTime
@@ -159,13 +161,12 @@ func volumeSnapshotRestoreRun(r *reconciler, snapshotRestoreSource *nanumv1alpha
 //volumeSnapshotRun 내에는 PV 만 들어온다고 가정한다.
 func getEtcdSnapshotRestoreForPV(r *reconciler, snapshotRestoreSource *nanumv1alpha1.SnapshotRestoreSource, startTime string) *apiv1.PersistentVolume {
 	omcplog.V(4).Info("# getEtcdSnapshotRestoreForPV")
-
-	snapshotKey := snapshotRestoreSource.SnapshotKey
+	snapshotKeyAllPath := util.MakeSnapshotKeyAllPath(startTime, snapshotRestoreSource.SnapshotKey)
 
 	//ETCD 에서 데이터 가져오기.
 	etcdCtl := etcd.InitEtcd()
-	fmt.Println("snapshotKey : " + snapshotKey)
-	resp := etcdCtl.Get(snapshotKey)
+	omcplog.V(2).Info("snapshotKeyAllPath : " + snapshotKeyAllPath)
+	resp := etcdCtl.Get(snapshotKeyAllPath)
 	resourceJSONString := string(resp.Kvs[0].Value)
 
 	resourceObj, err := resources.JSON2Pv(resourceJSONString)
@@ -178,13 +179,12 @@ func getEtcdSnapshotRestoreForPV(r *reconciler, snapshotRestoreSource *nanumv1al
 //volumeSnapshotRun 내에는 PV 만 들어온다고 가정한다.
 func getEtcdSnapshotRestoreForPVC(r *reconciler, snapshotRestoreSource *nanumv1alpha1.SnapshotRestoreSource, startTime string) *apiv1.PersistentVolumeClaim {
 	omcplog.V(4).Info("# getEtcdSnapshotRestoreForPVC")
-
-	snapshotKey := snapshotRestoreSource.SnapshotKey
+	snapshotKeyAllPath := util.MakeSnapshotKeyAllPath(startTime, snapshotRestoreSource.SnapshotKey)
 
 	//ETCD 에서 데이터 가져오기.
 	etcdCtl := etcd.InitEtcd()
-	fmt.Println("snapshotKey : " + snapshotKey)
-	resp := etcdCtl.Get(snapshotKey)
+	omcplog.V(2).Info("snapshotKeyAllPath : " + snapshotKeyAllPath)
+	resp := etcdCtl.Get(snapshotKeyAllPath)
 	resourceJSONString := string(resp.Kvs[0].Value)
 
 	resourceObj, err := resources.JSON2Pvc(resourceJSONString)

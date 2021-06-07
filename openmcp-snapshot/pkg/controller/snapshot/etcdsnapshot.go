@@ -6,7 +6,6 @@ import (
 
 	"context"
 	"encoding/json"
-	"fmt"
 	nanumv1alpha1 "openmcp/openmcp/apis/snapshot/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-snapshot/pkg/util"
@@ -24,6 +23,7 @@ func etcdSnapshotRun(r *reconciler, snapshotSource *nanumv1alpha1.SnapshotSource
 
 	omcplog.V(3).Info("snapshot start")
 	snapshotKey := util.MakeSnapshotKeyForSnapshot(startTime, snapshotSource)
+	snapshotKeyAllPath := util.MakeSnapshotKeyAllPath(startTime, snapshotKey)
 
 	//Client 로 데이터 가져오기.
 	resourceJSONString, err := GetResourceJSON(snapshotSource)
@@ -31,10 +31,12 @@ func etcdSnapshotRun(r *reconciler, snapshotSource *nanumv1alpha1.SnapshotSource
 		omcplog.V(2).Info("GetResourceJSON for cluster error")
 	}
 
+	omcplog.V(2).Info("Input ETCD")
 	//ETCD 에 삽입
 	etcdCtl := etcd.InitEtcd()
-	_ = etcdCtl.Put(snapshotKey, resourceJSONString)
-	snapshotSource.SnapshotKey = snapshotKey
+	_ = etcdCtl.Put(snapshotKeyAllPath, resourceJSONString)
+	//snapshotSource.SnapshotKey = snapshotKey
+	omcplog.V(2).Info("Input ETCD end")
 	return nil
 }
 
@@ -59,7 +61,7 @@ func GetResourceJSON(snapshotSource *nanumv1alpha1.SnapshotSource) (string, erro
 	}
 	client.Get(context.TODO(), resourceObj, snapshotSource.ResourceNamespace, snapshotSource.ResourceName)
 
-	omcplog.V(3).Info("resourceType : %s, resourceName : %s, resourceNamespace: %s\n", snapshotSource.ResourceType, snapshotSource.ResourceName, snapshotSource.ResourceNamespace)
+	omcplog.V(3).Info("resourceType : " + snapshotSource.ResourceType + ", resourceName : " + snapshotSource.ResourceName + ", resourceNamespace: " + snapshotSource.ResourceNamespace)
 	ret, err := obj2JsonString(resourceObj)
 	if err != nil {
 		omcplog.V(2).Info("Json Convert Error")
@@ -74,8 +76,8 @@ func obj2JsonString(obj interface{}) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Println("===Obj2JsonString===")
-	fmt.Println(string(json))
+	omcplog.V(3).Info("===Obj2JsonString===")
+	omcplog.V(3).Info(string(json)[0:40] + "...")
 
 	return string(json), nil
 }

@@ -22,18 +22,23 @@ const (
 )
 
 func getJobName(snapshotKey string, runType RunType) string {
+	snapshotKey = strings.ToLower(snapshotKey)
 	return string(runType) + "-" + snapshotKey + "-job"
 }
 func getExternalNfsPVCName(snapshotKey string, runType RunType) string {
+	snapshotKey = strings.ToLower(snapshotKey)
 	return string(runType) + "-" + snapshotKey + "-epvc"
 }
 func getExternalNfsPVName(snapshotKey string, runType RunType) string {
+	snapshotKey = strings.ToLower(snapshotKey)
 	return string(runType) + "-" + snapshotKey + "-epv"
 }
 func getPVCName(snapshotKey string, runType RunType) string {
+	snapshotKey = strings.ToLower(snapshotKey)
 	return string(runType) + "-" + snapshotKey + "-pvc"
 }
 func getPVName(snapshotKey string, runType RunType) string {
+	snapshotKey = strings.ToLower(snapshotKey)
 	return string(runType) + "-" + snapshotKey + "-pv"
 }
 
@@ -45,6 +50,9 @@ func GetJobAPI(snapshotKey string, cmd string, runType RunType) *batchv1.Job {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      getJobName(snapshotKey, runType),
 			Namespace: "openmcp",
+			Labels: map[string]string{
+				"openmcp": "snapshot",
+			},
 		},
 		Spec: batchv1.JobSpec{
 			Selector: &metav1.LabelSelector{
@@ -56,7 +64,8 @@ func GetJobAPI(snapshotKey string, cmd string, runType RunType) *batchv1.Job {
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app": "openmcp",
+						"app":     "openmcp",
+						"openmcp": "snapshot",
 					},
 				},
 				Spec: apiv1.PodSpec{
@@ -130,6 +139,9 @@ func GetExternalNfsPVCAPI(snapshotKey string, runType RunType) *v1.PersistentVol
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      getExternalNfsPVCName(snapshotKey, runType),
 			Namespace: "openmcp",
+			Labels: map[string]string{
+				"openmcp": "snapshot",
+			},
 		},
 		Spec: apiv1.PersistentVolumeClaimSpec{
 			AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
@@ -154,7 +166,8 @@ func GetExternalNfsPVAPI(snapshotKey string, pvResource apiv1.PersistentVolume, 
 			//Name: "demo",
 			Name: getExternalNfsPVName(snapshotKey, runType),
 			Labels: map[string]string{
-				"app": getExternalNfsPVName(snapshotKey, runType),
+				"app":     getExternalNfsPVName(snapshotKey, runType),
+				"openmcp": "snapshot",
 			},
 		},
 		Spec: apiv1.PersistentVolumeSpec{
@@ -195,6 +208,9 @@ func GetPVCAPI(snapshotKey string, pvResource apiv1.PersistentVolume, runType Ru
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      getPVCName(snapshotKey, runType),
 			Namespace: "openmcp",
+			Labels: map[string]string{
+				"openmcp": "snapshot",
+			},
 		},
 		Spec: apiv1.PersistentVolumeClaimSpec{
 			AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
@@ -205,7 +221,8 @@ func GetPVCAPI(snapshotKey string, pvResource apiv1.PersistentVolume, runType Ru
 			},
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"name": getPVName(snapshotKey, runType),
+					"name":    getPVName(snapshotKey, runType),
+					"openmcp": "snapshot",
 				},
 			},
 
@@ -221,7 +238,8 @@ func GetPVAPI(snapshotKey string, pvResource apiv1.PersistentVolume, runType Run
 			//Name: "demo",
 			Name: getPVName(snapshotKey, runType),
 			Labels: map[string]string{
-				"name": getPVName(snapshotKey, runType),
+				"name":    getPVName(snapshotKey, runType),
+				"openmcp": "snapshot",
 			},
 		},
 		Spec: apiv1.PersistentVolumeSpec{},
@@ -249,6 +267,9 @@ func GetPVCAPIOri(snapshotKey string, pvResource apiv1.PersistentVolume, runType
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      getPVCName(snapshotKey, runType),
 			Namespace: "openmcp",
+			Labels: map[string]string{
+				"openmcp": "snapshot",
+			},
 		},
 		Spec: apiv1.PersistentVolumeClaimSpec{
 			AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},

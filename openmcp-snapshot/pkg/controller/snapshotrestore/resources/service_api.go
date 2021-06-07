@@ -1,8 +1,11 @@
 package resources
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
+	"openmcp/openmcp/omcplog"
+
+	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 
 	apiv1 "k8s.io/api/core/v1"
 )
@@ -23,7 +26,7 @@ func json2ServiceInit(resourceInfoJSON string) (*apiv1.Service, error) {
 }
 
 // JSON2Service : service 조작
-func JSON2Service(resourceInfoJSON string) (*apiv1.Service, error) {
+func JSON2Service(resourceInfoJSON string, client genericclient.Client) (*apiv1.Service, error) {
 	resourceInfo, convertErr := json2ServiceInit(resourceInfoJSON)
 	if convertErr != nil {
 		return nil, convertErr
@@ -35,7 +38,20 @@ func JSON2Service(resourceInfoJSON string) (*apiv1.Service, error) {
 	//		resourceInfo.ObjectMeta.Labels[key] = val + SnapshotTailName
 	//	}
 	//	resourceInfo.ObjectMeta.Name = resourceInfo.ObjectMeta.Name + SnapshotTailName
-	resourceInfo.ObjectMeta.ResourceVersion = ""
+
+	//update 전에 알아낼 revision 번호를 가져오기 위함으로 결국 resource Version 알아내기
+	currentObj := &apiv1.Service{}
+	err := client.Get(context.TODO(), currentObj, resourceInfo.Namespace, resourceInfo.Name)
+	if err != nil {
+		omcplog.V(2).Info("Pre Get Resource for JSON error", err)
+		return nil, err
+	}
+	//resourceInfo.ObjectMeta.ResourceVersion = currentObj.ObjectMeta.ResourceVersion
+	resourceInfo.ObjectMeta.UID = currentObj.ObjectMeta.UID
+	resourceInfo.ObjectMeta.ResourceVersion = currentObj.ObjectMeta.ResourceVersion
+	resourceInfo.Spec.ClusterIP = currentObj.Spec.ClusterIP
+	//resourceInfo.Spec = currentObj.DeepCopy().Spec
+	//resourceInfo.ObjectMeta.ResourceVersion = ""
 
 	/*
 		service := &apiv1.Service{
@@ -55,6 +71,6 @@ func JSON2Service(resourceInfoJSON string) (*apiv1.Service, error) {
 	*/
 
 	// Create Service
-	fmt.Println("Creating service...")
+	omcplog.V(2).Info("Creating service Obj...")
 	return resourceInfo, nil
 }
