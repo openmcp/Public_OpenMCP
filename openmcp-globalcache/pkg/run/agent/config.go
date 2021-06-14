@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"errors"
 
 	"openmcp/openmcp/openmcp-globalcache/pkg/utils"
@@ -27,7 +28,7 @@ func (r *RegistryNodeManager) init(clusterName string, nodeName string) error {
 	clientset = cm.Cluster_kubeClients[clusterName]
 
 	//get Address
-	result, getErr := clientset.CoreV1().Nodes().Get(nodeName, metav1.GetOptions{})
+	result, getErr := clientset.CoreV1().Nodes().Get(context.TODO(), nodeName, metav1.GetOptions{})
 	if getErr != nil {
 		return getErr
 	}

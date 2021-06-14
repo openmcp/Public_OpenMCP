@@ -27,14 +27,13 @@ import (
 	"os"
 	"path/filepath"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 	"strings"
 	"time"
 )
 
 var cm *clusterManager.ClusterManager
-var log = logf.Log.WithName("controller_openmcpcluster")
+
 var r = &reconciler{}
 
 type reconciler struct {
@@ -72,7 +71,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	}
 
 	//omcplog.V(4).Info("%T, %s\n", live, live.GetClusterName())
-	if err := co.WatchResourceReconcileObject(live, &clusterv1alpha1.OpenMCPCluster{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(context.TODO(), live, &clusterv1alpha1.OpenMCPCluster{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
@@ -371,13 +370,13 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 				},
 			}
 
-			ns, err_ns := cluster_client.CoreV1().Namespaces().Create(&Namespace)
+			ns, err_ns := cluster_client.CoreV1().Namespaces().Create(context.TODO(), &Namespace, metav1.CreateOptions{})
 
 			if err_ns != nil {
 				omcplog.V(4).Info("Fail to Create Namespace Resource in " + mem_cluster.Name)
 				omcplog.V(4).Info("err: ", err_ns)
 				var err_ns_get error
-				ns, err_ns_get = cluster_client.CoreV1().Namespaces().Get("kube-federation-system", metav1.GetOptions{})
+				ns, err_ns_get = cluster_client.CoreV1().Namespaces().Get(context.TODO(), "kube-federation-system", metav1.GetOptions{})
 
 				if err_ns_get != nil {
 					omcplog.V(4).Info("err_ns_get: ", ns)
@@ -404,13 +403,13 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 				},
 			}
 
-			sa, err_sa := cluster_client.CoreV1().ServiceAccounts("kube-federation-system").Create(&ServiceAccount)
+			sa, err_sa := cluster_client.CoreV1().ServiceAccounts("kube-federation-system").Create(context.TODO(), &ServiceAccount, metav1.CreateOptions{})
 
 			if err_sa != nil {
 				omcplog.V(4).Info("Fail to Create ServiceAccount Resource in " + mem_cluster.Name)
 				omcplog.V(4).Info("err: ", err_sa)
 				var err_sa_get error
-				sa, err_sa_get = cluster_client.CoreV1().ServiceAccounts("kube-federation-system").Get(mem_cluster.Name+"-openmcp", metav1.GetOptions{})
+				sa, err_sa_get = cluster_client.CoreV1().ServiceAccounts("kube-federation-system").Get(context.TODO(), mem_cluster.Name+"-openmcp", metav1.GetOptions{})
 
 				if err_sa_get != nil {
 					omcplog.V(4).Info("err_sa_get: ", err_sa_get)
@@ -447,14 +446,14 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 				},
 			}
 
-			cr, err_cr := cluster_client.RbacV1().ClusterRoles().Create(&ClusterRole)
+			cr, err_cr := cluster_client.RbacV1().ClusterRoles().Create(context.TODO(), &ClusterRole, metav1.CreateOptions{})
 
 			if err_cr != nil {
 				omcplog.V(4).Info("Fail to Create ClusterRole Resource in ", mem_cluster.Name)
 				omcplog.V(4).Info("err: ", err_cr)
 
 				var err_cr_get error
-				cr, err_cr_get = cluster_client.RbacV1().ClusterRoles().Get("kubefed-controller-manager:"+ServiceAccount.Name, metav1.GetOptions{})
+				cr, err_cr_get = cluster_client.RbacV1().ClusterRoles().Get(context.TODO(), "kubefed-controller-manager:"+ServiceAccount.Name, metav1.GetOptions{})
 
 				if err_cr_get != nil {
 					omcplog.V(4).Info("err_cr_get: ", err_cr_get)
@@ -492,14 +491,14 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 				},
 			}
 
-			crb, err_crb := cluster_client.RbacV1().ClusterRoleBindings().Create(&ClusterRoleBinding)
+			crb, err_crb := cluster_client.RbacV1().ClusterRoleBindings().Create(context.TODO(), &ClusterRoleBinding, metav1.CreateOptions{})
 
 			if err_crb != nil {
 				omcplog.V(4).Info("Fail to Create ClusterRoleBinding Resource in ", mem_cluster.Name)
 				omcplog.V(4).Info("err: ", err_crb)
 
 				var err_crb_get error
-				crb, err_crb_get = cluster_client.RbacV1().ClusterRoleBindings().Get("kubefed-controller-manager:"+ServiceAccount.Name, metav1.GetOptions{})
+				crb, err_crb_get = cluster_client.RbacV1().ClusterRoleBindings().Get(context.TODO(), "kubefed-controller-manager:"+ServiceAccount.Name, metav1.GetOptions{})
 
 				if err_crb_get != nil {
 					omcplog.V(4).Info("err_crb_get: ", err_crb_get)
@@ -517,7 +516,7 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 			time.Sleep(1 * time.Second)
 
 			//5. Get & CREATE secret (in openmcp)
-			cluster_sa, err_sa1 := cluster_client.CoreV1().ServiceAccounts("kube-federation-system").Get(sa.Name, metav1.GetOptions{})
+			cluster_sa, err_sa1 := cluster_client.CoreV1().ServiceAccounts("kube-federation-system").Get(context.TODO(), sa.Name, metav1.GetOptions{})
 			if err_sa1 != nil {
 				omcplog.V(4).Info("Fail to Get Secret Resource From ", mem_cluster.Name)
 				omcplog.V(4).Info("err: ", err_sa1)
@@ -526,7 +525,7 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 				return "FALSE"
 			}
 
-			cluster_secret, err_sc := cluster_client.CoreV1().Secrets("kube-federation-system").Get(cluster_sa.Secrets[0].Name, metav1.GetOptions{})
+			cluster_secret, err_sc := cluster_client.CoreV1().Secrets("kube-federation-system").Get(context.TODO(), cluster_sa.Secrets[0].Name, metav1.GetOptions{})
 			if err_sc != nil {
 				omcplog.V(4).Info("Fail to Get Secret Resource From ", mem_cluster.Name)
 				omcplog.V(4).Info("err: ", err_sc)
@@ -551,14 +550,14 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 				},
 			}
 
-			secret_instance, err_secret := openmcp_client.CoreV1().Secrets("kube-federation-system").Create(Secret)
+			secret_instance, err_secret := openmcp_client.CoreV1().Secrets("kube-federation-system").Create(context.TODO(), Secret, metav1.CreateOptions{})
 
 			if err_secret != nil {
 				omcplog.V(4).Info("Fail to Create secret Resource in openmcp")
 				omcplog.V(4).Info("err: ", err_secret)
 
 				var err_secret_get error
-				secret_instance, err_secret_get = openmcp_client.CoreV1().Secrets("kube-federation-system").Get(Secret.Name, metav1.GetOptions{})
+				secret_instance, err_secret_get = openmcp_client.CoreV1().Secrets("kube-federation-system").Get(context.TODO(), Secret.Name, metav1.GetOptions{})
 
 				if err_secret_get != nil {
 					omcplog.V(4).Info("err_secret_get: ", err_secret_get)
@@ -650,9 +649,9 @@ func UnjoinAndDeleteConfig(memberkc *cobrautil.KubeConfig, openmcpkc *cobrautil.
 		cluster_client := kubernetes.NewForConfigOrDie(cluster_config)
 
 		//1. DELETE cluster role binding / cluster role / namespace
-		err_deletecrb := cluster_client.RbacV1().ClusterRoleBindings().Delete("kubefed-controller-manager:"+target_name+"-openmcp", &metav1.DeleteOptions{})
-		err_deletecr := cluster_client.RbacV1().ClusterRoles().Delete("kubefed-controller-manager:"+target_name+"-openmcp", &metav1.DeleteOptions{})
-		err_deletens := cluster_client.CoreV1().Namespaces().Delete("kube-federation-system", &metav1.DeleteOptions{})
+		err_deletecrb := cluster_client.RbacV1().ClusterRoleBindings().Delete(context.TODO(), "kubefed-controller-manager:"+target_name+"-openmcp", metav1.DeleteOptions{})
+		err_deletecr := cluster_client.RbacV1().ClusterRoles().Delete(context.TODO(), "kubefed-controller-manager:"+target_name+"-openmcp", metav1.DeleteOptions{})
+		err_deletens := cluster_client.CoreV1().Namespaces().Delete(context.TODO(), "kube-federation-system", metav1.DeleteOptions{})
 
 		if err_deletecrb == nil && err_deletecr == nil && err_deletens == nil {
 			omcplog.V(4).Info("[Step 1] DELETE CR/CRB/NS Resource in ", target_name)

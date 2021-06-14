@@ -151,7 +151,7 @@ func MemberMetricCollector() {
 			rTime_end := time.Since(rTime_start)
 
 			latencyTime = rTime_end.Seconds() - r.ProcessingTime
-		} else {
+		}else {
 			//fmt.Println("check")
 			fmt.Println("could not connect : ", err)
 			time.Sleep(time.Duration(period_int64) * time.Second)

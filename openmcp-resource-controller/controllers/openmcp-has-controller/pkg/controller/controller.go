@@ -38,14 +38,13 @@ import (
 	"os"
 	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 	"strconv"
 	"time"
 )
 
 var cm *clusterManager.ClusterManager
-var log = logf.Log.WithName("controller_openmcphybridautoscaler")
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
 	cm = myClusterManager
@@ -77,20 +76,20 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	}
 
 	//fmt.Printf("%T, %s\n", live, live.GetClusterName())
-	if err := co.WatchResourceReconcileObject(live, &resourcev1alpha1.OpenMCPHybridAutoScaler{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(context.TODO(), live, &resourcev1alpha1.OpenMCPHybridAutoScaler{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
 	for _, ghost := range ghosts {
 		//fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
-		if err := co.WatchResourceReconcileController(ghost, &hpav2beta2.HorizontalPodAutoscaler{}, controller.WatchOptions{}); err != nil {
+		if err := co.WatchResourceReconcileController(context.TODO(), ghost, &hpav2beta2.HorizontalPodAutoscaler{}, controller.WatchOptions{}); err != nil {
 			return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
 		}
 	}
 
 	for _, ghost := range ghosts {
 		//fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
-		if err := co.WatchResourceReconcileController(ghost, &vpav1beta2.VerticalPodAutoscaler{}, controller.WatchOptions{}); err != nil {
+		if err := co.WatchResourceReconcileController(context.TODO(), ghost, &vpav1beta2.VerticalPodAutoscaler{}, controller.WatchOptions{}); err != nil {
 			return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
 		}
 	}

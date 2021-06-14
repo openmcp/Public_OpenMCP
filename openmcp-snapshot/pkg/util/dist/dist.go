@@ -1,6 +1,7 @@
 package dist
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -18,7 +19,7 @@ func (r *RegistryManager) CreateJob(nodeName string, imageName string, tag strin
 	jobClient := r.clientset.BatchV1().Jobs(utils.ProjectNamespace)
 
 	//이미 존재할 때의 처리 방법.
-	job, _ := jobClient.Get(appName, metav1.GetOptions{})
+	job, _ := jobClient.Get(context.TODO(), appName, metav1.GetOptions{})
 	if job.ObjectMeta.Name != "" {
 		fmt.Printf("job exist : " + job.ObjectMeta.Name + "\n")
 		return nil
@@ -46,7 +47,7 @@ func (r *RegistryManager) CreateJob(nodeName string, imageName string, tag strin
 
 	// Create Deployment
 	fmt.Println("Creating " + cmdType + " Job...")
-	result, err := jobClient.Create(job)
+	result, err := jobClient.Create(context.TODO(), job, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
@@ -59,7 +60,7 @@ func (r *RegistryManager) CreateJob(nodeName string, imageName string, tag strin
 		//oldJob := old.(*batchv1.Job)
 		deletePolicy := metav1.DeletePropagationForeground
 		fmt.Printf("JobRunCheck : delete job \n")
-		err := jobClient.Delete(newJob.Name, &metav1.DeleteOptions{
+		err := jobClient.Delete(context.TODO(), newJob.Name, metav1.DeleteOptions{
 			PropagationPolicy: &deletePolicy,
 		})
 		if err != nil {

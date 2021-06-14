@@ -14,25 +14,26 @@ limitations under the License.
 package openmcpdeployment // import "admiralty.io/multicluster-controller/examples/openmcpdeployment/pkg/controller/openmcpdeployment"
 
 import (
-	"admiralty.io/multicluster-controller/pkg/cluster"
-	"admiralty.io/multicluster-controller/pkg/controller"
-	"admiralty.io/multicluster-controller/pkg/reconcile"
-	"admiralty.io/multicluster-controller/pkg/reference"
 	"context"
 	"fmt"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"openmcp/openmcp/apis"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 	"reflect"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strconv"
+
+	"admiralty.io/multicluster-controller/pkg/cluster"
+	"admiralty.io/multicluster-controller/pkg/controller"
+	"admiralty.io/multicluster-controller/pkg/reconcile"
+	"admiralty.io/multicluster-controller/pkg/reference"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var cm *clusterManager.ClusterManager
@@ -60,7 +61,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	if err := co.WatchResourceReconcileObject(live, &resourcev1alpha1.OpenMCPDeployment{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(context.TODO(), live, &resourcev1alpha1.OpenMCPDeployment{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
@@ -70,7 +71,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	// add it to each cluster's scheme, which points to the same underlying scheme.
 
 	for _, ghost := range ghosts {
-		if err := co.WatchResourceReconcileController(ghost, &appsv1.Deployment{}, controller.WatchOptions{}); err != nil {
+		if err := co.WatchResourceReconcileController(context.TODO(), ghost, &appsv1.Deployment{}, controller.WatchOptions{}); err != nil {
 			return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
 		}
 	}
@@ -125,14 +126,14 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		omcplog.V(3).Info("SchedulingNeed : ", instance.Status.SchedulingNeed, ", SchedulingComplete : ", instance.Status.SchedulingComplete)
 
 		if instance.Status.SchedulingNeed == false && instance.Status.SchedulingComplete == false {
-			//omcplog.V(3).Info("Scheduling 요청 (SchedulingNeed false => true)")
-			//instance.Status.SchedulingNeed = true
-			//
-			//err := r.live.Status().Update(context.TODO(), instance)
-			//if err != nil {
-			//	omcplog.V(0).Info("Failed to update instance status", err)
-			//	return reconcile.Result{}, err
-			//}
+			omcplog.V(3).Info("Scheduling 요청 (SchedulingNeed false => true)")
+			instance.Status.SchedulingNeed = true
+
+			err := r.live.Status().Update(context.TODO(), instance)
+			if err != nil {
+				omcplog.V(0).Info("Failed to update instance status", err)
+				return reconcile.Result{}, err
+			}
 			return reconcile.Result{}, err
 
 			//} else if instance.Status.SchedulingNeed == true && instance.Status.SchedulingComplete == false {
@@ -255,8 +256,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	sync_instance := &syncv1alpha1.Sync{}
 	nsn := types.NamespacedName{
-		"openmcp",
-		instance.Status.SyncRequestName,
+		Namespace: "openmcp",
+		Name:      instance.Status.SyncRequestName,
 	}
 	err = r.live.Get(context.TODO(), nsn, sync_instance)
 	if err == nil {

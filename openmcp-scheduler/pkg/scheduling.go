@@ -137,6 +137,9 @@ func (sched *OpenMCPScheduler) LocalNetworkAnalysis() {
 				node_info := &protobuf.NodeInfo{ClusterName: cluster.ClusterName, NodeName: node.NodeName}
 				client := sched.GRPC_Client
 				result, err := client.SendNetworkAnalysis(context.TODO(), node_info)
+				if err != nil {
+					continue
+				}
 				if result.RX == -1 || result.TX == -1 {
 					continue
 				}
@@ -215,7 +218,7 @@ func newPodFromOpenMCPDeployment(dep *resourcev1alpha1.OpenMCPDeployment) *ketir
 func (sched *OpenMCPScheduler) SetupResources() error {
 	// Setup Clusters
 	for clusterName, _ := range sched.ClusterClients {
-		pods, _ := sched.ClusterClients[clusterName].CoreV1().Pods(metav1.NamespaceAll).List(metav1.ListOptions{})
+		pods, _ := sched.ClusterClients[clusterName].CoreV1().Pods(metav1.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
 
 		// informations on cluster level
 		allPods := make([]*ketiresource.Pod, 0)
@@ -258,7 +261,7 @@ func (sched *OpenMCPScheduler) SetupResources() error {
 		}
 
 		// Setup Nodes
-		nodes, _ := sched.ClusterClients[clusterName].CoreV1().Nodes().List(metav1.ListOptions{})
+		nodes, _ := sched.ClusterClients[clusterName].CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 		for _, node := range nodes.Items {
 
 			// Get v1.Pod, corev1.ContainerPort and RequestResource

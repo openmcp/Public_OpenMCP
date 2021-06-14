@@ -86,7 +86,7 @@ func (ae *AnalyticEngineStruct) CalcResourceScore(cm *clusterManager.ClusterMana
 				if err != nil {
 					omcplog.V(0).Info(err)
 				}
-				nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+				nodes, err := clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 				if err != nil {
 					omcplog.V(0).Info(err)
 				}

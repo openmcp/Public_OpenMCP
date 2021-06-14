@@ -1,13 +1,17 @@
 package v1alpha1
 
 import (
+	policyv1alpha1 "openmcp/openmcp/apis/policy/v1alpha1"
+
+	"istio.io/api/meta/v1alpha1"
+	networkingv1alpha3 "istio.io/api/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	hpav2beta1 "k8s.io/api/autoscaling/v2beta2"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	extv1b1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	policyv1alpha1 "openmcp/openmcp/apis/policy/v1alpha1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -486,3 +490,30 @@ type OpenMCPNamespaceList struct {
 //	SchemeBuilder.Register(&OpenMCPPolicyEngine{}, &OpenMCPPolicyEngineList{})
 //
 //}
+
+// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
+// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+
+// OpenMCPVirtualServiceSpec defines the desired state of OpenMCPVirtualService
+// +k8s:openapi-gen=true
+type OpenMCPVirtualService struct {
+	v1.TypeMeta `json:",inline"`
+	// +optional
+	v1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+
+	// Spec defines the implementation of this definition.
+	// +optional
+	Spec networkingv1alpha3.VirtualService `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+
+	Status v1alpha1.IstioStatus `json:"status"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// VirtualServiceList is a collection of VirtualServices.
+type OpenMCPVirtualServiceList struct {
+	v1.TypeMeta `json:",inline"`
+	// +optional
+	v1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Items       []OpenMCPVirtualService `json:"items" protobuf:"bytes,2,rep,name=items"`
+}

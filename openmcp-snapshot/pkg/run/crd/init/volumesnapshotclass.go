@@ -1,6 +1,7 @@
 package init
 
 import (
+	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -44,7 +45,7 @@ func (dynamicResource DynamicVolumeSnapshotClass) CreateResource(clientset dynam
 	//oldName := resourceInfo.GetName()
 	//newName := oldName + "-snapshot"
 	//resourceInfo.SetName(newName)
-	result, apiCallErr := dynamicResource.apiCaller.Create(resourceInfo, metav1.CreateOptions{})
+	result, apiCallErr := dynamicResource.apiCaller.Create(context.TODO(), resourceInfo, metav1.CreateOptions{})
 	if apiCallErr != nil {
 		return false, apiCallErr
 	}

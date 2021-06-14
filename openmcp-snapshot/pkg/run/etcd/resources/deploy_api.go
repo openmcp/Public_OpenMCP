@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -102,7 +103,7 @@ func (deploy Deployment) CreateResourceForJSON(clientset *kubernetes.Clientset, 
 	// Create Deployment
 	fmt.Println("Creating deployment...")
 
-	result, apiCallErr := deploy.apiCaller.Create(resourceInfo)
+	result, apiCallErr := deploy.apiCaller.Create(context.TODO(), resourceInfo, metav1.CreateOptions{})
 	if apiCallErr != nil {
 		return false, apiCallErr
 	}
@@ -117,7 +118,7 @@ func (deploy Deployment) GetJSON(clientset *kubernetes.Clientset, resourceName s
 
 	fmt.Printf("Listing Resource in namespace %q:\n", resourceNamespace)
 
-	result, apiCallErr := deploy.apiCaller.Get(resourceName, metav1.GetOptions{})
+	result, apiCallErr := deploy.apiCaller.Get(context.TODO(), resourceName, metav1.GetOptions{})
 	if apiCallErr != nil {
 		return "", apiCallErr
 	}

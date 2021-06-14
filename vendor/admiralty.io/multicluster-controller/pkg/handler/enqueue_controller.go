@@ -17,20 +17,25 @@ limitations under the License.
 package handler // import "admiralty.io/multicluster-controller/pkg/handler"
 
 import (
-	"admiralty.io/multicluster-controller/pkg/reconcile"
-	"admiralty.io/multicluster-controller/pkg/reference"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"admiralty.io/multicluster-controller/pkg/reconcile"
+	"admiralty.io/multicluster-controller/pkg/reference"
 )
 
-var key string = "multicluster.admiralty.io/controller-reference"
-
 type EnqueueRequestForController struct {
-	Context string
-	Queue   Queue
+	Context           string
+	ControllerContext string
+	Queue             Queue
+	Predicate         func(obj interface{}) bool
 }
 
 func (e *EnqueueRequestForController) enqueue(obj interface{}) {
+	if !e.Predicate(obj) {
+		return
+	}
+
 	o, err := meta.Accessor(obj)
 	if err != nil {
 		return
@@ -48,6 +53,9 @@ func (e *EnqueueRequestForController) enqueue(obj interface{}) {
 
 	// Then, try to get a multicluster controller reference.
 	if c := reference.GetMulticlusterControllerOf(o); c != nil {
+		if e.ControllerContext != "" && c.ClusterName != e.ControllerContext {
+			return
+		}
 		r := reconcile.Request{Context: c.ClusterName}
 		r.Namespace = c.Namespace
 		r.Name = c.Name

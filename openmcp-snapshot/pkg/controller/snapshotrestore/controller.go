@@ -63,7 +63,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		omcplog.V(0).Info("adding APIs to live cluster's scheme: ", err)
 		return nil, err
 	}
-	if err := co.WatchResourceReconcileObject(live, &nanumv1alpha1.SnapshotRestore{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(context.TODO(), live, &nanumv1alpha1.SnapshotRestore{}, controller.WatchOptions{}); err != nil {
 		omcplog.V(0).Info("setting up Pod watch in live cluster: ", err)
 		return nil, err
 	}

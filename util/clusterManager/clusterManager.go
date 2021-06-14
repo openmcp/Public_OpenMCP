@@ -139,7 +139,7 @@ func NewClusterManager() *ClusterManager {
 func GetNodeList(clientSet *kubernetes.Clientset) (*corev1.NodeList, error) {
 
 	nodeList := &corev1.NodeList{}
-	nodeList, err := clientSet.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := clientSet.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		fmt.Println("Error retrieving list of federated clusters: %+v", err)
 	}

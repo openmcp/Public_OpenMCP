@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -81,7 +82,7 @@ func (pvc PersistentVolumeClaim) CreateResourceForJSON(clientset *kubernetes.Cli
 	*/
 	// Create PersistentVolumeClaim
 	fmt.Println("Creating pvc...")
-	result, apiCallErr := pvc.apiCaller.Create(resourceInfo)
+	result, apiCallErr := pvc.apiCaller.Create(context.TODO(), resourceInfo, metav1.CreateOptions{})
 	if apiCallErr != nil {
 		return false, apiCallErr
 	}
@@ -95,7 +96,7 @@ func (pvc PersistentVolumeClaim) GetJSON(clientset *kubernetes.Clientset, resour
 	pvc.apiCaller = clientset.CoreV1().PersistentVolumeClaims(resourceNamespace)
 	fmt.Printf("Listing Resource in namespace %q:\n", resourceNamespace)
 
-	result, apiCallErr := pvc.apiCaller.Get(resourceName, metav1.GetOptions{})
+	result, apiCallErr := pvc.apiCaller.Get(context.TODO(), resourceName, metav1.GetOptions{})
 	if apiCallErr != nil {
 		return "", apiCallErr
 	}

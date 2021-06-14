@@ -17,16 +17,22 @@ limitations under the License.
 package handler // import "admiralty.io/multicluster-controller/pkg/handler"
 
 import (
-	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"k8s.io/apimachinery/pkg/api/meta"
+
+	"admiralty.io/multicluster-controller/pkg/reconcile"
 )
 
 type EnqueueRequestForObject struct {
-	Context string
-	Queue   Queue
+	Context   string
+	Queue     Queue
+	Predicate func(obj interface{}) bool
 }
 
 func (e *EnqueueRequestForObject) enqueue(obj interface{}) {
+	if !e.Predicate(obj) {
+		return
+	}
+
 	o, err := meta.Accessor(obj)
 	if err != nil {
 		return
