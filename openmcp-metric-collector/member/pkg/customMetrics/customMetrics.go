@@ -2,6 +2,7 @@ package customMetrics
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,7 +26,7 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 		podList = append(podList, data.Metricsbatchs[i].Pods...)
 	}
 
-	rs, err := cluster_client.AppsV1().ReplicaSets(metav1.NamespaceAll).List(metav1.ListOptions{})
+	rs, err := cluster_client.AppsV1().ReplicaSets(metav1.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
 	fmt.Println("[List] ReplicaSets")
 	if err == nil {
 		for _, replicaset := range rs.Items {
@@ -75,7 +76,7 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 							if prev_networkrxusage[value.Name] == 0 {
 								//fmt.Println(".. 1 init")
 								diff_networkrx = 0
-							}else if tmp_rx == 0 || diff_networkrx == 0 {
+							} else if tmp_rx == 0 || diff_networkrx == 0 {
 								//fmt.Println(".. 2 not change")
 								diff_networkrx = diff_networkrxusage[value.Name]
 							}
@@ -89,7 +90,7 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 							if prev_networktxusage[value.Name] == 0 {
 								//fmt.Println(".. 1 init")
 								diff_networktx = 0
-							}else if tmp_tx == 0 || diff_networktx == 0 {
+							} else if tmp_tx == 0 || diff_networktx == 0 {
 								//fmt.Println(".. 2 not change")
 								diff_networktx = diff_networktxusage[value.Name]
 							}
@@ -119,7 +120,7 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 			if check_exist > 0 {
 				namespace := replicaset.Namespace
 				name := replicaset.Name[:strings.LastIndexAny(replicaset.Name, "-")]
-				fmt.Println("[",name,"/",namespace,"]")
+				fmt.Println("[", name, "/", namespace, "]")
 				fmt.Println("--------------------------")
 				fmt.Println("Post CpuUsage :", strconv.Itoa(sum_cpuusage/check_exist)+"n")
 				PostData(host, token, client, namespace, name, "CpuUsage", strconv.Itoa(sum_cpuusage/check_exist)+"n")
@@ -202,7 +203,6 @@ func PostData(host string, token string, client *http.Client, resourceNamespace 
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", os.ExpandEnv("Bearer "+token))
-
 
 	resp, err := client.Do(req)
 	if err != nil {

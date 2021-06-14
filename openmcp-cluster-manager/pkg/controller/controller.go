@@ -114,7 +114,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 		if joinCheck == "TRUE" {
 			omcplog.V(4).Info("OpenMCP Module Deploy---")
-			moduleDirectory := []string{"namespace", "custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap"}
+			moduleDirectory := []string{"namespace", "custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap", "istio"}
 			for i, dirname := range moduleDirectory {
 				moduleDirectory[i] = "/init/" + dirname
 			}
@@ -123,6 +123,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 			util.CmdExec2("chmod 755 " + "/init/vertical-pod-autoscaler/hack/*")
 			util.CmdExec2("/init/vertical-pod-autoscaler/hack/vpa-up.sh " + clusterInstance.Name)
+			//fmt.Println(moduleDirectory)
 
 			InstallInitModule(moduleDirectory, clusterInstance.Name, clusterInstance.Spec.MetalLBRange.AddressFrom, clusterInstance.Spec.MetalLBRange.AddressTo)
 			omcplog.V(4).Info("--- JOIN Complete ---")
@@ -159,13 +160,14 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 		if unjoinCheck != "" {
 			omcplog.V(4).Info("OpenMCP Module Delete---")
-			moduleDirectory := []string{"custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap", "namespace"}
+			moduleDirectory := []string{"istio", "custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap", "namespace"}
 			for i, dirname := range moduleDirectory {
 				moduleDirectory[i] = "/init/" + dirname
 			}
 			util.CmdExec2("cp /mnt/config $HOME/.kube/config")
 			util.CmdExec2("chmod 755 " + "/init/vertical-pod-autoscaler/hack/*")
 			util.CmdExec2("/init/vertical-pod-autoscaler/hack/vpa-down.sh " + clusterInstance.Name)
+			util.CmdExec2("kubectl delete secret istio-remote-secret-" + clusterInstance.Name)
 			UninstallInitModule(moduleDirectory, clusterInstance.Name)
 
 			omcplog.V(4).Info("Cluster Unjoin---")
@@ -184,7 +186,7 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 
 	for i := 0; i < len(directory); i++ {
 		dirname, _ := filepath.Abs(directory[i])
-
+		//fmt.Println(dirname)
 		fi, err := os.Stat(dirname)
 		if err != nil {
 			fmt.Println(err)
@@ -206,22 +208,36 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 				if fi.Mode().IsDir() {
 					InstallInitModule([]string{dirname + "/" + f.Name()}, clustername, ipaddressfrom, ipaddressto)
 				} else {
+					if strings.Contains(f.Name(), "istio_install.sh") {
+						util.CmdExec2("cp " + dirname + "/istio_install.sh " + dirname + "/istio_install-" + clustername + ".sh")
+						util.CmdExec2("sed -i 's|REPLACE_DIRECTORY|" + dirname + "|g' " + dirname + "/istio_install-" + clustername + ".sh")
+						util.CmdExec2("sed -i 's|REPLACE_CLUSTERNAME|" + clustername + "|g' " + dirname + "/istio_install-" + clustername + ".sh")
+						util.CmdExec2("chmod 755 " + dirname + "/istio_install-" + clustername + ".sh")
+						util.CmdExec2(dirname + "/istio_install-" + clustername + ".sh")
+						util.CmdExec2("rm " + dirname + "/istio_install-" + clustername + ".sh")
+						fmt.Println("*** ", dirname+" created")
+					}
 					if filepath.Ext(f.Name()) == ".yaml" || filepath.Ext(f.Name()) == ".yml" {
 						if strings.Contains(dirname, "metric-collector/operator") {
-							fmt.Println("*** ", dirname+"/"+f.Name())
+							//fmt.Println("*** ", dirname+"/"+f.Name())
 							util.CmdExec2("cp " + dirname + "/operator.yaml " + dirname + "/operator_" + clustername + ".yaml")
 							util.CmdExec2("sed -i 's|REPLACE_CLUSTER_NAME|\"" + clustername + "\"|g' " + dirname + "/operator_" + clustername + ".yaml")
 							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/operator_" + clustername + ".yaml --context " + clustername)
 							util.CmdExec2("rm " + dirname + "/operator_" + clustername + ".yaml")
+							fmt.Println("*** ", dirname+"/operator_"+clustername+" created")
 						} else if strings.Contains(dirname, "metallb/configmap") {
-							fmt.Println("*** ", dirname+"/"+f.Name())
+							//fmt.Println("*** ", dirname+"/"+f.Name())
 							util.CmdExec2("cp " + dirname + "/metallb_configmap.yaml " + dirname + "/metallb_configmap_" + clustername + ".yaml")
 							util.CmdExec2("sed -i 's|CLUSTER_ADDRESS_FROM|" + ipaddressfrom + "|g' " + dirname + "/metallb_configmap_" + clustername + ".yaml")
 							util.CmdExec2("sed -i 's|CLUSTER_ADDRESS_TO|" + ipaddressto + "|g' " + dirname + "/metallb_configmap_" + clustername + ".yaml")
 							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/metallb_configmap_" + clustername + ".yaml --context " + clustername)
 							util.CmdExec2("rm " + dirname + "/metallb_configmap_" + clustername + ".yaml")
+							fmt.Println("*** ", dirname+"/metallb_configmap_"+clustername+" created")
 						} else {
-							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/" + f.Name() + " --context " + clustername)
+							if strings.Contains(dirname, "istio") {
+							} else {
+								util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/" + f.Name() + " --context " + clustername)
+							}
 						}
 					}
 				}
@@ -258,7 +274,11 @@ func UninstallInitModule(directory []string, clustername string) {
 					UninstallInitModule([]string{dirname + "/" + f.Name()}, clustername)
 				} else {
 					if filepath.Ext(f.Name()) == ".yaml" || filepath.Ext(f.Name()) == ".yml" {
-						util.CmdExec2("/usr/local/bin/kubectl delete -f " + dirname + "/" + f.Name() + " --context " + clustername)
+						if strings.Contains(dirname, "istio") {
+
+						} else {
+							util.CmdExec2("/usr/local/bin/kubectl delete -f " + dirname + "/" + f.Name() + " --context " + clustername)
+						}
 					}
 				}
 			}

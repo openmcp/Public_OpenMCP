@@ -5,4 +5,6 @@ if [ "$1" == "" ]; then
   echo "ex) kubectl join cluster1 JOIN"
   exit 1
 else
-  kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/JOIN/UNJOIN/g" | kubectl replace -f -
+  kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"UNJOIN"}]'
+#  kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/JOIN/UNJOIN/g" | kubectl replace -f -
+fi
