@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="29dd5a88-ed10-46f9-b8f3-53c5d0157070" name="10.0.3.20">
+        <fileTransfer rootFolder="/root/workspace/usr/kch/openmcp/Public_OpenMCP" accessType="SFTP" host="10.0.3.20" port="22" sshConfigId="4f9a0447-bee5-43bc-a3d2-f13e9bb000dd" sshConfig="root@10.0.3.20:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

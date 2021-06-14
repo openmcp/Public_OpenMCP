@@ -88,26 +88,43 @@ users:
 ## 2. Deploy init modules for OpenMCP
 ```bash
 $ cd ./install_openmcp
-$ ./SETTING.sh
-OpenMCP Install Type [debug/learning] -> debug
-OpenMCP Server IP -> 10.0.3.30
-Docker Secret Name for Authentication -> openmcp-private-registry
-Docker Registry IP:PORT -> 10.0.3.30:5005
-Docker imagePullPolicy [Always/IfNotPresent] -> IfNotPresent
-OpenMCP API Server Port -> 30000
-OpenMCP Cluster Manager Port ->30001
-OpenMCP Analytic Engine GRPC Server Port -> 30002
-OpenMCP Metric Collector GRPC Server IP (Public) -> 10.0.3.30
-OpenMCP Metric Collector GRPC Server Port (Public) -> 30003
-NFS Server IP -> 10.0.3.12
-InfluxDB Server Port -> 30004
-InfluxDB User Name -> root
-InfluxDB User Password -> root
-PowerDNS Server IP (Public) -> 10.0.3.30
-PowerDNS Server Port (Public) -> 53
-PowerDNS Server API Key -> 1234
-OpenMCP MetalLB Address IP Range (FROM) -> 10.0.3.241
-OpenMCP MetalLB Address IP Range (TO) -> 10.0.3.250
+$ vim settings.yaml
+default:
+  # learning or debug
+  installType: debug
+  docker:
+    imagePullSecretName: regcred
+    imagePullPolicy: Always
+
+master:
+  internal:
+    ip: 10.0.3.30
+    ports:
+      apiServerPort: 30000
+      clusterManagerPort: 30001
+      analyticEnginePort: 30002
+      metricCollectorPort: 30003
+      influxDBPort: 30004
+  public:
+    ip: 119.65.195.180
+    ports:
+      metricCollectorPort: 3212
+  metalLB:
+    rangeStartIP: 10.0.3.190
+    rangeEndIP: 10.0.3.200
+
+powerDNS:
+  apiKey: 1234
+  internal:
+    ip: 10.0.3.12
+    ports:
+      pdnsPort: 53
+  public:
+    ip: 119.65.195.180
+    ports:
+      pdnsPort: 5353
+
+$ ./create.sh
 ```
 
 Deploy all init modules for OpenMCP.

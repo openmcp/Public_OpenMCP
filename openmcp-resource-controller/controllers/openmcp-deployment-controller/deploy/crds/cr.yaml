@@ -2,9 +2,9 @@ apiVersion: openmcp.k8s.io/v1alpha1
 kind: OpenMCPDeployment
 metadata:
   name: example-openmcpdeployment
-  namespace: kcp
+  namespace: default
 spec:
-  replicas: 200
+  replicas: 3
   labels:
     app: openmcp-nginx
     test: "yes"
@@ -20,3 +20,4 @@ spec:
                   memory: 1Gi
                   cpu: 1
                   ephemeral-storage: 1Gi
+
