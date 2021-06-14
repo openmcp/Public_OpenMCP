@@ -52,11 +52,11 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	if err := co.WatchResourceReconcileObject(live, &dnsv1alpha1.OpenMCPServiceDNSRecord{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(context.TODO(), live, &dnsv1alpha1.OpenMCPServiceDNSRecord{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 	for _, ghost := range ghosts {
-		if err := co.WatchResourceReconcileController(ghost, &corev1.Service{}, controller.WatchOptions{}); err != nil {
+		if err := co.WatchResourceReconcileController(context.TODO(), ghost, &corev1.Service{}, controller.WatchOptions{}); err != nil {
 			return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 		}
 	}

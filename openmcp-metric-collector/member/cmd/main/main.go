@@ -147,11 +147,11 @@ func MemberMetricCollector() {
 
 		rTime_start := time.Now()
 		r, err := grpcClient.SendMetrics(context.TODO(), grpc_data)
-		rTime_end := time.Since(rTime_start)
+		if err == nil {
+			rTime_end := time.Since(rTime_start)
 
-		latencyTime = rTime_end.Seconds() - r.ProcessingTime
-
-		if err != nil {
+			latencyTime = rTime_end.Seconds() - r.ProcessingTime
+		}else{
 			//fmt.Println("check")
 			fmt.Println("could not connect : ", err)
 			time.Sleep(time.Duration(period_int64) * time.Second)

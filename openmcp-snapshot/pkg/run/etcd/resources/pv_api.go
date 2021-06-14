@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -67,7 +68,7 @@ func (pv PersistentVolume) CreateResourceForJSON(clientset *kubernetes.Clientset
 	*/
 	// Create PersistentVolume
 	fmt.Println("Creating pv...")
-	result, apiCallErr := pv.apiCaller.Create(resourceInfo)
+	result, apiCallErr := pv.apiCaller.Create(context.TODO(), resourceInfo, metav1.CreateOptions{})
 	if apiCallErr != nil {
 		return false, apiCallErr
 	}
@@ -80,7 +81,7 @@ func (pv PersistentVolume) CreateResourceForJSON(clientset *kubernetes.Clientset
 func (pv PersistentVolume) GetJSON(clientset *kubernetes.Clientset, resourceName string, resourceNamespace string) (string, error) {
 	pv.apiCaller = clientset.CoreV1().PersistentVolumes()
 
-	result, getErr := pv.apiCaller.Get(resourceName, metav1.GetOptions{})
+	result, getErr := pv.apiCaller.Get(context.TODO(), resourceName, metav1.GetOptions{})
 	if getErr != nil {
 		return "", getErr
 	}

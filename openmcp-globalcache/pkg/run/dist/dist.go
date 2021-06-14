@@ -1,6 +1,7 @@
 package dist
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -22,7 +23,7 @@ func (r *RegistryManager) GetNodeInfoList() ([]string, error) {
 	}
 
 	//*v1.NodeList
-	nodeList, err := r.clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := r.clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +54,7 @@ func (r *RegistryManager) SetNodeLabelSync() error {
 	}
 
 	var listErr error
-	nodes, listErr := r.clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodes, listErr := r.clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if listErr != nil {
 		return listErr
 	}
@@ -62,7 +63,7 @@ func (r *RegistryManager) SetNodeLabelSync() error {
 		//node name으로 node 정보 가져와서 내용 바꿔서 update 하는 기능.
 		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 			//1. Node 정보를 가져온다.
-			result, getErr := r.clientset.CoreV1().Nodes().Get(node.Name, metav1.GetOptions{})
+			result, getErr := r.clientset.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 			if getErr != nil {
 				return getErr
 			}
@@ -72,7 +73,7 @@ func (r *RegistryManager) SetNodeLabelSync() error {
 			modLabels[addLabelName] = "true"
 			result.SetLabels(modLabels)
 			//3. 업데이트.
-			_, updateErr := r.clientset.CoreV1().Nodes().Update(result)
+			_, updateErr := r.clientset.CoreV1().Nodes().Update(context.TODO(), result, metav1.UpdateOptions{})
 			return updateErr
 		})
 		if retryErr != nil {
@@ -98,7 +99,7 @@ func (r *RegistryManager) DistributeRegistryAgent() error {
 
 	//get Node List
 	var listErr error
-	nodes, listErr := r.clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodes, listErr := r.clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if listErr != nil {
 		return listErr
 	}
@@ -107,7 +108,7 @@ func (r *RegistryManager) DistributeRegistryAgent() error {
 		//node name으로 node 정보 가져와서 내용 바꿔서 update 하는 기능.
 		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 			//1. Node 정보를 가져온다.
-			result, getErr := r.clientset.CoreV1().Nodes().Get(node.Name, metav1.GetOptions{})
+			result, getErr := r.clientset.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 			if getErr != nil {
 				panic(fmt.Errorf("Failed to get latest version of Deployment: %v", getErr))
 			}
@@ -120,7 +121,7 @@ func (r *RegistryManager) DistributeRegistryAgent() error {
 				modLabels[addLabelName] = "true"
 				result.SetLabels(modLabels)
 				//3. 업데이트.
-				_, updateErr := r.clientset.CoreV1().Nodes().Update(result)
+				_, updateErr := r.clientset.CoreV1().Nodes().Update(context.TODO(), result, metav1.UpdateOptions{})
 				if updateErr != nil {
 					return updateErr
 				}
@@ -152,7 +153,7 @@ func (r *RegistryManager) DeleteRegistryAgentAll() error {
 
 	//get Node List
 	var listErr error
-	nodes, listErr := r.clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodes, listErr := r.clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if listErr != nil {
 		return listErr
 	}
@@ -161,7 +162,7 @@ func (r *RegistryManager) DeleteRegistryAgentAll() error {
 		//node name으로 node 정보 가져와서 내용 바꿔서 update 하는 기능.
 		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 			//1. Node 정보를 가져온다.
-			result, getErr := r.clientset.CoreV1().Nodes().Get(node.Name, metav1.GetOptions{})
+			result, getErr := r.clientset.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 			if getErr != nil {
 				panic(fmt.Errorf("Failed to get latest version of Deployment: %v", getErr))
 			}
@@ -174,7 +175,7 @@ func (r *RegistryManager) DeleteRegistryAgentAll() error {
 				modLabels[addLabelName] = "false"
 				result.SetLabels(modLabels)
 				//3. 업데이트.
-				_, updateErr := r.clientset.CoreV1().Nodes().Update(result)
+				_, updateErr := r.clientset.CoreV1().Nodes().Update(context.TODO(), result, metav1.UpdateOptions{})
 				if updateErr != nil {
 					return updateErr
 				}
@@ -226,7 +227,7 @@ func (r *RegistryManager) CreateRepositoryAgent(nodeName string) error {
 	labelName := r.getLabelName(nodeName)
 
 	deploymentsClient := r.clientset.AppsV1().Deployments(utils.ProjectNamespace)
-	deployment, _ := deploymentsClient.Get(appName, metav1.GetOptions{})
+	deployment, _ := deploymentsClient.Get(context.TODO(), appName, metav1.GetOptions{})
 	if deployment.ObjectMeta.Name != "" {
 		fmt.Printf("deployment exist : " + deployment.ObjectMeta.Name + "\n")
 		return nil
@@ -273,7 +274,7 @@ func (r *RegistryManager) CreateRepositoryAgent(nodeName string) error {
 
 	// Create Deployment
 	fmt.Println("Creating deployment...")
-	result, err := deploymentsClient.Create(deployment)
+	result, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
@@ -287,7 +288,7 @@ func (r *RegistryManager) DeleteRegistryAgent(nodeName string) error {
 	appName := r.getAppName(nodeName)
 
 	deploymentsClient := r.clientset.AppsV1().Deployments(utils.ProjectNamespace)
-	deployment, _ := deploymentsClient.Get(appName, metav1.GetOptions{})
+	deployment, _ := deploymentsClient.Get(context.TODO(), appName, metav1.GetOptions{})
 	if deployment.ObjectMeta.Name == "" {
 		fmt.Printf("deployment not exist : " + deployment.ObjectMeta.Name + "\n")
 		return nil
@@ -296,7 +297,7 @@ func (r *RegistryManager) DeleteRegistryAgent(nodeName string) error {
 	// Delete Deployment
 	fmt.Println("Delete deployment...")
 	deletePolicy := metav1.DeletePropagationForeground
-	err := deploymentsClient.Delete(appName, &metav1.DeleteOptions{
+	err := deploymentsClient.Delete(context.TODO(), appName, metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})
 	if err != nil {
@@ -312,7 +313,7 @@ func (r *RegistryManager) DeleteRegistryJob(nodeName string) error {
 	appName := r.getAppName(nodeName)
 
 	jobClient := r.clientset.BatchV1().Jobs(utils.ProjectNamespace)
-	job, _ := jobClient.Get(appName, metav1.GetOptions{})
+	job, _ := jobClient.Get(context.TODO(), appName, metav1.GetOptions{})
 	if job.ObjectMeta.Name == "" {
 		fmt.Printf("job not exist : " + job.ObjectMeta.Name + "\n")
 		return nil
@@ -321,7 +322,7 @@ func (r *RegistryManager) DeleteRegistryJob(nodeName string) error {
 	// Delete Deployment
 	fmt.Println("Delete job...")
 	deletePolicy := metav1.DeletePropagationForeground
-	err := jobClient.Delete(appName, &metav1.DeleteOptions{
+	err := jobClient.Delete(context.TODO(), appName, metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})
 	if err != nil {
@@ -354,7 +355,7 @@ func (r *RegistryManager) CreateJobForCluster(imageName string, tag string, cmdT
 	}
 
 	var listErr error
-	nodes, listErr := r.clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodes, listErr := r.clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if listErr != nil {
 		return listErr
 	}
@@ -363,7 +364,7 @@ func (r *RegistryManager) CreateJobForCluster(imageName string, tag string, cmdT
 		///node name으로 node 정보 가져와서 데이터를 추가해준다.
 		//retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		//1. Node 정보를 가져온다.
-		result, getErr := r.clientset.CoreV1().Nodes().Get(node.Name, metav1.GetOptions{})
+		result, getErr := r.clientset.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 		if getErr != nil {
 			return getErr
 		}
@@ -402,7 +403,7 @@ func (r *RegistryManager) CreateJob(nodeName string, imageName string, tag strin
 	jobClient := r.clientset.BatchV1().Jobs(utils.ProjectNamespace)
 
 	//이미 존재할 때의 처리 방법.
-	job, _ := jobClient.Get(appName, metav1.GetOptions{})
+	job, _ := jobClient.Get(context.TODO(), appName, metav1.GetOptions{})
 	if job.ObjectMeta.Name != "" {
 		fmt.Printf("job exist : " + job.ObjectMeta.Name + "\n")
 		return nil
@@ -430,7 +431,7 @@ func (r *RegistryManager) CreateJob(nodeName string, imageName string, tag strin
 
 	// Create Deployment
 	fmt.Println("Creating " + cmdType + " Job...")
-	result, err := jobClient.Create(job)
+	result, err := jobClient.Create(context.TODO(), job, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
@@ -443,7 +444,7 @@ func (r *RegistryManager) CreateJob(nodeName string, imageName string, tag strin
 		//oldJob := old.(*batchv1.Job)
 		deletePolicy := metav1.DeletePropagationForeground
 		fmt.Printf("JobRunCheck : delete job \n")
-		err := jobClient.Delete(newJob.Name, &metav1.DeleteOptions{
+		err := jobClient.Delete(context.TODO(), newJob.Name, metav1.DeleteOptions{
 			PropagationPolicy: &deletePolicy,
 		})
 		if err != nil {

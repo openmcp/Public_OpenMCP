@@ -1,11 +1,13 @@
 package v1alpha1
 
 import (
+	"context"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 )
 
 type OpenMCPDeploymentInterface interface {
@@ -28,7 +30,7 @@ func (c *OpenMCPDeploymentClient) List(opts metav1.ListOptions) (*resourcev1alph
 		Namespace(c.ns).
 		Resource("openmcpdeployments").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
+		Do(context.TODO()).
 		Into(&result)
 
 	return &result, err
@@ -42,7 +44,7 @@ func (c *OpenMCPDeploymentClient) Get(name string, opts metav1.GetOptions) (*res
 		Resource("openmcpdeployments").
 		Name(name).
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
+		Do(context.TODO()).
 		Into(&result)
 
 	return &result, err
@@ -55,7 +57,7 @@ func (c *OpenMCPDeploymentClient) Create(deployment *resourcev1alpha1.OpenMCPDep
 		Namespace(c.ns).
 		Resource("openmcpdeployments").
 		Body(deployment).
-		Do().
+		Do(context.TODO()).
 		Into(&result)
 
 	return &result, err
@@ -68,5 +70,5 @@ func (c *OpenMCPDeploymentClient) Watch(opts metav1.ListOptions) (watch.Interfac
 		Namespace(c.ns).
 		Resource("openmcpdeployment").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
+		Watch(context.TODO())
 }

@@ -26,10 +26,10 @@ import (
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+
 )
 
-var log = logf.Log.WithName("controller_openmcphybridautoscaler")
+
 
 var cm *clusterManager.ClusterManager
 
@@ -55,7 +55,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	}
 
 	omcplog.V(4).Info(live, live.GetClusterName())
-	if err := co.WatchResourceReconcileObject(live, &policyv1alpha1.OpenMCPPolicy{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(context.TODO(), live, &policyv1alpha1.OpenMCPPolicy{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 

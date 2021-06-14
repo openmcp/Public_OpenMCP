@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"context"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -28,7 +29,7 @@ func (c *OpenMCPIngressClient) List(opts metav1.ListOptions) (*resourcev1alpha1.
 		Namespace(c.ns).
 		Resource("openmcpingresss").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
+		Do(context.TODO()).
 		Into(&result)
 
 	return &result, err
@@ -42,7 +43,7 @@ func (c *OpenMCPIngressClient) Get(name string, opts metav1.GetOptions) (*resour
 		Resource("openmcpingresss").
 		Name(name).
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
+		Do(context.TODO()).
 		Into(&result)
 
 	return &result, err
@@ -55,7 +56,7 @@ func (c *OpenMCPIngressClient) Create(deployment *resourcev1alpha1.OpenMCPIngres
 		Namespace(c.ns).
 		Resource("openmcpingresss").
 		Body(deployment).
-		Do().
+		Do(context.TODO()).
 		Into(&result)
 
 	return &result, err
@@ -68,5 +69,5 @@ func (c *OpenMCPIngressClient) Watch(opts metav1.ListOptions) (watch.Interface, 
 		Namespace(c.ns).
 		Resource("openmcpingresss").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
+		Watch(context.TODO())
 }

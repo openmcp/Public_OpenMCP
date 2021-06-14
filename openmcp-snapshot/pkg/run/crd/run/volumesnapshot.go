@@ -1,6 +1,7 @@
 package run
 
 import (
+	"context"
 	"fmt"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -50,7 +51,7 @@ func (dynamicResource DynamicVolumeSnapshot) CreateResource(clientset dynamic.In
 	//oldName := resourceInfo.GetName()
 	//newName := oldName + "-snapshot"
 	//resourceInfo.SetName(newName)
-	result, apiCallErr := dynamicResource.apiCaller.Create(resourceInfo, metav1.CreateOptions{})
+	result, apiCallErr := dynamicResource.apiCaller.Create(context.TODO(), resourceInfo, metav1.CreateOptions{})
 	if apiCallErr != nil {
 		return false, apiCallErr
 	}
@@ -66,7 +67,7 @@ func (dynamicResource DynamicVolumeSnapshot) IsRunningVolumeSnapshot(clientset d
 	dynamicResource.apiCaller = clientset.Resource(gvk).Namespace(namespace)
 	name := util.GetVolumeSnapshotName(volumeDataSource)
 
-	result, apiCallErr := dynamicResource.apiCaller.Get(name, metav1.GetOptions{})
+	result, apiCallErr := dynamicResource.apiCaller.Get(context.TODO(), name, metav1.GetOptions{})
 	if apiCallErr != nil {
 		return false, apiCallErr
 	}

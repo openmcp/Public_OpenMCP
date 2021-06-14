@@ -1,6 +1,7 @@
 package dist
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -85,7 +86,7 @@ func (r *RegistryManager) checkNamespace() (bool, error) {
 	//*v1.namespaceList
 	//namespace := &v1.Namespace{}
 	//getErr := kubeerrors.StatusError{}
-	namespace, _ := r.clientset.CoreV1().Namespaces().Get(utils.ProjectNamespace, metav1.GetOptions{})
+	namespace, _ := r.clientset.CoreV1().Namespaces().Get(context.TODO(), utils.ProjectNamespace, metav1.GetOptions{})
 	//if getErr != nil {
 	//	return false, getErr
 	//}
@@ -95,7 +96,7 @@ func (r *RegistryManager) checkNamespace() (bool, error) {
 		//name space 생성
 
 		nsSpec := &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: utils.ProjectNamespace}}
-		_, err := r.clientset.CoreV1().Namespaces().Create(nsSpec)
+		_, err := r.clientset.CoreV1().Namespaces().Create(context.TODO(), nsSpec, metav1.CreateOptions{})
 		if err != nil {
 			return false, err
 		}

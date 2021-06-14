@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -124,7 +125,7 @@ func (dynamicResource Dynamic) CreateResourceForJSON(clientset dynamic.Interface
 	oldName := resourceInfo.GetName()
 	newName := oldName + "-snapshot"
 	resourceInfo.SetName(newName)
-	result, apiCallErr := dynamicResource.apiCaller.Create(resourceInfo, metav1.CreateOptions{})
+	result, apiCallErr := dynamicResource.apiCaller.Create(context.TODO(), resourceInfo, metav1.CreateOptions{})
 	if apiCallErr != nil {
 		return false, apiCallErr
 	}
@@ -140,7 +141,7 @@ func (dynamicResource Dynamic) GetJSON(clientset dynamic.Interface, resourceName
 
 	fmt.Printf("Listing Resource in namespace %q:\n", resourceNamespace)
 
-	result, apiCallErr := dynamicResource.apiCaller.Get(resourceName, metav1.GetOptions{})
+	result, apiCallErr := dynamicResource.apiCaller.Get(context.TODO(), resourceName, metav1.GetOptions{})
 	if apiCallErr != nil {
 		return "", apiCallErr
 	}

@@ -4,7 +4,7 @@ metadata:
   name: iot-gateway
   namespace: openmcp
 spec:
-  replicas: 5
+  replicas: 3
   labels:
     component: iot-gateway-svc
     affinity: "yes"

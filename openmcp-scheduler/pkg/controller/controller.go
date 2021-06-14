@@ -108,12 +108,12 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	if err := co.WatchResourceReconcileObject(live, &resourcev1alpha1.OpenMCPDeployment{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(context.TODO(), live, &resourcev1alpha1.OpenMCPDeployment{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
 	for _, ghost := range ghosts {
-		if err := co.WatchResourceReconcileController(ghost, &appsv1.Deployment{}, controller.WatchOptions{}); err != nil {
+		if err := co.WatchResourceReconcileController(context.TODO(), ghost, &appsv1.Deployment{}, controller.WatchOptions{}); err != nil {
 			return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
 		}
 	}
@@ -132,11 +132,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 
 	// Start scheduling if scheduling is needed
-	if newDeployment.Status.SchedulingNeed == false && newDeployment.Status.SchedulingComplete == false {
+	if newDeployment.Status.SchedulingNeed == true && newDeployment.Status.SchedulingComplete == false {
 
-		if strings.Compare(newDeployment.Spec.Labels["test"], "yes") != 0 {
-			omcplog.V(0).Info("Local Scheduling을 시작합니다.(랜덤 스케줄링)")
-			omcplog.V(0).Info("Scheduling Controller와 연계하려면 Labels의 test항목을 no로 변경해주세요")
+		if strings.Compare(newDeployment.Spec.Labels["test"], "yes") == 0 {
+			omcplog.V(0).Info("[현재 Label: test] Local Scheduling을 시작합니다.(라운드로빈 스케줄링)")
+			omcplog.V(0).Info("Scheduling Controller와 연계하려면 Label: test를 제거하세요")
 			replicas := newDeployment.Spec.Replicas
 
 			newDeployment.Status.ClusterMaps = RRScheduling(r.scheduler.ClusterManager, replicas)
@@ -151,13 +151,14 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			}
 			return reconcile.Result{}, err
 
-		} else if strings.Compare(newDeployment.Spec.Labels["test"], "yes") == 0 {
+		} else if strings.Compare(newDeployment.Spec.Labels["test"], "yes") != 0 {
 
 			omcplog.V(0).Infof("  Resource Get => [Name] : %v, [Namespace]  : %v", newDeployment.Name, newDeployment.Namespace)
 
-			cluster_replicas_map, _ := r.scheduler.Scheduling(newDeployment)
+			//cluster_replicas_map, _ := r.scheduler.Scheduling(newDeployment)
+			newDeployment.Status.ClusterMaps = RRScheduling(r.scheduler.ClusterManager, newDeployment.Spec.Replicas)
 
-			newDeployment.Status.ClusterMaps = cluster_replicas_map
+			//newDeployment.Status.ClusterMaps = cluster_replicas_map
 			newDeployment.Status.Replicas = newDeployment.Spec.Replicas
 
 			newDeployment.Status.SchedulingNeed = false

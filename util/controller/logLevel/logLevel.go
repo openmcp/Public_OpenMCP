@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
-	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/apis"
 	policyv1alpha1 "openmcp/openmcp/apis/policy/v1alpha1"
+	"openmcp/openmcp/omcplog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strconv"
 )
@@ -35,7 +35,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	if err := co.WatchResourceReconcileObject(live, &policyv1alpha1.OpenMCPPolicy{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(context.TODO(), live, &policyv1alpha1.OpenMCPPolicy{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 	return co, nil

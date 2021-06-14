@@ -2,6 +2,7 @@ package customMetrics
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,7 +26,7 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 		podList = append(podList, data.Metricsbatchs[i].Pods...)
 	}
 
-	rs, err := cluster_client.AppsV1().ReplicaSets(metav1.NamespaceAll).List(metav1.ListOptions{})
+	rs, err := cluster_client.AppsV1().ReplicaSets(metav1.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
 	fmt.Println("[List] ReplicaSets")
 	if err == nil {
 		for _, replicaset := range rs.Items {

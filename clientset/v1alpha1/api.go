@@ -5,7 +5,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	"openmcp/openmcp/apis"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 )
 
@@ -23,7 +22,7 @@ type ExampleV1Alpha1Client struct {
 }
 
 func NewForConfig(c *rest.Config) (*ExampleV1Alpha1Client, error) {
-	apis.AddToScheme(scheme.Scheme)
+	//apis.AddToScheme(scheme.Scheme)
 
 	config := *c
 	config.ContentConfig.GroupVersion = &schema.GroupVersion{Group: resourcev1alpha1.GroupName, Version: resourcev1alpha1.GroupVersion}

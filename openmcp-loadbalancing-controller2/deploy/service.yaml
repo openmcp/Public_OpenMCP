@@ -7,6 +7,7 @@ spec:
   selector:
     name: openmcp-loadbalancing-controller2
   ports:
-    - port: 80
-      targetPort: 80
+  - port: 80
+    targetPort: 80
   type: LoadBalancer
+  externalTrafficPolicy: Local

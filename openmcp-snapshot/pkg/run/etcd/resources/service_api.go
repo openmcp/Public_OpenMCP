@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -73,7 +74,7 @@ func (svc Service) CreateResourceForJSON(clientset *kubernetes.Clientset, resour
 
 	// Create Service
 	fmt.Println("Creating service...")
-	result, apiCallErr := svc.apiCaller.Create(resourceInfo)
+	result, apiCallErr := svc.apiCaller.Create(context.TODO(), resourceInfo, metav1.CreateOptions{})
 	if apiCallErr != nil {
 		return false, apiCallErr
 	}
@@ -87,7 +88,7 @@ func (svc Service) GetJSON(clientset *kubernetes.Clientset, resourceName string,
 	svc.apiCaller = clientset.CoreV1().Services(resourceNamespace)
 	fmt.Printf("Listing Resource in namespace %q:\n", resourceNamespace)
 
-	result, apiCallErr := svc.apiCaller.Get(resourceName, metav1.GetOptions{})
+	result, apiCallErr := svc.apiCaller.Get(context.TODO(), resourceName, metav1.GetOptions{})
 	if apiCallErr != nil {
 		return "", apiCallErr
 	}
