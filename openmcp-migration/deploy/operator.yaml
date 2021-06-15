@@ -13,7 +13,7 @@ spec:
       labels:
         name: openmcp-migration
     spec:
-      serviceAccountName: openmcp-snapshot-sa
+      serviceAccountName: openmcp-migration-sa
       imagePullSecrets:
         - name: dockerlogin
       containers:

@@ -11,5 +11,9 @@ spec:
     MigrationSource:
     - ResourceName: iot-gateway
       ResourceType: Deployment
-    - ResourceName: iot-gateway-svc
+    - ResourceName: iot-gateway-sv
       ResourceType: Service
+    - ResourceName: iot-gateway-pv
+      ResourceType: PersistentVolume
+    - ResourceName: iot-gateway-pvc
+      ResourceType: PersistentVolumeClaim

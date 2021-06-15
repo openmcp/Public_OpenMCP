@@ -8,7 +8,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func migservice(migSource MigrationControllerResource, resource v1alpha1.MigrationSource) {
+func migservice(migSource MigrationControllerResource, resource v1alpha1.MigrationSource) error {
 	omcplog.V(3).Info("=== service migration start")
 	targetResource := &corev1.Service{}
 	sourceResource := &corev1.Service{}
@@ -25,7 +25,8 @@ func migservice(migSource MigrationControllerResource, resource v1alpha1.Migrati
 
 	sourceGetErr := sourceClient.Get(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
 	if sourceGetErr != nil {
-		omcplog.V(3).Info("get source cluster error : ", sourceGetErr)
+		omcplog.Error("get source cluster error : ", sourceGetErr)
+		return sourceGetErr
 	} else {
 		omcplog.V(3).Info("get source info : " + resource.ResourceName)
 	}
@@ -37,19 +38,22 @@ func migservice(migSource MigrationControllerResource, resource v1alpha1.Migrati
 	omcplog.V(3).Info("Create for target cluster")
 	targetErr := targetClient.Create(context.TODO(), targetResource)
 	if targetErr != nil {
-		omcplog.V(3).Info("target cluster create error : ", targetErr)
+		omcplog.Error("target cluster create error : ", targetErr)
+		return targetErr
 	}
 	omcplog.V(3).Info("Create for target cluster end")
 
 	omcplog.V(3).Info("Delete for source cluster")
 	sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
 	if sourceErr != nil {
-		omcplog.V(3).Info("source cluster delete rror : ", sourceErr)
+		omcplog.Error("source cluster delete rror : ", sourceErr)
+		return sourceErr
 	}
 	omcplog.V(3).Info("Delete for source cluster end")
+	return nil
 }
 
-func migserviceNotVolume(migSource MigrationControllerResource, resource v1alpha1.MigrationSource) {
+func migserviceNotVolume(migSource MigrationControllerResource, resource v1alpha1.MigrationSource) error {
 	omcplog.V(3).Info("=== service migration start")
 	omcplog.V(3).Info("add Volume")
 	targetResource := &corev1.Service{}
@@ -67,7 +71,8 @@ func migserviceNotVolume(migSource MigrationControllerResource, resource v1alpha
 
 	sourceGetErr := sourceClient.Get(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
 	if sourceGetErr != nil {
-		omcplog.V(3).Info("get source cluster error : ", sourceGetErr)
+		omcplog.Error("get source cluster error : ", sourceGetErr)
+		return sourceGetErr
 	} else {
 		omcplog.V(3).Info("get source info : " + resource.ResourceName)
 	}
@@ -79,7 +84,8 @@ func migserviceNotVolume(migSource MigrationControllerResource, resource v1alpha
 	omcplog.V(3).Info("Create for target cluster")
 	targetErr := targetClient.Create(context.TODO(), targetResource)
 	if targetErr != nil {
-		omcplog.V(3).Info("target cluster create error : ", targetErr)
+		omcplog.Error("target cluster create error : ", targetErr)
+		return targetErr
 	}
 	//	time.Sleep(time.Second * 4)
 	omcplog.V(3).Info("Create for target cluster end")
@@ -87,7 +93,10 @@ func migserviceNotVolume(migSource MigrationControllerResource, resource v1alpha
 	omcplog.V(3).Info("Delete for source cluster")
 	sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
 	if sourceErr != nil {
-		omcplog.V(3).Info("source cluster delete rror : ", sourceErr)
+		omcplog.V(3).Info("source cluster delete error")
+		omcplog.Error(sourceErr)
+		return sourceErr
 	}
 	omcplog.V(3).Info("Delete for source cluster end")
+	return nil
 }
