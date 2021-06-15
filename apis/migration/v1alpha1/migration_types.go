@@ -50,13 +50,23 @@ type MigrationStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 	MigrationStatus bool   `json:"MigrationStatus"`
 	Reason          string `json:"Reason"`
+	ElapsedTime     string `json:"ElapsedTime,omitempty"`
 }
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Migration is the Schema for the Migrations API
+// +kubebuilder:subresource:status
 // +k8s:openapi-gen=true
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="Created time stamp"
+// +kubebuilder:printcolumn:name="IsSuccess",type="boolean",JSONPath=".status.MigrationStatus",description="-"
+// +kubebuilder:printcolumn:name="SourceCluster",type="string",JSONPath=".spec.MigrationServiceSource[*].SourceCluster",description="-"
+// +kubebuilder:printcolumn:name="TargetCluster",type="string",JSONPath=".spec.MigrationServiceSource[*].TargetCluster",description="-"
+// +kubebuilder:printcolumn:name="ServiceName",type="string",JSONPath=".spec.MigrationServiceSource[*].ServiceName",description="-"
+// +kubebuilder:printcolumn:name="NameSpace",type="string",JSONPath=".spec.MigrationServiceSource[*].NameSpace",description="-"
+// +kubebuilder:printcolumn:name="REASON",type="string",JSONPath=".status.Reason",description="-"
+// +kubebuilder:printcolumn:name="ElapsedTime",type="string",JSONPath=".status.ElapsedTime",description="ElapsedTime"
 type Migration struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

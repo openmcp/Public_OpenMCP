@@ -81,10 +81,42 @@ spec:
                 type: boolean
               Reason:
                 type: string
+              ElapsedTime:
+                type: string
             required:
             - MigrationStatus
             - Reason
+            - ElapsedTime
             type: object
         type: object
+    additionalPrinterColumns:
+    - name: Age
+      type: date
+      jsonPath: .metadata.creationTimestamp
+    - name: IsSuccess
+      type: boolean
+      description: 
+      jsonPath: .status.MigrationStatus
+    - name: SourceCluster
+      type: string
+      jsonPath: .spec.MigrationServiceSource[*].SourceCluster
+    - name: TargetCluster
+      type: string
+      jsonPath: .spec.MigrationServiceSource[*].TargetCluster
+    - name: ServiceName
+      type: string
+      jsonPath: .spec.MigrationServiceSource[*].ServiceName
+    - name: NameSpace
+      type: string
+      jsonPath: .spec.MigrationServiceSource[*].NameSpace
+    - name: ElapsedTime
+      type: string
+      jsonPath: .status.ElapsedTime
+    - name: REASON
+      type: string
+      description: 
+      jsonPath: .status.Reason
     served: true
     storage: true
+    subresources:
+      status: {}
