@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"container/list"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
 )
 
@@ -28,9 +29,10 @@ type OpenmcpFramework interface {
 	// RunFilterPluginsOnClusters runs the set of configured filtering plugins.
 	// It returns a map that stores for each filtering plugin name the corresponding
 	RunFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster) OpenmcpClusterFilteredStatus
+	EraseFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, request map[string]int32) string
 	// RunScorePluginsOnClusters runs the set of configured scoring plugins.
 	// It returns a map that stores for each
-	RunPostFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, postpods []*ketiresource.Pod) OpenmcpClusterPostFilteredStatus
+	RunPostFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, postpods *list.List) OpenmcpClusterPostFilteredStatus
 	RunScorePluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, allclusters map[string]*ketiresource.Cluster, replicas int32) string
 	//RunScorePluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, replicas int32) OpenmcpPluginToClusterScores
 	EndPod()
@@ -50,7 +52,17 @@ type OpenmcpFilterPlugin interface {
 	Filter(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool
 }
 
+// type EraseFilterPlugin interface {
+// 	OpenmcpPlugin
+// 	PreScore(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, check bool) int64
+// }
 type OpenmcpScorePlugin interface {
+	OpenmcpPlugin
+	Score(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, replicas int32, clustername string) int64
+	PreScore(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, check bool) int64
+}
+
+type OpenmcpEraseScorePlugin interface {
 	OpenmcpPlugin
 	Score(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, replicas int32, clustername string) int64
 	PreScore(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, check bool) int64
@@ -66,5 +78,5 @@ type OpenmcpPreFilterPlugin interface {
 //
 type OpenmcpPostFilterPlugin interface {
 	OpenmcpPlugin
-	PostFilter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, postpods []*ketiresource.Pod) (bool, error)
+	PostFilter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, postpods *list.List) (bool, error)
 }

@@ -3,8 +3,6 @@ package predicates
 import (
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
 	"strings"
-
-	"k8s.io/klog"
 )
 
 type MatchClusterSelector struct {
@@ -40,10 +38,10 @@ func (pl *MatchClusterSelector) Filter(newPod *ketiresource.Pod, clusterInfo *ke
 		// if you want to more information, check "k8s.io/api/core/v1"
 		for key, pod_value := range newPod.Pod.Spec.NodeSelector {
 
-			klog.Infof("pod_value:%v", pod_value)
+			//klog.Infof("pod_value:%v", pod_value)
 
 			if node_value, ok := node.Node.Labels[key]; !ok {
-				klog.Infof("n./4ode_value:%v", node_value)
+				//klog.Infof("n./4ode_value:%v", node_value)
 				node_result = false
 			} else {
 				// Check if value is the same

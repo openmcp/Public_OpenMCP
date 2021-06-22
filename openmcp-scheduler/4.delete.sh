@@ -1,3 +1,3 @@
 #!/bin/bash
 
-kubectl delete -f deploy/
+k delete -f deploy/operator.yaml

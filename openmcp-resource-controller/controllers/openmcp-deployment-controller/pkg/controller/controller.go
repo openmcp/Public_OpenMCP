@@ -217,6 +217,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	}
 
+	if instance.Status.SchedulingNeed == true && instance.Status.SchedulingComplete == false {
+		return reconcile.Result{}, nil
+	}
 	if !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec) {
 
 		omcplog.V(2).Info("[Update Detection]")
@@ -231,6 +234,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.V(0).Info("Failed to update instance status", err)
 				return reconcile.Result{}, err
 			}
+			return reconcile.Result{}, nil
 
 		}
 		if !reflect.DeepEqual(instance.Status.LastSpec.Labels, instance.Spec.Labels) {
@@ -251,7 +255,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			omcplog.V(2).Info("Failed to update instance status", err)
 			return reconcile.Result{}, err
 		}
-		return reconcile.Result{}, err
+		return reconcile.Result{}, nil
 	}
 
 	sync_instance := &syncv1alpha1.Sync{}

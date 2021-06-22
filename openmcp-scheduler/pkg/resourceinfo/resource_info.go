@@ -1,12 +1,19 @@
 package resourceinfo
 
 import (
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+
 	corev1 "k8s.io/api/core/v1"
 )
 
 var (
 	emptyResource = Resource{}
 )
+
+type RequestScheduler struct {
+	Replicas int32    `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
+	Clusters []string `json:"clusters,omitempty" protobuf:"bytes,11,opt,name=clusters"`
+}
 
 // cluster Level
 type Cluster struct {
@@ -72,6 +79,8 @@ func NewResource() *Resource {
 }
 
 func AddResources(res, new *Resource) *Resource {
+
+	//????? 확인중
 	return &Resource{
 		MilliCPU:         res.MilliCPU + new.MilliCPU,
 		Memory:           res.Memory + new.Memory,
@@ -85,4 +94,13 @@ func GetAllocatable(capacity, request *Resource) *Resource {
 		Memory:           capacity.Memory - request.Memory,
 		EphemeralStorage: capacity.EphemeralStorage - request.EphemeralStorage,
 	}
+}
+
+// Remaining replica
+type PostDelployment struct {
+	Fcnt          int64
+	RemainReplica int32
+	NewPod        *Pod
+	NewDeployment *resourcev1alpha1.OpenMCPDeployment
+	Replica       int32
 }

@@ -120,30 +120,26 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 	omcplog.V(5).Info("Resource Get => [Name] : " + ovs.Name + " [Namespace]  : " + ovs.Namespace)
 
-	vs := &v1alpha3.VirtualService{}
-	err = r.live.Get(context.TODO(), req.NamespacedName, vs)
-	if err != nil && errors.IsNotFound(err) {
-		// Create VirtualService
-		err = makeVirtualService(vs, ovs)
-		if err != nil {
-			return reconcile.Result{}, err
+	checkVs := &v1alpha3.VirtualService{}
+	err = r.live.Get(context.TODO(), req.NamespacedName, checkVs)
+	if err == nil || (err != nil && errors.IsNotFound(err)) {
+		vs, err2 := makeVirtualService(ovs)
+		if err2 != nil {
+			return reconcile.Result{}, err2
 		}
-		err = r.live.Create(context.TODO(), vs)
-		if err != nil {
-			return reconcile.Result{}, err
+		if err2 == nil {
+			// Update VirtualService
+			err3 := r.live.Update(context.TODO(), vs)
+			if err3 != nil {
+				return reconcile.Result{}, err3
+			}
+		} else if err != nil && errors.IsNotFound(err) {
+			// Create VirtualService
+			err3 := r.live.Create(context.TODO(), vs)
+			if err3 != nil {
+				return reconcile.Result{}, err3
+			}
 		}
-	} else if err == nil {
-		// Update VirtualService
-		err = makeVirtualService(vs, ovs)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
-		err = r.live.Update(context.TODO(), vs)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
-	} else {
-		fmt.Println(err)
 	}
 
 	return reconcile.Result{}, nil
@@ -184,28 +180,42 @@ func contains(s []string, e string) bool {
 	}
 	return false
 }
-func makeVirtualService(vs *v1alpha3.VirtualService, ovs *resourcev1alpha1.OpenMCPVirtualService) error {
-	locClusters := getLocClusters()
-	usedZones := []string{}
-
+func makeVirtualService(ovs *resourcev1alpha1.OpenMCPVirtualService) (*v1alpha3.VirtualService, error) {
+	vs := &v1alpha3.VirtualService{}
 	vs.Name = ovs.Name
 	vs.Namespace = ovs.Namespace
 	err := deepcopy.Copy(&vs.Labels, &ovs.Labels)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
 	err = deepcopy.Copy(&vs.Spec.Hosts, &ovs.Spec.Hosts)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = deepcopy.Copy(&vs.Spec.Gateways, &ovs.Spec.Gateways)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	vs.Spec.Http = createVsHttps(ovs)
 
-	vs.Spec.Http = []*networkingv1alpha3.HTTPRoute{}
+	reference.SetMulticlusterControllerReference(vs, reference.NewMulticlusterOwnerReference(ovs, ovs.GroupVersionKind(), "openmcp"))
+
+	return vs, nil
+}
+func createVsHttps(ovs *resourcev1alpha1.OpenMCPVirtualService) (vsHttps []*networkingv1alpha3.HTTPRoute) {
+	vshttps := []*networkingv1alpha3.HTTPRoute{}
+
+	locClusters := getLocClusters()
+	usedZones := []string{}
+
 	for _, http := range ovs.Spec.Http {
+
+		// 디폴트 경로 생성
+		exactZone := "default"
+		vsHttp, _ := createVsHttp(http, exactZone)
+		vshttps = append(vshttps, vsHttp)
+
+		// 지역(클러스터)별 경로 생성
 		for _, locCluster := range locClusters {
 
 			if contains(usedZones, locCluster.zone) {
@@ -215,56 +225,64 @@ func makeVirtualService(vs *v1alpha3.VirtualService, ovs *resourcev1alpha1.OpenM
 			exactZone := locCluster.zone
 			usedZones = append(usedZones, locCluster.zone)
 
-			vsHttp := &networkingv1alpha3.HTTPRoute{}
-			err = deepcopy.Copy(&vsHttp, &http)
-			if err != nil {
-				return err
-			}
+			vsHttp, _ := createVsHttp(http, exactZone)
 
-			for _, match := range vsHttp.Match {
-				stringMatch := &networkingv1alpha3.StringMatch{
-					MatchType: &networkingv1alpha3.StringMatch_Exact{
-						Exact: exactZone,
-					},
-				}
-				if match.Headers == nil {
-					headers := make(map[string]*networkingv1alpha3.StringMatch)
-					match.Headers = headers
-				}
-
-				match.Headers["client-zone"] = stringMatch
-				//vsHttp.Match[i].Headers["client-zone"] = stringMatch
-
-			}
-
-			vsHttp.Route = []*networkingv1alpha3.HTTPRouteDestination{}
-			for _, hr := range http.Route {
-				for i, locCluster2 := range locClusters {
-
-					vsRoute := &networkingv1alpha3.HTTPRouteDestination{}
-					err = deepcopy.Copy(&vsRoute, &hr)
-					if err != nil {
-						return err
-					}
-
-					// TODO 서비스가 있는지 체크
-					// TODO Weight 계산
-					vsRoute.Destination.Subset = locCluster2.clusterName
-					vsRoute.Weight = 1
-					if i == len(locClusters)-1 {
-						vsRoute.Weight = 100 - int32(len(locClusters)) + 1
-					}
-
-					vsHttp.Route = append(vsHttp.Route, vsRoute)
-				}
-			}
-
-			vs.Spec.Http = append(vs.Spec.Http, vsHttp)
+			vshttps = append(vshttps, vsHttp)
 
 		}
 
 	}
-	reference.SetMulticlusterControllerReference(vs, reference.NewMulticlusterOwnerReference(ovs, ovs.GroupVersionKind(), "openmcp"))
+	return vshttps
+}
+func createVsHttp(http *networkingv1alpha3.HTTPRoute, exactZone string) (*networkingv1alpha3.HTTPRoute, error) {
+	vsHttp := &networkingv1alpha3.HTTPRoute{}
+	err := deepcopy.Copy(&vsHttp, &http)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil
+	for _, match := range vsHttp.Match {
+		stringMatch := &networkingv1alpha3.StringMatch{
+			MatchType: &networkingv1alpha3.StringMatch_Exact{
+				Exact: exactZone,
+			},
+		}
+		if match.Headers == nil {
+			headers := make(map[string]*networkingv1alpha3.StringMatch)
+			match.Headers = headers
+		}
+
+		match.Headers["client-zone"] = stringMatch
+		//vsHttp.Match[i].Headers["client-zone"] = stringMatch
+
+	}
+
+	vsHttp.Route = []*networkingv1alpha3.HTTPRouteDestination{}
+	locClusters := getLocClusters()
+
+	for _, hr := range http.Route {
+
+		if exactZone == "default " {
+
+		}
+		for i, locCluster2 := range locClusters {
+
+			vsRoute := &networkingv1alpha3.HTTPRouteDestination{}
+			err = deepcopy.Copy(&vsRoute, &hr)
+			if err != nil {
+				return nil, err
+			}
+
+			// TODO 서비스가 있는지 체크
+			// TODO Weight 계산
+			vsRoute.Destination.Subset = locCluster2.clusterName
+			vsRoute.Weight = 1
+			if i == len(locClusters)-1 {
+				vsRoute.Weight = 100 - int32(len(locClusters)) + 1
+			}
+
+			vsHttp.Route = append(vsHttp.Route, vsRoute)
+		}
+	}
+	return vsHttp, nil
 }

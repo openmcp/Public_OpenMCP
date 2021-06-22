@@ -4,10 +4,12 @@ metadata:
   name: example-openmcpdeployment
   namespace: openmcp
 spec:
-  replicas: 8
+  replicas: 4
+  clusters:
+  - "cluster1"
+  - "cluster2"
   labels:
       app: openmcp-nginx
-      test: "yes"
   template:
     spec:
       template:

@@ -1,6 +1,7 @@
 package predicates
 
 import (
+	"container/list"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/pkg/resourceinfo"
 )
 
@@ -46,17 +47,17 @@ func (pl *PodFitsResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketire
 }
 
 // Return true if there is at least 1 node that have AdditionalResources
-func (pl *PodFitsResources) PostFilter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, postpods []*ketiresource.Pod) (bool, error) {
+func (pl *PodFitsResources) PostFilter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, postpods *list.List) (bool, error) {
 
 	var postCPU int64
 	var postMemory int64
 	var postEphemeralStorage int64
 
-	for _, pod := range postpods {
-		postCPU += pod.RequestedResource.MilliCPU
-		postMemory += pod.RequestedResource.Memory
-		postEphemeralStorage += pod.RequestedResource.EphemeralStorage
-	}
+	// for _, pod := range postpods {
+	// 	postCPU += pod.NewPod.RequestedResource.MilliCPU
+	// 	postMemory += pod.RequestedResource.Memory
+	// 	postEphemeralStorage += pod.RequestedResource.EphemeralStorage
+	// }
 	for _, node := range clusterInfo.Nodes {
 
 		node_result := true

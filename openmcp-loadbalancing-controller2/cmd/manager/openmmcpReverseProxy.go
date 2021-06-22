@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"log"
 	"net"
 	"net/http"
@@ -13,6 +11,9 @@ import (
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 	"strings"
+
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 )
 
 func ExtractIP(target string) (string, error) {
@@ -33,7 +34,7 @@ func reverseProxy() {
 
 	}
 	//origin, _ := url.Parse("http://10.0.3.20:8812/")
-	origin, _ := url.Parse("http://"+svc.Status.LoadBalancer.Ingress[0].IP)
+	origin, _ := url.Parse("http://" + svc.Status.LoadBalancer.Ingress[0].IP)
 	//origin, _ := url.Parse("http://10.0.3.195")
 
 	director := func(req *http.Request) {
@@ -41,7 +42,6 @@ func reverseProxy() {
 		req.Header.Add("X-Origin-Host", origin.Host)
 		req.URL.Scheme = "http"
 		req.URL.Host = origin.Host
-
 
 		clientIP, _ := ExtractIP(req.RemoteAddr)
 		//clientIP = "71.67.12.248"
@@ -53,7 +53,7 @@ func reverseProxy() {
 		}
 		//region 이 국가, zone 이 지역
 		region := record.Country.IsoCode
-		zone := ""
+		zone := "default"
 
 		if len(record.Subdivisions) > 0 {
 			zone = record.Subdivisions[0].Names["en"]
@@ -71,7 +71,6 @@ func reverseProxy() {
 
 	}
 
-
 	proxy := &httputil.ReverseProxy{Director: director}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -79,7 +78,6 @@ func reverseProxy() {
 		proxy.ServeHTTP(w, r)
 
 	})
-
 
 	log.Fatal(http.ListenAndServe(":80", nil))
 }

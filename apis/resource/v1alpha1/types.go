@@ -28,6 +28,7 @@ type OpenMCPDeploymentSpec struct {
 
 	// Added
 	Replicas int32               `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
+	Clusters []string            `json:"clusters,omitempty" protobuf:"bytes,11,opt,name=clusters"`
 	Labels   map[string]string   `json:"labels,omitempty" protobuf:"bytes,11,opt,name=labels"`
 	Affinity map[string][]string `json:"affinity,omitempty" protobuf:"bytes,3,opt,name=affinity"`
 	Policy   map[string]string   `json:"policy,omitempty" protobuf:"bytes,3,opt,name=policy"`
@@ -136,7 +137,7 @@ type OpenMCPDeploymentStatus struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	Replicas                  int32                 `json:"replicas"`
-	ClusterMaps               map[string]int32      `json:"clusters"`
+	ClusterMaps               map[string]int32      `json:"clusterMaps"`
 	LastSpec                  OpenMCPDeploymentSpec `json:"lastSpec"`
 	SchedulingNeed            bool                  `json:"schedulingNeed"`
 	SchedulingComplete        bool                  `json:"schedulingComplete"`
@@ -189,7 +190,7 @@ type OpenMCPIngressStatus struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	// Replicas int32 `json:"replicas"`
-	ClusterMaps map[string]int32 `json:"clusters"`
+	ClusterMaps map[string]int32 `json:"clusterMaps"`
 	ChangeNeed  bool             `json:"changeNeed"`
 }
 
@@ -236,7 +237,7 @@ type OpenMCPServiceStatus struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	//Replicas int32 `json:"replicas"`
-	ClusterMaps map[string]int32   `json:"clusters"`
+	ClusterMaps map[string]int32   `json:"clusterMaps"`
 	LastSpec    OpenMCPServiceSpec `json:"lastSpec"`
 	ChangeNeed  bool               `json:"changeNeed"`
 }
@@ -344,7 +345,7 @@ type OpenMCPConfigMapStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	ClusterMaps     map[string]int32 `json:"clusters"`
+	ClusterMaps     map[string]int32 `json:"clusterMaps"`
 	SyncRequestName string           `json:"syncRequestName"`
 }
 
@@ -379,7 +380,7 @@ type OpenMCPSecretStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	ClusterMaps map[string]int32 `json:"clusters"`
+	ClusterMaps map[string]int32 `json:"clusterMaps"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -417,7 +418,7 @@ type OpenMCPJobStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	ClusterMaps map[string]int32 `json:"clusters"`
+	ClusterMaps map[string]int32 `json:"clusterMaps"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -456,7 +457,7 @@ type OpenMCPNamespaceStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	ClusterMaps map[string]int32 `json:"clusters"`
+	ClusterMaps map[string]int32 `json:"clusterMaps"`
 	ChangeNeed  bool             `json:"changeneed"`
 }
 

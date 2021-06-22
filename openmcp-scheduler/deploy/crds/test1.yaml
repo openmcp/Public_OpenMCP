@@ -2,9 +2,9 @@ apiVersion: openmcp.k8s.io/v1alpha1
 kind: OpenMCPDeployment
 metadata:
   name: example-openmcpdeployment1
-  namespace: kcp
+  namespace: openmcp
 spec:
-  replicas: 1
+  replicas: 20
   affinity: 
     region: 
       - AS
@@ -23,5 +23,5 @@ spec:
             name: nginx
             resources:
               requests:
-                memory: "10Gi"
-                cpu: "10"
+                memory: "100"
+                cpu: "1"
