@@ -12,26 +12,27 @@ type SnapshotSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	SnapshotPolicy  *SnapshotPolicy  `json:"snapshotPolicy,omitempty"`
-	SnapshotSources []SnapshotSource `json:"snapshotSources"`
+	SnapshotPolicy   *SnapshotPolicy  `json:"snapshotPolicy,omitempty"`
+	SnapshotSources  []SnapshotSource `json:"snapshotSources"`
+	GroupSnapshotKey string           `json:"groupSnapshotKey,omitempty"`
 }
 
 // SnapshotSource contains the supported snapshot sources.
 type SnapshotSource struct {
-	ResourceCluster   string           `json:"resourceCluster,omitempty"`
-	ResourceNamespace string           `json:"resourceNamespace,omitempty"`
-	ResourceType      string           `json:"resourceType"`
-	ResourceName      string           `json:"resourceName"`
-	SnapshotKey       string           `json:"SnapshotKey,omitempty"`
-	VolumeDataSource  VolumeDataSource `json:"volumeDataSource,omitempty"`
+	ResourceCluster     string            `json:"resourceCluster"`
+	ResourceNamespace   string            `json:"resourceNamespace"`
+	ResourceType        string            `json:"resourceType"`
+	ResourceName        string            `json:"resourceName"`
+	ResourceSnapshotKey string            `json:"resourceSnapshotKey,omitempty"`
+	VolumeDataSource    *VolumeDataSource `json:"volumeDataSource,omitempty"`
 }
 
 // VolumeDataSource contains the supported snapshot sources.
 type VolumeDataSource struct {
-	VolumeSnapshotClassName  string `json:"volumeSnapshotClassName"`
-	VolumeSnapshotSourceKind string `json:"volumeSnapshotSourceKind"`
-	VolumeSnapshotSourceName string `json:"volumeSnapshotSourceName"`
-	VolumeSnapshotKey        string `json:"volumeSnapshotKey,omitempty"`
+	VolumeSnapshotClassName  string `json:"volumeSnapshotClassName,omitempty"`
+	VolumeSnapshotSourceKind string `json:"volumeSnapshotSourceKind,omitempty"`
+	VolumeSnapshotSourceName string `json:"volumeSnapshotSourceName,omitempty"`
+	VolumeSnapshotKey        string `json:"volumeSnapshotKey"`
 }
 
 // SnapshotPolicy defines snapshot policy.
@@ -55,16 +56,30 @@ type SnapshotStatus struct {
 	// Status indicates if the backup has Succeeded.
 	Status bool `json:"Status"`
 	// Reason indicates the reason for any backup related failures.
-	Reason string `json:"Reason,omitempty"`
+	Reason       string `json:"Reason"`
+	ReasonDetail string `json:"ReasonDetail,omitempty"`
 	// LastSuccessDate indicate the time to get snapshot last time
-	LastSuccessDate metav1.Time `json:"lastSuccessDate,omitempty"`
+	//LastSuccessDate metav1.Time `json:"lastSuccessDate,omitempty"`
+	ElapsedTime string `json:"ElapsedTime,omitempty"`
+	// isVolumeSnapshot
+	IsVolumeSnapshot bool `json:"isVolumeSnapshot,omitempty"`
 }
 
+// +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Snapshot is the Schema for the snapshots API
 // +kubebuilder:subresource:status
+// +k8s:openapi-gen=true
 // +kubebuilder:resource:path=snapshots,scope=Namespaced
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="Created time stamp"
+// +kubebuilder:printcolumn:name="IsSuccess",type="boolean",JSONPath=".status.Status",description="-"
+// +kubebuilder:printcolumn:name="Cluster",type="string",JSONPath=".spec.snapshotSources[*].resourceCluster",description="-"
+// +kubebuilder:printcolumn:name="NameSpace",type="string",JSONPath=".spec.snapshotSources[*].resourceNamespace",description="-"
+// +kubebuilder:printcolumn:name="GroupSnapshotKey",type="string",JSONPath=".spec.groupSnapshotKey",description="-"
+// +kubebuilder:printcolumn:name="IsVolumeSnapshot",type="boolean",JSONPath=".status.isVolumeSnapshot",description="-"
+// +kubebuilder:printcolumn:name="REASON",type="string",JSONPath=".status.Reason",description="-"
+// +kubebuilder:printcolumn:name="ElapsedTime",type="string",JSONPath=".status.ElapsedTime",description="ElapsedTime"
 type Snapshot struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

@@ -19,7 +19,7 @@ spec:
       containers:
         - name: openmcp-snapshot
           # Replace this with the built image name
-          image: openmcp/openmcp-snapshot:v1.0.2
+          image: openmcp/openmcp-snapshot:v1.1.0.dev
           command:
           - openmcp-snapshot
           imagePullPolicy: Always

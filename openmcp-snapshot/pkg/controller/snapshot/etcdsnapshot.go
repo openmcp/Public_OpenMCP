@@ -6,6 +6,7 @@ import (
 
 	"context"
 	"encoding/json"
+	"fmt"
 	nanumv1alpha1 "openmcp/openmcp/apis/snapshot/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-snapshot/pkg/util"
@@ -18,26 +19,38 @@ import (
 )
 
 //volumeSnapshotRun 내에는 PV 만 들어온다고 가정한다.
-func etcdSnapshotRun(r *reconciler, snapshotSource *nanumv1alpha1.SnapshotSource, startTime string) error {
+func etcdSnapshotRun(r *reconciler, snapshotSource *nanumv1alpha1.SnapshotSource, groupSnapshotKey string) (string, error) {
 	omcplog.V(4).Info(snapshotSource)
 
-	omcplog.V(3).Info("snapshot start")
-	snapshotKey := util.MakeSnapshotKeyForSnapshot(startTime, snapshotSource)
-	snapshotKeyAllPath := util.MakeSnapshotKeyAllPath(startTime, snapshotKey)
+	omcplog.V(3).Info("etcd snapshot start")
+	etcdSnapshotKeyAllPath := util.MakeSnapshotKeyForSnapshot(groupSnapshotKey, snapshotSource)
+	omcplog.V(3).Info(etcdSnapshotKeyAllPath)
+	//etcdSnapshotKeyAllPath := util.MakeSnapshotKeyAllPath(groupSnapshotKey, etcdSnapshotKey)
+	//snapshotSource.ResourceSnapshotKey = etcdSnapshotKeyAllPath
 
 	//Client 로 데이터 가져오기.
 	resourceJSONString, err := GetResourceJSON(snapshotSource)
 	if err != nil {
-		omcplog.V(2).Info("GetResourceJSON for cluster error")
+		omcplog.Error("etcdsnapshot.go : GetResourceJSON for cluster error")
+		return etcdSnapshotKeyAllPath, err
 	}
 
 	omcplog.V(2).Info("Input ETCD")
+	omcplog.V(2).Info("  key : " + etcdSnapshotKeyAllPath)
 	//ETCD 에 삽입
-	etcdCtl := etcd.InitEtcd()
-	_ = etcdCtl.Put(snapshotKeyAllPath, resourceJSONString)
+	etcdCtl, etcdInitErr := etcd.InitEtcd()
+	if etcdInitErr != nil {
+		omcplog.Error("etcdsnapshot.go : Etcd Init Err")
+		return etcdSnapshotKeyAllPath, etcdInitErr
+	}
+	_, etcdPutErr := etcdCtl.Put(etcdSnapshotKeyAllPath, resourceJSONString)
+	if etcdPutErr != nil {
+		omcplog.Error("etcdsnapshot.go : Etcd Put Err")
+		return etcdSnapshotKeyAllPath, etcdPutErr
+	}
 	//snapshotSource.SnapshotKey = snapshotKey
 	omcplog.V(2).Info("Input ETCD end")
-	return nil
+	return etcdSnapshotKeyAllPath, nil
 }
 
 // GetResourceJSON : https://mingrammer.com/gobyexample/json/ 를 참조하여 작성
@@ -57,13 +70,15 @@ func GetResourceJSON(snapshotSource *nanumv1alpha1.SnapshotSource) (string, erro
 	case util.PV:
 		resourceObj = &corev1.PersistentVolume{}
 	default:
-		omcplog.V(2).Info("Invalid resourceType")
+		omcplog.Error("Invalid resourceType")
+		return "", fmt.Errorf("Invalid resourceType")
 	}
 	client.Get(context.TODO(), resourceObj, snapshotSource.ResourceNamespace, snapshotSource.ResourceName)
 
 	omcplog.V(3).Info("resourceType : " + snapshotSource.ResourceType + ", resourceName : " + snapshotSource.ResourceName + ", resourceNamespace: " + snapshotSource.ResourceNamespace)
 	ret, err := obj2JsonString(resourceObj)
 	if err != nil {
+		omcplog.Error("GetResourceJSON for cluster error")
 		omcplog.V(2).Info("Json Convert Error")
 	}
 	return ret, nil

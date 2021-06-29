@@ -36,7 +36,7 @@ const (
 var EtcdInfo = etcdInfoParamsMap{
 	//dial
 	DialTimeout: 2 * time.Second,
-	Endpoints:   []string{"10.0.0.221:12379"},
+	Endpoints:   []string{EXTERNAL_ETCD},
 }
 
 // GetVolumeSnapshotName 는 GetVolumeSnapshotName 을 구할 때 쓰는 함수. (생성)

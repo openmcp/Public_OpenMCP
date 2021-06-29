@@ -13,7 +13,40 @@ spec:
     singular: snapshot
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Created time stamp
+      jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - description: '-'
+      jsonPath: .status.Status
+      name: IsSuccess
+      type: boolean
+    - description: '-'
+      jsonPath: .spec.snapshotSources[*].resourceCluster
+      name: Cluster
+      type: string
+    - description: '-'
+      jsonPath: .spec.snapshotSources[*].resourceNamespace
+      name: NameSpace
+      type: string
+    - description: '-'
+      jsonPath: .spec.groupSnapshotKey
+      name: GroupSnapshotKey
+      type: string
+    - description: '-'
+      jsonPath: .status.isVolumeSnapshot
+      name: IsVolumeSnapshot
+      type: boolean
+    - description: '-'
+      jsonPath: .status.Reason
+      name: REASON
+      type: string
+    - description: ElapsedTime
+      jsonPath: .status.ElapsedTime
+      name: ElapsedTime
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: Snapshot is the Schema for the snapshots API
@@ -33,6 +66,8 @@ spec:
           spec:
             description: SnapshotSpec defines the desired state of Snapshot
             properties:
+              groupSnapshotKey:
+                type: string
               snapshotPolicy:
                 description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
                   Important: Run "operator-sdk generate k8s" to regenerate code after
@@ -65,9 +100,9 @@ spec:
                       type: string
                     resourceNamespace:
                       type: string
-                    resourceType:
+                    resourceSnapshotKey:
                       type: string
-                    snapshotKey:
+                    resourceType:
                       type: string
                     volumeDataSource:
                       description: VolumeDataSource contains the supported snapshot
@@ -82,12 +117,12 @@ spec:
                         volumeSnapshotSourceName:
                           type: string
                       required:
-                      - volumeSnapshotClassName
-                      - volumeSnapshotSourceKind
-                      - volumeSnapshotSourceName
+                      - volumeSnapshotKey
                       type: object
                   required:
+                  - resourceCluster
                   - resourceName
+                  - resourceNamespace
                   - resourceType
                   type: object
                 type: array
@@ -97,18 +132,23 @@ spec:
           status:
             description: SnapshotStatus defines the observed state of Snapshot
             properties:
+              ElapsedTime:
+                description: LastSuccessDate indicate the time to get snapshot last
+                  time LastSuccessDate metav1.Time `json:"lastSuccessDate,omitempty"`
+                type: string
               Reason:
                 description: Reason indicates the reason for any backup related failures.
+                type: string
+              ReasonDetail:
                 type: string
               Status:
                 description: Status indicates if the backup has Succeeded.
                 type: boolean
-              lastSuccessDate:
-                description: LastSuccessDate indicate the time to get snapshot last
-                  time
-                format: date-time
-                type: string
+              isVolumeSnapshot:
+                description: isVolumeSnapshot
+                type: boolean
             required:
+            - Reason
             - Status
             type: object
         type: object

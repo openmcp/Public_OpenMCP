@@ -1,9 +1,12 @@
 // NOTE: Boilerplate only.  Ignore this file.
 
 // Package v1alpha1 contains API Schema definitions for the nanum v1alpha1 API group
+// +k8s:openapi-gen=true
 // +k8s:deepcopy-gen=package,register
-// +groupName=nanum.co.kr
-package v1alpha1
+// +k8s:conversion-gen=admiralty.io/multicluster-controller/examples/Snapshot/pkg/apis/multicluster
+// +k8s:defaulter-gen=TypeMeta
+// +groupName= openmcp.k8s.io
+package v1alpha1 // import "admiralty.io/multicluster-controller/examples/Snapshot/pkg/apis/multicluster/v1alpha1"
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"

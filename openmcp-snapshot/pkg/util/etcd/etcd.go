@@ -2,9 +2,10 @@ package etcd
 
 import (
 	"context"
-	"log"
 	"time"
 
+	"openmcp/openmcp/omcplog"
+	"openmcp/openmcp/openmcp-snapshot/pkg/util"
 	config "openmcp/openmcp/openmcp-snapshot/pkg/util"
 
 	"go.etcd.io/etcd/clientv3"
@@ -41,7 +42,7 @@ type Etcd struct {
 	DialTimeout    time.Duration
 }
 
-func InitEtcd() *Etcd {
+func InitEtcd() (*Etcd, error) {
 
 	etcd := &Etcd{
 		Endpoints:      EtcdInfo.Endpoints,
@@ -63,7 +64,8 @@ func InitEtcd() *Etcd {
 	etcd.Cfg = cfg
 	cli, err := clientv3.New(cfg)
 	if err != nil {
-		log.Fatal(err)
+		omcplog.Error("etcd.go init error : ", err)
+		return nil, err
 	}
 	etcd.Client = *cli
 
@@ -78,24 +80,39 @@ func InitEtcd() *Etcd {
 	//		fmt.Println(err)
 	//		return nil, err
 	//	}
-	return etcd
+	return etcd, nil
 }
 
-func (e *Etcd) Get(key string) *clientv3.GetResponse {
-	resp, _ := e.Client.Get(context.TODO(), key)
-	//for _, ev := range resp.Kvs {
-	//	key := string(ev.Key)
-	//	val := string(ev.Value)
-	//	fmt.Println(key, val)
-	//}
-	return resp
-}
-
-func (e *Etcd) Put(key, val string) *clientv3.PutResponse {
-	resp, err := e.Client.Put(context.TODO(), key, val)
-	if err != nil {
-		log.Fatal(err)
+func (e *Etcd) GetEtcdGroupSnapshot(groupSnapshotKey string) (*clientv3.GetResponse, error) {
+	prifix := util.MakePrifix(groupSnapshotKey)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	resp, getErr := e.Client.Get(ctx, prifix, clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
+	cancel()
+	if getErr != nil {
+		omcplog.Error("etcd.go : groupGet Err", getErr)
+		return nil, getErr
 	}
-	//fmt.Println(resp)
-	return resp
+	return resp, nil
+}
+
+func (e *Etcd) Get(key string) (*clientv3.GetResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	resp, getErr := e.Client.Get(ctx, key)
+	cancel()
+	if getErr != nil {
+		omcplog.Error("etcd.go : get Err", getErr)
+		return nil, getErr
+	}
+	return resp, nil
+}
+
+func (e *Etcd) Put(key, val string) (*clientv3.PutResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	resp, getErr := e.Client.Put(ctx, key, val)
+	cancel()
+	if getErr != nil {
+		omcplog.Error("etcd.go : Put Err", getErr)
+		return nil, getErr
+	}
+	return resp, nil
 }
