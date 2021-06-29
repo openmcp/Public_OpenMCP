@@ -17,6 +17,7 @@ package migration
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"regexp"
@@ -166,7 +167,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		if initErr != nil {
 			omcplog.Error("MigrationControllerResource Init error : ", initErr)
 			r.MakeStatusWithMigSource(instance, false, migraionSource, initErr)
-			omcplog.V(3).Info("Migration Faled")
+			omcplog.V(3).Info("Migration Failed")
 			return reconcile.Result{Requeue: false}, nil
 		}
 		checkNameSpace(migSource.targetClient, migSource.nameSpace)
@@ -186,13 +187,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				} else {
 					omcplog.Error(fmt.Errorf("Resource Type Error!"))
 					r.MakeStatusWithResource(instance, false, migraionSource, resource, fmt.Errorf("Resource Type Error!"))
-					omcplog.Error("Migration Faled")
+					omcplog.Error("Migration Failed")
 					return reconcile.Result{Requeue: false}, nil
 				}
 				if migErr != nil {
 					omcplog.Error("MigrationControllerResource migration error : ", migErr)
 					r.MakeStatusWithResource(instance, false, migraionSource, resource, migErr)
-					omcplog.Error("Migration Faled")
+					omcplog.Error("Migration Failed")
 					return reconcile.Result{Requeue: false}, nil
 				}
 			}
@@ -207,13 +208,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				} else {
 					omcplog.Error(fmt.Errorf("Resource Type Error!"))
 					r.MakeStatusWithResource(instance, false, migraionSource, resource, fmt.Errorf("Resource Type Error!"))
-					omcplog.Error("Migration Faled")
+					omcplog.Error("Migration Failed")
 					return reconcile.Result{Requeue: false}, nil
 				}
 				if migErr != nil {
 					omcplog.Error("MigrationControllerResource migration error : ", migErr)
 					r.MakeStatusWithResource(instance, false, migraionSource, resource, migErr)
-					omcplog.Error("Migration Faled")
+					omcplog.Error("Migration Failed")
 					return reconcile.Result{Requeue: false}, nil
 				}
 			}
@@ -260,12 +261,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.Error(fmt.Errorf("Target Cluster Pod not loaded... : " + podName))
 				omcplog.Error(errMessage)
 				r.MakeStatusWithMigSource(instance, false, migraionSource, fmt.Errorf("TargetCluster Pod not loaded... : "+checkResourceName))
-				omcplog.Error("Migration Faled")
+				omcplog.Error("Migration Failed")
 				return reconcile.Result{Requeue: false}, nil
 			}
 
-			timeoutcheck = timeoutcheck + 5
-			time.Sleep(time.Second * 5)
+			timeoutcheck = timeoutcheck + 1
+			time.Sleep(time.Second * 1)
 			omcplog.V(4).Info("connecting...")
 		}
 	}
@@ -298,13 +299,18 @@ func (r *reconciler) makeStatusRun(instance *v1alpha1.Migration, migrationStatus
 	omcplog.V(3).Info("elapsedTime : ", elapsedTime)
 
 	if !migrationStatus {
-		instance.Status.Reason = "{"
-		instance.Status.Reason += "SourceCluster : " + migraionSource.SourceCluster + ", "
-		instance.Status.Reason += "TargetCluster : " + migraionSource.TargetCluster + ", "
-		instance.Status.Reason += "ServiceName : " + migraionSource.ServiceName + ", "
-		instance.Status.Reason += "NameSpace : " + migraionSource.NameSpace + ", "
-		instance.Status.Reason += "Reason : " + err.Error()
-		instance.Status.Reason += "}"
+		tmp := make(map[string]interface{})
+		tmp["SourceCluster"] = migraionSource.SourceCluster
+		tmp["TargetCluster"] = migraionSource.TargetCluster
+		tmp["ServiceName"] = migraionSource.ServiceName
+		tmp["NameSpace"] = migraionSource.NameSpace
+		tmp["Reason"] = err.Error()
+
+		jsonTmp, err := json.Marshal(tmp)
+		if err != nil {
+			omcplog.V(3).Info(err, "-----------")
+		}
+		instance.Status.Reason = string(jsonTmp)
 	}
 
 	//r.live.Update(context.TODO(), instance)
@@ -352,7 +358,7 @@ START:
 	}
 	if podName == "" {
 		omcplog.V(4).Info(" Pod hasn't created yet")
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 1)
 		goto START
 	} else {
 		omcplog.V(4).Info("podName :  ", podName)
@@ -407,7 +413,7 @@ START:
 			return err
 		}
 		omcplog.V(4).Info("connecting: ", podName)
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 1)
 		goto START
 	} else {
 		//success

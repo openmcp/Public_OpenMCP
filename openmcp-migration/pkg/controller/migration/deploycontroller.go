@@ -4,7 +4,6 @@ import (
 	"context"
 	v1alpha1 "openmcp/openmcp/apis/migration/v1alpha1"
 	"openmcp/openmcp/omcplog"
-	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 )
@@ -18,14 +17,14 @@ func migdeploy(migSource MigrationControllerResource, resource v1alpha1.Migratio
 
 	omcplog.V(3).Info("SourceClient init...")
 	omcplog.V(3).Info("TargetClient init...")
-	time.Sleep(time.Second * 2)
+	//time.Sleep(time.Second * 1)
 	sourceClient := migSource.sourceClient
 	targetClient := migSource.targetClient
 	omcplog.V(3).Info("SourceClient init complete")
 	omcplog.V(3).Info("TargetClient init complete")
 
 	omcplog.V(3).Info("Make resource info...")
-	time.Sleep(time.Second * 2)
+	//time.Sleep(time.Second * 1)
 	nameSpace := migSource.nameSpace
 	sourceCluster := migSource.sourceCluster
 	volumePath := migSource.volumePath
@@ -93,7 +92,7 @@ func migdeploy(migSource MigrationControllerResource, resource v1alpha1.Migratio
 	}
 	omcplog.V(3).Info("Delete for source cluster end")
 
-	time.Sleep(time.Second * 1)
+	//time.Sleep(time.Second * 1)
 
 	omcplog.V(3).Info("Create for target cluster")
 	targetResource.ObjectMeta.ResourceVersion = ""
@@ -104,7 +103,7 @@ func migdeploy(migSource MigrationControllerResource, resource v1alpha1.Migratio
 		omcplog.Error("target cluster deploy create error : ", targetErr)
 		return targetErr
 	}
-	time.Sleep(time.Second * 2)
+	//time.Sleep(time.Second * 1)
 	omcplog.V(3).Info("Create for target cluster end")
 	return nil
 }
