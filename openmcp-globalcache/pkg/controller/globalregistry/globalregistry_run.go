@@ -3,13 +3,14 @@ package globalregistry
 import (
 	"fmt"
 	v1alpha1 "openmcp/openmcp/apis/globalcache/v1alpha1"
+	"openmcp/openmcp/omcplog"
 	globalapi "openmcp/openmcp/openmcp-globalcache/pkg/run/registry"
 )
 
 // Run : 실제 로직단
 func (r *reconciler) Run(instance *v1alpha1.GlobalRegistry) (bool, error) {
 
-	fmt.Println("\n[Command]] :" + instance.Spec.Command)
+	omcplog.V(4).Info("\n[Command]] :" + instance.Spec.Command)
 	var registryManager globalapi.RegistryManager
 	//delete - tagName null 일 경우 전체 삭체, list, tagList
 	switch instance.Spec.Command {
@@ -26,9 +27,8 @@ func (r *reconciler) Run(instance *v1alpha1.GlobalRegistry) (bool, error) {
 			}
 		}
 		// tags, _ := registryManager.ListGlobalRegistryImageTag(instance.Spec.ImageName)
-		// fmt.Println("1111 : ", tags)
+		// omcplog.V(3).Info("1111 : ", tags)
 		// if len(tags) == 0 {
-
 		// }
 	//case "list":
 	//case "tagList":

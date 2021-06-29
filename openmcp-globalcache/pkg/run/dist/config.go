@@ -2,13 +2,13 @@ package dist
 
 import (
 	"errors"
-	"fmt"
 	"math/rand"
 	"strings"
 	"time"
 
 	"github.com/oklog/ulid"
 
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-globalcache/pkg/utils"
 	"openmcp/openmcp/util/clusterManager"
 
@@ -42,7 +42,8 @@ func (r *RegistryManager) Init(clusterName string, myCluster *clusterManager.Clu
 }
 
 func (r *RegistryManager) getLabelName(nodeName string) string {
-	labelName := utils.ProjectDomain + "_" + r.clusterName + "_" + nodeName
+	//labelName := utils.ProjectDomain + "_" + r.clusterName + "_" + nodeName
+	labelName := r.clusterName + "_" + nodeName
 	return labelName
 }
 
@@ -51,6 +52,12 @@ func (r *RegistryManager) getAppName(nodeName string) string {
 	//appName := "repository-agent-" + r.clusterName + "-" + nodeName
 	appName := "r-a-" + r.clusterName + "-" + nodeName
 	appName = appName + "-" + uid
+
+	if len(appName) >= 64 {
+		appName = appName[0:63]
+	} else {
+		omcplog.V(4).Info(" appName size error! ")
+	}
 	return appName
 }
 
@@ -58,7 +65,7 @@ func (r *RegistryManager) genUlid() string {
 	t := time.Now().UTC()
 	entropy := rand.New(rand.NewSource(t.UnixNano()))
 	id := ulid.MustNew(ulid.Timestamp(t), entropy)
-	fmt.Printf("github.com/oklog/ulid:          %s\n", id.String())
+	omcplog.V(4).Info("ulid: " + id.String())
 	return strings.ToLower(id.String())
 }
 
@@ -100,7 +107,7 @@ func (r *RegistryManager) checkNamespace() (bool, error) {
 			return false, err
 		}
 	}
-
+	omcplog.V(4).Info("Create namespace: ", utils.ProjectNamespace)
 	return true, nil
 }
 
@@ -108,7 +115,8 @@ func (r *RegistryManager) checkNamespace() (bool, error) {
 func (r *RegistryManager) getJobAPI(appName string, labelName string, cmd string) *batchv1.Job {
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: appName,
+			Name:      appName,
+			Namespace: "openmcp",
 		},
 		Spec: batchv1.JobSpec{
 			Selector: &metav1.LabelSelector{

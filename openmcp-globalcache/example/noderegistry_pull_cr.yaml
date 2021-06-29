@@ -1,11 +1,17 @@
 apiVersion: openmcp.k8s.io/v1alpha1
 kind: NodeRegistry
 metadata:
-  name: example-pull
+  name: image-pull
 spec:
   command: "pull"
-  clusterName: "cluster1"
-  nodeName: "nanumdev7"
-  imageName: "jsptest"
-  tagName: "latest"
-
+  clusterName: "eks-cluster1"
+  nodeName: "ip-172-31-9-152.eu-west-2.compute.internal"
+  imageList:
+  - imageName: "openmcp/keti-ruleengine"
+    tagName: "v0.0.1"
+  - imageName: "openmcp/keti-http-generator"
+    tagName: "v1.1"
+  - imageName: "openmcp/keti-preprocessor"
+    tagName: "v0.0.1"
+  - imageName: "openmcp/keti-iotgateway"
+    tagName: "v1.0"

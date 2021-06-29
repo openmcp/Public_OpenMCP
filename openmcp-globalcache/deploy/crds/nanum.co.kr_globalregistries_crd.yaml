@@ -1,0 +1,100 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: globalregistries.nanum.co.kr
+spec:
+  group: nanum.co.kr
+  names:
+    kind: GlobalRegistry
+    listKind: GlobalRegistryList
+    plural: globalregistries
+    singular: globalregistry
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Created time stamp
+      jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - description: '-'
+      jsonPath: .status.GlobalRegistryStatus
+      name: IsSuccess
+      type: boolean
+    - description: '-'
+      jsonPath: .spec.GlobalRegistrySpec[*].Command
+      name: Command
+      type: string
+    - description: '-'
+      jsonPath: .spec.GlobalRegistrySpec[*].ImageName
+      name: ImageName
+      type: string
+    - description: '-'
+      jsonPath: .spec.GlobalRegistrySpec[*].TagName
+      name: TagName
+      type: string
+    - description: '-'
+      jsonPath: .status.Reason
+      name: REASON
+      type: string
+    - description: ElapsedTime
+      jsonPath: .status.ElapsedTime
+      name: ElapsedTime
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: NodeRegistry is the Schema for the NodeRegistry API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GlobalRegistrySpec defines the desired state of GlobalRegistry
+            properties:
+              command:
+                description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                  Important: Run "operator-sdk generate k8s" to regenerate code after
+                  modifying this file Add custom validation using kubebuilder tags:
+                  https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html'
+                type: string
+              imageName:
+                description: Command 가 delete 인 경우에만 포함.
+                type: string
+              tagName:
+                type: string
+            required:
+            - command
+            type: object
+          status:
+            description: GlobalRegistryStatus defines the observed state of GlobalRegistry
+            properties:
+              ElapsedTime:
+                type: string
+              Reason:
+                description: Reason indicates the reason for any backup related failures.
+                type: string
+              lastSuccessDate:
+                description: LastSuccessDate indicate the time to get snapshot last
+                  time
+                format: date-time
+                type: string
+              succeeded:
+                description: Succeeded indicates if the backup has Succeeded.
+                type: boolean
+            required:
+            - succeeded
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

@@ -33,6 +33,15 @@ spec:
           spec:
             description: NodeRegistrySpec defines the desired state of NodeRegistry
             properties:
+              ImageList:
+                items:
+                  properties:
+                    imageName:
+                      type: string
+                    tagName:
+                      type: string
+                  type: object
+                type: array
               clusterName:
                 type: string
               command:
@@ -41,14 +50,10 @@ spec:
                   modifying this file Add custom validation using kubebuilder tags:
                   https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html'
                 type: string
-              imageName:
-                description: Command 가 delete 인 경우에만 포함.
-                type: string
               nodeName:
                 type: string
-              tagName:
-                type: string
             required:
+            - ImageList
             - command
             type: object
           status:

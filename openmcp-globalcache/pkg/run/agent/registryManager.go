@@ -30,7 +30,7 @@ func (r *RegistryNodeManager) PushGlobalRegistryImageJob(nodeName string) error 
 		jobClient := r.clientset.AppsV1().(utils.ProjectNamespace)
 		deployment, _ := deploymentsClient.Get(appName, metav1.GetOptions{})
 		if deployment.ObjectMeta.Name != "" {
-			fmt.Printf("deployment exist : " + deployment.ObjectMeta.Name)
+			omcplog.V(3).Info("deployment exist : " + deployment.ObjectMeta.Name)
 			return nil
 		}
 
@@ -74,12 +74,12 @@ func (r *RegistryNodeManager) PushGlobalRegistryImageJob(nodeName string) error 
 		}
 
 		// Create Deployment
-		fmt.Println("Creating deployment...")
+		omcplog.V(3).Info("Creating deployment...")
 		result, err := deploymentsClient.Create(deployment)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
+		omcplog.V(3).Info("Created deployment %q.\n", result.GetObjectMeta().GetName())
 
 	return nil
 }
