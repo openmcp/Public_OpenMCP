@@ -124,10 +124,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	err = r.live.Get(context.TODO(), req.NamespacedName, checkVs)
 	if err == nil || (err != nil && errors.IsNotFound(err)) {
 		vs, err2 := makeVirtualService(ovs)
-		if err2 != nil {
-			return reconcile.Result{}, err2
-		}
-		if err2 == nil {
+		if err == nil {
 			// Update VirtualService
 			err3 := r.live.Update(context.TODO(), vs)
 			if err3 != nil {
@@ -139,6 +136,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			if err3 != nil {
 				return reconcile.Result{}, err3
 			}
+		} else {
+			return reconcile.Result{}, err2
 		}
 	}
 
@@ -196,24 +195,30 @@ func makeVirtualService(ovs *resourcev1alpha1.OpenMCPVirtualService) (*v1alpha3.
 	if err != nil {
 		return nil, err
 	}
-	vs.Spec.Http = createVsHttps(ovs)
+	vs.Spec.Http, err = createVsHttps(ovs)
+	if err != nil {
+		return nil, err
+	}
 
 	reference.SetMulticlusterControllerReference(vs, reference.NewMulticlusterOwnerReference(ovs, ovs.GroupVersionKind(), "openmcp"))
 
 	return vs, nil
 }
-func createVsHttps(ovs *resourcev1alpha1.OpenMCPVirtualService) (vsHttps []*networkingv1alpha3.HTTPRoute) {
-	vshttps := []*networkingv1alpha3.HTTPRoute{}
+func createVsHttps(ovs *resourcev1alpha1.OpenMCPVirtualService) ([]*networkingv1alpha3.HTTPRoute, error) {
+	vsHttps := []*networkingv1alpha3.HTTPRoute{}
 
 	locClusters := getLocClusters()
 	usedZones := []string{}
 
-	for _, http := range ovs.Spec.Http {
+	for _, ovsHttp := range ovs.Spec.Http {
 
 		// 디폴트 경로 생성
 		exactZone := "default"
-		vsHttp, _ := createVsHttp(http, exactZone)
-		vshttps = append(vshttps, vsHttp)
+		vsHttp, err := createVsHttp(ovsHttp, exactZone)
+		if err != nil {
+			return nil, err
+		}
+		vsHttps = append(vsHttps, vsHttp)
 
 		// 지역(클러스터)별 경로 생성
 		for _, locCluster := range locClusters {
@@ -225,18 +230,22 @@ func createVsHttps(ovs *resourcev1alpha1.OpenMCPVirtualService) (vsHttps []*netw
 			exactZone := locCluster.zone
 			usedZones = append(usedZones, locCluster.zone)
 
-			vsHttp, _ := createVsHttp(http, exactZone)
+			vsHttp, err := createVsHttp(ovsHttp, exactZone)
+			if err != nil {
+				return nil, err
+			}
 
-			vshttps = append(vshttps, vsHttp)
+			vsHttps = append(vsHttps, vsHttp)
 
 		}
 
 	}
-	return vshttps
+	return vsHttps, nil
 }
-func createVsHttp(http *networkingv1alpha3.HTTPRoute, exactZone string) (*networkingv1alpha3.HTTPRoute, error) {
+func createVsHttp(ovsHttp *networkingv1alpha3.HTTPRoute, exactZone string) (*networkingv1alpha3.HTTPRoute, error) {
 	vsHttp := &networkingv1alpha3.HTTPRoute{}
-	err := deepcopy.Copy(&vsHttp, &http)
+
+	err := deepcopy.Copy(&vsHttp, &ovsHttp)
 	if err != nil {
 		return nil, err
 	}
@@ -257,32 +266,51 @@ func createVsHttp(http *networkingv1alpha3.HTTPRoute, exactZone string) (*networ
 
 	}
 
-	vsHttp.Route = []*networkingv1alpha3.HTTPRouteDestination{}
+	vsHttp.Route, _ = createVsHttpRoutes(ovsHttp.Route, exactZone)
+
+	return vsHttp, nil
+}
+func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, exactZone string) ([]*networkingv1alpha3.HTTPRouteDestination, error) {
+	vsHttpRoutes := []*networkingv1alpha3.HTTPRouteDestination{}
 	locClusters := getLocClusters()
 
-	for _, hr := range http.Route {
+	for _, ovsHttpRoute := range ovsHttpRoutes {
 
-		if exactZone == "default " {
-
-		}
-		for i, locCluster2 := range locClusters {
-
-			vsRoute := &networkingv1alpha3.HTTPRouteDestination{}
-			err = deepcopy.Copy(&vsRoute, &hr)
+		if exactZone == "default" {
+			vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, -1, nil, -1)
 			if err != nil {
 				return nil, err
 			}
-
-			// TODO 서비스가 있는지 체크
-			// TODO Weight 계산
-			vsRoute.Destination.Subset = locCluster2.clusterName
-			vsRoute.Weight = 1
-			if i == len(locClusters)-1 {
-				vsRoute.Weight = 100 - int32(len(locClusters)) + 1
+			vsHttpRoutes = append(vsHttpRoutes, vsHttpRoute)
+		} else {
+			for i, locCluster := range locClusters {
+				vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, i, &locCluster, len(locClusters))
+				if err != nil {
+					return nil, err
+				}
+				vsHttpRoutes = append(vsHttpRoutes, vsHttpRoute)
 			}
-
-			vsHttp.Route = append(vsHttp.Route, vsRoute)
 		}
+
 	}
-	return vsHttp, nil
+	return vsHttpRoutes, nil
+}
+func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i int, locCluster *LocCluster, locClustersSize int) (*networkingv1alpha3.HTTPRouteDestination, error) {
+	vsRoute := &networkingv1alpha3.HTTPRouteDestination{}
+	err := deepcopy.Copy(&vsRoute, &ovsHttpRoute)
+	if err != nil {
+		return nil, err
+	}
+	if locCluster != nil {
+		// TODO 서비스가 있는지 체크
+		// TODO Weight 계산
+		vsRoute.Destination.Subset = locCluster.clusterName
+		vsRoute.Weight = 1
+		if i == locClustersSize-1 {
+			vsRoute.Weight = 100 - int32(locClustersSize) + 1
+		}
+
+	}
+
+	return vsRoute, nil
 }
