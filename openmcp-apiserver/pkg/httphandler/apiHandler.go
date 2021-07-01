@@ -20,7 +20,7 @@ func (h *HttpManager) ApiHandler(w http.ResponseWriter, r *http.Request) {
 	// Migration
 	// POST http://10.0.3.20:31635/apis/openmcp.k8s.io/v1alpha1/namespaces/openmcp/migrations?clustername=openmcp (yaml)
 
-	if strings.Contains(r.URL.Path, "exec"){
+	if strings.Contains(r.URL.Path, "exec") {
 		clusterNames, ok := r.URL.Query()["clustername"]
 
 		if !ok || len(clusterNames[0]) < 1 {
@@ -67,12 +67,11 @@ func (h *HttpManager) ApiHandler(w http.ResponseWriter, r *http.Request) {
 		omcplog.V(5).Info(a)
 		omcplog.V(5).Info(a[0])
 
-
 		restClient, _ := restclient.RESTClientFor(h.ClusterManager.Host_config)
 
-		ExecCmdExample(restClient,h.ClusterManager.Host_config ,podname, podnamespace, a, "", stdin_io, stdout_io, stderr_io)
+		ExecCmdExample(restClient, h.ClusterManager.Host_config, podname, podnamespace, a, "", stdin_io, stdout_io, stderr_io)
 
-	}else {
+	} else {
 
 		clusterNames, ok := r.URL.Query()["clustername"]
 
@@ -85,7 +84,7 @@ func (h *HttpManager) ApiHandler(w http.ResponseWriter, r *http.Request) {
 		APISERVER := ""
 		TOKEN := ""
 		clusterName := clusterNames[0]
-		RESTART:
+	RESTART:
 		if clusterName == "openmcp" {
 			APISERVER = h.ClusterManager.Host_config.Host
 			TOKEN = h.ClusterManager.Host_config.BearerToken
@@ -128,7 +127,6 @@ func (h *HttpManager) ApiHandler(w http.ResponseWriter, r *http.Request) {
 		req.Header.Set("Content-Type", "application/yaml")
 		req.Header.Set("Authorization", "Bearer "+TOKEN)
 
-
 		resp, err := client.Do(req)
 		omcplog.V(3).Info("Request Done!")
 		if err != nil {
@@ -152,7 +150,7 @@ func (h *HttpManager) ApiHandler(w http.ResponseWriter, r *http.Request) {
 			panic(err.Error())
 		}
 
-		omcplog.V(5).Info(string(prettyJSON.Bytes()))
+		//omcplog.V(5).Info(string(prettyJSON.Bytes()))
 
 		w.Write(body)
 
@@ -168,11 +166,11 @@ func ExecCmdExample(restclient *restclient.RESTClient, config *restclient.Config
 		Namespace(podNamespace).SubResource("exec")
 	option := &corev1.PodExecOptions{
 		Container: containerName,
-		Command: command,
-		Stdin:   true,
-		Stdout:  true,
-		Stderr:  true,
-		TTY:     false,
+		Command:   command,
+		Stdin:     true,
+		Stdout:    true,
+		Stderr:    true,
+		TTY:       false,
 	}
 	if stdin == nil {
 		option.Stdin = false

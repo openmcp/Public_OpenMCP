@@ -14,16 +14,8 @@ limitations under the License.
 package openmcploadbalancing // import "admiralty.io/multicluster-controller/examples/openmcploadbalancing/pkg/controller/openmcploadbalancing"
 
 import (
-	"admiralty.io/multicluster-controller/pkg/cluster"
-	"admiralty.io/multicluster-controller/pkg/controller"
-	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"context"
 	"fmt"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	"log"
 	"net/http"
 	"openmcp/openmcp/apis"
@@ -35,12 +27,21 @@ import (
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/serviceregistry"
 	"openmcp/openmcp/util/clusterManager"
 	"os"
+	"strings"
+	"sync"
+
+	"admiralty.io/multicluster-controller/pkg/cluster"
+	"admiralty.io/multicluster-controller/pkg/controller"
+	"admiralty.io/multicluster-controller/pkg/reconcile"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
 	"sigs.k8s.io/kubefed/pkg/controller/util"
-	"strings"
-	"sync"
 )
 
 var cm *clusterManager.ClusterManager
@@ -67,7 +68,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	if err := co.WatchResourceReconcileObject(live, &resourcev1alpha1.OpenMCPIngress{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(context.TODO(), live, &resourcev1alpha1.OpenMCPIngress{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
@@ -236,18 +237,35 @@ func initRegistry() {
 
 		config, _ := util.BuildClusterConfig(&cluster, cm.Host_client, cm.Fed_namespace)
 		clientset, _ := kubernetes.NewForConfig(config)
-		nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+		nodes, err := clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 
 		if err != nil {
 			omcplog.V(0).Info(err)
 		}
 
-		if len(nodes.Items) > 1 {
+		fmt.Println("check!!!!!!!!!!!!!!!!")
+		fmt.Println(len(nodes.Items))
+		if len(nodes.Items) > 0 {
 			node := nodes.Items[0]
-			country := node.Labels["failure-domain.beta.kubernetes.io/zone"]
-			continent := node.Labels["failure-domain.beta.kubernetes.io/region"]
-			loadbalancing.ClusterRegistry[cluster.Name]["Country"] = country
-			loadbalancing.ClusterRegistry[cluster.Name]["Continent"] = continent
+			zone := node.Labels["failure-domain.beta.kubernetes.io/zone"]
+			region := node.Labels["failure-domain.beta.kubernetes.io/region"]
+			loadbalancing.ClusterRegistry[cluster.Name]["Zone"] = zone
+			loadbalancing.ClusterRegistry[cluster.Name]["Region"] = region
+			//country := node.Labels["failure-domain.beta.kubernetes.io/zone"]
+			//continent := node.Labels["failure-domain.beta.kubernetes.io/region"]
+			//loadbalancing.ClusterRegistry[cluster.Name]["Country"] = country
+			//loadbalancing.ClusterRegistry[cluster.Name]["Continent"] = continent
+			if region == "us-central1" {
+				region = "US"
+			} else if region == "eu-west-2" {
+				region = "GB"
+			}
+
+			if zone == "us-central1-c" {
+				zone = "Iowa"
+			} else if zone == "eu-west-2b" {
+				zone = "England"
+			}
 
 			found := &corev1.Service{}
 			cluster_client := cm.Cluster_genClients[cluster.Name]
@@ -280,12 +298,10 @@ func initRegistry() {
 func Loadbalancer(openmcpIP string, wg *sync.WaitGroup) *http.Server {
 	omcplog.V(4).Info("[OpenMCP Loadbalancing Controller] Function Called Reconcile")
 
-
 	initRegistry()
 	lb := os.Getenv("LB")
 
 	mux := http.NewServeMux()
-
 
 	if lb == "RR" {
 		mux.HandleFunc("/", loadbalancing.NewMultipleHostReverseProxyRR(loadbalancing.LoadbalancingRegistry, loadbalancing.ClusterRegistry, loadbalancing.CountryRegistry, loadbalancing.ServiceRegistry, openmcpIP))
@@ -314,7 +330,7 @@ func Loadbalancer(openmcpIP string, wg *sync.WaitGroup) *http.Server {
 		defer wg.Done()
 
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-			log.Fatal("ListenAndServer(): %v",err)
+			log.Fatal("ListenAndServer(): %v", err)
 		}
 	}()
 

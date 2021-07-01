@@ -76,7 +76,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		omcplog.V(0).Info("adding APIs to live cluster's scheme: ", err)
 		return nil, err
 	}
-	if err := co.WatchResourceReconcileObject(live, &v1alpha1.Migration{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(context.TODO(), live, &v1alpha1.Migration{}, controller.WatchOptions{}); err != nil {
 		omcplog.V(0).Info("setting up Pod watch in live cluster: ", err)
 		return nil, err
 	}
@@ -341,7 +341,7 @@ func GetPodName(targetClient generic.Client, dpName string, namespace string) st
 
 func GetCopyPodName(clusterClient *kubernetes.Clientset, dpName string, namespace string) string {
 START:
-	pods, _ := clusterClient.CoreV1().Pods(namespace).List(metav1.ListOptions{})
+	pods, _ := clusterClient.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{})
 	podName := ""
 	for _, pod := range pods.Items {
 		result, err := regexp.MatchString(dpName, pod.Name)

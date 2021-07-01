@@ -14,10 +14,12 @@ spec:
         name: openmcp-ingress-controller
     spec:
       serviceAccountName: openmcp-ingress-controller
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: openmcp-ingress-controller
           # Replace this with the built image name
-          image: openmcp/openmcp-ingress-controller:v0.0.1
+          image: ketidevit/openmcp-ingress-controller:v0.0.1
           command:
           - openmcp-ingress-controller
           imagePullPolicy: Always

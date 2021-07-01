@@ -33,7 +33,6 @@ func DecodeBatch(summary *stats.Summary) (*storage.MetricsBatch, error) {
 		Pods: make([]storage.PodMetricsPoint, len(summary.Pods)),
 	}
 
-
 	var errs []error
 	errs = append(errs, decodeNodeStats(&summary.Node, &res.Node)...)
 	if len(errs) != 0 {
@@ -85,13 +84,12 @@ func decodeNodeStats(nodeStats *stats.NodeStats, target *storage.NodeMetricsPoin
 	if err := decodeMemory(&target.MetricsPoint, nodeStats.Memory); err != nil {
 		errs = append(errs, fmt.Errorf("unable to get memory for node %q, discarding data: %v", nodeStats.NodeName, err))
 	}
-	if err := decodeNetwork(&target.MetricsPoint, nodeStats.Network); err != nil {
+	/*if err := decodeNetwork(&target.MetricsPoint, nodeStats.Network); err != nil {
 		errs = append(errs, fmt.Errorf("unable to get Network for node %q, discarding data: %v", nodeStats.NodeName, err))
-	}
+	}*/
 	if err := decodeFs(&target.MetricsPoint, nodeStats.Fs); err != nil {
 		errs = append(errs, fmt.Errorf("unable to get FS for node %q, discarding data: %v", nodeStats.NodeName, err))
 	}
-
 
 	return errs
 }
@@ -122,9 +120,9 @@ func decodePodStats(podStats *stats.PodStats, target *storage.PodMetricsPoint) [
 	if err := decodeMemory(&target.MetricsPoint, podStats.Memory); err != nil {
 		errs = append(errs, fmt.Errorf("unable to get memory for pod %q, discarding data: %v", podStats.PodRef.Name, err))
 	}
-	if err := decodeNetwork(&target.MetricsPoint, podStats.Network); err != nil {
+	/*if err := decodeNetwork(&target.MetricsPoint, podStats.Network); err != nil {
 		errs = append(errs, fmt.Errorf("unable to get network RX for pod %q, discarding data: %v", podStats.PodRef.Name, err))
-	}
+	}*/
 	if err := decodeFs(&target.MetricsPoint, podStats.EphemeralStorage); err != nil {
 		errs = append(errs, fmt.Errorf("unable to get Fs for pod %q, discarding data: %v", podStats.PodRef.Name, err))
 	}
@@ -137,7 +135,6 @@ func decodeCPU(target *storage.MetricsPoint, cpuStats *stats.CPUStats) error {
 	if cpuStats == nil || cpuStats.UsageNanoCores == nil {
 		return fmt.Errorf("missing cpu usage metric")
 	}
-
 
 	target.CPUUsageNanoCores = *uint64Quantity(*cpuStats.UsageNanoCores, -9)
 	return nil
@@ -173,7 +170,6 @@ func decodeNetwork(target *storage.MetricsPoint, netStats *stats.NetworkStats) e
 		TX_Usage = TX_Usage + *Interface.TxBytes
 	}
 
-
 	target.NetworkRxBytes = *uint64Quantity(RX_Usage, 0)
 	target.NetworkRxBytes.Format = resource.BinarySI
 
@@ -185,8 +181,8 @@ func decodeNetwork(target *storage.MetricsPoint, netStats *stats.NetworkStats) e
 
 func decodeFs(target *storage.MetricsPoint, FsStats *stats.FsStats) error {
 	fmt.Println("Func decodeFs Called")
-	if FsStats == nil || FsStats.UsedBytes == nil {
-		return fmt.Errorf("missing memory usage metric")
+	if FsStats == nil {
+		return fmt.Errorf("missing FS usage metric")
 	}
 
 	target.FsAvailableBytes = *uint64Quantity(*FsStats.AvailableBytes, 0)
@@ -195,7 +191,12 @@ func decodeFs(target *storage.MetricsPoint, FsStats *stats.FsStats) error {
 	target.FsCapacityBytes = *uint64Quantity(*FsStats.CapacityBytes, 0)
 	target.FsCapacityBytes.Format = resource.BinarySI
 
-	target.FsUsedBytes = *uint64Quantity(*FsStats.UsedBytes, 0)
+	if FsStats.UsedBytes == nil {
+		target.FsUsedBytes = *uint64Quantity(0, 0)
+	} else {
+		target.FsUsedBytes = *uint64Quantity(*FsStats.UsedBytes, 0)
+	}
+
 	target.FsUsedBytes.Format = resource.BinarySI
 
 	return nil

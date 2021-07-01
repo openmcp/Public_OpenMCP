@@ -8,7 +8,6 @@ import (
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
-
 	"os"
 	"runtime"
 )
@@ -20,13 +19,12 @@ const (
 func main() {
 	logLevel.KetiLogInit()
 
-	//go AnalyticEngine()
-
 	for {
 		cm := clusterManager.NewClusterManager()
 
 		quit := make(chan bool)
-		go AnalyticEngine(cm, quit)
+		quitok := make(chan bool)
+		go AnalyticEngine(cm, quit, quitok)
 
 		host_ctx := "openmcp"
 		namespace := "openmcp"
@@ -46,7 +44,13 @@ func main() {
 			ghosts = append(ghosts, ghost)
 		}
 
-		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
+		/*
+			fmt.Println(live)
+			fmt.Println(ghosts)
+			fmt.Println(namespace)
+		*/
+
+		reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
 		m := manager.New()
@@ -58,11 +62,17 @@ func main() {
 		if err := m.Start(stop); err != nil {
 			log.Fatal(err)
 		}
+		quit <- true
+		quit <- true
+		<-quitok
+		<-quitok
+		//time.Sleep(3600 * time.Second)
+
 	}
 
 }
 
-func AnalyticEngine(cm *clusterManager.ClusterManager, quit chan bool) {
+func AnalyticEngine(cm *clusterManager.ClusterManager, quit, quitok chan bool) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	INFLUX_IP := os.Getenv("INFLUX_IP")
 	INFLUX_PORT := os.Getenv("INFLUX_PORT")
@@ -72,20 +82,20 @@ func AnalyticEngine(cm *clusterManager.ClusterManager, quit chan bool) {
 	//ae := analyticEngine.NewAnalyticEngine()
 	ae := analyticEngine.NewAnalyticEngine(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD)
 
-	go ae.CalcResourceScore(cm, quit)
+	go ae.CalcResourceScore(cm, quit, quitok)
 
 	//a := protobuf.HASInfo{HPANamespace:"openmcp", HPAName:"openmcp-hpa", ClusterName:""}
 
 	//ae.SelectHPACluster(&a)
 	//mc.Influx.CreateDatabase()
 	//mc.Influx.CreateMeasurements()
-	go func(){
+	go func() {
 		ae.StartGRPC(GRPC_PORT)
 	}()
 
-	if <- quit {
+	if <-quit {
 		ae.StopGRPC()
+		quitok <- true
 	}
-
 
 }

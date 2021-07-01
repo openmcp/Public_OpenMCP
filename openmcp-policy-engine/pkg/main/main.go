@@ -55,15 +55,15 @@ func main() {
 
 		co, err := controller.NewController(live, ghosts, namespace, cm)
 		if err != nil {
-			omcplog.V(0).Info( "err New Controller - PolicyEngine", err)
+			omcplog.V(0).Info("err New Controller - PolicyEngine", err)
 		}
-		cont_reshape, err := reshape.NewController(live, ghosts, namespace)
+		cont_reshape, err := reshape.NewController(live, ghosts, namespace, cm)
 		if err != nil {
-			omcplog.V(0).Info( "err New Controller - Reshape", err)
+			omcplog.V(0).Info("err New Controller - Reshape", err)
 		}
 		contLoglevel, err := logLevel.NewController(live, ghosts, namespace)
 		if err != nil {
-			omcplog.V(0).Info( "err New Controller - logLevel", err)
+			omcplog.V(0).Info("err New Controller - logLevel", err)
 		}
 
 		m := manager.New()

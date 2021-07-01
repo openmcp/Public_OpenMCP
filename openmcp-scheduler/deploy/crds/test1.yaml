@@ -4,7 +4,7 @@ metadata:
   name: example-openmcpdeployment1
   namespace: openmcp
 spec:
-  replicas: 3
+  replicas: 20
   affinity: 
     region: 
       - AS
@@ -23,5 +23,5 @@ spec:
             name: nginx
             resources:
               requests:
-                memory: "10Gi"
-                cpu: "10"
+                memory: "100"
+                cpu: "1"

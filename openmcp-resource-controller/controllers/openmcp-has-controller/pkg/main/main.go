@@ -19,9 +19,9 @@ package main
 import (
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
-	"fmt"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"log"
+	"openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-has-controller/pkg/analyticResource"
 	openmcphas "openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-has-controller/pkg/controller"
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/logLevel"
@@ -31,6 +31,7 @@ import (
 func main() {
 	logLevel.KetiLogInit()
 	for {
+
 		cm := clusterManager.NewClusterManager()
 
 		host_ctx := "openmcp"
@@ -40,6 +41,8 @@ func main() {
 		live := cluster.New(host_ctx, host_cfg, cluster.Options{})
 		ghosts := []*cluster.Cluster{}
 
+		go analyticResource.CalcPodMetrics(cm, live)
+
 		for _, ghost_cluster := range cm.Cluster_list.Items {
 			ghost_ctx := ghost_cluster.Name
 			ghost_cfg := cm.Cluster_configs[ghost_ctx]
@@ -47,11 +50,11 @@ func main() {
 			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
 			ghosts = append(ghosts, ghost)
 		}
-		for _, ghost := range ghosts {
+		/*for _, ghost := range ghosts {
 			fmt.Println(ghost.Name)
-		}
+		}*/
 		co, _ := openmcphas.NewController(live, ghosts, namespace, cm)
-		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
+		reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
 		m := manager.New()
@@ -65,8 +68,5 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-
-
-
 
 }

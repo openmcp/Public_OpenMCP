@@ -14,13 +14,15 @@ spec:
         name: openmcp-secret-controller
     spec:
       serviceAccountName: openmcp-secret-controller
+      imagePullSecrets:
+        - name: REPLACE_DOCKERSECRETNAME
       containers:
         - name: openmcp-secret-controller
           # Replace this with the built image name
-          image: openmcp/openmcp-secret-controller:v0.0.1
+          image: ketidevit/openmcp-secret-controller:v0.0.1
           command:
           - openmcp-secret-controller
-          imagePullPolicy: Always
+          imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
           env:
             - name: WATCH_NAMESPACE
               #value: ""

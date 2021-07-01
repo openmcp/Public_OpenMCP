@@ -14,13 +14,15 @@ spec:
         name: openmcp-configmap-controller
     spec:
       serviceAccountName: openmcp-configmap-controller
+      imagePullSecrets:
+        - name: REPLACE_DOCKERSECRETNAME
       containers:
         - name: openmcp-configmap-controller
           # Replace this with the built image name
-          image: openmcp/openmcp-configmap-controller:v0.0.1
+          image: ketidevit/openmcp-configmap-controller:v0.0.1
           command:
           - openmcp-configmap-controller
-          imagePullPolicy: Always
+          imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
           env:
             - name: WATCH_NAMESPACE
               #value: ""

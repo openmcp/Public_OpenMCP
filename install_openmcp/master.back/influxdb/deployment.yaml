@@ -16,7 +16,7 @@ spec:
       containers:
       - name: influxdb
         image: docker.io/influxdb:1.6.4
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
         envFrom:
         - secretRef:
             name: influxdb-creds

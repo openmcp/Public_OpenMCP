@@ -1,0 +1,19 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: Migration
+metadata:
+  name: migrations1
+spec:
+  MigrationServiceSource:
+  - SourceCluster: cluster1
+    TargetCluster: cluster2
+    NameSpace: openmcp
+    ServiceName: migration-example
+    MigrationSource:
+    - ResourceName: migration-example
+      ResourceType: Deployment
+    - ResourceName: migration-example-svc
+      ResourceType: Service
+    - ResourceName: migration-example-pvc
+      ResourceType: PersistentVolumeClaim
+    - ResourceName: migration-example-pv
+      ResourceType: PersistentVolume

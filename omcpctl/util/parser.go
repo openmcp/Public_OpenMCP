@@ -172,6 +172,10 @@ var (
 		"osec":           "openmcpsecrets",
 		"openmcpsecret":  "openmcpsecrets",
 		"openmcpsecrets": "openmcpsecrets",
+
+		"ode":           "openmcpdnsendpoints",
+		"openmcpdnsendpoint":  "openmcpdnsendpoints",
+		"openmcpdnsendpoints": "openmcpdnsendpoints",
 	}
 	apiGroup = map[string]string{
 		// WORKLOAD APIS
@@ -223,6 +227,7 @@ var (
 		"openmcppolicys":           "/apis/openmcp.k8s.io/v1alpha1",
 		"openmcpconfigmaps":        "/apis/openmcp.k8s.io/v1alpha1",
 		"openmcpsecrets":           "/apis/openmcp.k8s.io/v1alpha1",
+		"openmcpdnsendpoints":		"/apis/openmcp.k8s.io/v1alpha1",
 	}
 
 	KindMap = map[string]string{
@@ -275,6 +280,7 @@ var (
 		"OpenMCPPolicy":           "openmcppolicys",
 		"OpenMCPConfigMap":        "openmcpconfigmaps",
 		"OpenMCPSecret":           "openmcpsecrets",
+		"OpenMCPDNSEndpoint":	   "openmcpdnsendpoints",
 	}
 
 	noNamespaceResources = []string{"storageclasses", "customresourcedefinitions", "apiservices", "clusterroles", "clusterrolebindings", "namespaces", "nodes", "persistentvolumes"}

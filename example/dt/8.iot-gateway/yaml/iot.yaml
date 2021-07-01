@@ -1,0 +1,120 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: iot-gateway
+  namespace: openmcp
+spec:
+  replicas: 5
+  labels:
+    component: iot-gateway-svc
+    affinity: "yes"
+  template:
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+            - name: regcred
+          containers:
+          - name: iot-gateway
+            #imagePullPolicy: IfNotPresent
+            imagePullPolicy: Always
+            image: openmcp/keti-iotgateway:v1.0
+            command: ["/app/start.sh"]
+            resources:
+              requests:
+                memory: 256M
+                cpu: 125m
+              limits:
+                memory: 256M
+                cpu: 125m
+            ports:
+            - containerPort: 8888
+              name: http
+            - containerPort: 5683
+              name: coap
+            - containerPort: 1883
+              name: mqtt
+            env:
+            - name: IOT_SERVICE_CONNECT
+              #value: "iot-gateway-svc.default.svc.cluster.local"
+              #value: "10.96.0.255"
+              value: "0.0.0.0"
+            - name: HTTP_PORT
+              value: "8888"
+            - name: MQTT_PORT
+              value: "1883"
+            - name: COAP_PORT
+              value: "5683"
+            - name: MQTT_TOPIC
+              value: "mqtt"
+            - name:  MQTT_TIMEOUT
+              value: "60"
+            - name:  KAFKA_CONNECT
+              #value: "kafka-svc.default.svc.cluster.local"
+              value: "kafka-svc.default.openmcp-keti-domain.svc.openmcp.keti.org"
+            securityContext:
+             capabilities:
+               add:
+               - NET_ADMIN
+          - name: sysbench-test
+            # Replace this with the built image name
+            image: openmcp/sysbench-test:v0.0.1
+            command:
+            - sysbench-test
+            #resources:
+            #  requests:
+            #    memory: 256M
+            #    cpu: 500m
+            #  limits:
+            #    memory: 1024M
+            #    cpu: 500m
+            imagePullPolicy: Always
+            env:
+              - name: WATCH_NAMESPACE
+                #value: ""
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
+              - name: POD_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.name
+              - name: OPERATOR_NAME
+                value: "sysbench-test"
+            ports:
+              - containerPort: 80
+                name: http
+---
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPService
+metadata:
+  name: iot-gateway-svc
+spec:
+  labelselector:
+    component: iot-gateway-svc
+  template:
+    spec:
+      type: LoadBalancer
+      ports:
+      - port: 8888
+        name: http
+      - port: 5683
+        name: coap
+      - port: 1883
+        name: mqtt
+      - port: 80
+        targetPort: 7070
+        name: sysbench
+---
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPServiceDNSRecord
+metadata:
+  # The name of the sample service.
+  name: iot-gateway-svc
+  # The namespace of the sample deployment/service.
+spec:
+  # The name of the corresponding Domain.
+  domainRef: openmcp-keti-domain
+  recordTTL: 300
+---
+

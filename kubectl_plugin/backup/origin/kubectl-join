@@ -1,0 +1,23 @@
+#!/bin/bash
+KUBECONFIG=`echo $KUBECONFIG`
+
+echo "-----------------------------------------------------------"
+echo "You Must Set '~/.hosts' File Before Request Join To OpenMCP"
+echo "-----------------------------------------------------------"
+
+if [ "$KUBECONFIG" == "" ]; then
+  echo "Set KUBECONFIG Variable [~/.kube/config]"
+  KUBECONFIG=~/.kube/config
+fi
+
+if [ "$1" == "" ]; then
+  echo "Please Set OpenMCP IP:PORT"
+  echo "ex) kubectl join 0.0.0.0:0"
+  exit 1
+fi
+
+echo ">>> Request OpenMCP to join cluster"
+
+echo -n | openssl s_client -connect $1 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt
+curl https://$1/join -F file=@"$KUBECONFIG" --cacert server.crt
+rm server.crt

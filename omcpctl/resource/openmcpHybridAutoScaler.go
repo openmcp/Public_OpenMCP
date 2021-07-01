@@ -2,47 +2,51 @@ package resource
 
 import (
 	"fmt"
-	"github.com/ghodss/yaml"
-	"github.com/olekukonko/tablewriter"
-	cobrautil "openmcp/openmcp/omcpctl/util"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/ghodss/yaml"
+	"github.com/olekukonko/tablewriter"
 )
 
-
-func OpenMCPHybridAutoScalerInfo(ohas *resourcev1alpha1.OpenMCPHybridAutoScaler) []string{
+func OpenMCPHybridAutoScalerInfo(ohas *resourcev1alpha1.OpenMCPHybridAutoScaler) []string {
 
 	namespace := ohas.Namespace
 	name := ohas.Name
-	min_replica := strconv.Itoa(int(*ohas.Spec.HpaTemplate.Spec.MinReplicas))
-	max_replica := strconv.Itoa(int(ohas.Spec.HpaTemplate.Spec.MaxReplicas))
+	min_replica := strconv.Itoa(int(*ohas.Spec.ScalingOptions.HpaTemplate.Spec.MinReplicas))
+	max_replica := strconv.Itoa(int(ohas.Spec.ScalingOptions.HpaTemplate.Spec.MaxReplicas))
 	resources := []string{}
 
-	for _, metric := range ohas.Spec.HpaTemplate.Spec.Metrics {
-		resource := string(metric.Resource.Name) + "/"
-		if metric.Resource.Target.Type == "Utilization" {
-			resource += "averageUtilization(" + strconv.Itoa(int(*metric.Resource.Target.AverageUtilization)) + ")"
-		} else if metric.Resource.Target.Type == "averagevalue" {
-			resource += "averageValue(" + metric.Resource.Target.AverageValue.String()+ ")"
-		} else if metric.Resource.Target.Type == "value"{
-			resource += "value(" + metric.Resource.Target.Value.String()+ ")"
+	for _, metric := range ohas.Spec.ScalingOptions.HpaTemplate.Spec.Metrics {
+		resource := ""
+		if metric.Type == "Resource" {
+			resource = string(metric.Resource.Name) + "/"
+			if metric.Resource.Target.Type == "Utilization" {
+				resource += "averageUtilization(" + strconv.Itoa(int(*metric.Resource.Target.AverageUtilization)) + ")"
+			} else if metric.Resource.Target.Type == "averagevalue" {
+				resource += "averageValue(" + metric.Resource.Target.AverageValue.String() + ")"
+			} else if metric.Resource.Target.Type == "value" {
+				resource += "value(" + metric.Resource.Target.Value.String() + ")"
+			}
+		} else if metric.Type == "Object" {
+			resource = metric.Object.Metric.Name + "(" + metric.Object.Target.Value.String() + " )"
 		}
 
 		resources = append(resources, resource)
 	}
 
-	reference_odeploy := ohas.Spec.HpaTemplate.Spec.ScaleTargetRef.Name
-	vpa_mode := ohas.Spec.VpaMode
+	reference_odeploy := ohas.Spec.ScalingOptions.HpaTemplate.Spec.ScaleTargetRef.Name
+	vpa_mode := ohas.Spec.ScalingOptions.VpaTemplate
 	policies := []string{}
-	for _, policy := range ohas.Status.Policies{
+	for _, policy := range ohas.Status.Policies {
 		policyStr := policy.Type + "(" + strings.Join(policy.Value, "/") + ")"
-
 		policies = append(policies, policyStr)
 	}
 	age := cobrautil.GetAge(ohas.CreationTimestamp.Time)
-	data := []string{namespace, name,  min_replica, max_replica,  strings.Join(resources, "\n"), reference_odeploy, vpa_mode, strings.Join(policies, "\n"), age}
+	data := []string{namespace, name, min_replica, max_replica, strings.Join(resources, "\n"), reference_odeploy, vpa_mode, strings.Join(policies, "\n"), age}
 
 	return data
 }
@@ -53,7 +57,6 @@ func PrintOpenMCPHybridAutoScaler(body []byte) {
 		panic(err.Error())
 	}
 	datas := [][]string{}
-
 
 	data := OpenMCPHybridAutoScalerInfo(&od)
 	datas = append(datas, data)
@@ -81,7 +84,7 @@ func PrintOpenMCPHybridAutoScalerList(body []byte) {
 		}
 		errMsg := "No resources found"
 		if !cobrautil.Option_allnamespace {
-			errMsg += " in "+ ns +" namespace."
+			errMsg += " in " + ns + " namespace."
 		}
 		fmt.Println(errMsg)
 		return
@@ -91,7 +94,7 @@ func PrintOpenMCPHybridAutoScalerList(body []byte) {
 
 }
 
-func DrawOpenMCPHybridAutoScaleTable(datas [][]string){
+func DrawOpenMCPHybridAutoScaleTable(datas [][]string) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"NS", "NAME", "MIN_REPLICAS", "MAX_REPLICAS", "RESOURCES", "REFERENCE_ODEPLOY", "VPA_MODE", "POLICIES", "AGE"})
 	table.SetBorder(false)

@@ -1,0 +1,23 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: SnapshotRestore
+metadata:
+  name: snapshot-example-snapshotrestore
+spec:
+  snapshotRestoreSource:
+  - resourceCluster: cluster1
+    resourceNamespace: openmcp
+    resourceType: Deployment
+    snapshotKey: 1608010413-cluster1-Deployment-snapshot-example
+  - resourceCluster: cluster1
+    resourceNamespace: openmcp
+    resourceType: Service
+    snapshotKey: 1608010413-cluster1-Service-snapshot-example-svc
+  - resourceCluster: cluster1
+    resourceNamespace: openmcp
+    resourceType: PersistentVolumeClaim
+    snapshotKey: 1608010413-cluster1-P-snapshot-example-pvc
+  - resourceCluster: cluster1
+    resourceNamespace: openmcp
+    resourceType: PersistentVolume
+    snapshotKey: 1608010413-cluster1-P-snapshot-example-pv
+

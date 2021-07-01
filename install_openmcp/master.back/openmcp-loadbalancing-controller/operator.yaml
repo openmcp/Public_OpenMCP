@@ -14,13 +14,15 @@ spec:
         name: openmcp-loadbalancing-controller
     spec:
       serviceAccountName: openmcp-loadbalancing-controller
+      imagePullSecrets:
+        - name: REPLACE_DOCKERSECRETNAME
       containers:
         - name: openmcp-loadbalancing-controller
           # Replace this with the built image name
-          image: openmcp/openmcp-loadbalancing-controller:v0.0.1
+          image: ketidevit/openmcp-loadbalancing-controller:v0.0.1
           command:
             - openmcp-loadbalancing-controller
-          imagePullPolicy: Always
+          imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
           env:
             - name: GRPC_SERVER
               value: REPLACE_GRPCIP

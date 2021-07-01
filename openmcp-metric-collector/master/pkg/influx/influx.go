@@ -37,6 +37,10 @@ func (in *Influx) CreateDatabase() {
 	q := client.NewQuery("CREATE DATABASE Metrics", "", "")
 	if response, err := in.inClient.Query(q); err == nil && response.Error() == nil {
 		fmt.Println(response.Results)
+	} else {
+		fmt.Println("Error Create Databases")
+		fmt.Println(err)
+		fmt.Println(response.Error())
 	}
 }
 func (in *Influx) CreateMeasurements() {
@@ -44,15 +48,23 @@ func (in *Influx) CreateMeasurements() {
 	q1 := client.NewQuery("CREATE MEASUREMENTS Nodes", "Metrics", "")
 	if response, err := in.inClient.Query(q1); err == nil && response.Error() == nil {
 		fmt.Println(response.Results)
+	} else {
+		fmt.Println("Error Create Measurements Nodes")
+		fmt.Println(err)
+		fmt.Println(response.Error())
 	}
 	q2 := client.NewQuery("CREATE MEASUREMENTS Pods", "Metrics", "")
 	if response, err := in.inClient.Query(q2); err == nil && response.Error() == nil {
 		fmt.Println(response.Results)
+	} else {
+		fmt.Println("Error Create Measurements Pods")
+		fmt.Println(err)
+		fmt.Println(response.Error())
 	}
 }
 func (in *Influx) SaveMetrics(clusterName string, data *protobuf.Collection) {
 	omcplog.V(4).Info("SaveMetrics Called")
-	omcplog.V(2).Info("[Save InfluxDB] ClusterName: '", clusterName,"'")
+	omcplog.V(2).Info("[Save InfluxDB] ClusterName: '", clusterName, "'")
 
 	bp, _ := client.NewBatchPoints(client.BatchPointsConfig{
 		//Precision:        "rfc3339", // yyyy-MM-ddTHH:mm:ss
@@ -72,18 +84,17 @@ func (in *Influx) SaveMetrics(clusterName string, data *protobuf.Collection) {
 			//"region": regions[rand.Intn(len(regions))],
 		}
 
-		fmt.Println("Node Info")
 		fields := map[string]interface{}{
-			"CPUUsageNanoCores": batch.Node.MP.CPUUsageNanoCores,
-			"MemoryAvailableBytes": batch.Node.MP.MemoryAvailableBytes,
-			"MemoryUsageBytes": batch.Node.MP.MemoryUsageBytes,
+			"CPUUsageNanoCores":     batch.Node.MP.CPUUsageNanoCores,
+			"MemoryAvailableBytes":  batch.Node.MP.MemoryAvailableBytes,
+			"MemoryUsageBytes":      batch.Node.MP.MemoryUsageBytes,
 			"MemoryWorkingSetBytes": batch.Node.MP.MemoryWorkingSetBytes,
-			"NetworkRxBytes": batch.Node.MP.NetworkRxBytes,
-			"NetworkTxBytes": batch.Node.MP.NetworkTxBytes,
-			"FsAvailableBytes": batch.Node.MP.FsAvailableBytes,
-			"FsCapacityBytes": batch.Node.MP.FsCapacityBytes,
-			"FsUsedBytes": batch.Node.MP.FsUsedBytes,
-			"NetworkLatency" : batch.Node.MP.NetworkLatency,
+			"NetworkRxBytes":        batch.Node.MP.NetworkRxBytes,
+			"NetworkTxBytes":        batch.Node.MP.NetworkTxBytes,
+			"FsAvailableBytes":      batch.Node.MP.FsAvailableBytes,
+			"FsCapacityBytes":       batch.Node.MP.FsCapacityBytes,
+			"FsUsedBytes":           batch.Node.MP.FsUsedBytes,
+			"NetworkLatency":        batch.Node.MP.NetworkLatency,
 		}
 		pt, err := client.NewPoint(
 			"Nodes",
@@ -97,29 +108,28 @@ func (in *Influx) SaveMetrics(clusterName string, data *protobuf.Collection) {
 		}
 
 		bp.AddPoint(pt)
-		fmt.Println("Pod Info")
 		for _, pod := range batch.Pods {
 			podName := pod.Name
 			podNamespace := pod.Namespace
 
 			tags2 := map[string]string{
-				"cluster": clusterName,
-				"node":    nodeName,
-				"pod":     podName,
+				"cluster":   clusterName,
+				"node":      nodeName,
+				"pod":       podName,
 				"namespace": podNamespace,
 				//"region": regions[rand.Intn(len(regions))],
 			}
 			fields2 := map[string]interface{}{
-				"CPUUsageNanoCores": pod.MP.CPUUsageNanoCores,
-				"MemoryAvailableBytes": pod.MP.MemoryAvailableBytes,
-				"MemoryUsageBytes": pod.MP.MemoryUsageBytes,
-				"MemoryWorkingSetBytes":pod.MP.MemoryWorkingSetBytes,
-				"NetworkRxBytes": pod.MP.NetworkRxBytes,
-				"NetworkTxBytes": pod.MP.NetworkTxBytes,
-				"FsAvailableBytes": pod.MP.FsAvailableBytes,
-				"FsCapacityBytes": pod.MP.FsCapacityBytes,
-				"FsUsedBytes": pod.MP.FsUsedBytes,
-				"NetworkLatency" : pod.MP.NetworkLatency,
+				"CPUUsageNanoCores":     pod.MP.CPUUsageNanoCores,
+				"MemoryAvailableBytes":  pod.MP.MemoryAvailableBytes,
+				"MemoryUsageBytes":      pod.MP.MemoryUsageBytes,
+				"MemoryWorkingSetBytes": pod.MP.MemoryWorkingSetBytes,
+				"NetworkRxBytes":        pod.MP.NetworkRxBytes,
+				"NetworkTxBytes":        pod.MP.NetworkTxBytes,
+				"FsAvailableBytes":      pod.MP.FsAvailableBytes,
+				"FsCapacityBytes":       pod.MP.FsCapacityBytes,
+				"FsUsedBytes":           pod.MP.FsUsedBytes,
+				"NetworkLatency":        pod.MP.NetworkLatency,
 			}
 			pt2, err := client.NewPoint(
 				"Pods",
@@ -137,4 +147,3 @@ func (in *Influx) SaveMetrics(clusterName string, data *protobuf.Collection) {
 	in.inClient.Write(bp)
 
 }
-

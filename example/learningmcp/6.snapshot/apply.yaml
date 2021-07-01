@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: snapshot-example
+  namespace: openmcp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      affinity: "yes"
+      component: snapshot-example-svc
+  template:
+    metadata:
+      labels:
+        affinity: "yes"
+        component: snapshot-example-svc
+    spec:
+      containers:
+      - command:
+        - /app/start.sh
+        env:
+        - name: IOT_SERVICE_CONNECT
+          value: 0.0.0.0
+        - name: HTTP_PORT
+          value: "8888"
+        - name: MQTT_PORT
+          value: "1883"
+        - name: COAP_PORT
+          value: "5683"
+        - name: MQTT_TOPIC
+          value: mqtt
+        - name: MQTT_TIMEOUT
+          value: "60"
+        - name: KAFKA_CONNECT
+          value: kafka-svc.openmcp.openmcp-dt-domain.svc.openmcp.dt.org
+        image: openmcp/keti-iotgateway:v1.0
+        imagePullPolicy: Always
+        name: snapshot-example
+        ports:
+        - containerPort: 8888
+          name: http
+          protocol: TCP
+        - containerPort: 5683
+          name: coap
+          protocol: TCP
+        - containerPort: 1883
+          name: mqtt
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 125m
+            memory: 256M
+          requests:
+            cpu: 125m
+            memory: 256M
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+      - command:
+        - sysbench-test
+        env:
+        - name: WATCH_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: OPERATOR_NAME
+          value: sysbench-test
+        image: openmcp/sysbench-test:v0.0.1
+        imagePullPolicy: Always
+        name: sysbench-test
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+      imagePullSecrets:
+        - name: regcred
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snapshot-example-svc
+  namespace: openmcp
+spec:
+  ports:
+  - name: http
+    port: 8888
+    protocol: TCP
+    targetPort: 8888
+  - name: coap
+    port: 5683
+    protocol: TCP
+    targetPort: 5683
+  - name: mqtt
+    port: 1883
+    protocol: TCP
+    targetPort: 1883
+  - name: sysbench
+    port: 80
+    protocol: TCP
+    targetPort: 7070
+  selector:
+    component: snapshot-example-svc
+  type: LoadBalancer

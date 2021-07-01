@@ -14,10 +14,12 @@ spec:
         name: openmcp-namespace-controller
     spec:
       serviceAccountName: openmcp-namespace-controller
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: openmcp-namespace-controller
           # Replace this with the built image name
-          image: openmcp/openmcp-namespace-controller:v0.0.1
+          image: ketidevit/openmcp-namespace-controller:v0.0.1
           command:
           - openmcp-namespace-controller
           imagePullPolicy: Always

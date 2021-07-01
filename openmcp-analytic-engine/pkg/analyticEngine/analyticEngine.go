@@ -21,11 +21,12 @@ import (
 )
 
 type AnalyticEngineStruct struct {
-	Influx        influx.Influx
-	MetricsWeight map[string]float64
-	ResourceScore map[string]float64
-	ClusterGeo    map[string]map[string]string
-	NetworkInfos  map[string]map[string]*NetworkInfo
+	Influx               influx.Influx
+	MetricsWeight        map[string]float64
+	ResourceScore        map[string]float64
+	ClusterResourceUsage map[string]map[string]float64
+	ClusterGeo           map[string]map[string]string
+	NetworkInfos         map[string]map[string]*NetworkInfo
 }
 
 // Network is used to get real-time network information (receive data, transmit data)
@@ -43,10 +44,11 @@ func NewAnalyticEngine(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD 
 	ae := &AnalyticEngineStruct{}
 	ae.Influx = *influx.NewInflux(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD)
 	ae.ResourceScore = make(map[string]float64)
+	ae.ClusterResourceUsage = make(map[string]map[string]float64)
 	return ae
 }
 
-func (ae *AnalyticEngineStruct) CalcResourceScore(cm *clusterManager.ClusterManager, quit chan bool) {
+func (ae *AnalyticEngineStruct) CalcResourceScore(cm *clusterManager.ClusterManager, quit, quitok chan bool) {
 	omcplog.V(4).Info("Func CalcResourceScore Called")
 	//cm := clusterManager.NewClusterManager()
 	ae.MetricsWeight = make(map[string]float64)
@@ -68,13 +70,14 @@ func (ae *AnalyticEngineStruct) CalcResourceScore(cm *clusterManager.ClusterMana
 	}
 	for {
 		select {
-		case <- quit:
+		case <-quit:
 			omcplog.V(2).Info("CalcResourceScore Quit")
+			quitok <- true
 			return
 		default:
 			omcplog.V(2).Info("Cluster Metric Score Refresh")
 			for _, cluster := range cm.Cluster_list.Items {
-				ae.ResourceScore[cluster.Name] = ae.UpdateScore(cluster.Name, cm)
+				ae.ResourceScore[cluster.Name], ae.ClusterResourceUsage[cluster.Name] = ae.UpdateScore(cluster.Name, cm)
 				config, err := util.BuildClusterConfig(&cluster, cm.Host_client, cm.Fed_namespace)
 				if err != nil {
 					omcplog.V(0).Info(err)
@@ -83,7 +86,7 @@ func (ae *AnalyticEngineStruct) CalcResourceScore(cm *clusterManager.ClusterMana
 				if err != nil {
 					omcplog.V(0).Info(err)
 				}
-				nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+				nodes, err := clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 				if err != nil {
 					omcplog.V(0).Info(err)
 				}
@@ -152,9 +155,11 @@ func (ae *AnalyticEngineStruct) UpdateNetworkData(clusterName string, nodeList *
 	}
 }
 
-func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManager.ClusterManager) float64 {
+func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManager.ClusterManager) (float64, map[string]float64) {
 	omcplog.V(4).Info("Func UpdateScore Called")
 	var score float64 = 0
+	scoreMap := make(map[string]float64)
+
 	result := ae.Influx.GetClusterMetricsData(clusterName)
 
 	MetricsMap := make(map[string]float64)
@@ -162,15 +167,16 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 	var totalCpuCore int64 = 0
 
 	//cm := clusterManager.NewClusterManager()
-	if len(result) == 0{
-		return 0
+	if len(result) == 0 {
+		return 0, nil
 	}
 	time_t := ""
 	for _, ser := range result[0].Series {
 		nodeCapacity := &corev1.Node{}
 		err := cm.Cluster_genClients[ser.Tags["cluster"]].Get(context.TODO(), nodeCapacity, "", ser.Tags["node"])
 		if err != nil {
-			omcplog.V(0).Info("nodelist err : ", err)
+			omcplog.V(0).Info("nodelist err!  : ", err)
+			continue
 		} else {
 			omcplog.V(2).Info("[CPU Capacity] ", ser.Tags["cluster"], "/", ser.Tags["node"], "/", nodeCapacity.Status.Capacity.Cpu().Value())
 		}
@@ -186,9 +192,9 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 				if r == 0 {
 					if colName == "NetworkLatency" {
 						MetricsMap[colName], _ = strconv.ParseFloat(Strval, 64)
-					} else if colName == "time"{
+					} else if colName == "time" {
 						time_t = Strval
-					} else{
+					} else {
 						if _, ok := MetricsMap[colName]; ok {
 							MetricsMap[colName] = MetricsMap[colName] + float64(QuanVal.Value())
 						} else {
@@ -196,7 +202,7 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 						}
 					}
 
-				} else if r == 1 {
+				} else if r == 4 {
 					if _, ok := prevMetricsMap[colName]; ok {
 						prevMetricsMap[colName] = prevMetricsMap[colName] + float64(QuanVal.Value())
 					} else {
@@ -210,33 +216,38 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 
 	var netScore float64
 
-	cpuScore :=  MetricsMap["CPUUsageNanoCores"] / float64(totalCpuCore) * 100
+	cpuScore := MetricsMap["CPUUsageNanoCores"] / float64(totalCpuCore) * 100
 	memScore := (MetricsMap["MemoryUsageBytes"] / (MetricsMap["MemoryUsageBytes"] + MetricsMap["MemoryAvailableBytes"])) * 100
 	netScore = ((MetricsMap["NetworkRxBytes"] - prevMetricsMap["NetworkRxBytes"]) + (MetricsMap["NetworkTxBytes"] - prevMetricsMap["NetworkTxBytes"])) / 1000000
 	diskScore := (MetricsMap["FsUsedBytes"] / MetricsMap["FsCapacityBytes"]) * 100
 	latencyScore := MetricsMap["NetworkLatency"] * 1000
 
-
-	if len(result[0].Series) != 0{
+	if len(result[0].Series) != 0 {
 		ae.Influx.InsertClusterStatus(clusterName, time_t, cpuScore, memScore, netScore, diskScore, latencyScore)
 	}
 
 	score = cpuScore*ae.MetricsWeight["CPU"] + memScore*ae.MetricsWeight["Memory"] + diskScore*ae.MetricsWeight["FS"] + netScore*ae.MetricsWeight["NET"] + latencyScore*ae.MetricsWeight["LATENCY"]
 
-	if score > 0 && clusterName == "cluster1"{
+	scoreMap["cpu"] = cpuScore
+	scoreMap["memory"] = memScore
+	scoreMap["network"] = netScore
+	scoreMap["disk"] = diskScore
+	scoreMap["latency"] = latencyScore
+
+	if score > 0 && clusterName == "eks-cluster1" {
 		omcplog.V(2).Info("--------------------------------------------------------")
-		omcplog.V(2).Info(" rx -> ",MetricsMap["NetworkRxBytes"] - prevMetricsMap["NetworkRxBytes"])
-		omcplog.V(2).Info(" tx -> ",MetricsMap["NetworkTxBytes"] - prevMetricsMap["NetworkTxBytes"])
-		omcplog.V(2).Info(" cpuscore : ",cpuScore)
-		omcplog.V(2).Info(" memScore : ",memScore)
-		omcplog.V(2).Info(" netScore : ",netScore)
-		omcplog.V(2).Info(" diskScore : ",diskScore)
-		omcplog.V(2).Info(" latencyScore : ",latencyScore)
-		omcplog.V(2).Info("\"",clusterName,"\" totalScore : ", score)
+		omcplog.V(2).Info(" rx -> ", MetricsMap["NetworkRxBytes"]-prevMetricsMap["NetworkRxBytes"])
+		omcplog.V(2).Info(" tx -> ", MetricsMap["NetworkTxBytes"]-prevMetricsMap["NetworkTxBytes"])
+		omcplog.V(2).Info(" cpuscore : ", cpuScore, MetricsMap["CPUUsageNanoCores"], float64(totalCpuCore))
+		omcplog.V(2).Info(" memScore : ", memScore)
+		omcplog.V(2).Info(" netScore : ", netScore)
+		omcplog.V(2).Info(" diskScore : ", diskScore)
+		omcplog.V(2).Info(" latencyScore : ", latencyScore)
+		omcplog.V(2).Info("\"", clusterName, "\" totalScore : ", score)
 		omcplog.V(2).Info("--------------------------------------------------------")
 	}
 
-	return score
+	return score, scoreMap
 }
 
 func (ae *AnalyticEngineStruct) SendLBAnalysis(ctx context.Context, in *protobuf.LBInfo) (*protobuf.ResponseLB, error) {
@@ -269,7 +280,9 @@ func (ae *AnalyticEngineStruct) SelectHPACluster(data *protobuf.HASInfo) []strin
 	filteringCluster := []string{}
 
 	for i := 0; i < len(scoreT); i++ {
-		if i == 2 { break }
+		if i == 2 {
+			break
+		}
 		filteringCluster = append(filteringCluster, scoreMap[scoreT[i]])
 	}
 
@@ -403,7 +416,7 @@ func (ae *AnalyticEngineStruct) SendHASMinAnalysis(ctx context.Context, data *pr
 	return &protobuf.ResponseHAS{TargetCluster: result}, nil
 }
 
-func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *protobuf.NodeInfo) (*protobuf.ReponseNetwork, error) {
+func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *protobuf.NodeInfo) (*protobuf.ResponseNetwork, error) {
 	omcplog.V(4).Info("Func SendNetworkAnalysis Called")
 	startTime := time.Now()
 
@@ -419,7 +432,7 @@ func (ae *AnalyticEngineStruct) SendNetworkAnalysis(ctx context.Context, data *p
 	omcplog.V(2).Info("%-30s [", elapsedTime, "]", "=> Total Anlysis time")
 	omcplog.V(2).Info("***** [End] Network Analysis *****")
 
-	return &protobuf.ReponseNetwork{RX: diff_rx, TX: diff_tx}, nil
+	return &protobuf.ResponseNetwork{RX: diff_rx, TX: diff_tx}, nil
 }
 
 var grpcServer *grpc.Server
@@ -440,10 +453,143 @@ func (ae *AnalyticEngineStruct) StartGRPC(GRPC_PORT string) {
 		log.Fatalf("fail to serve: %v", err)
 	}
 
-
 }
 func (ae *AnalyticEngineStruct) StopGRPC() {
 	omcplog.V(4).Info("Func StopGRPC Called")
 	grpcServer.Stop()
+
+}
+
+func (ae *AnalyticEngineStruct) SendCPAAnalysis(ctx context.Context, deploy *protobuf.CPADeployList) (*protobuf.ResponseCPADeployList, error) {
+	omcplog.V(4).Info("Func SendCPAAnalysis Called")
+
+	fmt.Println(deploy.CPADeployInfo)
+	deployList := protobuf.ResponseCPADeployList{}
+
+	for _, cDeploy := range deploy.CPADeployInfo {
+		target, state, todo := ae.AnalyzeCPADeployment(cDeploy)
+		if todo == "Scale-out" || todo == "Scale-in" {
+			d := &protobuf.ResponseCPADeploy{
+				Name:          cDeploy.Name,
+				Namespace:     cDeploy.Namespace,
+				CPAName:       cDeploy.CPAName,
+				PodState:      state,
+				Action:        todo,
+				TargetCluster: target,
+			}
+			deployList.ResponseCPADeploy = append(deployList.ResponseCPADeploy, d)
+		}
+	}
+
+	return &deployList, nil
+}
+
+func (ae *AnalyticEngineStruct) AnalyzeCPADeployment(cDeploy *protobuf.CPADeployInfo) (string, string, string) {
+	omcplog.V(4).Info("Func AnalyzeCPADeployment Called")
+	//** request 없으면 CPA 불가
+
+	//cpu, memory, fs 문제면 cluster 내
+	//cpuusage/cpurequest > 80 or memusage/memrequest > 80 이면 Warning
+	//노드 용량이 넉넉하면 'scale-out'
+	//cpuusage/cpurequest < 10 or memusage/memrequest < 10 이면 Warning
+	//'scale-in'
+
+	//네트워크 문제면 (서비스 문제) cluster 간
+	//networkLatency > x 인 경우 Warning
+	//클러스터 ResourceScore를 비교해서 점수가 낮은 클러스터에 'scale-out' (낮을수록 좋음)
+
+	cpuRequestInt64 := cDeploy.CpuRequest
+	memRequestInt64 := cDeploy.MemRequest
+
+	for _, cluster := range cDeploy.Clusters {
+		fmt.Println("Start Analysis ...")
+		fmt.Println("podNum : ", strconv.FormatInt(int64(cDeploy.ReplicasNum), 10))
+		result := ae.Influx.GetCPAMetricsData(cluster, cDeploy.Namespace, cDeploy.Name, strconv.FormatInt(int64(cDeploy.ReplicasNum), 10))
+
+		var cpuUsage float64
+		var cputotal float64
+		var memUsage float64
+		var memtotal float64
+
+		cputotal = 0
+		memtotal = 0
+
+		if result != nil {
+			for _, row := range result[0].Series[0].Values {
+				cpu := row[1]
+				cpuString := fmt.Sprintf("%v", cpu)
+				cpuString = cpuString[:len(cpuString)-1]
+				cpuFloat64, _ := strconv.ParseFloat(cpuString, 64)
+				cpuFloat64 = cpuFloat64 * 1e-06
+				cputotal += cpuFloat64
+
+				mem := row[2]
+				memString := fmt.Sprintf("%v", mem)
+				memString = memString[:len(memString)-2]
+				memFloat64, _ := strconv.ParseFloat(memString, 64)
+				memFloat64 = memFloat64 * 1e+6
+				memtotal += memFloat64
+			}
+		} else {
+			fmt.Println("Empty")
+		}
+
+		num := float64(cDeploy.ReplicasNum)
+
+		//cpu
+		cpuUsage = cputotal / num
+		fmt.Println("[", cDeploy.Name, "] CPU 사용률 ", cpuUsage/float64(cpuRequestInt64)*100, "%")
+
+		if cpuUsage/float64(cpuRequestInt64)*100 > 80 {
+			if ae.ClusterResourceUsage[cluster]["cpu"] < 80 {
+				fmt.Println("CPU Warning! -> Scale-out")
+				return cluster, "Warning-cpu", "Scale-out"
+			} else {
+				fmt.Println("CPU Warning! -> Can't Scale-out (No Capacity)")
+			}
+		} else if cpuUsage/float64(cpuRequestInt64)*100 < 0.1 {
+			fmt.Println("CPU Warning! -> Scale-in")
+			return cluster, "Warning-cpu", "Scale-in"
+		}
+
+		//memory
+		memUsage = memtotal / num
+		fmt.Println("[", cDeploy.Name, "] MEM 사용률 ", memUsage/float64(memRequestInt64)*100, "%")
+
+		if memUsage/float64(memRequestInt64)*100 > 80 {
+			if ae.ClusterResourceUsage[cluster]["memory"] < 80 {
+				fmt.Println("Memory Warning! -> Scale-out")
+				return cluster, "Warning-memory", "Scale-out"
+			} else {
+				fmt.Println("Memory Warning! -> Can't Scale-out (No Capacity)")
+			}
+		} else if memUsage/float64(memRequestInt64)*100 < 1 {
+			fmt.Println("Memory Warning! -> Scale-in")
+			return cluster, "Warning-memory", "Scale-in"
+		}
+
+		/*
+			//network
+			netLatency := 0  //influxdb
+
+			if netLatency > 1000 {
+				var minScore float64
+				minScore = 1000000
+				resultCluster := ""
+				for _, clustername := range cDeploy.Clusters {
+					s := ae.ResourceScore[clustername]
+					if s < minScore {
+						minScore = s
+						resultCluster = clustername
+					}
+				}
+				fmt.Println("Network Warning! -> Scale-out")
+				return resultCluster, "Warning-network", "scale-out"
+			}
+		*/
+
+	}
+
+	return "", "", ""
 
 }

@@ -32,19 +32,19 @@ import (
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
+	"openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-has-controller/pkg/analyticResource"
 	"openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-has-controller/pkg/protobuf"
 	"openmcp/openmcp/util/clusterManager"
 	"os"
 	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 	"strconv"
 	"time"
 )
 
 var cm *clusterManager.ClusterManager
-var log = logf.Log.WithName("controller_openmcphybridautoscaler")
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
 	cm = myClusterManager
@@ -75,21 +75,21 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	fmt.Printf("%T, %s\n", live, live.GetClusterName())
-	if err := co.WatchResourceReconcileObject(live, &resourcev1alpha1.OpenMCPHybridAutoScaler{}, controller.WatchOptions{}); err != nil {
+	//fmt.Printf("%T, %s\n", live, live.GetClusterName())
+	if err := co.WatchResourceReconcileObject(context.TODO(), live, &resourcev1alpha1.OpenMCPHybridAutoScaler{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
 	for _, ghost := range ghosts {
-		fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
-		if err := co.WatchResourceReconcileController(ghost, &hpav2beta2.HorizontalPodAutoscaler{}, controller.WatchOptions{}); err != nil {
+		//fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
+		if err := co.WatchResourceReconcileController(context.TODO(), ghost, &hpav2beta2.HorizontalPodAutoscaler{}, controller.WatchOptions{}); err != nil {
 			return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
 		}
 	}
 
 	for _, ghost := range ghosts {
-		fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
-		if err := co.WatchResourceReconcileController(ghost, &vpav1beta2.VerticalPodAutoscaler{}, controller.WatchOptions{}); err != nil {
+		//fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
+		if err := co.WatchResourceReconcileController(context.TODO(), ghost, &vpav1beta2.VerticalPodAutoscaler{}, controller.WatchOptions{}); err != nil {
 			return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
 		}
 	}
@@ -176,10 +176,36 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 			r.DeleteAllHPAVPA(cm, request.Namespace, request.Name)
 
+			hasList := &resourcev1alpha1.OpenMCPHybridAutoScalerList{}
+			err_haslist := r.live.List(context.TODO(), hasList)
+
+			if err_haslist == nil {
+				for k, _ := range analyticResource.CPAInfoList {
+					check := 0
+					for _, has := range hasList.Items {
+						cpaKey := analyticResource.CPAKey{}
+
+						cpaKey.HASName = has.Name
+						cpaKey.HASNamespace = has.Namespace
+
+						if cpaKey == k {
+							check = 1
+						}
+					}
+					if check == 0 {
+						delete(analyticResource.CPAInfoList, k)
+						fmt.Println("Success to Delete CPA ", k)
+					}
+				}
+
+			} else {
+				fmt.Println(err_haslist)
+			}
+			//return 맞나? cluster 여러개 조인되어 있을 때 hpa, vpa 생성/삭제 다시 테트
 			return reconcile.Result{}, nil
+		} else {
+			return reconcile.Result{}, err
 		}
-		omcplog.V(0).Info("!!! Failed to get hasInstance")
-		return reconcile.Result{}, err
 	}
 
 	if !reflect.DeepEqual(hasInstance.Status.LastSpec, hasInstance.Spec) {
@@ -189,298 +215,388 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 		target_cluster_policy_err := r.live.Status().Update(context.TODO(), hasInstance)
 		if target_cluster_policy_err != nil {
-			omcplog.V(0).Info("!!! Policy Status Update Error")
+			omcplog.V(0).Info("!![error] Fail to Update Policy Status")
 			return reconcile.Result{}, target_cluster_policy_err
 		} else {
-			omcplog.V(3).Info(">>> Policy Status UPDATE Success")
+			//omcplog.V(3).Info(">>> Success to Update Policy Status")
 		}
 
-		totalHASTimeEnd1 := time.Since(totalHASTimeStart1)
-		omcplog.V(4).Info("------ Check HAS Time (1) : ", totalHASTimeEnd1)
-		totalHASTimeStart2 := time.Now()
+		//totalHASTimeEnd1 := time.Since(totalHASTimeStart1)
+		//omcplog.V(4).Info("------ Check HAS Time (1) : ", totalHASTimeEnd1)
+		//totalHASTimeStart2 := time.Now()
 
-		//Get Target OpenMCPDeployment
-		openmcpDep := &resourcev1alpha1.OpenMCPDeployment{}
-		openmcpDep_err := r.live.Get(context.TODO(), ObjectKey{Namespace: hasInstance.Namespace, Name: hasInstance.Spec.HpaTemplate.Spec.ScaleTargetRef.Name}, openmcpDep)
+		if hasInstance.Spec.MainController == "OpenMCP" {
+			cpaKey := analyticResource.CPAKey{}
 
-		omcplog.V(3).Info(">>> Target OpenMCPDeployment [", openmcpDep.Name, " | ", openmcpDep.Namespace, "]")
+			cpaKey.HASName = hasInstance.Name
+			cpaKey.HASNamespace = hasInstance.Namespace
 
-		totalHASTimeEnd2 := time.Since(totalHASTimeStart2)
-		omcplog.V(4).Info("------ Check HAS Time (2) : ", totalHASTimeEnd2)
-		totalHASTimeStart3 := time.Now()
+			_, prs := analyticResource.CPAInfoList[cpaKey]
+			//fmt.Println("CPA Exists? ", prs, "(",cpaKey,")")
+			//cpa 리스트에 없는 경우
+			if prs == false {
+				//타겟으로 하는 openmcpdeployment 배포되어있는지 검사
+				openmcpDep := &resourcev1alpha1.OpenMCPDeployment{}
+				openmcpDep_err := r.live.Get(
+					context.TODO(),
+					ObjectKey{
+						Namespace: hasInstance.Namespace,
+						Name:      hasInstance.Spec.ScalingOptions.CpaTemplate.ScaleTargetRef.Name},
+					openmcpDep)
 
-		if openmcpDep_err == nil {
+				var totalCpuRequest int64
+				var totalMemRequest int64
 
-			var dep_list_for_hpa []string
-			var cluster_dep_replicas map[string]int32
-			var cluster_dep_request map[string]bool
+				totalCpuRequest = 0
+				totalMemRequest = 0
 
-			cluster_dep_replicas = make(map[string]int32)
-			cluster_dep_request = make(map[string]bool)
+				for _, container := range openmcpDep.Spec.Template.Spec.Template.Spec.Containers {
 
-			//Select Clusters to Deploy HPA, VPA (Policy + Check Deployment)
-			for _, cluster := range clusterListItems {
-				dep := &appsv1.Deployment{}
-				cluster_client := cm.Cluster_genClients[cluster.Name]
-				dep_err := cluster_client.Get(context.TODO(), dep, hasInstance.Namespace, hasInstance.Spec.HpaTemplate.Spec.ScaleTargetRef.Name)
-				if dep_err == nil {
-					for i, _ := range dep.Spec.Template.Spec.Containers {
-						if dep.Spec.Template.Spec.Containers[i].Resources.Requests == nil {
-							cluster_dep_request[cluster.Name] = false
-							break
-						} else {
-							cluster_dep_request[cluster.Name] = true
+					cpuInt64 := container.Resources.Requests.Cpu().MilliValue()
+					memInt64 := container.Resources.Requests.Memory().MilliValue()
+
+					if cpuInt64 > 0 {
+						totalCpuRequest += cpuInt64
+					}
+					if memInt64 > 0 {
+						totalMemRequest += memInt64
+					}
+				}
+
+				if openmcpDep_err == nil {
+					cpaCluster := make([]string, 0)
+					var totalReplicas int32
+					totalReplicas = 0
+
+					//어느 클러스터에 배포되어있는지 확인
+					for _, cluster := range cm.Cluster_list.Items {
+						dep := &appsv1.Deployment{}
+						cluster_client := cm.Cluster_genClients[cluster.Name]
+						dep_err := cluster_client.Get(context.TODO(), dep, hasInstance.Namespace, hasInstance.Spec.ScalingOptions.CpaTemplate.ScaleTargetRef.Name)
+						if dep_err == nil {
+							totalReplicas = totalReplicas + *dep.Spec.Replicas
+							cpaCluster = append(cpaCluster, cluster.Name)
 						}
 					}
-					cluster_dep_replicas[cluster.Name] = *dep.Spec.Replicas
-					dep_list_for_hpa = append(dep_list_for_hpa, cluster.Name)
+					deployInfo := &protobuf.CPADeployInfo{
+						Name:        openmcpDep.Name,
+						Namespace:   openmcpDep.Namespace,
+						ReplicasNum: totalReplicas,
+						CPAName:     hasInstance.Name,
+						Clusters:    cpaCluster,
+						//containers total Request 계산해서 put
+						CpuRequest: totalCpuRequest,
+						MemRequest: totalMemRequest,
+					}
+
+					cpaValue := analyticResource.CPAValue{}
+
+					cpaValue.OmcpdeployInfo = deployInfo
+					//cpaValue.InitReplicas = openmcpDep.Spec.Replicas
+					cpaValue.ReplicasAfterScaling = totalReplicas
+					cpaValue.CpaMin = hasInstance.Spec.ScalingOptions.CpaTemplate.MinReplicas
+					cpaValue.CpaMax = hasInstance.Spec.ScalingOptions.CpaTemplate.MaxReplicas
+
+					analyticResource.CPAInfoList[cpaKey] = cpaValue
+
+					fmt.Println("Success to Put CPA ", cpaKey)
+
+				} else {
+					fmt.Println(openmcpDep_err)
 				}
 			}
 
-			//Delete HPA, VPA on except_cluster list
-			var dep_list_except []string
-			for _, cluster := range cm.Cluster_list.Items {
-				check := 0
-				for _, targetCluster := range dep_list_for_hpa {
-					if cluster.Name == targetCluster {
-						check = 1
-						break
+			return reconcile.Result{}, nil
+
+		} else if hasInstance.Spec.MainController == "MemberCluster" {
+
+			//Get Target OpenMCPDeployment
+			openmcpDep := &resourcev1alpha1.OpenMCPDeployment{}
+			openmcpDep_err := r.live.Get(context.TODO(), ObjectKey{Namespace: hasInstance.Namespace, Name: hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.ScaleTargetRef.Name}, openmcpDep)
+
+			omcplog.V(3).Info(">>> Target OpenMCPDeployment [", openmcpDep.Name, " | ", openmcpDep.Namespace, "]")
+
+			//totalHASTimeEnd2 := time.Since(totalHASTimeStart2)
+			//omcplog.V(4).Info("------ Check HAS Time (2) : ", totalHASTimeEnd2)
+			//totalHASTimeStart3 := time.Now()
+
+			if openmcpDep_err == nil {
+
+				var dep_list_for_hpa []string
+				var cluster_dep_replicas map[string]int32
+				var cluster_dep_request map[string]bool
+
+				cluster_dep_replicas = make(map[string]int32)
+				cluster_dep_request = make(map[string]bool)
+
+				//Select Clusters to Deploy HPA, VPA (Policy + Check Deployment)
+				for _, cluster := range clusterListItems {
+					dep := &appsv1.Deployment{}
+					cluster_client := cm.Cluster_genClients[cluster.Name]
+					dep_err := cluster_client.Get(context.TODO(), dep, hasInstance.Namespace, hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.ScaleTargetRef.Name)
+					if dep_err == nil {
+						for i, _ := range dep.Spec.Template.Spec.Containers {
+							if dep.Spec.Template.Spec.Containers[i].Resources.Requests == nil {
+								cluster_dep_request[cluster.Name] = false
+								break
+							} else {
+								cluster_dep_request[cluster.Name] = true
+							}
+						}
+						cluster_dep_replicas[cluster.Name] = *dep.Spec.Replicas
+						dep_list_for_hpa = append(dep_list_for_hpa, cluster.Name)
 					}
 				}
-				if check == 0 {
-					dep_list_except = append(dep_list_except, cluster.Name)
+				//Delete HPA, VPA on except_cluster list
+				var dep_list_except []string
+				for _, cluster := range cm.Cluster_list.Items {
+					check := 0
+					for _, targetCluster := range dep_list_for_hpa {
+						if cluster.Name == targetCluster {
+							check = 1
+							break
+						}
+					}
+					if check == 0 {
+						dep_list_except = append(dep_list_except, cluster.Name)
+					}
 				}
-			}
-			if dep_list_except != nil {
-				for _, cluster := range dep_list_except {
-					_ = r.DeleteHPAVPA(cm, cluster, request.Namespace, request.Name)
+				if dep_list_except != nil {
+					for _, cluster := range dep_list_except {
+						_ = r.DeleteHPAVPA(cm, cluster, request.Namespace, request.Name)
+
+						err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
+						if err_openmcp != nil {
+							omcplog.V(0).Info("!! Fail to Update instance status", err_openmcp)
+							return reconcile.Result{}, err_openmcp
+						} else {
+							omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (HPA Create)")
+						}
+					}
+
+				}
+
+				omcplog.V(3).Info(">>> Target Clusters ", dep_list_for_hpa, " except ", dep_list_except)
+
+				//totalHASTimeEnd3 := time.Since(totalHASTimeStart3)
+				//omcplog.V(4).Info("------ Check HAS Time (3) : ", totalHASTimeEnd3)
+				//totalHASTimeStart4 := time.Now()
+
+				if dep_list_for_hpa != nil {
+					// Distribute min,max
+					cluster_min_map, cluster_max_map, min_max_err := r.UpdateMinMaxDistributionPolicy(hasInstance, cluster_dep_request, dep_list_for_hpa, cluster_dep_replicas)
+					if min_max_err != nil {
+						omcplog.V(0).Info(min_max_err)
+						return reconcile.Result{}, min_max_err
+					}
+
+					//totalHASTimeEnd4 := time.Since(totalHASTimeStart4)
+					//omcplog.V(4).Info("------ Check HAS Time (4) : ", totalHASTimeEnd4)
+					//totalHASTimeStart5 := time.Now()
+
+					var sync_name string
+					for _, clustername := range dep_list_for_hpa {
+
+						// case 1) HPA
+						if hasInstance.Spec.ScalingOptions.VpaTemplate == "Never" || (hasInstance.Spec.ScalingOptions.VpaTemplate == "Auto" && cluster_dep_request[clustername] == true) {
+							foundHPA := &hpav2beta2.HorizontalPodAutoscaler{}
+							cluster_client := cm.Cluster_genClients[clustername]
+							err = cluster_client.Get(context.TODO(), foundHPA, hasInstance.Namespace, hasInstance.Name)
+							fmt.Println("b")
+							// CREATE HPA
+							if err != nil && errors.IsNotFound(err) {
+
+								hpa_min := cluster_min_map[clustername]
+								hpa_max := cluster_max_map[clustername]
+
+								//Create HPA Object
+								hpa := r.UpdateHorizontalPodAutoscaler(request, hasInstance, hpa_min, hpa_max)
+								//Create Sync resource (Sync Controller Watching)
+								command := "create"
+								sync_name, err = r.sendSyncHPA(hpa, command, clustername)
+
+								hasInstance.Status.SyncRequestName = sync_name
+
+								if err != nil {
+									omcplog.V(0).Info("!![error] Fail to Create new HPA", "HPA.Namespace", hpa.Namespace, "HPA.Name", hpa.Name)
+									return reconcile.Result{}, err
+								}
+								omcplog.V(2).Info(">>> "+clustername+" Create HPA [ min:", *hpa.Spec.MinReplicas, " / max:", hpa.Spec.MaxReplicas, " ]")
+								fmt.Println("d")
+								//Status Update
+								hasInstance.Status.LastSpec = hasInstance.Spec
+								tmpMap[clustername] = 0
+								hasInstance.Status.RebalancingCount = tmpMap
+
+								err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
+								if err_openmcp != nil {
+									omcplog.V(0).Info("!![error] Fail to update instance status", err_openmcp)
+									return reconcile.Result{}, err_openmcp
+								} else {
+									omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (HPA Create)")
+								}
+
+								// HPA created successfully - return and requeue
+							} else if err != nil {
+								omcplog.V(0).Info("!![error] Fail to Get HPA")
+								return reconcile.Result{}, err
+							} else {
+								if hasInstance.Status.LastSpec.ScalingOptions.HpaTemplate.Spec.MinReplicas != nil {
+									if *hasInstance.Status.LastSpec.ScalingOptions.HpaTemplate.Spec.MinReplicas != *hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MinReplicas || hasInstance.Status.LastSpec.ScalingOptions.HpaTemplate.Spec.MaxReplicas != hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MaxReplicas {
+
+										desired_min_replicas := cluster_min_map[clustername]
+										desired_max_replicas := cluster_max_map[clustername]
+
+										if *foundHPA.Spec.MinReplicas != desired_min_replicas || foundHPA.Spec.MaxReplicas != desired_max_replicas {
+											foundHPA.TypeMeta.Kind = "HorizontalPodAutoscaler"
+											foundHPA.TypeMeta.APIVersion = "autoscaling/v2beta2"
+
+											foundHPA.Spec.MinReplicas = &desired_min_replicas
+											foundHPA.Spec.MaxReplicas = desired_max_replicas
+
+											command := "update"
+											_, err = r.sendSyncHPA(foundHPA, command, clustername)
+
+											omcplog.V(2).Info(">>> "+clustername+" Update HPA [ min:", *foundHPA.Spec.MinReplicas, " / max:", foundHPA.Spec.MaxReplicas, " ]")
+
+											if err != nil {
+												omcplog.V(0).Info("!![error] Fail to Update HPA", "Hpa.Namespace", foundHPA.Namespace, "Hpa.Name", foundHPA.Name)
+												return reconcile.Result{}, err
+											}
+										}
+									}
+								}
+							}
+							// case 2) HPA + VPA
+						} else if hasInstance.Spec.ScalingOptions.VpaTemplate == "Always" || (hasInstance.Spec.ScalingOptions.VpaTemplate == "Auto" && cluster_dep_request[clustername] == false) {
+							// First, Create HPA
+
+							//Status Update
+							foundHPA := &hpav2beta2.HorizontalPodAutoscaler{}
+							cluster_client := cm.Cluster_genClients[clustername]
+							err = cluster_client.Get(context.TODO(), foundHPA, hasInstance.Namespace, hasInstance.Name)
+							if err != nil && errors.IsNotFound(err) { //CREATE HPA
+
+								hpa_min := cluster_min_map[clustername]
+								hpa_max := cluster_max_map[clustername]
+
+								//Create HPA Object
+								hpa := r.UpdateHorizontalPodAutoscaler(request, hasInstance, hpa_min, hpa_max)
+								//Create Sync resource (Sync Controller Watching)
+								command := "create"
+								sync_name, err = r.sendSyncHPA(hpa, command, clustername)
+
+								hasInstance.Status.SyncRequestName = sync_name
+
+								if err != nil {
+									omcplog.V(0).Info("!![error] Fail to Create new HPA", "HPA.Namespace", hpa.Namespace, "HPA.Name", hpa.Name)
+									return reconcile.Result{}, err
+								}
+								omcplog.V(2).Info(">>> "+clustername+" Create HPA [ min:", *hpa.Spec.MinReplicas, " / max:", hpa.Spec.MaxReplicas, " ]")
+
+								//Status Update
+								hasInstance.Status.LastSpec = hasInstance.Spec
+								tmpMap[clustername] = 0
+								hasInstance.Status.RebalancingCount = tmpMap
+
+								err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
+								if err_openmcp != nil {
+									omcplog.V(0).Info("!![error] Fail to Update instance status", err_openmcp)
+									return reconcile.Result{}, err_openmcp
+								} else {
+									omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (HPA Create)")
+								}
+							} else if err != nil {
+								omcplog.V(0).Info("!![error] Fail to Get HPA")
+								return reconcile.Result{}, err
+							} else {
+
+								if hasInstance.Status.LastSpec.ScalingOptions.HpaTemplate.Spec.MinReplicas != nil {
+									if *hasInstance.Status.LastSpec.ScalingOptions.HpaTemplate.Spec.MinReplicas != *hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MinReplicas || hasInstance.Status.LastSpec.ScalingOptions.HpaTemplate.Spec.MaxReplicas != hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MaxReplicas {
+
+										desired_min_replicas := cluster_min_map[clustername]
+										desired_max_replicas := cluster_max_map[clustername]
+
+										if *foundHPA.Spec.MinReplicas != desired_min_replicas || foundHPA.Spec.MaxReplicas != desired_max_replicas {
+											foundHPA.TypeMeta.Kind = "HorizontalPodAutoscaler"
+											foundHPA.TypeMeta.APIVersion = "autoscaling/v2beta2"
+
+											foundHPA.Spec.MinReplicas = &desired_min_replicas
+											foundHPA.Spec.MaxReplicas = desired_max_replicas
+
+											command := "update"
+											_, err = r.sendSyncHPA(foundHPA, command, clustername)
+
+											omcplog.V(2).Info(">>> "+clustername+" Update HPA [ min:", *foundHPA.Spec.MinReplicas, " / max:", foundHPA.Spec.MaxReplicas, " ]")
+
+											if err != nil {
+												omcplog.V(0).Info("!![error] Fail to Update HPA", "Hpa.Namespace", foundHPA.Namespace, "Hpa.Name", foundHPA.Name)
+												return reconcile.Result{}, err
+											}
+										}
+									}
+								}
+							}
+							//And then, Create VPA
+							foundVPA := &vpav1beta2.VerticalPodAutoscaler{}
+							err = r.ghosts[clustername].Get(context.TODO(), ObjectKey{Namespace: hasInstance.Namespace, Name: hasInstance.Name}, foundVPA)
+
+							if err != nil && errors.IsNotFound(err) { //CREATE VPA
+
+								vpa := r.UpdateVerticalPodAutoscaler(request, hasInstance)
+
+								command := "create"
+								_, err = r.sendSyncVPA(vpa, command, clustername)
+
+								hasInstance.Status.SyncRequestName = sync_name
+
+								if err != nil {
+									omcplog.V(0).Info("!![error] Fail to Create new VPA", "VPA.Namespace", vpa.Namespace, "VPA.Name", vpa.Name)
+									return reconcile.Result{}, err
+								}
+								// VPA created successfully - return and requeue
+								omcplog.V(2).Info(">>> " + clustername + " Create VPA")
+
+								hasInstance.Status.LastSpec = hasInstance.Spec
+
+								err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
+								if err_openmcp != nil {
+									omcplog.V(0).Info("!![error] Fail to Update instance status", err_openmcp)
+									return reconcile.Result{}, err_openmcp
+								} else {
+									omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (VPA Create)")
+								}
+
+							} else if err != nil {
+								omcplog.V(0).Info("!![error] Fail to Get VPA")
+								return reconcile.Result{}, err
+							} else if err == nil { //UPDATE VPA
+							}
+						}
+					}
+
+					//totalHASTimeEnd5 := time.Since(totalHASTimeStart5)
+					//omcplog.V(4).Info("------ Check HAS Time (5) : ", totalHASTimeEnd5)
+
+					//Check for Changes to OpenMCPHPA resource
+					hasInstance.Status.LastSpec = hasInstance.Spec
 
 					err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 					if err_openmcp != nil {
-						omcplog.V(0).Info("!!! Failed to update instance status", err_openmcp)
+						omcplog.V(0).Info("!![error] Fail to Update instance status", err_openmcp)
 						return reconcile.Result{}, err_openmcp
 					} else {
-						omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (HPA Create)")
+						omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (End)")
 					}
 				}
 
+			} else if err != nil && errors.IsNotFound(err) {
+				omcplog.V(0).Info("!![error] Can't find OpenmcpDeployment")
+				return reconcile.Result{}, err
+			} else {
+				omcplog.V(0).Info("!![error] Fail to Get OpenMCPDeployment")
+				return reconcile.Result{}, err
 			}
-
-			omcplog.V(3).Info(">>> Target Clusters ", dep_list_for_hpa, " except ", dep_list_except)
-
-			totalHASTimeEnd3 := time.Since(totalHASTimeStart3)
-			omcplog.V(4).Info("------ Check HAS Time (3) : ", totalHASTimeEnd3)
-			totalHASTimeStart4 := time.Now()
-
-			if dep_list_for_hpa != nil {
-				// Distribute min,max
-				cluster_min_map, cluster_max_map, min_max_err := r.UpdateMinMaxDistributionPolicy(hasInstance, cluster_dep_request, dep_list_for_hpa, cluster_dep_replicas)
-				if min_max_err != nil {
-					omcplog.V(0).Info(min_max_err)
-					return reconcile.Result{}, min_max_err
-				}
-
-				totalHASTimeEnd4 := time.Since(totalHASTimeStart4)
-				omcplog.V(4).Info("------ Check HAS Time (4) : ", totalHASTimeEnd4)
-				totalHASTimeStart5 := time.Now()
-
-				var sync_name string
-				for _, clustername := range dep_list_for_hpa {
-					// case 1) HPA
-					if hasInstance.Spec.VpaMode == "Never" || (hasInstance.Spec.VpaMode == "Auto" && cluster_dep_request[clustername] == true) {
-						foundHPA := &hpav2beta2.HorizontalPodAutoscaler{}
-						cluster_client := cm.Cluster_genClients[clustername]
-						err = cluster_client.Get(context.TODO(), foundHPA, hasInstance.Namespace, hasInstance.Name)
-
-						// CREATE HPA
-						if err != nil && errors.IsNotFound(err) {
-
-							hpa_min := cluster_min_map[clustername]
-							hpa_max := cluster_max_map[clustername]
-
-							//Create HPA Object
-							hpa := r.UpdateHorizontalPodAutoscaler(request, hasInstance, hpa_min, hpa_max)
-							//Create Sync resource (Sync Controller Watching)
-							command := "create"
-							sync_name, err = r.sendSyncHPA(hpa, command, clustername)
-
-							hasInstance.Status.SyncRequestName = sync_name
-
-							if err != nil {
-								omcplog.V(0).Info("!!! Failed to create new HPA", "HPA.Namespace", hpa.Namespace, "HPA.Name", hpa.Name)
-								return reconcile.Result{}, err
-							}
-							omcplog.V(2).Info(">>> "+clustername+" Create HPA [ min:", *hpa.Spec.MinReplicas, " / max:", hpa.Spec.MaxReplicas, " ]")
-
-							//Status Update
-							hasInstance.Status.LastSpec = hasInstance.Spec
-							tmpMap[clustername] = 0
-							hasInstance.Status.RebalancingCount = tmpMap
-
-							err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
-							if err_openmcp != nil {
-								omcplog.V(0).Info("!!! Failed to update instance status", err_openmcp)
-								return reconcile.Result{}, err_openmcp
-							} else {
-								omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (HPA Create)")
-							}
-
-							// HPA created successfully - return and requeue
-						} else if err != nil {
-							omcplog.V(0).Info("!!! Failed to get HPA")
-							return reconcile.Result{}, err
-						} else {
-							if hasInstance.Status.LastSpec.HpaTemplate.Spec.MinReplicas != nil {
-								if *hasInstance.Status.LastSpec.HpaTemplate.Spec.MinReplicas != *hasInstance.Spec.HpaTemplate.Spec.MinReplicas || hasInstance.Status.LastSpec.HpaTemplate.Spec.MaxReplicas != hasInstance.Spec.HpaTemplate.Spec.MaxReplicas {
-
-									desired_min_replicas := cluster_min_map[clustername]
-									desired_max_replicas := cluster_max_map[clustername]
-
-									if *foundHPA.Spec.MinReplicas != desired_min_replicas || foundHPA.Spec.MaxReplicas != desired_max_replicas {
-										foundHPA.TypeMeta.Kind = "HorizontalPodAutoscaler"
-										foundHPA.TypeMeta.APIVersion = "autoscaling/v2beta2"
-
-										foundHPA.Spec.MinReplicas = &desired_min_replicas
-										foundHPA.Spec.MaxReplicas = desired_max_replicas
-
-										command := "update"
-										_, err = r.sendSyncHPA(foundHPA, command, clustername)
-
-										omcplog.V(2).Info(">>> "+clustername+" Update HPA [ min:", *foundHPA.Spec.MinReplicas, " / max:", foundHPA.Spec.MaxReplicas, " ]")
-
-										if err != nil {
-											omcplog.V(0).Info("!!! Failed to update HPA", "Hpa.Namespace", foundHPA.Namespace, "Hpa.Name", foundHPA.Name)
-											return reconcile.Result{}, err
-										}
-									}
-								}
-							}
-						}
-						// case 2) HPA + VPA
-					} else if hasInstance.Spec.VpaMode == "Always" || (hasInstance.Spec.VpaMode == "Auto" && cluster_dep_request[clustername] == false) {
-						// First, Create HPA
-						foundHPA := &hpav2beta2.HorizontalPodAutoscaler{}
-						cluster_client := cm.Cluster_genClients[clustername]
-						err = cluster_client.Get(context.TODO(), foundHPA, hasInstance.Namespace, hasInstance.Name)
-						if err != nil && errors.IsNotFound(err) { //CREATE HPA
-
-							hpa_min := cluster_min_map[clustername]
-							hpa_max := cluster_max_map[clustername]
-
-							//Create HPA Object
-							hpa := r.UpdateHorizontalPodAutoscaler(request, hasInstance, hpa_min, hpa_max)
-							//Create Sync resource (Sync Controller Watching)
-							command := "create"
-							sync_name, err = r.sendSyncHPA(hpa, command, clustername)
-
-							hasInstance.Status.SyncRequestName = sync_name
-
-							if err != nil {
-								omcplog.V(0).Info("!!! Failed to create new HPA", "HPA.Namespace", hpa.Namespace, "HPA.Name", hpa.Name)
-								return reconcile.Result{}, err
-							}
-							omcplog.V(2).Info(">>> "+clustername+" Create HPA [ min:", *hpa.Spec.MinReplicas, " / max:", hpa.Spec.MaxReplicas, " ]")
-
-							//Status Update
-							hasInstance.Status.LastSpec = hasInstance.Spec
-							tmpMap[clustername] = 0
-							hasInstance.Status.RebalancingCount = tmpMap
-
-							err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
-							if err_openmcp != nil {
-								omcplog.V(0).Info("!!! Failed to update instance status", err_openmcp)
-								return reconcile.Result{}, err_openmcp
-							} else {
-								omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (HPA Create)")
-							}
-						} else if err != nil {
-							omcplog.V(0).Info("!!! Failed to get HPA")
-							return reconcile.Result{}, err
-						} else {
-							if hasInstance.Status.LastSpec.HpaTemplate.Spec.MinReplicas != nil {
-								if *hasInstance.Status.LastSpec.HpaTemplate.Spec.MinReplicas != *hasInstance.Spec.HpaTemplate.Spec.MinReplicas || hasInstance.Status.LastSpec.HpaTemplate.Spec.MaxReplicas != hasInstance.Spec.HpaTemplate.Spec.MaxReplicas {
-
-									desired_min_replicas := cluster_min_map[clustername]
-									desired_max_replicas := cluster_max_map[clustername]
-
-									if *foundHPA.Spec.MinReplicas != desired_min_replicas || foundHPA.Spec.MaxReplicas != desired_max_replicas {
-										foundHPA.TypeMeta.Kind = "HorizontalPodAutoscaler"
-										foundHPA.TypeMeta.APIVersion = "autoscaling/v2beta2"
-
-										foundHPA.Spec.MinReplicas = &desired_min_replicas
-										foundHPA.Spec.MaxReplicas = desired_max_replicas
-
-										command := "update"
-										_, err = r.sendSyncHPA(foundHPA, command, clustername)
-
-										omcplog.V(2).Info(">>> "+clustername+" Update HPA [ min:", *foundHPA.Spec.MinReplicas, " / max:", foundHPA.Spec.MaxReplicas, " ]")
-
-										if err != nil {
-											omcplog.V(0).Info("!!! Failed to update HPA", "Hpa.Namespace", foundHPA.Namespace, "Hpa.Name", foundHPA.Name)
-											return reconcile.Result{}, err
-										}
-									}
-								}
-							}
-						}
-						//And then, Create VPA
-						foundVPA := &vpav1beta2.VerticalPodAutoscaler{}
-						err = r.ghosts[clustername].Get(context.TODO(), ObjectKey{Namespace: hasInstance.Namespace, Name: hasInstance.Name}, foundVPA)
-
-						if err != nil && errors.IsNotFound(err) { //CREATE VPA
-
-							vpa := r.UpdateVerticalPodAutoscaler(request, hasInstance)
-
-							command := "create"
-							_, err = r.sendSyncVPA(vpa, command, clustername)
-
-							hasInstance.Status.SyncRequestName = sync_name
-
-							if err != nil {
-								omcplog.V(0).Info("!!! Failed to create new VPA", "VPA.Namespace", vpa.Namespace, "VPA.Name", vpa.Name)
-								return reconcile.Result{}, err
-							}
-							// VPA created successfully - return and requeue
-							omcplog.V(2).Info(">>> " + clustername + " Create VPA")
-
-							hasInstance.Status.LastSpec = hasInstance.Spec
-
-							err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
-							if err_openmcp != nil {
-								omcplog.V(0).Info("!!! Failed to update instance status", err_openmcp)
-								return reconcile.Result{}, err_openmcp
-							} else {
-								omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (VPA Create)")
-							}
-
-						} else if err != nil {
-							omcplog.V(0).Info("!!! Failed to get VPA")
-							return reconcile.Result{}, err
-						} else if err == nil { //UPDATE VPA
-						}
-					}
-				}
-
-				totalHASTimeEnd5 := time.Since(totalHASTimeStart5)
-				omcplog.V(4).Info("------ Check HAS Time (5) : ", totalHASTimeEnd5)
-
-				//Check for Changes to OpenMCPHPA resource
-				hasInstance.Status.LastSpec = hasInstance.Spec
-
-				err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
-				if err_openmcp != nil {
-					omcplog.V(0).Info("!!! Failed to update instance status", err_openmcp)
-					return reconcile.Result{}, err_openmcp
-				} else {
-					omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (End)")
-				}
-			}
-		} else if err != nil && errors.IsNotFound(err) {
-			omcplog.V(0).Info("!!! OpenmcpDeployment is not found")
-			return reconcile.Result{}, err
-		} else {
-			omcplog.V(0).Info("!!! Failed to get OpenMCPDeployment")
-			return reconcile.Result{}, err
 		}
 
 		totalHASTimeEnd0 := time.Since(totalHASTimeStart1)
@@ -494,7 +610,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 	//Get Target  OpenMCPDeployment
 	openmcpDep := &resourcev1alpha1.OpenMCPDeployment{}
-	openmcpDep_err := r.live.Get(context.TODO(), ObjectKey{Namespace: hasInstance.Namespace, Name: hasInstance.Spec.HpaTemplate.Spec.ScaleTargetRef.Name}, openmcpDep)
+	openmcpDep_err := r.live.Get(context.TODO(), ObjectKey{Namespace: hasInstance.Namespace, Name: hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.ScaleTargetRef.Name}, openmcpDep)
 
 	var dep_list_for_hpa []string
 	var cluster_dep_replicas map[string]int32
@@ -507,7 +623,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		for _, cluster := range cm.Cluster_list.Items {
 			dep := &appsv1.Deployment{}
 			cluster_client := cm.Cluster_genClients[cluster.Name]
-			dep_err := cluster_client.Get(context.TODO(), dep, hasInstance.Namespace, hasInstance.Spec.HpaTemplate.Spec.ScaleTargetRef.Name)
+			dep_err := cluster_client.Get(context.TODO(), dep, hasInstance.Namespace, hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.ScaleTargetRef.Name)
 			if dep_err == nil {
 
 				for i, _ := range dep.Spec.Template.Spec.Containers {
@@ -542,7 +658,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 					if check == "Success" {
 						err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 						if err_openmcp != nil {
-							omcplog.V(0).Info("!!! Failed to update instance status \"RebalancingCount\"", err_openmcp)
+							omcplog.V(0).Info("!![error] Fail to update instance status \"RebalancingCount\"", err_openmcp)
 							return reconcile.Result{}, err_openmcp
 						} else {
 							omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
@@ -562,7 +678,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 						err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 						if err_openmcp != nil {
-							omcplog.V(0).Info("!!! Failed to update instance status \"RebalancingCount\"", err_openmcp)
+							omcplog.V(0).Info("!![error] Fail to Update instance status \"RebalancingCount\"", err_openmcp)
 							return reconcile.Result{}, err_openmcp
 						} else {
 							omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (RebalancingCount)")
@@ -622,7 +738,7 @@ func (r *reconciler) UpdateTargetClusterPolicy(cm *clusterManager.ClusterManager
 		target_cluster_policy_err := r.live.Get(context.TODO(), ObjectKey{Namespace: "openmcp", Name: "has-target-cluster"}, foundPolicy)
 		if target_cluster_policy_err == nil {
 			if foundPolicy.Spec.PolicyStatus == "Enabled" {
-				omcplog.V(3).Info(">>> Policy \"Cluster Target\" Apply (Enabled)")
+				omcplog.V(3).Info(">>> Apply \"Cluster Target\" Policy (Enabled)")
 				hasInstance.Status.Policies = append(hasInstance.Status.Policies, foundPolicy.Spec.Template.Spec.Policies...)
 				for _, cluster := range cm.Cluster_list.Items {
 					for _, value := range foundPolicy.Spec.Template.Spec.Policies[0].Value {
@@ -632,7 +748,7 @@ func (r *reconciler) UpdateTargetClusterPolicy(cm *clusterManager.ClusterManager
 					}
 				}
 			} else {
-				omcplog.V(3).Info(">>> Policy \"Cluster Target\" Apply (Disabled - set default)")
+				omcplog.V(3).Info(">>> Apply \"Cluster Target\" Policy (Disabled - set default)")
 				omp := make([]policyv1alpha1.OpenMCPPolicies, 1)
 				omp[0].Type = "Target"
 				omp_value := make([]string, 0)
@@ -642,7 +758,7 @@ func (r *reconciler) UpdateTargetClusterPolicy(cm *clusterManager.ClusterManager
 				clusterListItems = cm.Cluster_list.Items
 			}
 		} else {
-			omcplog.V(1).Info("!!! Fail to get policy \"Cluster Target\" (set default)")
+			omcplog.V(1).Info("!![error] Fail to get Policy \"Cluster Target\" (set default)")
 			omp := make([]policyv1alpha1.OpenMCPPolicies, 1)
 			omp[0].Type = "Target"
 			omp_value := make([]string, 0)
@@ -670,14 +786,14 @@ func (r *reconciler) CreateMinMaxMap(hasInstance *resourcev1alpha1.OpenMCPHybrid
 		for n, tmp := range hasInstance.Status.Policies {
 			if tmp.Type == "Mode" { // if policy exists
 				if hasInstance.Status.Policies[n].Value[0] == "Equal" {
-					cluster_min_map = HpaMinScheduling_equal(dep_list_for_hpa, *hasInstance.Spec.HpaTemplate.Spec.MinReplicas)
-					cluster_max_map = HpaMaxScheduling_equal(dep_list_for_hpa, hasInstance.Spec.HpaTemplate.Spec.MaxReplicas)
+					cluster_min_map = HpaMinScheduling_equal(dep_list_for_hpa, *hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MinReplicas)
+					cluster_max_map = HpaMaxScheduling_equal(dep_list_for_hpa, hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MaxReplicas)
 				} else {
-					cluster_min_map = HpaMinScheduling(dep_list_for_hpa, cluster_dep_replicas, *hasInstance.Spec.HpaTemplate.Spec.MinReplicas)
-					cluster_max_map = HpaMaxScheduling(dep_list_for_hpa, cluster_dep_replicas, hasInstance.Spec.HpaTemplate.Spec.MaxReplicas)
+					cluster_min_map = HpaMinScheduling(dep_list_for_hpa, cluster_dep_replicas, *hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MinReplicas)
+					cluster_max_map = HpaMaxScheduling(dep_list_for_hpa, cluster_dep_replicas, hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MaxReplicas)
 
 					for _, cluster := range dep_list_for_hpa {
-						if hasInstance.Spec.VpaMode == "Always" || (hasInstance.Spec.VpaMode == "Auto" && cluster_dep_request[cluster] == false) {
+						if hasInstance.Spec.ScalingOptions.VpaTemplate == "Always" || (hasInstance.Spec.ScalingOptions.VpaTemplate == "Auto" && cluster_dep_request[cluster] == false) {
 							if cluster_min_map[cluster] < 2 {
 								cluster_min_map[cluster] = 2
 							}
@@ -693,26 +809,26 @@ func (r *reconciler) CreateMinMaxMap(hasInstance *resourcev1alpha1.OpenMCPHybrid
 
 		if minmax_policy_err == nil {
 			if foundPolicy.Spec.PolicyStatus == "Enabled" {
-				omcplog.V(3).Info(">>> Policy \"Min Max Distribution\" Apply (Enabled)")
+				omcplog.V(3).Info(">>> Apply \"Min Max Distribution\" Policy (Enabled)")
 				if foundPolicy.Spec.Template.Spec.Policies[0].Value[0] == "Equal" {
-					cluster_min_map = HpaMinScheduling_equal(dep_list_for_hpa, *hasInstance.Spec.HpaTemplate.Spec.MinReplicas)
-					cluster_max_map = HpaMaxScheduling_equal(dep_list_for_hpa, hasInstance.Spec.HpaTemplate.Spec.MaxReplicas)
+					cluster_min_map = HpaMinScheduling_equal(dep_list_for_hpa, *hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MinReplicas)
+					cluster_max_map = HpaMaxScheduling_equal(dep_list_for_hpa, hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MaxReplicas)
 					hasInstance.Status.Policies = append(hasInstance.Status.Policies, foundPolicy.Spec.Template.Spec.Policies...)
 				} else if foundPolicy.Spec.Template.Spec.Policies[0].Value[0] == "Unequal" {
-					cluster_min_map = HpaMinScheduling(dep_list_for_hpa, cluster_dep_replicas, *hasInstance.Spec.HpaTemplate.Spec.MinReplicas)
-					cluster_max_map = HpaMaxScheduling(dep_list_for_hpa, cluster_dep_replicas, hasInstance.Spec.HpaTemplate.Spec.MaxReplicas)
+					cluster_min_map = HpaMinScheduling(dep_list_for_hpa, cluster_dep_replicas, *hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MinReplicas)
+					cluster_max_map = HpaMaxScheduling(dep_list_for_hpa, cluster_dep_replicas, hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MaxReplicas)
 					hasInstance.Status.Policies = append(hasInstance.Status.Policies, foundPolicy.Spec.Template.Spec.Policies...)
 				} else {
-					cluster_min_map = HpaMinScheduling(dep_list_for_hpa, cluster_dep_replicas, *hasInstance.Spec.HpaTemplate.Spec.MinReplicas)
-					cluster_max_map = HpaMaxScheduling(dep_list_for_hpa, cluster_dep_replicas, hasInstance.Spec.HpaTemplate.Spec.MaxReplicas)
+					cluster_min_map = HpaMinScheduling(dep_list_for_hpa, cluster_dep_replicas, *hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MinReplicas)
+					cluster_max_map = HpaMaxScheduling(dep_list_for_hpa, cluster_dep_replicas, hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MaxReplicas)
 					foundPolicy.Spec.Template.Spec.Policies[0].Value[0] = "Default"
 					hasInstance.Status.Policies = append(hasInstance.Status.Policies, foundPolicy.Spec.Template.Spec.Policies...)
 				}
 
 			} else {
-				omcplog.V(3).Info(">>> Policy \"Min Max Distribution\" Apply (Disabled - set default)")
-				cluster_min_map = HpaMinScheduling(dep_list_for_hpa, cluster_dep_replicas, *hasInstance.Spec.HpaTemplate.Spec.MinReplicas)
-				cluster_max_map = HpaMaxScheduling(dep_list_for_hpa, cluster_dep_replicas, hasInstance.Spec.HpaTemplate.Spec.MaxReplicas)
+				omcplog.V(3).Info(">>> Apply \"Min Max Distribution\" Policy (Disabled - set default)")
+				cluster_min_map = HpaMinScheduling(dep_list_for_hpa, cluster_dep_replicas, *hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MinReplicas)
+				cluster_max_map = HpaMaxScheduling(dep_list_for_hpa, cluster_dep_replicas, hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MaxReplicas)
 				omp := make([]policyv1alpha1.OpenMCPPolicies, 1)
 				omp_value := make([]string, 1)
 				omp_value[0] = "Default"
@@ -721,9 +837,9 @@ func (r *reconciler) CreateMinMaxMap(hasInstance *resourcev1alpha1.OpenMCPHybrid
 				hasInstance.Status.Policies = append(hasInstance.Status.Policies, omp...)
 			}
 		} else {
-			omcplog.V(1).Info("Fail to get policy \"Min Max Distribution\" (set default)")
-			cluster_min_map = HpaMinScheduling(dep_list_for_hpa, cluster_dep_replicas, *hasInstance.Spec.HpaTemplate.Spec.MinReplicas)
-			cluster_max_map = HpaMaxScheduling(dep_list_for_hpa, cluster_dep_replicas, hasInstance.Spec.HpaTemplate.Spec.MaxReplicas)
+			omcplog.V(1).Info("!![error] Fail to get Policy \"Min Max Distribution\" (set default)")
+			cluster_min_map = HpaMinScheduling(dep_list_for_hpa, cluster_dep_replicas, *hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MinReplicas)
+			cluster_max_map = HpaMaxScheduling(dep_list_for_hpa, cluster_dep_replicas, hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.MaxReplicas)
 			omp := make([]policyv1alpha1.OpenMCPPolicies, 1)
 			omp_value := make([]string, 1)
 			omp_value[0] = "Default"
@@ -733,7 +849,7 @@ func (r *reconciler) CreateMinMaxMap(hasInstance *resourcev1alpha1.OpenMCPHybrid
 		}
 
 		for _, cluster := range dep_list_for_hpa {
-			if hasInstance.Spec.VpaMode == "Always" || (hasInstance.Spec.VpaMode == "Auto" && cluster_dep_request[cluster] == false) {
+			if hasInstance.Spec.ScalingOptions.VpaTemplate == "Always" || (hasInstance.Spec.ScalingOptions.VpaTemplate == "Auto" && cluster_dep_request[cluster] == false) {
 				if cluster_min_map[cluster] < 2 {
 					cluster_min_map[cluster] = 2
 				}
@@ -751,9 +867,9 @@ func (r *reconciler) CreateMinMaxMap(hasInstance *resourcev1alpha1.OpenMCPHybrid
 		//Update OpenMCPHAS Policy Option
 		err = r.live.Status().Update(context.TODO(), hasInstance)
 		if err != nil {
-			omcplog.V(0).Info("Policy Status Update Error")
+			omcplog.V(0).Info("!![error] Fail to Update Policy Status")
 		} else {
-			omcplog.V(3).Info(">>> Policy Status UPDATE Success")
+			//omcplog.V(3).Info(">>> Success to Update Policy Status")
 		}
 
 	}
@@ -778,13 +894,13 @@ func (r *reconciler) MinRebalancing(cm *clusterManager.ClusterManager, hasInstan
 				currentReplicasMap[cn] = analysisHPA.Status.CurrentReplicas
 			}
 		} else {
-			omcplog.V(0).Info("!!! Failed to get hpa info : ", err)
+			omcplog.V(0).Info("!![error] Fail to Get hpa info : ", err)
 		}
 	}
 
 	//when there is no candidate cluster
 	if len(dep_list_for_analysis) == 0 {
-		omcplog.V(4).Info("!!! Failed Rebalancing : There is no candidate cluster")
+		omcplog.V(4).Info("!![error] Fail Rebalancing : There is no candidate cluster")
 
 		return hasInstance, "Fail"
 	} else {
@@ -802,7 +918,7 @@ func (r *reconciler) MinRebalancing(cm *clusterManager.ClusterManager, hasInstan
 			if gRPCerr != nil {
 				omcplog.V(0).Info("could not connect : %v", gRPCerr)
 			}
-			omcplog.V(0).Info("!!! Failed Min Rebalacing : Failed to get Analysis Result :(")
+			omcplog.V(0).Info("!![error] Fail Min Rebalacing : Failed to get Analysis Result :(")
 		} else {
 			qosCluster := result.TargetCluster
 			omcplog.V(2).Info(">>> " + clustername + " min rebalancing")
@@ -881,13 +997,13 @@ func (r *reconciler) MaxRebalancing(cm *clusterManager.ClusterManager, hasInstan
 				currentReplicasMap[cn] = analysisHPA.Status.CurrentReplicas
 			}
 		} else {
-			omcplog.V(0).Info("!!! Failed to get hpa info : ", err)
+			omcplog.V(0).Info("!![error] Fail to Get hpa info : ", err)
 		}
 	}
 
 	//when there is no candidate cluster
 	if len(dep_list_for_analysis) == 0 {
-		omcplog.V(4).Info("!!! Failed Max Rebalancing : There is no candidate cluster")
+		omcplog.V(4).Info("!![error] Fail Max Rebalancing : There is no candidate cluster")
 		return hasInstance, "Fail"
 	} else {
 
@@ -905,7 +1021,7 @@ func (r *reconciler) MaxRebalancing(cm *clusterManager.ClusterManager, hasInstan
 			if gRPCerr != nil {
 				omcplog.V(0).Info("could not connect : %v", gRPCerr)
 			}
-			omcplog.V(0).Info("!!! Failed Rebalacing : Failed to get Analysis Result :(")
+			omcplog.V(0).Info("!![error] Fail Rebalacing : Failed to get Analysis Result :(")
 		} else {
 			qosCluster := result.TargetCluster
 			omcplog.V(2).Info(">>> " + clustername + " max rebalancing")
@@ -981,7 +1097,7 @@ func (r *reconciler) UpdateHorizontalPodAutoscaler(req reconcile.Request, m *res
 			Labels:    ls,
 		},
 
-		Spec:   m.Spec.HpaTemplate.Spec,
+		Spec:   m.Spec.ScalingOptions.HpaTemplate.Spec,
 		Status: hpav2beta2.HorizontalPodAutoscalerStatus{},
 	}
 
@@ -1014,7 +1130,7 @@ func (r *reconciler) UpdateVerticalPodAutoscaler(req reconcile.Request, m *resou
 			TargetRef: &autoscaling.CrossVersionObjectReference{
 				APIVersion: "apps/v1",
 				Kind:       "Deployment",
-				Name:       m.Spec.HpaTemplate.Spec.ScaleTargetRef.Name,
+				Name:       m.Spec.ScalingOptions.HpaTemplate.Spec.ScaleTargetRef.Name,
 			},
 			UpdatePolicy: &vpav1beta2.PodUpdatePolicy{
 				UpdateMode: &vpaUpdateMode,
@@ -1047,7 +1163,7 @@ func (r *reconciler) DeleteHPAVPA(cm *clusterManager.ClusterManager, cluster str
 
 	if err1 != nil && errors.IsNotFound(err1) {
 	} else if err1 != nil {
-		omcplog.V(0).Info("!!! Fail to Delete HPA - ", err1)
+		omcplog.V(0).Info("!![error] Fail to Delete HPA - ", err1)
 	} else if err1 == nil {
 		var sync_err1 error
 
@@ -1059,7 +1175,7 @@ func (r *reconciler) DeleteHPAVPA(cm *clusterManager.ClusterManager, cluster str
 
 		if sync_err1 != nil && errors.IsNotFound(sync_err1) {
 		} else if sync_err1 != nil {
-			omcplog.V(0).Info("!!! Fail to Delete VPA - ", sync_err1)
+			omcplog.V(0).Info("!![error] Fail to Delete VPA - ", sync_err1)
 		} else if sync_err1 == nil {
 			omcplog.V(2).Info(">>> " + cluster + " Delete HPA")
 		}
@@ -1068,7 +1184,7 @@ func (r *reconciler) DeleteHPAVPA(cm *clusterManager.ClusterManager, cluster str
 	err2 := r.ghosts[cluster].Get(context.TODO(), ObjectKey{Namespace: namespace, Name: name}, vpa)
 	if err2 != nil && errors.IsNotFound(err2) {
 	} else if err2 != nil {
-		omcplog.V(0).Info("!!! Fail to Get VPA - ", err2)
+		omcplog.V(0).Info("!![error] Fail to Get VPA - ", err2)
 	} else if err2 == nil {
 		var sync_err2 error
 
@@ -1077,7 +1193,7 @@ func (r *reconciler) DeleteHPAVPA(cm *clusterManager.ClusterManager, cluster str
 
 		if sync_err2 != nil && errors.IsNotFound(sync_err2) {
 		} else if sync_err2 != nil {
-			omcplog.V(0).Info("!!! Fail to Delete VPA - ", sync_err2)
+			omcplog.V(0).Info("!![error] Fail to Delete VPA - ", sync_err2)
 		} else if sync_err2 == nil {
 			omcplog.V(2).Info(">>> " + cluster + " Delete VPA")
 		}
@@ -1108,7 +1224,7 @@ func (r *reconciler) DeleteAllHPAVPA(cm *clusterManager.ClusterManager, namespac
 
 		if err1 != nil && errors.IsNotFound(err1) {
 		} else if err1 != nil {
-			omcplog.V(0).Info("!!! Fail to Delete HPA - ", err1)
+			omcplog.V(0).Info("!![error] Fail to Delete HPA - ", err1)
 		} else if err1 == nil {
 			var sync_err1 error
 
@@ -1120,7 +1236,7 @@ func (r *reconciler) DeleteAllHPAVPA(cm *clusterManager.ClusterManager, namespac
 
 			if sync_err1 != nil && errors.IsNotFound(sync_err1) {
 			} else if sync_err1 != nil {
-				omcplog.V(0).Info("!!! Fail to Delete HPA - ", sync_err1)
+				omcplog.V(0).Info("!![error] Fail to Delete HPA - ", sync_err1)
 			} else if sync_err1 == nil {
 				omcplog.V(2).Info(">>> " + cluster.Name + " Delete HPA")
 			}
@@ -1129,7 +1245,7 @@ func (r *reconciler) DeleteAllHPAVPA(cm *clusterManager.ClusterManager, namespac
 		err2 := r.ghosts[cluster.Name].Get(context.TODO(), ObjectKey{Namespace: namespace, Name: name}, vpa)
 		if err2 != nil && errors.IsNotFound(err2) {
 		} else if err2 != nil {
-			omcplog.V(0).Info("!!! Fail to Get VPA - ", err2)
+			omcplog.V(0).Info("!![error] Fail to Get VPA - ", err2)
 		} else if err2 == nil {
 			var sync_err2 error
 
@@ -1138,7 +1254,7 @@ func (r *reconciler) DeleteAllHPAVPA(cm *clusterManager.ClusterManager, namespac
 
 			if sync_err2 != nil && errors.IsNotFound(sync_err2) {
 			} else if sync_err2 != nil {
-				omcplog.V(0).Info("!!! Fail to Delete VPA - ", sync_err2)
+				omcplog.V(0).Info("!![error] Fail to Delete VPA - ", sync_err2)
 			} else if sync_err2 == nil {
 				omcplog.V(2).Info(">>> " + cluster.Name + " Delete VPA")
 			}

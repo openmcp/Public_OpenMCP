@@ -29,6 +29,7 @@ import (
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strings"
 )
 
 var cm *clusterManager.ClusterManager
@@ -55,10 +56,10 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	if err := co.WatchResourceReconcileObject(live, &dnsv1alpha1.OpenMCPServiceDNSRecord{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(context.TODO(), live, &dnsv1alpha1.OpenMCPServiceDNSRecord{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
-	if err := co.WatchResourceReconcileObject(live, &dnsv1alpha1.OpenMCPIngressDNSRecord{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(context.TODO(), live, &dnsv1alpha1.OpenMCPIngressDNSRecord{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
@@ -196,7 +197,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 }
 func CreateEndpoint(dnsName string, recordTTL dnsv1alpha1.TTL, recordType string, targets []string) *dnsv1alpha1.Endpoint {
 	endpoint := &dnsv1alpha1.Endpoint{
-		DNSName:    dnsName,
+		DNSName:    strings.ToLower(dnsName),
 		Targets:    targets,
 		RecordType: recordType,
 		RecordTTL:  recordTTL,

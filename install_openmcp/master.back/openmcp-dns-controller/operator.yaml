@@ -14,13 +14,15 @@ spec:
         name: openmcp-dns-controller
     spec:
       serviceAccountName: openmcp-dns-controller-sa
+      imagePullSecrets:
+        - name: REPLACE_DOCKERSECRETNAME
       containers:
         - name: openmcp-dns-controller
           # Replace this with the built image name
-          image: openmcp/openmcp-dns-controller:v0.0.1
+          image: ketidevit/openmcp-dns-controller:v0.0.1
           command:
           - openmcp-dns-controller
-          imagePullPolicy: Always
+          imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
           env:
             - name: WATCH_NAMESPACE
               value: ""

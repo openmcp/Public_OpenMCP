@@ -14,13 +14,15 @@ spec:
         name: openmcp-analytic-engine
     spec:
       serviceAccountName: openmcp-analytic-engine
+      imagePullSecrets:
+        - name: REPLACE_DOCKERSECRETNAME
       containers:
         - name: openmcp-analytic-engine
           # Replace this with the built image name
-          image: openmcp/openmcp-analytic-engine:v0.0.1
+          image: ketidevit/openmcp-analytic-engine:v0.0.1
           command:
           - openmcp-analytic-engine
-          imagePullPolicy: Always
+          imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
           env:
             - name: WATCH_NAMESPACE
               value: ""
@@ -37,9 +39,9 @@ spec:
             - name: INFLUX_PORT
               value: REPLACE_INFLUXDBPORT
             - name: INFLUX_USERNAME
-              value: REPLACE_INFLUXDBUSERNAME
+              value: "root"
             - name: INFLUX_PASSWORD
-              value: REPLACE_INFLUXDBUSERPWD
+              value: "root"
             - name: OPERATOR_NAME
               value: "openmcp-analytic-engine"
       tolerations:

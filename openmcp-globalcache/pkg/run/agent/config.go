@@ -1,8 +1,10 @@
 package agent
 
 import (
+	"context"
 	"errors"
 
+	"openmcp/openmcp/openmcp-globalcache/pkg/utils"
 	"openmcp/openmcp/util/clusterManager"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,7 +28,7 @@ func (r *RegistryNodeManager) init(clusterName string, nodeName string) error {
 	clientset = cm.Cluster_kubeClients[clusterName]
 
 	//get Address
-	result, getErr := clientset.CoreV1().Nodes().Get(nodeName, metav1.GetOptions{})
+	result, getErr := clientset.CoreV1().Nodes().Get(context.TODO(), nodeName, metav1.GetOptions{})
 	if getErr != nil {
 		return getErr
 	}
@@ -49,7 +51,7 @@ func (r *RegistryNodeManager) init(clusterName string, nodeName string) error {
 	r.clusterName = clusterName
 	r.nodeName = nodeName
 	r.address = ipAddress
-	//r.port = string(utils.AgentRegistryManagerDefaultPort)
+	r.port = string(utils.AgentRegistryManagerDefaultPort)
 	//r.port = "4999"
 	return nil
 }

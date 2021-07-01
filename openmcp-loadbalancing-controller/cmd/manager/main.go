@@ -25,9 +25,9 @@ import (
 	//"sync"
 	//"time"
 
-	"context"
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
+	"context"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/controller/openmcploadbalancing"
@@ -68,7 +68,7 @@ func main() {
 		}
 		co, _ := openmcploadbalancing.NewController(live, ghosts, namespace, cm)
 		serviceWatch, _ := service.NewController(live, ghosts, namespace, cm)
-		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
+		reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
 		m := manager.New()
@@ -78,8 +78,6 @@ func main() {
 		m.AddController(loglevel_cont)
 
 		go loadbalancing.GetPolicy()
-
-
 
 		//go openmcploadbalancing.Loadbalancer(SERVER_IP)
 		httpServerExitDone := &sync.WaitGroup{}
@@ -93,7 +91,6 @@ func main() {
 		if isAnalytic == "no" {
 			go loadbalancing.RequestResourceScore(tempCluster, SERVER_IP)
 		}
-
 
 		stop := reshape.SetupSignalHandler()
 

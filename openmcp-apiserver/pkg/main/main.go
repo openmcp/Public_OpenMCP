@@ -19,7 +19,6 @@ package main
 import (
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
-	"context"
 	"log"
 	"net/http"
 	"openmcp/openmcp/omcplog"
@@ -30,13 +29,21 @@ import (
 	"openmcp/openmcp/util/controller/reshape"
 )
 
+var live *cluster.Cluster
 
 func main() {
 	logLevel.KetiLogInit()
 
-
 	for {
 		cm := clusterManager.NewClusterManager()
+
+		host_ctx := "openmcp"
+		namespace := "openmcp"
+
+		host_cfg := cm.Host_config
+		live = cluster.New(host_ctx, host_cfg, cluster.Options{})
+
+		httphandler.Live = live
 
 		HTTPServer_PORT := "8080"
 
@@ -49,23 +56,20 @@ func main() {
 
 		handler.HandleFunc("/token", auth.TokenHandler)
 		handler.Handle("/", auth.AuthMiddleware(http.HandlerFunc(httpManager.RouteHandler)))
+		handler.HandleFunc("/join", httphandler.JoinHandler)
+		handler.HandleFunc("/joinCloud", httphandler.JoinCloudHandler)
 
 		server := &http.Server{Addr: ":" + HTTPServer_PORT, Handler: handler}
 
 		go func() {
 			omcplog.V(2).Info("Start OpenMCP API Server")
-			err := server.ListenAndServe()
+			//err := server.ListenAndServe()
+			//err := server.ListenAndServeTLS("/tmp/cert/10.0.3.40/server.crt", "/tmp/cert/10.0.3.40/server.key")
+			err := server.ListenAndServeTLS("/tmp/cert/server.crt", "/tmp/cert/server.key")
 			if err != nil {
 				omcplog.V(0).Info(err)
 			}
 		}()
-
-
-		host_ctx := "openmcp"
-		namespace := "openmcp"
-
-		host_cfg := cm.Host_config
-		live := cluster.New(host_ctx, host_cfg, cluster.Options{})
 
 		ghosts := []*cluster.Cluster{}
 
@@ -77,7 +81,7 @@ func main() {
 			ghosts = append(ghosts, ghost)
 		}
 
-		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
+		reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
 		m := manager.New()
@@ -90,12 +94,11 @@ func main() {
 			log.Fatal(err)
 		}
 
-		if err := server.Shutdown(context.Background()); err != nil {
+		/*if err := server.Shutdown(context.Background()); err != nil {
 			log.Fatalf("OpenMCP API Server Shutdown Failed:%+v", err)
-		}
+		}*/
 
 		omcplog.V(2).Info("OpenMCP API Server Exited Properly")
 	}
 
 }
-

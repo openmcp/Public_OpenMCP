@@ -14,10 +14,12 @@ spec:
         name: openmcp-scheduler
     spec:
       serviceAccountName: openmcp-scheduler
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: openmcp-scheduler
           # Replace this with the built image name
-          image: openmcp/openmcp-scheduler:v0.0.1
+          image: ketidevit/openmcp-scheduler:v0.0.1
           command:
           - openmcp-scheduler
           imagePullPolicy: Always

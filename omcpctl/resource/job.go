@@ -20,9 +20,12 @@ func JobInfo(job *batchv1.Job) []string{
 	}
 	completions := strconv.Itoa(numOfComplete) + "/" + strconv.Itoa(int(*job.Spec.Completions))
 
-	duration := cobrautil.GetDuration(job.CreationTimestamp.Time, job.Status.CompletionTime.Time)
-
 	age := cobrautil.GetAge(job.CreationTimestamp.Time)
+	duration := age
+	if job.Status.CompletionTime != nil {
+		duration = cobrautil.GetDuration(job.CreationTimestamp.Time, job.Status.CompletionTime.Time)
+	}
+
 
 	data := []string{job.Namespace, job.Name, completions, duration, age}
 

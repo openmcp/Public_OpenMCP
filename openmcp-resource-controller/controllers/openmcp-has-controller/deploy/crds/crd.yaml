@@ -9,6 +9,8 @@ spec:
     listKind: OpenMCPHybridAutoScalerList
     plural: openmcphybridautoscalers
     singular: openmcphybridautoscaler
+    shortNames:
+    - ohas
   scope: Namespaced
   #scope: Cluster
   subresources:

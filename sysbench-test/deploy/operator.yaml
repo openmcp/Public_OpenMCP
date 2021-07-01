@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sysbench-test
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: sysbench-test
+  template:
+    metadata:
+      labels:
+        name: sysbench-test
+    spec:
+      serviceAccountName: sysbench-test
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: sysbench-test
+          # Replace this with the built image name
+          image: openmcp/sysbench-test:v0.0.1
+          command:
+          - sysbench-test
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              #value: ""
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "sysbench-test"
+          ports:
+            - containerPort: 80
+              name: http
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sysbench-test
+  namespace: openmcp
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 7070
+      nodePort: 32222
+  selector:
+    name: sysbench-test
+  type: LoadBalancer
+
+

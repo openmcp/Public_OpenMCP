@@ -149,7 +149,6 @@ func getResource(ns, objectType, name, clusterName, timeStart, timeEnd string) [
 			panic(err.Error())
 		}
 
-
 		return prettyJSON.Bytes()
 
 

@@ -3,24 +3,30 @@
 - [How To Install](#how-to-install)
   - [1. Rename OpenMCP cluster name](#1-Rename-openmcp-cluster-name)
   - [2. Deploy init modules for OpenMCP](#2-Deploy-init-modules-for-OpenMCP)
-  - [3. Register OpenMCP server on external storage](#3-Register-OpenMCP-server-on-external-storage)
 - [How To Join Cluster](#how-to-join-cluster)
   - [1. How to join Kubernetes Cluster to OpenMCP](#1-How-to-join-Kubernetes-Cluster-to-OpenMCP)
     - [(1) (option) Rename cluster name [In sub-cluster]](#1-option-Rename-cluster-name-In-sub-cluster)
-    - [(2) Register sub-cluster to external storage [In sub-cluster]](#2-Register-sub-cluster-to-external-storage-In-sub-cluster)
+    - [(2) Register sub-cluster to OpenMCP [In sub-cluster]](#2-Register-sub-cluster-to-OpenMCP-In-sub-cluster)
     - [(3) Join sub-cluster to OpenMCP [In OpenMCP]](#3-Join-sub-cluster-to-OpenMCP-In-OpenMCP)
     - [(4) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]](#4-Register-Region-and-Zone-to-Master-Node-of-sub-cluster-In-OpenMCP)
-    - [(5) Create MetalLB Config in sub-cluster [In OpenMCP]](#5-Create-MetalLB-Config-in-sub-cluster-In-OpenMCP)
   - [2. How to join GKE Cluster to OpenMCP](#2-How-to-join-GKE-Cluster-to-OpenMCP)
     - [(1) Install Cloud SDK](#1-Install-Cloud-SDK)
     - [(2) gcloud init](#2-gcloud-init)
     - [(3) gcloud container clusters list](#3-gcloud-container-clusters-list)
-    - [(4) Join GKE cluster to OpenMCP](#4-Join-GKE-cluster-to-OpenMCP)
+    - [(4) Register GKE cluster to OpenMCP](#4-Register-GKE-cluster-to-OpenMCP)
+    - [(5) Join GKE cluster to OpenMCP](#5-Join-GKE-cluster-to-OpenMCP)
   - [3. How to join EKS Cluster to OpenMCP](#3-How-to-join-EKS-Cluster-to-OpenMCP)
     - [(1) Install AWS CLI](#1-Install-AWS-CLI)
     - [(2) aws configure](#2-aws-configure)
     - [(3) aws eks list-clusters](#3-aws-eks-list-clusters)
-    - [(4) Join EKS cluster to OpenMCP](#4-Join-EKS-cluster-to-OpenMCP)
+    - [(4) Register EKS cluster to OpenMCP](#4-Register-EKS-cluster-to-OpenMCP)
+    - [(5) Join EKS cluster to OpenMCP](#5-Join-EKS-cluster-to-OpenMCP)
+  - [4. How to join AKS Cluster to OpenMCP](#4-How-to-join-AKS-Cluster-to-OpenMCP)
+    - [(1) Install Azure CLI](#1-Install-AWS-CLI)
+    - [(2) az login](#2-az-login)
+    - [(3) az aks list](#3-az-aks-list)
+    - [(4) Register AKS cluster to OpenMCP](#4-Register-AKS-cluster-to-OpenMCP)
+    - [(5) Join AKS cluster to OpenMCP](#5-Join-AKS-cluster-to-OpenMCP)
 - [OpenMCP EXAMPLE](#openmcp-example)
   - [Deploy OpenMCPDeployment resource](#Deploy-OpenMCPDeployment-resource)
   - [Deploy OpenMCPService resource](#Deploy-OpenMCPService-resource)
@@ -38,10 +44,9 @@
 
 ## Requirement
 
-Before you install OpenMCP, 'federation' and 'external server' as NFS server are required.
+Before you install OpenMCP, Federation is required.
 1. GO v1.14
 1. Install [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) (Version: 0.1.0-rc6)
-1. Install [nfs server](https://github.com/openmcp/Public_OpenMCP_ExternalServer)
 
 -----------------------------------------------------------------------------------------------
 [ Test Environment ]
@@ -49,7 +54,6 @@ Before you install OpenMCP, 'federation' and 'external server' as NFS server are
 OpenMCP   Master IP : 10.0.3.30  
 Cluster1  Master IP : 10.0.3.40  
 Cluster2  Master IP : 10.0.3.50  
-NFS       Server IP : 10.0.3.12  
 ```
 
 ## 1. Rename OpenMCP cluster name
@@ -82,35 +86,45 @@ users:
 ```
 
 ## 2. Deploy init modules for OpenMCP
-
-Before you deploy modules, set environment variables first.
-
-If you are using a private network, enter the IP and Port through port forwarding for the Public input box.
-
-If you are not using a private network, enter the IP of the OpenMCP Cluster Node in the Public input box.
-
-Enter the IP of the OpenMCP Master Cluster Node in the non-public IP text box except NFS. (It doesn't matter if it's not Public)
-
-PowerDNS Server Port means the PowerDNS query/response port, and enter the value that port port number 53 is forwarded to.
-
-Enter the previously set value for PowerDNS Server API Key. (https://github.com/openmcp/Public_OpenMCP_ExternalServer#how-to-install)
 ```bash
 $ cd ./install_openmcp
-$ ./SETTING.sh
-OpenMCP Analytic Engine GRPC Server IP -> 10.0.3.20
-OpenMCP Analytic Engine GRPC Server Port -> 32050
-OpenMCP Metric Collector GRPC Server IP(Public) -> 119.65.195.180
-OpenMCP Metric Collector GRPC Server Port(Public) -> 32051
-InfluxDB Server IP -> 10.0.3.20
-InfluxDB Server Port -> 31051
-InfluxDB User Name -> root
-InfluxDB User Password -> root
-NFS & PowerDNS Server IP -> 10.0.3.12
-PowerDNS Server IP(Public) -> 119.65.195.180
-PowerDNS Server Port(Public) -> 5353
-PowerDNS Server API Key -> 1234
-OpenMCP MetalLB Address IP Range (FROM) -> 10.0.3.241
-OpenMCP MetalLB Address IP Range (TO) -> 10.0.3.250
+$ vim settings.yaml
+default:
+  # learning or debug
+  installType: debug
+  docker:
+    imagePullSecretName: regcred
+    imagePullPolicy: Always
+
+master:
+  internal:
+    ip: 10.0.3.30
+    ports:
+      apiServerPort: 30000
+      clusterManagerPort: 30001
+      analyticEnginePort: 30002
+      metricCollectorPort: 30003
+      influxDBPort: 30004
+  public:
+    ip: 119.65.195.180
+    ports:
+      metricCollectorPort: 3212
+  metalLB:
+    rangeStartIP: 10.0.3.190
+    rangeEndIP: 10.0.3.200
+
+powerDNS:
+  apiKey: 1234
+  internal:
+    ip: 10.0.3.12
+    ports:
+      pdnsPort: 53
+  public:
+    ip: 119.65.195.180
+    ports:
+      pdnsPort: 5353
+
+$ ./create.sh
 ```
 
 Deploy all init modules for OpenMCP.
@@ -121,6 +135,7 @@ $ ./1.create.sh
 ```
 > list of installed Deployment
 
+> - Cluster Manager
 > - Sync Controller
 > - Resource Controller (Deployment, HybridAutoScaler, Ingress, Service, Configmap, Secret)
 > - LoadBalancing Controller
@@ -138,6 +153,7 @@ NAME                                                READY   STATUS    RESTARTS  
 influxdb-68bff77cbd-f9p6k                           1/1     Running   0          3m11s
 openmcp-analytic-engine-cbbcfd7f4-fjrvb             1/1     Running   0          3m12s
 openmcp-apiserver-56bf4c7bd-7q4vw                   1/1     Running   0          3m12s
+openmcp-cluster-manager-69c9ccc499-wjcqt            1/1     Running   0          3m12s
 openmcp-configmap-controller-6c97c8cd57-ww7x8       1/1     Running   0          3m11s
 openmcp-deployment-controller-747cf6d76-2xr52       1/1     Running   0          3m9s
 openmcp-dns-controller-78ff9bcdd5-5fkpq             1/1     Running   0          3m2s
@@ -152,31 +168,17 @@ openmcp-service-controller-776cc6574-b8wsm          1/1     Running   0         
 openmcp-sync-controller-769b85d4b4-crnxc            1/1     Running   0          3m1s
 
 $ kubectl get openmcppolicy -n openmcp
-NAME                           AGE
-analytic-metrics-weight        3m16s
-has-target-cluster             3m15s
-hpa-minmax-distribution-mode   3m15s
-log-level                      3m16s
-metric-collector-period        3m16s
+NAME                            AGE
+analytic-metrics-weight         3m16s
+has-target-cluster              3m15s
+hpa-minmax-distribution-mode    3m15s
+loadbalancing-controller-policy 3m15s
+log-level                       3m16s
+metric-collector-period         3m16s
 ```
 
 ### OpenMCP Architecture
 ![Architecture of the openmcp](/images/openmcp_architecture_2.png)
-
-
-## 3. Register OpenMCP server on external storage
-
-Before you register OpenMCP, install [omcpctl](https://github.com/openmcp/Public_OpenMCP/tree/master/omcpctl) and add a external server with /etc/resolv.conf.
-```bash
-$ vi /etc/resolv.conf
-nameserver 10.0.3.12
-```
-
-And then, register OpenMCP server on NFS server.
-```bash
-$ omcpctl register openmcp
-Success OpenMCP Master Register '10.0.3.30'
-```
 
 ---
 
@@ -185,6 +187,7 @@ Success OpenMCP Master Register '10.0.3.30'
 1. How to join Kubernetes Cluster to OpenMCP
 2. How to join GKE Cluster to OpenMCP
 3. How to join EKS Cluster to OpenMCP
+4. How to join AKS Cluster to OpenMCP
 
 --------------------------------------------------------------------------------------------
 ## 1. How to join Kubernetes Cluster to OpenMCP
@@ -218,22 +221,26 @@ users:
     client-key-data: ...
 ```
 
-### (2) Register sub-cluster to external storage [In sub-cluster]
+### (2) Register sub-cluster to OpenMCP [In sub-cluster]
 
-After installing [omctl](https://github.com/openmcp/Public_OpenMCP_Member_CLI) on each cluster, use omctl to register sub-cluster to nfs server.
+Install 'kubectl join' plugin on sub-cluster.
+Before execute join command, you must set KUBECONFIG file and ~/.hosts file. 
 
 ```bash
-$ OPENMCP_IP="10.0.3.30"
-$ omctl register member ${OPENMCP_IP}
-Success Register '10.0.3.40' in OpenMCP Master: 10.0.3.30
+$ cd kubectl-plugin
+$ ./install_kubectl_join
+$ kubectl join ${OPENMCP_IP_PORT}
 ```
 
 ### (3) Join sub-cluster to OpenMCP [In OpenMCP]
 
-From OpenMPC server, use omcptl to join sub-cluster you want to use.
+Install 'kubectl join-status' plugin on OpenMCP.
 ```bash
-$ CLUSTER_IP="10.0.3.40"
-$ omcpctl join cluster ${CLUSTER_IP}
+$ cd kubectl-plugin
+$ ./install_kubectl_joinstatus
+$ kubectl join-status ${CLUSTER_NAME} JOIN
+Input MetalLB IP Address Range (FROM) : 10.0.3.251
+Input MetalLB IP Address Range (TO) : 10.0.3.260
 ```
 
 ### (4) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]
@@ -255,29 +262,6 @@ $ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> 
 > - https://ko.wikipedia.org/wiki/ISO_3166-1
 ---
 
-### (5) Create MetalLB Config in sub-cluster [In OpenMCP]
-
-Create a new file 'metallb_config.yaml' to set the assigned IP range for the LoadBalancer of sub-cluster, and deploy it to the sub-cluster.
-
-```
-$ vim metallb_config.yaml 
-apiVersion: v1
-kind: ConfigMap
-metadata:
- namespace: metallb-system
- name: config
-data:
- config: |
-   address-pools:
-   - name: default
-     protocol: layer2
-     addresses:
-     - <<REPLACE_ADDRESS_FROM>>-<<REPLACE_ADDRESS_TO>>
-
-
-$ kubectl create -f metallb_config.yaml --context=<cluster-name>
-```
-
 ## 2. How to join GKE Cluster to OpenMCP
 
 ### (1) Install Cloud SDK
@@ -296,19 +280,23 @@ cluster3     asia-east1-a   1.16.13-gke.1   35.201.135.105  e2-medium     1.16.1
 ```
 
 
-### (4) Join GKE cluster to OpenMCP
-```
-$ omcpctl join gke-cluster cluster3
-...
-***** [End] Cluster Join Completed - cluster3 *****
+### (4) Register GKE cluster to OpenMCP
 
-$ kubectl get kubefedclusters -n kube-federation-system
-NAME       READY   AGE
-cluster1   True    15m
-cluster2   True    15m
-cluster3   True    10s
+Install 'kubectl register' plugin on OpenMCP.
+```
+$ cd kubectl-plugin
+$ ./install_kubectl_register
+$ kubectl register GKS ${GKE_CLUSTER_NAME} ${OPENMCP_IP_PORT}
 ```
 
+### (5) Join GKE cluster to OpenMCP
+
+Install 'kubectl join-status' plugin on OpenMCP.
+```
+$ cd kubectl-plugin
+$ ./install_kubectl_joinstatus
+$ kubectl join-status ${GKE_CLUSTER_NAME} JOIN
+```
 
 ## 3. How to join EKS Cluster to OpenMCP
 
@@ -316,16 +304,18 @@ cluster3   True    10s
 [https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/getting-started-console.html](https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/getting-started-console.html)
 
 ### (2) aws configure
+
 ```
 $ aws configure
-AWS Access Key ID [****************RCGA]: AKIAJAAK64B5XVB2RCGA
-AWS Secret Access Key [****************PivT]: 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
-Default region name [us-east-2]: us-east-2
-Default output format [json]: json
+AWS Access Key ID [None]: AKIAVJTB7UPJPEMHUAJR
+AWS Secret Access Key [None]: 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
+Default region name [None]: eu-west-2
+Default output format [None]: json
 ```
 
 ### (3) aws eks list-clusters
 ```
+$ aws eks list-clusters
 {
     "clusters": [
         "cluster4"
@@ -333,35 +323,102 @@ Default output format [json]: json
 }
 ```
 
-### (4) Join EKS cluster to OpenMCP
-```
-$ omcpctl join eks-cluster cluster4
-...
-***** [End] Cluster Join Completed - cluster4 *****
+### (4) Register EKS cluster to OpenMCP
 
-$ kubectl get kubefedclusters -n kube-federation-system
-NAME       READY   AGE
-cluster1   True    15m
-cluster2   True    15m
-cluster3   True    80s
-cluster4   True    11s
+Install 'kubectl register' plugin on OpenMCP.
+```
+$ cd kubectl-plugin
+$ ./install_kubectl_register
+$ kubectl register EKS ${EKS_CLUSTER_NAME} ${OPENMCP_IP_PORT}
 ```
 
+### (5) Join EKS cluster to OpenMCP
+
+Before trying to join EKS cluster, you should execute 'openmcp-cluster-manager' container, and set aws configure.
+```
+$ kubectl exec -it openmcp-cluster-manager-69c9ccc499-wjcqt -n openmcp bash
+bash-4.2# aws configure
+AWS Access Key ID [None]: AKIAVJTB7UPJPEMHUAJR
+AWS Secret Access Key [None]: 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
+Default region name [None]: eu-west-2
+Default output format [None]: json
+```
+
+Install 'kubectl join-status' plugin on OpenMCP.
+```
+$ cd kubectl-plugin
+$ ./install_kubectl_joinstatus
+$ kubectl join-status ${EKS_CLUSTER_NAME} JOIN
+```
+
+## 4. How to join AKS Cluster to OpenMCP
+
+### (1) Install Azure CLI
+[https://docs.microsoft.com/ko-kr/cli/azure/install-azure-cli-linux?pivots=apt](https://docs.microsoft.com/ko-kr/cli/azure/install-azure-cli-linux?pivots=apt)
+
+### (2) az login
+```
+$ az login
+To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code S36KSFXTS to authenticate.
+[
+  {
+    "cloudName": "AzureCloud",
+    "homeTenantId": "e2bc6150-a5fd-481b-9617-3effff354b44",
+    "id": "aa2aa30f-ca48-45d2-aed8-11a3850565bd",
+    "isDefault": true,
+    "managedByTenants": [],
+    "name": "Microsoft Azure",
+    "state": "Enabled",
+    "tenantId": "e2bc6150-a5fd-481b-9617-3effff354b44",
+    "user": {
+      "name": "admin@openmcp.onmicrosoft.com",
+      "type": "user"
+    }
+  }
+]
+```
+
+### (3) az aks list
+```
+$ az aks list
+[
+  {
+    ...
+    "kubernetesVersion": "1.17.11",
+    "linuxProfile": null,
+    "location": "australiaeast",
+    "maxAgentPools": 10,
+    "name": "aks-cluster1",
+    ...
+  }
+]
+```
+
+### (4) Register AKS cluster to OpenMCP
+
+Install 'kubectl register' plugin on OpenMCP.
+```
+$ cd kubectl-plugin
+$ ./install_kubectl_register
+$ kubectl register AKS ${AKS_CLUSTER_NAME} ${OPENMCP_IP_PORT}
+```
+
+### (5) Join AKS cluster to OpenMCP
+
+Install 'kubectl join-status' plugin on OpenMCP.
+```
+$ cd kubectl-plugin
+$ ./install_kubectl_joinstatus
+$ kubectl join-status ${AKS_CLUSTER_NAME} JOIN
+```
 
 # OpenMCP EXAMPLE
-
-Execute 'EXAMPLE TEST' with cluster1, cluster2 joined to OpenMCP.
 
 ```bash
 $ kubectl get kubefedcluster -n kube-federation-system
 NAME       READY   AGE
 cluster1   True    23h
 cluster2   True    23h
-```
-
-Create 'openmcp' namespaces to each clusters.
-```bash
-$ kubectl create ns openmcp --context=<cluster-name>
 ```
 
 ## Deploy OpenMCPDeployment resource

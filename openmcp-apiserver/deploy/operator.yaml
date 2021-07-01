@@ -14,9 +14,11 @@ spec:
         name: openmcp-apiserver
     spec:
       serviceAccountName: openmcp-apiserver-sa
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: openmcp-apiserver
-          image: openmcp/openmcp-apiserver:v0.0.1
+          image: ketidevit/openmcp-apiserver:v0.0.1
           command:
           - openmcp-apiserver
           imagePullPolicy: Always
@@ -50,17 +52,3 @@ spec:
         - key: node.kubernetes.io/unreachable
           effect: NoExecute
           tolerationSeconds: 0
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: openmcp-apiserver
-  namespace: openmcp
-spec:
-  selector:
-    name: openmcp-apiserver
-  ports:
-  - port: 8080
-    targetPort: 8080
-    nodePort: 31635
-  type: LoadBalancer

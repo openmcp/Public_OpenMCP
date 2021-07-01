@@ -49,7 +49,7 @@ type OpenMCPPolicySpec struct {
 
 }
 
-// OpenMCPPolicyEngineStatus defines the observed state of OpenMCPPolicyEngine
+// OpenMCPPolicyStatus defines the observed state of OpenMCPPolicy
 // +k8s:openapi-gen=true
 type OpenMCPPolicyStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
@@ -61,7 +61,7 @@ type OpenMCPPolicyStatus struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// OpenMCPPolicyEngine is the Schema for the openmcppolicyengines API
+// OpenMCPPolicy is the Schema for the openmcppolicys API
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 type OpenMCPPolicy struct {
@@ -74,7 +74,7 @@ type OpenMCPPolicy struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// OpenMCPPolicyEngineList contains a list of OpenMCPPolicyEngine
+// OpenMCPPolicyList contains a list of OpenMCPPolicy
 type OpenMCPPolicyList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

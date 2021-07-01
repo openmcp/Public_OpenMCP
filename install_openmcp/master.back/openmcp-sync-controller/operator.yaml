@@ -14,13 +14,15 @@ spec:
         name: openmcp-sync-controller
     spec:
       serviceAccountName: openmcp-sync-controller
+      imagePullSecrets:
+        - name: REPLACE_DOCKERSECRETNAME
       containers:
         - name: openmcp-sync-controller
           # Replace this with the built image name
-          image: openmcp/openmcp-sync-controller:v0.0.1
+          image: ketidevit/openmcp-sync-controller:v0.0.1
           command:
           - openmcp-sync-controller
-          imagePullPolicy: Always
+          imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
           env:
             - name: WATCH_NAMESPACE
               #value: ""

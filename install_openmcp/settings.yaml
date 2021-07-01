@@ -1,0 +1,36 @@
+default:
+  # learning or debug
+  installType: debug
+  docker:
+    imagePullSecretName: regcred
+    imagePullPolicy: Always
+
+master:
+  internal:
+    ip: 10.0.3.20
+    ports:
+      apiServerPort: 30000
+      clusterManagerPort: 30001
+      analyticEnginePort: 30002
+      metricCollectorPort: 30003
+      influxDBPort: 30004
+  public:
+    ip: 119.65.195.180
+    ports:
+      metricCollectorPort: 3212
+  metalLB:
+    rangeStartIP: 10.0.3.190
+    rangeEndIP: 10.0.3.200
+
+powerDNS:
+  apiKey: 1234
+  internal:
+    ip: 10.0.3.12
+    ports:
+      pdnsPort: 53
+  public:
+    ip: 119.65.195.180
+    ports:
+      pdnsPort: 5353
+      
+    

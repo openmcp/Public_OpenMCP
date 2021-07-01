@@ -1,13 +1,17 @@
 package v1alpha1
 
 import (
+	policyv1alpha1 "openmcp/openmcp/apis/policy/v1alpha1"
+
+	"istio.io/api/meta/v1alpha1"
+	networkingv1alpha3 "istio.io/api/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	hpav2beta1 "k8s.io/api/autoscaling/v2beta2"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	extv1b1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	policyv1alpha1 "openmcp/openmcp/apis/policy/v1alpha1"
-	batchv1 "k8s.io/api/batch/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -24,6 +28,7 @@ type OpenMCPDeploymentSpec struct {
 
 	// Added
 	Replicas int32               `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
+	Clusters []string            `json:"clusters,omitempty" protobuf:"bytes,11,opt,name=clusters"`
 	Labels   map[string]string   `json:"labels,omitempty" protobuf:"bytes,11,opt,name=labels"`
 	Affinity map[string][]string `json:"affinity,omitempty" protobuf:"bytes,3,opt,name=affinity"`
 	Policy   map[string]string   `json:"policy,omitempty" protobuf:"bytes,3,opt,name=policy"`
@@ -132,7 +137,7 @@ type OpenMCPDeploymentStatus struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	Replicas                  int32                 `json:"replicas"`
-	ClusterMaps               map[string]int32      `json:"clusters"`
+	ClusterMaps               map[string]int32      `json:"clusterMaps"`
 	LastSpec                  OpenMCPDeploymentSpec `json:"lastSpec"`
 	SchedulingNeed            bool                  `json:"schedulingNeed"`
 	SchedulingComplete        bool                  `json:"schedulingComplete"`
@@ -185,7 +190,7 @@ type OpenMCPIngressStatus struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	// Replicas int32 `json:"replicas"`
-	ClusterMaps map[string]int32 `json:"clusters"`
+	ClusterMaps map[string]int32 `json:"clusterMaps"`
 	ChangeNeed  bool             `json:"changeNeed"`
 }
 
@@ -217,8 +222,8 @@ type OpenMCPServiceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	Template      corev1.Service    `json:"template" protobuf:"bytes,3,opt,name=template"`
-	LabelSelector map[string]string `json:"labelselector" protobuf:"bytes,3,opt,name=labelselector"`
+	LabelSelector map[string]string `json:"labelselector" protobuf:"bytes,1,opt,name=labelselector"`
+	Template      corev1.Service    `json:"template" protobuf:"bytes,2,opt,name=template"`
 	//Replicas int32 `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
 
 	//Placement
@@ -232,7 +237,7 @@ type OpenMCPServiceStatus struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	//Replicas int32 `json:"replicas"`
-	ClusterMaps map[string]int32   `json:"clusters"`
+	ClusterMaps map[string]int32   `json:"clusterMaps"`
 	LastSpec    OpenMCPServiceSpec `json:"lastSpec"`
 	ChangeNeed  bool               `json:"changeNeed"`
 }
@@ -263,9 +268,31 @@ type OpenMCPHybridAutoScalerSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	HpaTemplate hpav2beta1.HorizontalPodAutoscaler `json:"hpaTemplate" protobuf:"bytes,3,opt,name=hpaTemplate"`
+	MainController string         `json:"mainController" protobuf:"bytes,1,opt,name=maincontroller"`
+	ScalingOptions ScalingOptions `json:"scalingOptions,omitempty" protobuf:"bytes,2,opt,name=scalingoptions"`
+}
+
+type ScalingOptions struct {
+	CpaTemplate CpaTemplate                        `json:"cpaTemplate,omitempty" protobuf:"bytes,1,opt,name=cpatemplate"`
+	HpaTemplate hpav2beta1.HorizontalPodAutoscaler `json:"hpaTemplate,omitempty" protobuf:"bytes,2,opt,name=hpatemplate"`
+	VpaTemplate string                             `json:"vpaTemplate,omitempty" protobuf:"bytes,3,opt,name=vpatemplate"`
 	//VpaTemplate vpav1beta2.VerticalPodAutoscaler `json:"vpaTemplate" protobuf:"bytes,3,opt,name=vpaTemplate"`
-	VpaMode string `json:"vpaMode"`
+}
+
+type CpaTemplate struct {
+	ScaleTargetRef ScaleTargetRef `json:"scaleTargetRef" protobuf:"bytes,1,opt,name=scaletargetref"`
+	MinReplicas    int32          `json:"minReplicas" protobuf:"varint,2,opt,name=minreplicas"`
+	MaxReplicas    int32          `json:"maxReplicas" protobuf:"varint,3,opt,name=maxreplicas"`
+}
+
+type ScaleTargetRef struct {
+	// Kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"
+	Kind string `json:"kind" protobuf:"bytes,1,opt,name=kind"`
+	// Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names
+	Name string `json:"name" protobuf:"bytes,2,opt,name=name"`
+	// API version of the referent
+	// +optional
+	APIVersion string `json:"apiVersion,omitempty" protobuf:"bytes,3,opt,name=apiVersion"`
 }
 
 // OpenMCPHybridAutoScalerStatus defines the observed state of OpenMCPHybridAutoScaler
@@ -318,7 +345,7 @@ type OpenMCPConfigMapStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	ClusterMaps     map[string]int32 `json:"clusters"`
+	ClusterMaps     map[string]int32 `json:"clusterMaps"`
 	SyncRequestName string           `json:"syncRequestName"`
 }
 
@@ -353,7 +380,7 @@ type OpenMCPSecretStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	ClusterMaps map[string]int32 `json:"clusters"`
+	ClusterMaps map[string]int32 `json:"clusterMaps"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -378,7 +405,6 @@ type OpenMCPSecretList struct {
 	Items           []OpenMCPSecret `json:"items"`
 }
 
-
 type OpenMCPJobSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
@@ -392,7 +418,7 @@ type OpenMCPJobStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	ClusterMaps map[string]int32 `json:"clusters"`
+	ClusterMaps map[string]int32 `json:"clusterMaps"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -417,7 +443,6 @@ type OpenMCPJobList struct {
 	Items           []OpenMCPJob `json:"items"`
 }
 
-
 type OpenMCPNamespaceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
@@ -432,8 +457,8 @@ type OpenMCPNamespaceStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	ClusterMaps map[string]int32 `json:"clusters"`
-	ChangeNeed bool `json:"changeneed"`
+	ClusterMaps map[string]int32 `json:"clusterMaps"`
+	ChangeNeed  bool             `json:"changeneed"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -467,3 +492,29 @@ type OpenMCPNamespaceList struct {
 //
 //}
 
+// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
+// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+
+// OpenMCPVirtualServiceSpec defines the desired state of OpenMCPVirtualService
+// +k8s:openapi-gen=true
+type OpenMCPVirtualService struct {
+	v1.TypeMeta `json:",inline"`
+	// +optional
+	v1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+
+	// Spec defines the implementation of this definition.
+	// +optional
+	Spec networkingv1alpha3.VirtualService `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+
+	Status v1alpha1.IstioStatus `json:"status"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// VirtualServiceList is a collection of VirtualServices.
+type OpenMCPVirtualServiceList struct {
+	v1.TypeMeta `json:",inline"`
+	// +optional
+	v1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Items       []OpenMCPVirtualService `json:"items" protobuf:"bytes,2,rep,name=items"`
+}

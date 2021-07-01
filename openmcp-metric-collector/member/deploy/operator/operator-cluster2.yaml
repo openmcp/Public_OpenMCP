@@ -14,10 +14,12 @@ spec:
         name: cluster-metric-collector
     spec:
       serviceAccountName: cluster-metric-collector
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: cluster-metric-collector
           # Replace this with the built image name
-          image: openmcp/cluster-metric-collector:v0.0.1
+          image: ketidevit/cluster-metric-collector:v0.0.1
           command:
           - cluster-metric-collector
           imagePullPolicy: Always
@@ -33,7 +35,7 @@ spec:
             - name: GRPC_SERVER
               value: "119.65.195.180"
             - name: GRPC_PORT
-              value: "32051"
+              value: "3212"
             - name: CLUSTER_NAME
               value: "cluster2"
             - name: OPERATOR_NAME

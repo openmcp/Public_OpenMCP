@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"context"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -28,7 +29,7 @@ func (c *OpenMCPNamespaceClient) List(opts metav1.ListOptions) (*resourcev1alpha
 		Namespace(c.ns).
 		Resource("openmcpnamespaces").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
+		Do(context.TODO()).
 		Into(&result)
 
 	return &result, err
@@ -42,7 +43,7 @@ func (c *OpenMCPNamespaceClient) Get(name string, opts metav1.GetOptions) (*reso
 		Resource("openmcpnamespaces").
 		Name(name).
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
+		Do(context.TODO()).
 		Into(&result)
 
 	return &result, err
@@ -55,7 +56,7 @@ func (c *OpenMCPNamespaceClient) Create(deployment *resourcev1alpha1.OpenMCPName
 		Namespace(c.ns).
 		Resource("openmcpnamespaces").
 		Body(deployment).
-		Do().
+		Do(context.TODO()).
 		Into(&result)
 
 	return &result, err
@@ -68,5 +69,5 @@ func (c *OpenMCPNamespaceClient) Watch(opts metav1.ListOptions) (watch.Interface
 		Namespace(c.ns).
 		Resource("openmcpnamespaces").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
+		Watch(context.TODO())
 }

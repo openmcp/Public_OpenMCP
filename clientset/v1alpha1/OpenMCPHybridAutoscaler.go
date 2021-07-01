@@ -1,11 +1,13 @@
 package v1alpha1
 
 import (
+	"context"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 )
 
 type OpenMCPHybridAutoScalerInterface interface {
@@ -32,7 +34,7 @@ func (c *OpenMCPHybridAutoScalerClient) List(opts metav1.ListOptions) (*resource
 		Namespace(c.ns).
 		Resource("openmcphybridautoscalers").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
+		Do(context.TODO()).
 		Into(&result)
 
 	return &result, err
@@ -46,7 +48,7 @@ func (c *OpenMCPHybridAutoScalerClient) Get(name string, opts metav1.GetOptions)
 		Resource("openmcphybridautoscalers").
 		Name(name).
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
+		Do(context.TODO()).
 		Into(&result)
 
 	return &result, err
@@ -59,7 +61,7 @@ func (c *OpenMCPHybridAutoScalerClient) Create(deployment *resourcev1alpha1.Open
 		Namespace(c.ns).
 		Resource("openmcphybridautoscalers").
 		Body(deployment).
-		Do().
+		Do(context.TODO()).
 		Into(&result)
 
 	return &result, err
@@ -72,5 +74,5 @@ func (c *OpenMCPHybridAutoScalerClient) Watch(opts metav1.ListOptions) (watch.In
 		Namespace(c.ns).
 		Resource("openmcphybridautoscalers").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
+		Watch(context.TODO())
 }

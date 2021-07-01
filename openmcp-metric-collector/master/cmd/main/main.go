@@ -16,13 +16,15 @@ import (
 const (
 	GRPC_PORT = "2051"
 )
+
 func main() {
 	logLevel.KetiLogInit()
+	cm := clusterManager.NewClusterManager()
 
-	go MasterMetricCollector()
+	go MasterMetricCollector(cm)
 
 	for {
-		cm := clusterManager.NewClusterManager()
+		//cm := clusterManager.NewClusterManager()
 
 		host_ctx := "openmcp"
 		namespace := "openmcp"
@@ -42,7 +44,7 @@ func main() {
 			ghosts = append(ghosts, ghost)
 		}
 
-		reshape_cont, _ := reshape.NewController(live, ghosts, namespace)
+		reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
 		m := manager.New()
@@ -57,7 +59,7 @@ func main() {
 	}
 
 }
-func MasterMetricCollector() {
+func MasterMetricCollector(cm *clusterManager.ClusterManager) {
 	omcplog.V(4).Info("MasterMetricCollector Called")
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	INFLUX_IP := os.Getenv("INFLUX_IP")
@@ -70,11 +72,11 @@ func MasterMetricCollector() {
 	omcplog.V(5).Info("INFLUX_USERNAME: ", INFLUX_USERNAME)
 	omcplog.V(5).Info("INFLUX_PASSWORD: ", INFLUX_PASSWORD)
 
-	mc := metricCollector.NewMetricCollector(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD)
+	mc := metricCollector.NewMetricCollector(cm, INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD)
 	omcplog.V(2).Info("Created NewMetricCollector Structure")
 
 	mc.Influx.CreateDatabase()
-	mc.Influx.CreateMeasurements()
+	//mc.Influx.CreateMeasurements()
 
 	mc.StartGRPC(GRPC_PORT)
 

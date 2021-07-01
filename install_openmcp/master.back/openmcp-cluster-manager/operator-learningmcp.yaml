@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmcp-cluster-manager
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openmcp-cluster-manager
+  template:
+    metadata:
+      labels:
+        name: openmcp-cluster-manager
+    spec:
+      serviceAccountName: openmcp-cluster-manager
+      imagePullSecrets:
+        - name: openmcp-private-registry
+      containers:
+        - name: openmcp-cluster-manager
+          # Replace this with the built image name
+          image: ketidevit/openmcp-cluster-manager:v0.0.1
+          command:
+          - openmcp-cluster-manager
+          imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "openmcp-cluster-manager"
+          volumeMounts:
+            - name: kubeconfig
+              mountPath: /mnt
+            - name: initmodule
+              mountPath: /init
+      volumes:
+        - name: kubeconfig
+          hostPath:
+            path: /kube
+        - name: initmodule
+          hostPath:
+            path: /init/member
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0
+
+

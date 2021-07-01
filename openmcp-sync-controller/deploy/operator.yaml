@@ -14,9 +14,11 @@ spec:
         name: openmcp-sync-controller
     spec:
       serviceAccountName: openmcp-sync-controller
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: openmcp-sync-controller
-          image: openmcp/openmcp-sync-controller:v0.0.1
+          image: ketidevit/openmcp-sync-controller:v0.0.1
           command:
           - openmcp-sync-controller
           imagePullPolicy: Always

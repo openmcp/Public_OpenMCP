@@ -14,10 +14,12 @@ spec:
         name: openmcp-job-controller
     spec:
       serviceAccountName: openmcp-job-controller
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: openmcp-job-controller
           # Replace this with the built image name
-          image: openmcp/openmcp-job-controller:v0.0.1
+          image: ketidevit/openmcp-job-controller:v0.0.1
           command:
           - openmcp-job-controller
           imagePullPolicy: Always

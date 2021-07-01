@@ -1,0 +1,133 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: snapshot-example
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      affinity: "yes"
+      component: snapshot-example-svc
+  template:
+    metadata:
+      labels:
+        affinity: "yes"
+        component: snapshot-example-svc
+    spec:
+      containers:
+      - command:
+        - /app/start.sh
+        env:
+        - name: IOT_SERVICE_CONNECT
+          value: 0.0.0.0
+        - name: HTTP_PORT
+          value: "8888"
+        - name: MQTT_PORT
+          value: "1883"
+        - name: COAP_PORT
+          value: "5683"
+        - name: MQTT_TOPIC
+          value: mqtt
+        - name: MQTT_TIMEOUT
+          value: "60"
+        - name: KAFKA_CONNECT
+          value: kafka-svc.openmcp.openmcp-dt-domain.svc.openmcp.dt.org
+        image: openmcp/keti-iotgateway:v1.0
+        imagePullPolicy: Always
+        name: snapshot-example
+        ports:
+        - containerPort: 8888
+          name: http
+          protocol: TCP
+        - containerPort: 5683
+          name: coap
+          protocol: TCP
+        - containerPort: 1883
+          name: mqtt
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 125m
+            memory: 256M
+          requests:
+            cpu: 125m
+            memory: 256M
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+        volumeMounts:
+        - mountPath: /hostVolume/
+          name: snapshot-example-volume
+      volumes:
+      - name: snapshot-example-volume
+        persistentVolumeClaim:
+          claimName: snapshot-example-pvc 
+      imagePullSecrets:
+      - name: regcred
+      nodeSelector:
+        kubernetes.io/hostname: kube1-worker1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snapshot-example-svc
+  namespace: openmcp
+spec:
+  ports:
+  - name: http
+    port: 8000
+    protocol: TCP
+    targetPort: 8000
+  - name: coap
+    port: 5683
+    protocol: TCP
+    targetPort: 5683
+  - name: mqtt
+    port: 1883
+    protocol: TCP
+    targetPort: 1883
+  - name: sysbench
+    port: 80
+    protocol: TCP
+    targetPort: 7070
+  selector:
+    component: snapshot-example-svc
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: snapshot-example-pv
+  labels:
+    name: snapshot-example-pv
+    app: snapshot-example
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy:
+    Delete
+  hostPath:
+    path: /root/learningmcp
+    type: Directory
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: snapshot-example-pvc
+  namespace: openmcp
+  labels:
+    name: snapshot-example-pvc
+    app: snapshot-example
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  selector:
+    matchLabels:
+      name: snapshot-example-pv

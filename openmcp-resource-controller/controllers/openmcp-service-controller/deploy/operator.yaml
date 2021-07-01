@@ -14,10 +14,12 @@ spec:
         name: openmcp-service-controller
     spec:
       serviceAccountName: openmcp-service-controller
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: openmcp-service-controller
           # Replace this with the built image name
-          image: openmcp/openmcp-service-controller:v0.0.1
+          image: ketidevit/openmcp-service-controller:v0.0.1
           command:
           - openmcp-service-controller
           imagePullPolicy: Always

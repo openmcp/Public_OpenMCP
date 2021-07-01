@@ -5,13 +5,11 @@ import (
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	clientV1alpha1 "openmcp/openmcp/clientset/v1alpha1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	clientV1alpha1 "openmcp/openmcp/clientset/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 	genericclient "sigs.k8s.io/kubefed/pkg/client/generic"
@@ -30,6 +28,7 @@ type ClusterManager struct {
 	Cluster_genClients  map[string]genericclient.Client
 	Cluster_kubeClients map[string]*kubernetes.Clientset
 	Cluster_dynClients  map[string]dynamic.Interface
+	//Mutex	*sync.Mutex
 }
 
 func ListKubeFedClusters(genClient genericclient.Client, namespace string) *fedv1b1.KubeFedClusterList {
@@ -59,7 +58,6 @@ func ListKubeFedClusters(genClient genericclient.Client, namespace string) *fedv
 			clusterList.Items = append(clusterList.Items, cluster)
 		}
 	}
-
 
 	return clusterList
 }
@@ -107,6 +105,7 @@ func KubeFedClusterDynClients(clusterList *fedv1b1.KubeFedClusterList, cluster_c
 	return cluster_clients
 }
 func NewClusterManager() *ClusterManager {
+	//mutex := &sync.Mutex{}
 	fed_namespace := "kube-federation-system"
 	host_config, _ := rest.InClusterConfig()
 	host_client := genericclient.NewForConfigOrDie(host_config)
@@ -133,13 +132,14 @@ func NewClusterManager() *ClusterManager {
 		Cluster_genClients:  cluster_gen_clients,
 		Cluster_kubeClients: cluster_kube_clients,
 		Cluster_dynClients:  cluster_dyn_clients,
+		//Mutex:	mutex,
 	}
 	return cm
 }
 func GetNodeList(clientSet *kubernetes.Clientset) (*corev1.NodeList, error) {
 
 	nodeList := &corev1.NodeList{}
-	nodeList, err := clientSet.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := clientSet.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		fmt.Println("Error retrieving list of federated clusters: %+v", err)
 	}

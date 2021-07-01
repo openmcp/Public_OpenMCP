@@ -14,10 +14,12 @@ spec:
         name: openmcp-analytic-engine
     spec:
       serviceAccountName: openmcp-analytic-engine
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: openmcp-analytic-engine
           # Replace this with the built image name
-          image: openmcp/openmcp-analytic-engine:v0.0.1
+          image: ketidevit/openmcp-analytic-engine:v0.0.1
           command:
           - openmcp-analytic-engine
           imagePullPolicy: Always
@@ -33,9 +35,9 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: INFLUX_IP
-              value: "10.0.3.99"
+              value: "10.0.3.20"
             - name: INFLUX_PORT
-              value: "31051"
+              value: "30004"
             - name: INFLUX_USERNAME
               value: "root"
             - name: INFLUX_PASSWORD
