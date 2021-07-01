@@ -23,44 +23,37 @@ echo "2. move ExternalNFS folder"
 echo "cd /storage/!PATH"
 cd /storage/!PATH
 
-
-
+# 3. 복구하려는 스냅샷의 압축을 Volume 패스에 푼다. DATE 는 KEY값에서 추출함
 echo "3. Unzips..."
-tar xfP !DATE --listed-incremental backuplist 
+export FILES="$(ls -tr)"
+echo "Files : "
+echo "$FILES"
 
+if [ -z "$FILES" ]; then
+  echo "target File empty!"
+  touch /success
+  exit 100
+fi
+for FILE in $FILES
+do
+  if [ "$FILE" == "backup" ]; then
+    echo "End backup folder"
+    break
+  fi
+  
+  total=`expr "${FILE}" "-" "!DATE"`
+  if [ ${total} -gt 0 ]; then
+    echo "End !DATE tar"
+    break
+  fi
 
-
-## 3. 복구하려는 스냅샷의 압축을 Volume 패스에 푼다. DATE 는 KEY값에서 추출함
-#echo "3. Unzips..."
-#export FILES="$(ls -tr)"
-#echo "Files : "
-#echo "$FILES"
-#
-#if [ -z "$FILES" ]; then
-#  echo "target File empty!"
-#  touch /success
-#  exit 100
-#fi
-#for FILE in $FILES
-#do
-#  if [ "$FILE" == "backup" ]; then
-#    echo "End backup folder"
-#    break
-#  fi
-#  
-#  total=`expr "${FILE}" "-" "!DATE"`
-#  if [ ${total} -gt 0 ]; then
-#    echo "End !DATE tar"
-#    break
-#  fi
-#
-#  #echo "unzip... $FILE -C /"
-#  tar xfP ${FILE} -C /
-#  
-#  if [ "$FILE" == "!DATE" ]; then
-#    echo "End !DATE tar"
-#    break
-#  fi
-#done
+  #echo "unzip... $FILE -C /"
+  tar xfP ${FILE} -C /
+  
+  if [ "$FILE" == "!DATE" ]; then
+    echo "End !DATE tar"
+    break
+  fi
+done
 echo "4. Snapshot restore end"
 touch /success

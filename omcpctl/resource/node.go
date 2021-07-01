@@ -2,20 +2,20 @@ package resource
 
 import (
 	"fmt"
+	cobrautil "openmcp/openmcp/omcpctl/util"
+	"os"
+
 	"github.com/ghodss/yaml"
 	"github.com/olekukonko/tablewriter"
 	corev1 "k8s.io/api/core/v1"
-	cobrautil "openmcp/openmcp/omcpctl/util"
-	"os"
 )
 
-
-func NodeInfo(no *corev1.Node) []string{
+func NodeInfo(no *corev1.Node) []string {
 
 	nodeName := no.Name
 	nodeStatus := ""
 	for _, cond := range no.Status.Conditions {
-		if cond.Type == "Ready"{
+		if cond.Type == "Ready" {
 			nodeStatus = string(cond.Status)
 			break
 		}
@@ -28,9 +28,9 @@ func NodeInfo(no *corev1.Node) []string{
 		nodeMaster = "true"
 	}
 	nodeSchedule := "Yes"
-	for _, taint := range no.Spec.Taints{
+	for _, taint := range no.Spec.Taints {
 		if taint.Effect == "NoSchedule" {
-			nodeSchedule ="No"
+			nodeSchedule = "No"
 		}
 	}
 
@@ -47,7 +47,6 @@ func PrintNode(body []byte) {
 		panic(err.Error())
 	}
 	datas := [][]string{}
-
 
 	data := NodeInfo(&no)
 	datas = append(datas, data)
@@ -74,7 +73,7 @@ func PrintNodeList(body []byte) {
 		if cobrautil.Option_namespace != "" {
 			ns = cobrautil.Option_namespace
 		}
-		fmt.Println("No resources found in "+ ns +" Node.")
+		fmt.Println("No resources found in " + ns + " Node.")
 		return
 	}
 
@@ -82,7 +81,7 @@ func PrintNodeList(body []byte) {
 
 }
 
-func DrawNodeTable(datas [][]string){
+func DrawNodeTable(datas [][]string) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"NodeName", "Status", "Region", "Zones", "address", "Master", "Schedule", "AGE"})
 	table.SetBorder(false)
@@ -90,18 +89,34 @@ func DrawNodeTable(datas [][]string){
 	table.Render()
 }
 
+func GetNodeList(body []byte) []string {
+	resourceStruct := corev1.NodeList{}
+	err := yaml.Unmarshal(body, &resourceStruct)
+	if err != nil {
+		fmt.Println("Check4", err)
+		panic(err.Error())
+	}
+	datas := [][]string{}
 
+	for _, no := range resourceStruct.Items {
+		data := NodeInfo(&no)
+		datas = append(datas, data)
+	}
 
-
-
-
-
-
-
-
-
-
-
+	if len(resourceStruct.Items) == 0 {
+		ns := "default"
+		if cobrautil.Option_namespace != "" {
+			ns = cobrautil.Option_namespace
+		}
+		fmt.Println("No resources found in " + ns + " Node.")
+		return nil
+	}
+	var nodelist []string
+	for _, nodename := range datas {
+		nodelist = append(nodelist, nodename[4])
+	}
+	return nodelist
+}
 
 //func GetNode(nodeName string) {
 //	c := cobrautil.GetKubeConfig("/root/.kube/config")

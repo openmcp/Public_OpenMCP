@@ -51,6 +51,7 @@ func GetSnapshotTemplate(snapshotTime string, mountPath string) (string, error) 
 	ret1 := strings.ReplaceAll(cmd, "!DATE", snapshotTime)
 	ret := strings.ReplaceAll(ret1, "!PATH", mountPath)
 
+	//omcplog.V(3).Info(ret)
 	omcplog.V(5).Info("--- GetSnapshotTemplate end")
 	return ret, nil
 }
@@ -66,6 +67,7 @@ func GetSnapshotRestoreTemplate(snapshotTime string, mountPath string) (string, 
 	ret1 := strings.ReplaceAll(cmd, "!DATE", snapshotTime)
 	ret := strings.ReplaceAll(ret1, "!PATH", mountPath)
 
+	//omcplog.V(3).Info(ret)
 	omcplog.V(5).Info("--- GetSnapshotRestoreTemplate end")
 	return ret, nil
 }
