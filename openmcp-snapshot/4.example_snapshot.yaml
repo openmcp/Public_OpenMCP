@@ -1,18 +1,22 @@
 apiVersion: openmcp.k8s.io/v1alpha1
 kind: Snapshot
 metadata:
-  name: example-snapshot
+  name: iot-gateway-snapshot-20201206-1
 spec:
   snapshotSources:
   - resourceCluster: cluster1
     resourceNamespace: default
     resourceType: PersistentVolume
-    resourceName: snapshot-test-pv
+    resourceName: iot-gateway-pv
   - resourceCluster: cluster1
     resourceNamespace: default
     resourceType: PersistentVolumeClaim
-    resourceName: snapshot-test-pvc
+    resourceName: iot-gateway-pvc
   - resourceCluster: cluster1
     resourceNamespace: default
     resourceType: Deployment
-    resourceName: snapshot-test-dp
+    resourceName: iot-gateway
+  - resourceCluster: cluster1
+    resourceNamespace: default
+    resourceType: Service
+    resourceName: iot-gateway-sv

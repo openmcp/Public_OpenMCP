@@ -8,7 +8,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func migpvc(migSource MigrationControllerResource, resource v1alpha1.MigrationSource) {
+func migpvc(migSource MigrationControllerResource, resource v1alpha1.MigrationSource) error {
 	omcplog.V(3).Info("pvc migration")
 	targetResource := &corev1.PersistentVolumeClaim{}
 	sourceResource := &corev1.PersistentVolumeClaim{}
@@ -25,7 +25,8 @@ func migpvc(migSource MigrationControllerResource, resource v1alpha1.MigrationSo
 	// }
 	sourceGetErr := sourceClient.Get(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
 	if sourceGetErr != nil {
-		omcplog.V(3).Info("get source cluster error : ", sourceGetErr)
+		omcplog.Error("get source cluster error : ", sourceGetErr)
+		return sourceGetErr
 	}
 
 	//targetResource = sourceResource
@@ -35,12 +36,14 @@ func migpvc(migSource MigrationControllerResource, resource v1alpha1.MigrationSo
 
 	targetErr := targetClient.Create(context.TODO(), targetResource)
 	if targetErr != nil {
-		omcplog.V(3).Info("target cluster create error: ", targetErr)
+		omcplog.Error("target cluster create error : ", targetErr)
+		return targetErr
 	}
 
 	sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
 	if sourceErr != nil {
-		omcplog.V(3).Info("source cluster delete error : ", sourceErr)
+		omcplog.Error("source cluster delete error : ", sourceErr)
+		return sourceErr
 	}
-
+	return nil
 }

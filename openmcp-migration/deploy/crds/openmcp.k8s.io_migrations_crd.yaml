@@ -14,6 +14,40 @@ spec:
   scope: Namespaced
   versions:
   - name: v1alpha1
+    additionalPrinterColumns:
+    - description: Created time stamp
+      jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - description: '-'
+      jsonPath: .status.MigrationStatus
+      name: IsSuccess
+      type: boolean
+    - description: '-'
+      jsonPath: .spec.MigrationServiceSource[*].SourceCluster
+      name: SourceCluster
+      type: string
+    - description: '-'
+      jsonPath: .spec.MigrationServiceSource[*].TargetCluster
+      name: TargetCluster
+      type: string
+    - description: '-'
+      jsonPath: .spec.MigrationServiceSource[*].ServiceName
+      name: ServiceName
+      type: string
+    - description: '-'
+      jsonPath: .spec.MigrationServiceSource[*].NameSpace
+      name: NameSpace
+      type: string
+    - description: '-'
+      jsonPath: .status.Reason
+      name: REASON
+      type: string
+    - description: ElapsedTime
+      jsonPath: .status.ElapsedTime
+      name: ElapsedTime
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: Migration is the Schema for the Migrations API
@@ -74,6 +108,8 @@ spec:
           status:
             description: MigrationStatus defines the observed state of Migration
             properties:
+              ElapsedTime:
+                type: string
               MigrationStatus:
                 description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
                   of cluster Important: Run "make" to regenerate code after modifying
@@ -88,3 +124,5 @@ spec:
         type: object
     served: true
     storage: true
+    subresources:
+      status: {}

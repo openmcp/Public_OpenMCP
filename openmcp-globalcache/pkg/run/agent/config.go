@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"openmcp/openmcp/openmcp-globalcache/pkg/utils"
 	"openmcp/openmcp/util/clusterManager"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -51,7 +50,7 @@ func (r *RegistryNodeManager) init(clusterName string, nodeName string) error {
 	r.clusterName = clusterName
 	r.nodeName = nodeName
 	r.address = ipAddress
-	r.port = string(utils.AgentRegistryManagerDefaultPort)
-
+	//r.port = string(utils.AgentRegistryManagerDefaultPort)
+	//r.port = "4999"
 	return nil
 }

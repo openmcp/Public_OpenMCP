@@ -6,40 +6,83 @@ volume 스냅샷의 경우 resourceType 이 volume 이다.
 */
 
 import (
+	"fmt"
 	nanumv1alpha1 "openmcp/openmcp/apis/snapshot/v1alpha1"
+	"strconv"
 	"strings"
 )
 
 const TypeVolumeSnapshot = "volume"
 
-func MakeVolumeSnapshotKey(startTime string, clusterName string, resourceName string) string {
-	ret := MakeSnapshotKey(startTime, clusterName, TypeVolumeSnapshot, resourceName)
+//func MakeVolumeSnapshotKey(startTime string, clusterName string, resourceName string) string {
+//	ret := MakeSnapshotKey(startTime, clusterName, TypeVolumeSnapshot, resourceName)
+//	return ret
+//}
+
+// ex) 1624008391-volume-1  -> sns-1624008391-volume-1-job, ...
+func MakeVolumeProcessResourceKey(startTime string, middleName string, idx string) string {
+	head := startTime
+	ret := strings.Join([]string{head, middleName, idx}, "-")
 	return ret
 }
 
-func MakeSnapshotKeyForSnapshot(startTime string, snapshotSource *nanumv1alpha1.SnapshotSource) string {
-	ret := MakeSnapshotKey(startTime, snapshotSource.ResourceCluster, snapshotSource.ResourceType, snapshotSource.ResourceName)
+// ex) 1624008391/cluster1/Deployment/iot-gateway
+func MakeSnapshotKeyForSnapshot(greoupSnapshotKey string, snapshotSource *nanumv1alpha1.SnapshotSource) string {
+	ret := MakeSnapshotKey(greoupSnapshotKey, snapshotSource.ResourceCluster, snapshotSource.ResourceType, snapshotSource.ResourceName)
 	return ret
 }
 
-func MakeSnapshotKeyForSnapshotRestore(startTime string, snapshotSourceRestore *nanumv1alpha1.SnapshotSource) string {
-	ret := MakeSnapshotKey(startTime, snapshotSourceRestore.ResourceCluster, snapshotSourceRestore.ResourceType, snapshotSourceRestore.ResourceName)
+// ex) 1624008391/cluster1/Deployment/iot-gateway
+func MakeSnapshotKeyForSnapshotRestore(greoupSnapshotKey string, snapshotSourceRestore *nanumv1alpha1.SnapshotSource) string {
+	ret := MakeSnapshotKey(greoupSnapshotKey, snapshotSourceRestore.ResourceCluster, snapshotSourceRestore.ResourceType, snapshotSourceRestore.ResourceName)
 	return ret
 }
 
-func MakeSnapshotKey(startTime string, clusterName string, SnapshotType string, resourceName string) string {
-	ret := strings.Join([]string{startTime, clusterName, SnapshotType, resourceName}, "-")
+//
+func MakeSnapshotKey(greoupSnapshotKey string, resourceCluster string, resourceType string, resourceName string) string {
+	ret := strings.Join([]string{MakePrifix(greoupSnapshotKey), resourceCluster, resourceType, resourceName}, "/")
 	return ret
 }
 
-func GetStartTimeBySnapshotKey(snapshotKey string) string {
-	tmp := strings.Split(snapshotKey, "-")
-	startTime := tmp[0]
-	return startTime
+func MakePrifix(greoupSnapshotKey string) string {
+	head := ""
+	if ETCDROOT != "" {
+		head = strings.Join([]string{ETCDROOT, greoupSnapshotKey}, "/")
+	} else {
+		head = strings.Join([]string{greoupSnapshotKey}, "/")
+	}
+	return head
 }
 
-func GetResourceNameBySnapshotKey(snapshotKey string) string {
-	tmp := strings.Split(snapshotKey, "-")
-	resourceName := strings.Join(tmp[3:len(tmp)], "-")
-	return resourceName
+func GetGroupSnapshotKeyBySnapshotKey(snapshotKey string) (string, error) {
+	return GetCommonNameBySnapshotKey(snapshotKey, 0)
+}
+
+func GetClusterNameBySnapshotKey(snapshotKey string) (string, error) {
+	return GetCommonNameBySnapshotKey(snapshotKey, 1)
+}
+
+func GetResourceTypeBySnapshotKey(snapshotKey string) (string, error) {
+	return GetCommonNameBySnapshotKey(snapshotKey, 2)
+}
+
+func GetResourceNameBySnapshotKey(snapshotKey string) (string, error) {
+	return GetCommonNameBySnapshotKey(snapshotKey, 3)
+}
+
+func GetCommonNameBySnapshotKey(snapshotKey string, idx int) (string, error) {
+	retVal := ""
+	tmp := strings.Split(snapshotKey, "/")
+	if len(tmp) < 1 {
+		return "", fmt.Errorf("GetCommonNameBySnapshotKey : snapshotKey is not valid [" + snapshotKey + ", " + strconv.Itoa(idx) + "]")
+	}
+	if ETCDROOT != "" {
+		retVal = tmp[idx+len(strings.Split(ETCDROOT, "/"))]
+	} else {
+		retVal = tmp[idx]
+	}
+	if retVal == "" {
+		return "", fmt.Errorf("GetCommonNameBySnapshotKey : groupSnapshotKey is not valid [" + snapshotKey + ", " + strconv.Itoa(idx) + "]")
+	}
+	return retVal, nil
 }

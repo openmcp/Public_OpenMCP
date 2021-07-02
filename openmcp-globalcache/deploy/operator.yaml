@@ -13,11 +13,13 @@ spec:
       labels:
         name: openmcp-globalcache
     spec:
-      serviceAccountName: openmcp-globalcache-sa
+      serviceAccountName: openmcp-snapshot-sa
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: openmcp-globalcache
           # Replace this with the built image name
-          image: openmcp/openmcp-globalcache:v0.0.1
+          image: openmcp/openmcp-globalcache:v0.0.2
           command:
           - openmcp-globalcache
           imagePullPolicy: Always
