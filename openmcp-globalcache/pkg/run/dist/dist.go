@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"time"
 
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-globalcache/pkg/utils"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -28,11 +30,6 @@ func (r *RegistryManager) GetNodeInfoList() ([]string, error) {
 		return nil, err
 	}
 
-	//nodeName := "my-node"
-	//pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{
-	//	FieldSelector: "spec.nodeName=" + nodeName,
-	//})
-
 	result := make([]string, len(nodeList.Items))
 	for i, item := range nodeList.Items {
 		result[i] = item.Name
@@ -43,6 +40,7 @@ func (r *RegistryManager) GetNodeInfoList() ([]string, error) {
 
 //SetNodeLabelSync 선택된 클러스터의 전체 Sync 를 맞추는 함수.
 func (r *RegistryManager) SetNodeLabelSync() error {
+	omcplog.V(3).Info("Node SetNodeLabelSync")
 
 	if r.clientset == nil {
 		return errors.New("no cluster is specified")
@@ -56,22 +54,31 @@ func (r *RegistryManager) SetNodeLabelSync() error {
 	var listErr error
 	nodes, listErr := r.clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if listErr != nil {
+		omcplog.V(3).Info(" error ", listErr)
 		return listErr
 	}
 
 	for _, node := range nodes.Items {
 		//node name으로 node 정보 가져와서 내용 바꿔서 update 하는 기능.
 		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+
+			omcplog.V(4).Info("   get Node : " + node.Name)
 			//1. Node 정보를 가져온다.
 			result, getErr := r.clientset.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 			if getErr != nil {
 				return getErr
 			}
+
+			omcplog.V(4).Info("   get Node mod...")
+			omcplog.V(4).Info("   addLabelName : " + r.getLabelName(node.Name))
+
 			//2. 라벨을 추가해준다.
 			modLabels := result.GetLabels()
 			addLabelName := r.getLabelName(node.Name)
 			modLabels[addLabelName] = "true"
 			result.SetLabels(modLabels)
+
+			omcplog.V(4).Info("   get Node update")
 			//3. 업데이트.
 			_, updateErr := r.clientset.CoreV1().Nodes().Update(context.TODO(), result, metav1.UpdateOptions{})
 			return updateErr
@@ -79,8 +86,9 @@ func (r *RegistryManager) SetNodeLabelSync() error {
 		if retryErr != nil {
 			return retryErr
 		}
-		fmt.Println("Updated ..." + node.Name)
+		omcplog.V(3).Info(" Node Sync Updated ..." + node.Name)
 	}
+	omcplog.V(3).Info("Node SetNodeLabelSync end")
 
 	return nil
 }
@@ -138,7 +146,7 @@ func (r *RegistryManager) DistributeRegistryAgent() error {
 		if retryErr != nil {
 			return retryErr
 		}
-		fmt.Println("creating..." + node.Name)
+		omcplog.V(3).Info("creating..." + node.Name)
 	}
 
 	return nil
@@ -192,7 +200,7 @@ func (r *RegistryManager) DeleteRegistryAgentAll() error {
 		if retryErr != nil {
 			return retryErr
 		}
-		fmt.Println("deleted ..." + node.Name)
+		omcplog.V(3).Info("deleted ..." + node.Name)
 	}
 
 	return nil
@@ -229,7 +237,7 @@ func (r *RegistryManager) CreateRepositoryAgent(nodeName string) error {
 	deploymentsClient := r.clientset.AppsV1().Deployments(utils.ProjectNamespace)
 	deployment, _ := deploymentsClient.Get(context.TODO(), appName, metav1.GetOptions{})
 	if deployment.ObjectMeta.Name != "" {
-		fmt.Printf("deployment exist : " + deployment.ObjectMeta.Name + "\n")
+		omcplog.V(3).Info("deployment exist : " + deployment.ObjectMeta.Name + "\n")
 		return nil
 	}
 
@@ -273,12 +281,12 @@ func (r *RegistryManager) CreateRepositoryAgent(nodeName string) error {
 	}
 
 	// Create Deployment
-	fmt.Println("Creating deployment...")
+	omcplog.V(3).Info("Creating deployment...")
 	result, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
+	omcplog.V(3).Info("Created deployment " + result.GetObjectMeta().GetName())
 
 	return nil
 }
@@ -290,12 +298,12 @@ func (r *RegistryManager) DeleteRegistryAgent(nodeName string) error {
 	deploymentsClient := r.clientset.AppsV1().Deployments(utils.ProjectNamespace)
 	deployment, _ := deploymentsClient.Get(context.TODO(), appName, metav1.GetOptions{})
 	if deployment.ObjectMeta.Name == "" {
-		fmt.Printf("deployment not exist : " + deployment.ObjectMeta.Name + "\n")
+		omcplog.V(3).Info("deployment not exist : " + deployment.ObjectMeta.Name + "\n")
 		return nil
 	}
 
 	// Delete Deployment
-	fmt.Println("Delete deployment...")
+	omcplog.V(3).Info("Delete deployment...")
 	deletePolicy := metav1.DeletePropagationForeground
 	err := deploymentsClient.Delete(context.TODO(), appName, metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
@@ -303,7 +311,7 @@ func (r *RegistryManager) DeleteRegistryAgent(nodeName string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Deleted deployment %q.\n", appName)
+	omcplog.V(3).Info("Deleted deployment %q.\n", appName)
 
 	return nil
 }
@@ -315,12 +323,12 @@ func (r *RegistryManager) DeleteRegistryJob(nodeName string) error {
 	jobClient := r.clientset.BatchV1().Jobs(utils.ProjectNamespace)
 	job, _ := jobClient.Get(context.TODO(), appName, metav1.GetOptions{})
 	if job.ObjectMeta.Name == "" {
-		fmt.Printf("job not exist : " + job.ObjectMeta.Name + "\n")
+		omcplog.V(3).Info("job exist : " + job.ObjectMeta.Name + "\n")
 		return nil
 	}
 
 	// Delete Deployment
-	fmt.Println("Delete job...")
+	omcplog.V(3).Info("Delete job...")
 	deletePolicy := metav1.DeletePropagationForeground
 	err := jobClient.Delete(context.TODO(), appName, metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
@@ -328,7 +336,7 @@ func (r *RegistryManager) DeleteRegistryJob(nodeName string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Deleted job %q.\n", appName)
+	omcplog.V(3).Info("Deleted job %q.\n", appName)
 
 	return nil
 }
@@ -379,7 +387,7 @@ func (r *RegistryManager) CreateJobForCluster(imageName string, tag string, cmdT
 		//if retryErr != nil {
 		//	return retryErr
 		//}
-		//fmt.Println("Updated ..." + node.Name)
+		//omcplog.V(3).Info("Updated ..." + node.Name)
 	}
 
 	return nil
@@ -397,6 +405,7 @@ func (r *RegistryManager) CreatePullJob(nodeName string, imageName string, tag s
 
 //CreateJob 원하는 노드에 특정 명령을 내리는 job을 생성하는 기능.
 func (r *RegistryManager) CreateJob(nodeName string, imageName string, tag string, cmdType string) error {
+	omcplog.V(4).Info("Create Pull Command")
 	appName := r.getAppName(nodeName)
 	labelName := r.getLabelName(nodeName)
 
@@ -405,21 +414,46 @@ func (r *RegistryManager) CreateJob(nodeName string, imageName string, tag strin
 	//이미 존재할 때의 처리 방법.
 	job, _ := jobClient.Get(context.TODO(), appName, metav1.GetOptions{})
 	if job.ObjectMeta.Name != "" {
-		fmt.Printf("job exist : " + job.ObjectMeta.Name + "\n")
-		return nil
+		omcplog.V(3).Info("job exist : " + job.ObjectMeta.Name + "\n")
+		err := jobClient.Delete(context.TODO(), appName, metav1.DeleteOptions{})
+		if err != nil {
+			omcplog.V(3).Info("exist job delete error!")
+			return nil
+		} else {
+			omcplog.V(3).Info("job : " + job.ObjectMeta.Name + "delete complete!")
+		}
 	}
 
 	imageFullName := utils.GlobalRepo.URI + "/" + imageName + ":" + tag
-	imageOriName := imageName + ":" + tag
+	if utils.GlobalRepo.URI == "" {
+		imageFullName = imageName + ":" + tag
+	}
+
+	//imageOriName := imageName + ":" + tag
 	cmd := ""
+	registryFlag, CheckImageErr := CheckImage(imageFullName)
+	if CheckImageErr != nil {
+		omcplog.Error(CheckImageErr)
+	}
 	switch cmdType {
 	case "push":
-		cmd = "docker image tag " + imageOriName + " " + imageFullName + ";"
-		cmd += "docker push " + imageFullName
-		cmd = utils.SetGlobalRegistryCommand(cmd)
+		//cmd = "docker image tag " + imageOriName + " " + imageFullName + ";"
+		cmd += "docker push " + imageFullName + ";"
+		if registryFlag != true {
+			cmd = utils.SetGlobalRegistryCommand(cmd)
+		} else {
+			cmd = utils.SetDockerHublRegistryCommand(cmd)
+		}
 	case "pull":
-		cmd = "docker pull " + imageFullName
-		cmd = utils.SetGlobalRegistryCommand(cmd)
+		cmd = "docker pull " + imageFullName + ";"
+		cmd += "docker pull openmcp/keti-http-generator:v1.1;"
+		cmd += "docker pull openmcp/keti-preprocessor:v0.0.1;"
+		cmd += "docker pull openmcp/keti-iotgateway:v1.0;"
+		if registryFlag != true {
+			cmd = utils.SetGlobalRegistryCommand(cmd)
+		} else {
+			cmd = utils.SetDockerHublRegistryCommand(cmd)
+		}
 	default:
 	}
 
@@ -430,37 +464,39 @@ func (r *RegistryManager) CreateJob(nodeName string, imageName string, tag strin
 	job = r.getJobAPI(appName, labelName, cmd)
 
 	// Create Deployment
-	fmt.Println("Creating " + cmdType + " Job...")
-	result, err := jobClient.Create(context.TODO(), job, metav1.CreateOptions{})
+	omcplog.V(3).Info("Creating " + cmdType + " Job...")
+	_, err := jobClient.Create(context.TODO(), job, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Created "+cmdType+" Job %q.\n", result.GetObjectMeta().GetName())
+	omcplog.V(3).Info("Created "+cmdType+" Job %q.\n", job.GetObjectMeta().GetName())
 
 	afterFunc := func(old interface{}, new interface{}) {
+		/*
+			//이후 작업 나열
+			newJob := new.(*batchv1.Job)
+			//oldJob := old.(*batchv1.Job)
+			deletePolicy := metav1.DeletePropagationForeground
+			omcplog.V(3).Info("JobRunCheck : delete job \n")
+			err := jobClient.Delete(newJob.Name, &metav1.DeleteOptions{
+				PropagationPolicy: &deletePolicy,
+			})
+			if err != nil {
+				omcplog.V(3).Info("JobRunCheck Error : %v\n", err)
+			}
 
-		//이후 작업 나열
-		newJob := new.(*batchv1.Job)
-		//oldJob := old.(*batchv1.Job)
-		deletePolicy := metav1.DeletePropagationForeground
-		fmt.Printf("JobRunCheck : delete job \n")
-		err := jobClient.Delete(context.TODO(), newJob.Name, metav1.DeleteOptions{
-			PropagationPolicy: &deletePolicy,
-		})
-		if err != nil {
-			fmt.Printf("JobRunCheck Error : %v\n", err)
-		}
-
-		fmt.Printf("JobRunCheck end \n")
-		//return
-		//fmt.Print(r.stopper)
-		defer close(r.stopper)
-		//<-r.stopper
+			omcplog.V(3).Info("JobRunCheck end \n")
+			//return
+			//omcplog.V(3).Info(r.stopper)
+			defer close(r.stopper)
+			//<-r.stopper
+		*/
 	}
 
 	r.JobRunCheck(batchv1.JobComplete, afterFunc)
 
 	time.Sleep(time.Second * 5)
+	omcplog.V(4).Info("Create Pull Command end")
 	return nil
 }
 
@@ -475,7 +511,7 @@ func (r *RegistryManager) CreateJob(nodeName string, imageName string, tag strin
 // 	//이미 존재할 때의 처리 방법.
 // 	job, _ := jobClient.Get(appName, metav1.GetOptions{})
 // 	if job.ObjectMeta.Name != "" {
-// 		fmt.Printf("job exist : " + job.ObjectMeta.Name + "\n")
+// 		omcplog.V(3).Info("job exist : " + job.ObjectMeta.Name + "\n")
 // 		return nil
 // 	}
 
@@ -498,12 +534,12 @@ func (r *RegistryManager) CreateJob(nodeName string, imageName string, tag strin
 // 	job = r.getJobAPI(appName, labelName, cmd)
 
 // 	// Create Deployment
-// 	fmt.Println("Creating " + cmdType + " Job...")
+// 	omcplog.V(3).Info("Creating " + cmdType + " Job...")
 // 	result, err := jobClient.Create(job)
 // 	if err != nil {
 // 		return err
 // 	}
-// 	fmt.Printf("Created "+cmdType+" Job %q.\n", result.GetObjectMeta().GetName())
+// 	omcplog.V(3).Info("Created "+cmdType+" Job %q.\n", result.GetObjectMeta().GetName())
 
 // 	afterFunc := func(old interface{}, new interface{}) {
 
@@ -511,15 +547,15 @@ func (r *RegistryManager) CreateJob(nodeName string, imageName string, tag strin
 // 		newJob := new.(*batchv1.Job)
 // 		//oldJob := old.(*batchv1.Job)
 // 		deletePolicy := metav1.DeletePropagationForeground
-// 		fmt.Printf("JobRunCheck : delete job \n")
+// 		omcplog.V(3).Info("JobRunCheck : delete job \n")
 // 		err := jobClient.Delete(newJob.Name, &metav1.DeleteOptions{
 // 			PropagationPolicy: &deletePolicy,
 // 		})
 // 		if err != nil {
-// 			fmt.Printf("JobRunCheck Error : %v\n", err)
+// 			omcplog.V(3).Info("JobRunCheck Error : %v\n", err)
 // 		}
 
-// 		fmt.Printf("JobRunCheck end \n")
+// 		omcplog.V(3).Info("JobRunCheck end \n")
 // 		//return
 // 		close(r.stopper)
 // 	}
@@ -528,5 +564,13 @@ func (r *RegistryManager) CreateJob(nodeName string, imageName string, tag strin
 // 	time.Sleep(time.Second * 5)
 // 	return nil
 // }
+func CheckImage(imageName string) (bool, error) {
+	match, err := regexp.MatchString(utils.GlobalRepo.URI, imageName)
+	if err != nil {
+		return match, nil
+	} else {
+		return false, err
+	}
+}
 
 func int32Ptr(i int32) *int32 { return &i }

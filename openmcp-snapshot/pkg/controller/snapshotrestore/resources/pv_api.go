@@ -2,7 +2,7 @@ package resources
 
 import (
 	"encoding/json"
-	"fmt"
+	"openmcp/openmcp/omcplog"
 
 	apiv1 "k8s.io/api/core/v1"
 )
@@ -55,6 +55,6 @@ func JSON2Pv(resourceInfoJSON string) (*apiv1.PersistentVolume, error) {
 	*/
 
 	// Create PersistentVolume
-	fmt.Println("Creating pv...")
+	omcplog.V(2).Info("Creating pv Obj...")
 	return resourceInfo, nil
 }

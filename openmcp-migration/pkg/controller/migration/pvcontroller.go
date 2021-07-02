@@ -8,7 +8,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func migpv(migSource MigrationControllerResource, resource v1alpha1.MigrationSource) {
+func migpv(migSource MigrationControllerResource, resource v1alpha1.MigrationSource) error {
 	omcplog.V(3).Info("pv migration")
 	targetResource := &corev1.PersistentVolume{}
 	sourceResource := &corev1.PersistentVolume{}
@@ -21,7 +21,8 @@ func migpv(migSource MigrationControllerResource, resource v1alpha1.MigrationSou
 
 	sourceGetErr := sourceClient.Get(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
 	if sourceGetErr != nil {
-		omcplog.V(3).Info("get source cluster error : ", sourceGetErr)
+		omcplog.Error("get source cluster error : ", sourceGetErr)
+		return sourceGetErr
 	}
 
 	targetResource = GetLinkSharePv(sourceResource, volumePath, serviceName)
@@ -32,11 +33,14 @@ func migpv(migSource MigrationControllerResource, resource v1alpha1.MigrationSou
 
 	targetErr := targetClient.Create(context.TODO(), targetResource)
 	if targetErr != nil {
-		omcplog.V(3).Info("target cluster create error : ", targetErr)
+		omcplog.Error("target cluster create error : ", targetErr)
+		return targetErr
 	}
 
 	sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)
 	if sourceErr != nil {
-		omcplog.V(3).Info("source cluster delete error : ", sourceErr)
+		omcplog.Error("source cluster delete error : ", sourceErr)
+		return sourceErr
 	}
+	return nil
 }

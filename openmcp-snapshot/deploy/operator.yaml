@@ -34,5 +34,12 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "openmcp-snapshot"
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0
         
   

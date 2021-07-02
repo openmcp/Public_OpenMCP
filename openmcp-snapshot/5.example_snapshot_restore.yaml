@@ -3,16 +3,22 @@ kind: SnapshotRestore
 metadata:
   name: example-snapshotrestore
 spec:
+  groupSnapshotKey: "1624521742"
+  isGroupSnapshot: false
   snapshotRestoreSource:
   - resourceCluster: cluster1
     resourceNamespace: default
     resourceType: PersistentVolume
-    snapshotKey: 1605230624-cluster1-PersistentVolume-snapshot-test-pv
+    resourceSnapshotKey: openmcp/snapshot/1624521742/cluster1/PersistentVolume/iot-gateway-pv
   - resourceCluster: cluster1
     resourceNamespace: default
     resourceType: PersistentVolumeClaim
-    snapshotKey: 1605230624-cluster1-PersistentVolumeClaim-snapshot-test-pvc
+    resourceSnapshotKey: openmcp/snapshot/1624521742/cluster1/PersistentVolumeClaim/iot-gateway-pvc
   - resourceCluster: cluster1
     resourceNamespace: default
     resourceType: Deployment
-    snapshotKey: 1605230624-cluster1-Deployment-snapshot-test-dp
+    resourceSnapshotKey: openmcp/snapshot/1624521742/cluster1/Deployment/iot-gateway
+  - resourceCluster: cluster1
+    resourceNamespace: default
+    resourceType: Service
+    resourceSnapshotKey: openmcp/snapshot/1624521742/cluster1/Service/iot-gateway-sv

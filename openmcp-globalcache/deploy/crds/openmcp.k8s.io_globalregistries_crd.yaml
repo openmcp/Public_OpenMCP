@@ -13,10 +13,39 @@ spec:
     singular: globalregistry
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Created time stamp
+      jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - description: '-'
+      jsonPath: .status.GlobalRegistryStatus
+      name: IsSuccess
+      type: boolean
+    - description: '-'
+      jsonPath: .spec.GlobalRegistrySpec[*].Command
+      name: Command
+      type: string
+    - description: '-'
+      jsonPath: .spec.GlobalRegistrySpec[*].ImageName
+      name: ImageName
+      type: string
+    - description: '-'
+      jsonPath: .spec.GlobalRegistrySpec[*].TagName
+      name: TagName
+      type: string
+    - description: '-'
+      jsonPath: .status.Reason
+      name: REASON
+      type: string
+    - description: ElapsedTime
+      jsonPath: .status.ElapsedTime
+      name: ElapsedTime
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: GlobalRegistry is the Schema for the globalregistries API
+        description: NodeRegistry is the Schema for the NodeRegistry API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -50,6 +79,8 @@ spec:
           status:
             description: GlobalRegistryStatus defines the observed state of GlobalRegistry
             properties:
+              ElapsedTime:
+                type: string
               Reason:
                 description: Reason indicates the reason for any backup related failures.
                 type: string

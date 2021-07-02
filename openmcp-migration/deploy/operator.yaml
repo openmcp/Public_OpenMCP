@@ -14,10 +14,12 @@ spec:
         name: openmcp-migration
     spec:
       serviceAccountName: openmcp-migration-sa
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: openmcp-migration
           # Replace this with the built image name
-          image: openmcp/openmcp-migration:v0.0.6
+          image: openmcp/openmcp-migration:v0.0.2
           command:
           - openmcp-migration
           imagePullPolicy: Always

@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   name: snapshotrestores.openmcp.k8s.io
-  annotations:
+    annotations:
     "api-approved.kubernetes.io": "https://github.com/kubernetes/kubernetes/pull/78458"
 spec:
   group: openmcp.k8s.io
@@ -14,9 +14,43 @@ spec:
   scope: Namespaced
   versions:
   - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Created time stamp
+      jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - description: '-'
+      jsonPath: .status.Status
+      name: IsSuccess
+      type: boolean
+    - description: '-'
+      jsonPath: .spec.snapshotRestoreSources[*].resourceCluster
+      name: Cluster
+      type: string
+    - description: '-'
+      jsonPath: .spec.snapshotRestoreSources[*].resourceNamespace
+      name: NameSpace
+      type: string
+    - description: '-'
+      jsonPath: .spec.groupSnapshotKey
+      name: SnapshotKey
+      type: string
+    - description: '-'
+      jsonPath: .spec.isGroupSnapshot
+      name: IsGroupSnapshot
+      type: boolean
+    - description: '-'
+      jsonPath: .status.Reason
+      name: REASON
+      type: string
+    - description: ElapsedTime
+      jsonPath: .status.ElapsedTime
+      name: ElapsedTime
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: SnapshotRestore is the Schema for the snapshotrestores
+        description: SnapshotRestore is the Schema for the openmcpsnapshotrestores
           API
         properties:
           apiVersion:
@@ -34,6 +68,10 @@ spec:
           spec:
             description: SnapshotRestoreSpec defines the desired state of SnapshotRestore
             properties:
+              groupSnapshotKey:
+                type: string
+              isGroupSnapshot:
+                type: boolean
               snapshotRestoreSource:
                 description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
                   Important: Run "operator-sdk generate k8s" to regenerate code after
@@ -47,39 +85,71 @@ spec:
                       type: string
                     resourceNamespace:
                       type: string
+                    resourceSnapshotKey:
+                      type: string
                     resourceType:
                       type: string
-                    snapshotKey:
+                    volumeSnapshotKey:
                       type: string
                   required:
+                  - resourceCluster
+                  - resourceNamespace
+                  - resourceSnapshotKey
                   - resourceType
-                  - snapshotKey
                   type: object
                 type: array
             required:
-            - snapshotRestoreSource
+            - groupSnapshotKey
             type: object
           status:
-            description: SnapshotRestoreStatus defines the observed state of
-              SnapshotRestore
+            description: SnapshotRestoreStatus defines the observed state of SnapshotRestore
             properties:
+              ElapsedTime:
+                description: LastSuccessDate indicate the time to get snapshot last
+                  time LastSuccessDate metav1.Time `json:"lastSuccessDate,omitempty"`
+                type: string
               Reason:
                 description: Reason indicates the reason for any backup related failures.
                 type: string
-              lastSuccessDate:
-                description: LastSuccessDate indicate the time to get snapshot last
-                  time
-                format: date-time
+              ReasonDetail:
                 type: string
-              succeeded:
+              Status:
                 description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
                   of cluster Important: Run "operator-sdk generate k8s" to regenerate
                   code after modifying this file Add custom validation using kubebuilder
                   tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
                   Succeeded indicates if the backup has Succeeded.'
                 type: boolean
+              isVolumeSnapshot:
+                description: isVolumeSnapshot
+                type: boolean
+              snapshotRestoreSource:
+                items:
+                  description: SnapshotRestoreSource contains the supported SnapshotRestore
+                    sources.
+                  properties:
+                    resourceCluster:
+                      type: string
+                    resourceNamespace:
+                      type: string
+                    resourceSnapshotKey:
+                      type: string
+                    resourceType:
+                      type: string
+                    volumeSnapshotKey:
+                      type: string
+                  required:
+                  - resourceCluster
+                  - resourceNamespace
+                  - resourceSnapshotKey
+                  - resourceType
+                  type: object
+                type: array
             required:
-            - succeeded
+            - Reason
+            - ReasonDetail
+            - Status
+            - snapshotRestoreSource
             type: object
         type: object
     served: true

@@ -14,10 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha1 contains API Schema definitions for the multicluster v1alpha1 API group
-// +k8s:openapi-gen=true
+// Package v1alpha1 contains API Schema definitions for the keti v1alpha1 API group
 // +k8s:deepcopy-gen=package,register
-// +k8s:conversion-gen=admiralty.io/multicluster-controller/examples/Migration/pkg/apis/multicluster
-// +k8s:defaulter-gen=TypeMeta
 // +groupName= openmcp.k8s.io
 package v1alpha1

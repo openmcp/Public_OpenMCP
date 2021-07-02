@@ -66,6 +66,16 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	if err != nil {
 		omcplog.V(0).Info("get instance error")
 	}
+	if instance.Status.Succeeded == true {
+		// 이미 성공한 케이스는 로직을 안탄다.
+		omcplog.V(4).Info(instance.Name + " already succeed")
+		return reconcile.Result{Requeue: false}, nil
+	}
+	if instance.Status.Succeeded == false && instance.Status.Reason != "" {
+		// 이미 실패한 케이스는 로직을 다시 안탄다.
+		omcplog.V(4).Info(instance.Name + " already failed")
+		return reconcile.Result{Requeue: false}, nil
+	}
 	r.Run(instance)
-	return reconcile.Result{}, nil
+	return reconcile.Result{Requeue: false}, nil
 }
