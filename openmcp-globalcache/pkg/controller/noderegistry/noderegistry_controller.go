@@ -2,6 +2,7 @@ package noderegistry
 
 import (
 	"context"
+	"fmt"
 	"openmcp/openmcp/apis"
 	v1alpha1 "openmcp/openmcp/apis/globalcache/v1alpha1"
 	"openmcp/openmcp/omcplog"
@@ -11,6 +12,8 @@ import (
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	nodeapi "openmcp/openmcp/openmcp-globalcache/pkg/run/dist"
 )
 
 var cm *clusterManager.ClusterManager
@@ -60,11 +63,70 @@ type reconciler struct {
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	omcplog.V(3).Info("Function Called Reconcile")
+
 	instance := &v1alpha1.NodeRegistry{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 	if err != nil {
 		omcplog.V(0).Info("get instance error")
 	}
+	if instance.Status.Succeeded == true {
+		// 이미 성공한 케이스는 로직을 안탄다.
+		omcplog.V(4).Info(instance.Name + " already succeed")
+		return reconcile.Result{Requeue: false}, nil
+	}
+	if instance.Status.Succeeded == false && instance.Status.Reason != "" {
+		// 이미 실패한 케이스는 로직을 다시 안탄다.
+		omcplog.V(4).Info(instance.Name + " already failed")
+		return reconcile.Result{Requeue: false}, nil
+	}
 	r.Run(instance)
 	return reconcile.Result{}, nil
+}
+
+func (r *reconciler) Run(instance *v1alpha1.NodeRegistry) (bool, error) {
+	omcplog.V(3).Info("\n[Command]] :" + instance.Spec.Command)
+	var registryManager nodeapi.RegistryManager
+	imageList := instance.Spec.ImageLists
+	omcplog.V(3).Info("여기", imageList)
+	ImageSpec := imageList[0]
+	omcplog.V(3).Info("globalcache select image : " + ImageSpec.ImageName)
+	// omcplog.V(3).Info("globalcache select image : openmcp/keti-http-generatore")
+	// omcplog.V(3).Info("globalcache select image : keti-preprocessor")
+	// omcplog.V(3).Info("globalcache select image : openmcp/keti-iotgateway")
+
+	err := registryManager.Init(instance.Spec.ClusterName, cm)
+	if err != nil {
+		return false, err
+	}
+	err = registryManager.SetNodeLabelSync()
+	if err != nil {
+		return false, err
+	}
+
+	// push, pull - nodeName 이 없을 경우 Cluster 단위 명령
+	switch instance.Spec.Command {
+	case "pull":
+		if instance.Spec.NodeName == "" {
+			err = registryManager.CreatePullJobForCluster(ImageSpec.ImageName, ImageSpec.TagName)
+			if err != nil {
+				return false, err
+			}
+		} else {
+			err = registryManager.CreatePullJob(instance.Spec.NodeName, ImageSpec.ImageName, ImageSpec.TagName)
+			if err != nil {
+				return false, err
+			}
+		}
+	case "push":
+		err = registryManager.CreatePushJobForCluster(ImageSpec.ImageName, ImageSpec.TagName)
+		if err != nil {
+			return false, err
+		}
+
+	//case "tagList":
+	default:
+		return false, fmt.Errorf("Command is not valid")
+	}
+
+	return true, nil
 }

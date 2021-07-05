@@ -42,6 +42,15 @@ func MakeDockerAuth() string {
 func SetGlobalRegistryCommand(command string) string {
 
 	retCommand := "echo `hostname`; "
+	retCommand += "mkdir -p /etc/docker/certs.d/" + DockerHubRepo.URI + "; "
+	retCommand += "echo -e \"" + DockerHubRepo.Cert + "\" > /etc/docker/certs.d/" + DockerHubRepo.URI + "/server.crt; "
+	retCommand += "echo " + DockerHubRepo.Password + " | docker login -u " + DockerHubRepo.Username + " --password-stdin " + DockerHubRepo.URI + ";"
+	retCommand += command
+	return retCommand
+}
+func SetDockerHublRegistryCommand(command string) string {
+
+	retCommand := "echo `hostname`; "
 	retCommand += "mkdir -p /etc/docker/certs.d/" + GlobalRepo.URI + "; "
 	retCommand += "echo -e \"" + GlobalRepo.Cert + "\" > /etc/docker/certs.d/" + GlobalRepo.URI + "/server.crt; "
 	retCommand += "echo " + GlobalRepo.Password + " | docker login -u " + GlobalRepo.Username + " --password-stdin " + GlobalRepo.URI + ";"

@@ -2,7 +2,7 @@ package resources
 
 import (
 	"encoding/json"
-	"fmt"
+	"openmcp/openmcp/omcplog"
 
 	appsv1 "k8s.io/api/apps/v1"
 )
@@ -54,6 +54,7 @@ func JSON2Deploy(resourceInfoJSON string) (*appsv1.Deployment, error) {
 	//resourceInfo.ObjectMeta.Name = resourceInfo.ObjectMeta.Name + SnapshotTailName
 
 	resourceInfo.ObjectMeta.ResourceVersion = ""
+	resourceInfo.ObjectMeta.UID = ""
 	/*
 		deployment := &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
@@ -83,6 +84,6 @@ func JSON2Deploy(resourceInfoJSON string) (*appsv1.Deployment, error) {
 	*/
 
 	// Create Deployment
-	fmt.Println("Creating deployment...")
+	omcplog.V(2).Info("Creating deployment Obj...")
 	return resourceInfo, nil
 }

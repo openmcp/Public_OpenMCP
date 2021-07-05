@@ -17,6 +17,7 @@ package migration
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"regexp"
@@ -117,59 +118,208 @@ type MigrationControllerResource struct {
 	resourceRequire corev1.ResourceList
 }
 
-func MigrationControllerResourceInit(migraionSource v1alpha1.MigrationServiceSource) MigrationControllerResource {
+func MigrationControllerResourceInit(migraionSource v1alpha1.MigrationServiceSource) (MigrationControllerResource, error) {
 	migSource := MigrationControllerResource{}
 
 	migSource.resourceList, migSource.pvCheck = sortResource(migraionSource)
 	migSource.targetCluster = migraionSource.TargetCluster
 	migSource.sourceCluster = migraionSource.SourceCluster
 	migSource.nameSpace = migraionSource.NameSpace
-	migSource.volumePath, migSource.resourceRequire = getVolumePath(migraionSource)
 	migSource.targetClient = cm.Cluster_genClients[migraionSource.TargetCluster]
 	migSource.sourceClient = cm.Cluster_genClients[migraionSource.SourceCluster]
 	migSource.serviceName = migraionSource.ServiceName
 
-	return migSource
+	var err error
+	err, migSource.volumePath, migSource.resourceRequire = getVolumePath(migraionSource)
+	if err != nil {
+		omcplog.Error("getVolumePath error : ", err)
+		return migSource, err
+	}
+
+	return migSource, nil
 }
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
-	omcplog.V(3).Info("Function Called Reconcile")
+	omcplog.V(3).Info("Migration Start : Reconcile")
+	startDate := time.Now()
 	instance := &v1alpha1.Migration{}
+	checkResourceName := ""
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 	if err != nil {
-		omcplog.V(0).Info("get instance error : ", err)
+		omcplog.Error("get instance error : ", err)
+		r.MakeStatus(instance, false, "", err)
+		return reconcile.Result{Requeue: false}, nil
 	}
+
+	if instance.Status.MigrationStatus == true {
+		// 이미 성공한 케이스는 로직을 안탄다.
+		omcplog.V(4).Info(instance.Name + " already succeed")
+		return reconcile.Result{Requeue: false}, nil
+	}
+	if instance.Status.MigrationStatus == false && instance.Status.Reason != "" {
+		// 이미 실패한 케이스는 로직을 다시 안탄다.
+		omcplog.V(4).Info(instance.Name + " already failed")
+		return reconcile.Result{Requeue: false}, nil
+	}
+
 	for _, migraionSource := range instance.Spec.MigrationServiceSources {
 		omcplog.V(4).Info(migraionSource)
-		migSource := MigrationControllerResourceInit(migraionSource)
+		migSource, initErr := MigrationControllerResourceInit(migraionSource)
+		if initErr != nil {
+			omcplog.Error("MigrationControllerResource Init error : ", initErr)
+			r.MakeStatusWithMigSource(instance, false, migraionSource, initErr)
+			omcplog.V(3).Info("Migration Failed")
+			return reconcile.Result{Requeue: false}, nil
+		}
 		checkNameSpace(migSource.targetClient, migSource.nameSpace)
+		var migErr error
 		if migSource.pvCheck == true {
 			for _, resource := range migSource.resourceList {
 				resourceType := resource.ResourceType
 				if resourceType == config.DEPLOY {
-					migdeploy(migSource, resource)
+					migErr = migdeploy(migSource, resource)
+					checkResourceName = resource.ResourceName
 				} else if resourceType == config.SERVICE {
-					migservice(migSource, resource)
+					migErr = migservice(migSource, resource)
 				} else if resourceType == config.PV {
-					migpv(migSource, resource)
+					migErr = migpv(migSource, resource)
 				} else if resourceType == config.PVC {
-					migpvc(migSource, resource)
+					migErr = migpvc(migSource, resource)
 				} else {
-					omcplog.V(0).Info("Resource Type Error!")
-					return reconcile.Result{}, fmt.Errorf("Resource Type Error!")
+					omcplog.Error(fmt.Errorf("Resource Type Error!"))
+					r.MakeStatusWithResource(instance, false, migraionSource, resource, fmt.Errorf("Resource Type Error!"))
+					omcplog.Error("Migration Failed")
+					return reconcile.Result{Requeue: false}, nil
+				}
+				if migErr != nil {
+					omcplog.Error("MigrationControllerResource migration error : ", migErr)
+					r.MakeStatusWithResource(instance, false, migraionSource, resource, migErr)
+					omcplog.Error("Migration Failed")
+					return reconcile.Result{Requeue: false}, nil
 				}
 			}
 		} else {
 			for _, resource := range migSource.resourceList {
 				resourceType := resource.ResourceType
 				if resourceType == config.DEPLOY {
-					migdeployNotVolume(migSource, resource)
+					migErr = migdeployNotVolume(migSource, resource)
+					checkResourceName = resource.ResourceName
 				} else if resourceType == config.SERVICE {
-					migserviceNotVolume(migSource, resource)
+					migErr = migserviceNotVolume(migSource, resource)
+				} else {
+					omcplog.Error(fmt.Errorf("Resource Type Error!"))
+					r.MakeStatusWithResource(instance, false, migraionSource, resource, fmt.Errorf("Resource Type Error!"))
+					omcplog.Error("Migration Failed")
+					return reconcile.Result{Requeue: false}, nil
+				}
+				if migErr != nil {
+					omcplog.Error("MigrationControllerResource migration error : ", migErr)
+					r.MakeStatusWithResource(instance, false, migraionSource, resource, migErr)
+					omcplog.Error("Migration Failed")
+					return reconcile.Result{Requeue: false}, nil
 				}
 			}
 		}
+
+		targetListClient := *cm.Cluster_kubeClients[migSource.targetCluster]
+		timeoutcheck := 0
+
+		isMigCompleted := false
+		omcplog.V(4).Info("connecting... : " + checkResourceName)
+		for !isMigCompleted {
+			var regexpErr error
+			var errMessage string
+			podName := ""
+			matchResult := false
+			pods, _ := targetListClient.CoreV1().Pods(migSource.nameSpace).List(context.TODO(), metav1.ListOptions{})
+			for _, pod := range pods.Items {
+				matchResult, regexpErr = regexp.MatchString(checkResourceName, pod.Name)
+
+				if regexpErr == nil && matchResult == true {
+					if pod.Name != "" {
+						podName = pod.Name
+					} else {
+						podName = checkResourceName + "-unknown"
+					}
+					omcplog.V(3).Info("TargetCluster PodName : " + podName)
+					if pod.Status.Phase == corev1.PodRunning {
+						isMigCompleted = true
+						omcplog.V(3).Info(podName + " is Running.")
+					} else {
+						if pod.Status.Reason == "" {
+							errMessage = string(pod.Status.Phase)
+						} else {
+							errMessage = string(pod.Status.Phase) + "/" + pod.Status.Reason + "/" + pod.Status.Message
+						}
+						omcplog.V(3).Info(errMessage)
+					}
+				}
+			}
+
+			if timeoutcheck == 30 {
+				//시간초과 - 오류 루틴으로 진입
+				omcplog.V(3).Info("long time error...")
+				omcplog.Error(fmt.Errorf("Target Cluster Pod not loaded... : " + podName))
+				omcplog.Error(errMessage)
+				r.MakeStatusWithMigSource(instance, false, migraionSource, fmt.Errorf("TargetCluster Pod not loaded... : "+checkResourceName))
+				omcplog.Error("Migration Failed")
+				return reconcile.Result{Requeue: false}, nil
+			}
+
+			timeoutcheck = timeoutcheck + 1
+			time.Sleep(time.Second * 1)
+			omcplog.V(4).Info("connecting...")
+		}
 	}
-	return reconcile.Result{}, nil
+	omcplog.V(3).Info("Migration Complete")
+	elapsed := time.Since(startDate)
+	r.MakeStatus(instance, true, elapsed.String(), nil)
+
+	return reconcile.Result{Requeue: false}, nil
+}
+
+func (r *reconciler) MakeStatusWithResource(instance *v1alpha1.Migration, migrationStatus bool, migraionSource v1alpha1.MigrationServiceSource, resource v1alpha1.MigrationSource, err error) {
+	r.makeStatusRun(instance, migrationStatus, migraionSource, resource, "", err)
+}
+
+func (r *reconciler) MakeStatusWithMigSource(instance *v1alpha1.Migration, migrationStatus bool, migraionSource v1alpha1.MigrationServiceSource, err error) {
+	r.makeStatusRun(instance, migrationStatus, migraionSource, v1alpha1.MigrationSource{}, "", err)
+}
+
+func (r *reconciler) MakeStatus(instance *v1alpha1.Migration, migrationStatus bool, elapsed string, err error) {
+	r.makeStatusRun(instance, migrationStatus, v1alpha1.MigrationServiceSource{}, v1alpha1.MigrationSource{}, elapsed, err)
+}
+
+func (r *reconciler) makeStatusRun(instance *v1alpha1.Migration, migrationStatus bool, migraionSource v1alpha1.MigrationServiceSource, resource v1alpha1.MigrationSource, elapsedTime string, err error) {
+	instance.Status.MigrationStatus = migrationStatus
+
+	if elapsedTime == "" {
+		elapsedTime = "0"
+	}
+	instance.Status.ElapsedTime = elapsedTime
+	omcplog.V(3).Info("elapsedTime : ", elapsedTime)
+
+	if !migrationStatus {
+		tmp := make(map[string]interface{})
+		tmp["SourceCluster"] = migraionSource.SourceCluster
+		tmp["TargetCluster"] = migraionSource.TargetCluster
+		tmp["ServiceName"] = migraionSource.ServiceName
+		tmp["NameSpace"] = migraionSource.NameSpace
+		tmp["Reason"] = err.Error()
+
+		jsonTmp, err := json.Marshal(tmp)
+		if err != nil {
+			omcplog.V(3).Info(err, "-----------")
+		}
+		instance.Status.Reason = string(jsonTmp)
+	}
+
+	//r.live.Update(context.TODO(), instance)
+	//r.live.Status().Patch(context.TODO(), instance)
+	//r.live.Status().Update(context.TODO(), instance)
+	err = r.live.Status().Update(context.TODO(), instance)
+	if err != nil {
+		omcplog.V(3).Info(err, "-----------")
+	}
 }
 
 //pod 이름 찾기
@@ -207,7 +357,7 @@ START:
 		}
 	}
 	if podName == "" {
-		omcplog.V(4).Info("can not found podName")
+		omcplog.V(4).Info(" Pod hasn't created yet")
 		time.Sleep(time.Second * 1)
 		goto START
 	} else {
@@ -246,8 +396,8 @@ START:
 	)
 	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
 	if err != nil {
-		omcplog.V(0).Info("NewSPDYExecutor err: ", err)
-
+		omcplog.Error("NewSPDYExecutor err : ", err)
+		return err
 	}
 
 	err = exec.Stream(remotecommand.StreamOptions{
@@ -259,13 +409,14 @@ START:
 	if err != nil {
 		timeoutcheck = timeoutcheck + 1
 		if timeoutcheck == 10 {
-			omcplog.V(0).Info("error stream: ", err)
+			omcplog.Error("error stream", err)
 			return err
 		}
 		omcplog.V(4).Info("connecting: ", podName)
 		time.Sleep(time.Second * 1)
 		goto START
 	} else {
+		//success
 		return err
 	}
 }
@@ -336,25 +487,28 @@ func CreateLinkShare(client generic.Client, sourceResource *appsv1.Deployment, v
 
 	pvErr := client.Create(context.TODO(), nfsNewPv)
 	if pvErr != nil {
-		omcplog.V(0).Info("nfsPv 생성 에러: ", pvErr)
+		omcplog.Error("nfsPv 생성 에러: ", pvErr)
+		return false, pvErr, nfsNewPv, nfsNewPvc
 	}
 	omcplog.V(3).Info("nfsPv 생성 완료")
 	pvcErr := client.Create(context.TODO(), nfsNewPvc)
 	if pvcErr != nil {
-		omcplog.V(0).Info("nfsPvc 생성 에러: ", pvcErr)
+		omcplog.Error("nfsPvc 생성 에러: ", pvcErr)
+		return false, pvcErr, nfsNewPv, nfsNewPvc
 	}
 	omcplog.V(3).Info("nfsPvc 생성 완료")
 	//client.Update(context.TODO(), resourceInfo)
 	//client.Create(context.TODO(), resourceInfo)
 	dpErr := client.Update(context.TODO(), resourceInfo)
 	if dpErr != nil {
-		omcplog.V(0).Info("dp 생성 에러: ", dpErr)
+		omcplog.Error("dp 생성 에러: ", dpErr)
+		return false, dpErr, nfsNewPv, nfsNewPvc
 	}
 	omcplog.V(3).Info("dp 생성 완료")
 	return true, nil, nfsNewPv, nfsNewPvc
 	// return true, nil
 }
-func getVolumePath(migraionSource v1alpha1.MigrationServiceSource) (string, corev1.ResourceList) {
+func getVolumePath(migraionSource v1alpha1.MigrationServiceSource) (error, string, corev1.ResourceList) {
 	pvcName := ""
 	dpResource := &appsv1.Deployment{}
 	pvcResource := &corev1.PersistentVolumeClaim{}
@@ -365,15 +519,32 @@ func getVolumePath(migraionSource v1alpha1.MigrationServiceSource) (string, core
 	for _, resource := range migraionSource.MigrationSources {
 		if resource.ResourceType == config.PVC {
 			pvcName = resource.ResourceName
-			sourceClient.Get(context.TODO(), pvcResource, migraionSource.NameSpace, resource.ResourceName)
+			err := sourceClient.Get(context.TODO(), pvcResource, migraionSource.NameSpace, resource.ResourceName)
+			if err != nil {
+				omcplog.Error("failed get Source PVC :  ", err)
+				return err, "", nil
+			}
 		} else if resource.ResourceType == config.DEPLOY {
-			sourceClient.Get(context.TODO(), dpResource, migraionSource.NameSpace, resource.ResourceName)
+			err := sourceClient.Get(context.TODO(), dpResource, migraionSource.NameSpace, resource.ResourceName)
+			if err != nil {
+				omcplog.Error("failed get Source Deploy : ", err)
+				return err, "", nil
+			}
 		} else {
 			continue
 		}
 	}
 	if pvcName == "" {
-		omcplog.V(0).Info("error pvc name nil")
+		omcplog.V(3).Info("MigrationSpec pvcName none")
+		return nil, "", nil
+	}
+	if dpResource.Name == "" {
+		omcplog.V(3).Info("Source dpResourceName none")
+		return nil, "", nil
+	}
+	if pvcResource.Name == "" {
+		omcplog.V(3).Info("Source pvcResourceName none")
+		return nil, "", nil
 	}
 
 	volumeList := dpResource.Spec.Template.Spec.Volumes
@@ -383,7 +554,8 @@ func getVolumePath(migraionSource v1alpha1.MigrationServiceSource) (string, core
 		}
 	}
 	if volumeName == "" {
-		omcplog.V(0).Info("error volume name nil")
+		omcplog.Error(fmt.Errorf("error volume name nil : dpResource / " + dpResource.String()))
+		return fmt.Errorf("error volume name nil : dpResource / " + dpResource.String()), "", nil
 	}
 
 	containerList := dpResource.Spec.Template.Spec.Containers
@@ -395,7 +567,8 @@ func getVolumePath(migraionSource v1alpha1.MigrationServiceSource) (string, core
 		}
 	}
 	if mountPath == "" {
-		omcplog.V(0).Info("error mount path nil")
+		omcplog.Error(fmt.Errorf("error mount path nil : dpResource / " + dpResource.String()))
+		return fmt.Errorf("error mount path nil : dpResource / " + dpResource.String()), "", nil
 	}
 	storageSize := corev1.ResourceList{}
 	if pvcResource.Spec.Resources.Requests.Storage() != nil {
@@ -405,7 +578,7 @@ func getVolumePath(migraionSource v1alpha1.MigrationServiceSource) (string, core
 			corev1.ResourceStorage: resource.MustParse(config.DEFAULT_VOLUME_SIZE),
 		}
 	}
-	return mountPath, storageSize
+	return nil, mountPath, storageSize
 }
 
 func checkNameSpace(client generic.Client, namespace string) bool {

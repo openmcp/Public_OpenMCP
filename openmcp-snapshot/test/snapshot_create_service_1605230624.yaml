@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: iot-gateway-pv
+  labels:
+    name: iot-gateway-pv
+    app: iot-gateway
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy:
+    Delete
+  nfs:
+    path: /tmp/test
+    server: 10.0.0.224
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: iot-gateway-pvc
+  labels:
+    name: iot-gateway-pvc
+    app: iot-gateway
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  selector:
+    matchLabels:
+      name: iot-gateway-pv
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iot-gateway
+  labels:
+    name: iot-gateway
+    app: iot-gateway
+spec:
+  selector:
+    matchLabels:
+      app: iot-gateway
+  template:
+    metadata:
+      labels:
+        app: iot-gateway
+    spec:
+      containers:
+      - name: iot-gateway
+        image: ubuntu:16.04
+        command: ["sh", "-c", "chmod a+x /entrypoint.sh; /entrypoint.sh; sleep 100000000;"]
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /snapshot
+          name: iot-gateway-volume
+        env:
+          - name: DOCKER_HOST
+            value: tcp://localhost:2375
+      volumes:
+      - name: iot-gateway-volume
+        persistentVolumeClaim:
+          claimName: iot-gateway-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: iot-gateway-sv
+  labels:
+    name: iot-gateway-sv
+    app: iot-gateway
+spec:
+  type: NodePort
+  ports:
+  - name: iot-gateway-web
+    port: 31329
+    targetPort: 8080
+    protocol: TCP
+    nodePort: 31329
+  selector:
+    app: iot-gateway
+
+

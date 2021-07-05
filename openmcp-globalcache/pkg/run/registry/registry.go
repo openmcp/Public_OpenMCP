@@ -4,9 +4,9 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
+	"openmcp/openmcp/omcplog"
 )
 
 //https://github.com/docker/go-docker/blob/master/ 참조하여 작성
@@ -20,7 +20,7 @@ func (r *RegistryManager) ListGlobalRegistryImage() ([]string, error) {
 	client := &http.Client{Transport: tr}
 
 	getListURL := r.getListURL()
-	fmt.Println(getListURL)
+	omcplog.V(3).Info(getListURL)
 	//r.getList(ListURL)
 	req, requsetErr := http.NewRequest(http.MethodGet, getListURL, nil)
 	if requsetErr != nil {
@@ -44,7 +44,7 @@ func (r *RegistryManager) ListGlobalRegistryImage() ([]string, error) {
 		return nil, err
 	}
 	str := string(respBody)
-	fmt.Print(str)
+	omcplog.V(3).Info(str)
 
 	//Repositories output Structure
 	type Repositories struct {
@@ -58,7 +58,7 @@ func (r *RegistryManager) ListGlobalRegistryImage() ([]string, error) {
 
 	for _, repository := range output.Repositories {
 		//TagListURL := r.getImageTagListURL(repository)
-		fmt.Println(repository)
+		omcplog.V(3).Info(repository)
 	}
 
 	return output.Repositories, nil
@@ -73,7 +73,7 @@ func (r *RegistryManager) ListGlobalRegistryImageTag(imageName string) ([]string
 	client := &http.Client{Transport: tr}
 
 	getImageTagListURL := r.getImageTagListURL(imageName)
-	fmt.Println(getImageTagListURL)
+	omcplog.V(3).Info(getImageTagListURL)
 	//r.getList(ListURL)
 	req, requsetErr := http.NewRequest(http.MethodGet, getImageTagListURL, nil)
 	if requsetErr != nil {
@@ -97,7 +97,7 @@ func (r *RegistryManager) ListGlobalRegistryImageTag(imageName string) ([]string
 		return nil, err
 	}
 	str := string(respBody)
-	fmt.Print(str)
+	omcplog.V(3).Info(str)
 
 	//Repositories output Structure
 	type RepositoryInfo struct {
@@ -112,7 +112,7 @@ func (r *RegistryManager) ListGlobalRegistryImageTag(imageName string) ([]string
 
 	for _, tag := range output.Tags {
 		//TagListURL := r.getImageTagListURL(repository)
-		fmt.Println(tag)
+		omcplog.V(3).Info(tag)
 	}
 
 	return output.Tags, nil
@@ -127,7 +127,7 @@ func (r *RegistryManager) DeleteGlobalRegistryImage(repository string, tag strin
 	client := &http.Client{Transport: tr}
 
 	getHeaderURL := r.getRequestDeleteHeaderURL(repository, tag)
-	fmt.Println(getHeaderURL)
+	omcplog.V(3).Info(getHeaderURL)
 	req, requsetErr := http.NewRequest(http.MethodGet, getHeaderURL, nil)
 	if requsetErr != nil {
 		// handle error
@@ -149,7 +149,7 @@ func (r *RegistryManager) DeleteGlobalRegistryImage(repository string, tag strin
 			return false, err
 		}
 		str := string(respBody)
-		fmt.Print(str)
+		omcplog.V(3).Info(str)
 
 		return false, errors.New(resp.Status + ": " + str)
 	}
@@ -160,7 +160,7 @@ func (r *RegistryManager) DeleteGlobalRegistryImage(repository string, tag strin
 	// ---
 
 	getDeleteURL := r.getDeleteURL(repository, digest)
-	fmt.Println(getDeleteURL)
+	omcplog.V(3).Info(getDeleteURL)
 	req, requsetErr = http.NewRequest(http.MethodDelete, getDeleteURL, nil)
 	if requsetErr != nil {
 		// handle error
@@ -183,7 +183,7 @@ func (r *RegistryManager) DeleteGlobalRegistryImage(repository string, tag strin
 			return false, err
 		}
 		str := string(respBody)
-		fmt.Print(str)
+		omcplog.V(3).Info(str)
 
 		return false, errors.New(resp.Status + ": " + str)
 	}
