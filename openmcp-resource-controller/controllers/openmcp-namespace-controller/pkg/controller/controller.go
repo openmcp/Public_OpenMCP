@@ -14,27 +14,28 @@ limitations under the License.
 package openmcpnamespace
 
 import (
-	"admiralty.io/multicluster-controller/pkg/cluster"
-	"admiralty.io/multicluster-controller/pkg/controller"
-	"admiralty.io/multicluster-controller/pkg/reconcile"
-	"admiralty.io/multicluster-controller/pkg/reference"
 	"context"
 	"fmt"
-	"github.com/getlantern/deepcopy"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"openmcp/openmcp/apis"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strconv"
+
+	"admiralty.io/multicluster-controller/pkg/cluster"
+	"admiralty.io/multicluster-controller/pkg/controller"
+	"admiralty.io/multicluster-controller/pkg/reconcile"
+	"admiralty.io/multicluster-controller/pkg/reference"
+	"github.com/getlantern/deepcopy"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-
 var cm *clusterManager.ClusterManager
+
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
 	omcplog.V(4).Info("Function Called NewController")
 	cm = myClusterManager
@@ -58,11 +59,9 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-
 	if err := co.WatchResourceReconcileObject(context.TODO(), live, &resourcev1alpha1.OpenMCPNamespace{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
-
 
 	for _, ghost := range ghosts {
 		if err := co.WatchResourceReconcileController(context.TODO(), ghost, &corev1.Namespace{}, controller.WatchOptions{}); err != nil {
@@ -73,24 +72,24 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	r.newClusterDeployNamespace()
 	return co, nil
 }
-func (r *reconciler)newClusterDeployNamespace() error {
+func (r *reconciler) newClusterDeployNamespace() error {
 	omcplog.V(4).Info("Function Called newClusterDeployNamespace")
 
 	ns := &corev1.Namespace{}
 	onList, err := cm.Crd_client.OpenMCPNamespace("default").List(metav1.ListOptions{})
 
-	if err != nil && errors.IsNotFound(err){
+	if err != nil && errors.IsNotFound(err) {
 		omcplog.V(2).Info("Not Exist OpenMCPNamespaceList Resource")
 		return err
 	} else if err != nil {
 		return err
 	}
-	omcplog.V(2).Info("Exist OpenMCPNamespaceList Resource ",len(onList.Items))
+	omcplog.V(2).Info("Exist OpenMCPNamespaceList Resource ", len(onList.Items))
 	for _, ons := range onList.Items {
 		for _, cl := range cm.Cluster_list.Items {
 
 			err = cm.Cluster_genClients[cl.Name].Get(context.TODO(), ns, metav1.NamespaceDefault, ons.Name)
-			if err != nil && errors.IsNotFound(err){
+			if err != nil && errors.IsNotFound(err) {
 				ons.Status.ChangeNeed = true
 				err = r.live.Status().Update(context.TODO(), &ons)
 				if err != nil {
@@ -106,18 +105,20 @@ func (r *reconciler)newClusterDeployNamespace() error {
 	}
 	return nil
 }
+
 type reconciler struct {
 	live           client.Client
 	ghosts         []client.Client
 	ghostNamespace string
 }
+
 var i int = 0
+
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	omcplog.V(4).Info("Function Called Reconcile")
 	i += 1
-	omcplog.V(5).Info("********* [",i,"] *********")
-	omcplog.V(3).Info(req.Context," / ", req.Namespace," / ", req.Name)
-
+	omcplog.V(5).Info("********* [", i, "] *********")
+	omcplog.V(3).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
 
 	// Fetch the OpenMCPDeployment instance
 	instance := &resourcev1alpha1.OpenMCPNamespace{}
@@ -138,7 +139,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		return reconcile.Result{}, err
 	}
 
-	if  instance.Status.ClusterMaps == nil {
+	if instance.Status.ClusterMaps == nil {
 		err := r.createNamespace(req, cm, instance)
 		if err != nil {
 			omcplog.V(1).Info(err)
@@ -163,9 +164,14 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	//return reconcile.Result{}, nil // err
 }
 
-
 func (r *reconciler) namespaceForOpenMCPNamespace(req reconcile.Request, m *resourcev1alpha1.OpenMCPNamespace) *corev1.Namespace {
 	omcplog.V(4).Info("Function Called namespaceForOpenMCPNamespace")
+
+	newLabel := m.Labels
+	if newLabel == nil {
+		newLabel = make(map[string]string)
+	}
+	newLabel["istio-injection"] = "enabled"
 
 	dep := &corev1.Namespace{
 		TypeMeta: metav1.TypeMeta{
@@ -175,6 +181,7 @@ func (r *reconciler) namespaceForOpenMCPNamespace(req reconcile.Request, m *reso
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name,
 			Namespace: m.Namespace,
+			Labels:    newLabel,
 		},
 	}
 
@@ -185,9 +192,8 @@ func (r *reconciler) namespaceForOpenMCPNamespace(req reconcile.Request, m *reso
 	return dep
 }
 
-
-
 var syncIndex int = 0
+
 func (r *reconciler) sendSync(secret *corev1.Namespace, command string, clusterName string) (string, error) {
 	omcplog.V(4).Info("Function Called sendSync")
 
@@ -236,13 +242,12 @@ func (r *reconciler) createNamespace(req reconcile.Request, cm *clusterManager.C
 	return err
 }
 
-
 func (r *reconciler) DeleteNamespace(cm *clusterManager.ClusterManager, name string, namespace string) error {
 	omcplog.V(4).Info("Function Called DeleteNamespace")
 
 	for _, cluster := range cm.Cluster_list.Items {
 
-		omcplog.V(3).Info(cluster.Name," Delete Start")
+		omcplog.V(3).Info(cluster.Name, " Delete Start")
 
 		dep := &corev1.Namespace{
 			TypeMeta: metav1.TypeMeta{
@@ -300,7 +305,3 @@ func (r *reconciler) updateNamespace(req reconcile.Request, cm *clusterManager.C
 	return err
 
 }
-
-
-
-

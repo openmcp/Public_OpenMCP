@@ -152,7 +152,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				replica := instance.Status.ClusterMaps[myCluster.Name]
 				cluster_client := cm.Cluster_genClients[myCluster.Name]
 
-				dep := r.deploymentForOpenMCPDeployment(req, instance, replica)
+				dep := r.deploymentForOpenMCPDeployment(req, instance, replica, myCluster.Name)
 
 				found := &appsv1.Deployment{}
 				err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
@@ -299,7 +299,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		if err != nil && errors.IsNotFound(err) {
 			// Delete Deployment Detected
 			omcplog.V(2).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
-			dep := r.deploymentForOpenMCPDeployment(req, instance, replica)
+			dep := r.deploymentForOpenMCPDeployment(req, instance, replica, cluster_name)
+
 			command := "create"
 			omcplog.V(3).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
 			sync_req_name, err = r.sendSync(dep, command, cluster_name)
@@ -412,8 +413,9 @@ func (r *reconciler) ServiceNotifyAll(namespace string) error {
 
 	return nil
 }
-func (r *reconciler) deploymentForOpenMCPDeployment(req reconcile.Request, m *resourcev1alpha1.OpenMCPDeployment, replica int32) *appsv1.Deployment {
+func (r *reconciler) deploymentForOpenMCPDeployment(req reconcile.Request, m *resourcev1alpha1.OpenMCPDeployment, replica int32, clusterName string) *appsv1.Deployment {
 	omcplog.V(4).Info("[OpenMCP Deployment] Function Called deploymentForOpenMCPDeployment")
+
 	dep := &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Deployment",
@@ -435,9 +437,22 @@ func (r *reconciler) deploymentForOpenMCPDeployment(req reconcile.Request, m *re
 	dep.Spec.Template.ObjectMeta.Labels = m.Spec.Labels
 	dep.Spec.Replicas = &replica
 
+	r.ApplyClusterLabel(dep, clusterName)
+
 	reference.SetMulticlusterControllerReference(dep, reference.NewMulticlusterOwnerReference(m, m.GroupVersionKind(), req.Context))
 
 	return dep
+}
+func (r *reconciler) ApplyClusterLabel(dep *appsv1.Deployment, clusterName string) {
+	newLabel := dep.Spec.Template.ObjectMeta.Labels
+	if newLabel == nil {
+		newLabel = make(map[string]string)
+	}
+	newLabel["cluster"] = clusterName
+
+	dep.Spec.Template.ObjectMeta.Labels = newLabel
+	// dep.Spec.Selector.MatchLabels = newLabel
+
 }
 
 func openmcpContainersToContainers(containers []resourcev1alpha1.OpenMCPContainer) []corev1.Container {
