@@ -10,8 +10,21 @@ service RequestAnalysis {
     rpc SendLBAnalysis (LBInfo) returns (ResponseLB) {}
     rpc SendNetworkAnalysis (NodeInfo) returns (ResponseNetwork) {}
     rpc SendCPAAnalysis (CPADeployList) returns (ResponseCPADeployList) {}
+    rpc SendRegionZoneInfo(RegionZoneInfo) returns (ResponseWeight) {}
 }
 
+message RegionZoneInfo {
+    string FromRegion = 1;
+    string FromZone = 2;
+    string ToRegion = 3;
+    string ToZone = 4;
+    string ToClusterName = 5;
+    string ToNamespace = 6;
+    string ToServiceName = 7;
+}
+message ResponseWeight {
+    float weight = 1;
+}
 message CPADeployList {
     repeated CPADeployInfo CPADeployInfo = 1;
 }

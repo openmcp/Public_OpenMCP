@@ -26,7 +26,8 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
-var GeoDB, GeoErr = geoip2.Open("/root/GeoLite2-City.mmdb")
+//var GeoDB, GeoErr = geoip2.Open("/root/GeoLite2-City.mmdb")
+var GeoDB, GeoErr = geoip2.Open("/root/dbip-city-lite-2021-07.mmdb")
 
 func analyticGRPC() {
 

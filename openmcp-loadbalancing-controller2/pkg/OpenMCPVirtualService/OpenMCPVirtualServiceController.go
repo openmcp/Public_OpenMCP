@@ -3,10 +3,18 @@ package OpenMCPVirtualService
 import (
 	"context"
 	"fmt"
+	"math"
+	"os"
+	"sort"
+	"strings"
 
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 
 	"openmcp/openmcp/apis"
+
+	"openmcp/openmcp/omcplog"
+	"openmcp/openmcp/openmcp-analytic-engine/pkg/protobuf"
+	"openmcp/openmcp/util/clusterManager"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
@@ -18,9 +26,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/util/clusterManager"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -89,7 +94,7 @@ var syncIndex int = 0
 type LocCluster struct {
 	clusterName string
 	region      string
-	zone        string
+	zones       []string
 }
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
@@ -126,6 +131,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		vs, err2 := makeVirtualService(ovs)
 		if err == nil {
 			// Update VirtualService
+			vs.ResourceVersion = checkVs.ResourceVersion
 			err3 := r.live.Update(context.TODO(), vs)
 			if err3 != nil {
 				return reconcile.Result{}, err3
@@ -146,6 +152,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 func getLocClusters() []LocCluster {
 	locationSlice := []LocCluster{}
+
+	region := ""
+	zones := []string{}
 	for _, memberCluster := range cm.Cluster_list.Items {
 		nodeList := &corev1.NodeList{}
 		err := cm.Cluster_genClients[memberCluster.Name].List(context.TODO(), nodeList, "default")
@@ -155,18 +164,16 @@ func getLocClusters() []LocCluster {
 		}
 		for _, node := range nodeList.Items {
 			if _, ok := node.Labels["node-role.kubernetes.io/master"]; ok {
-
-				l := LocCluster{
-					clusterName: memberCluster.Name,
-					region:      node.Labels["topology.kubernetes.io/region"],
-					zone:        node.Labels["topology.kubernetes.io/zone"],
-				}
-				locationSlice = append(locationSlice, l)
-
-				break
+				region = node.Labels["topology.kubernetes.io/region"]
 			}
-
+			zones = append(zones, node.Labels["topology.kubernetes.io/zone"])
 		}
+		l := LocCluster{
+			clusterName: memberCluster.Name,
+			region:      region,
+			zones:       zones,
+		}
+		locationSlice = append(locationSlice, l)
 
 	}
 	return locationSlice
@@ -204,17 +211,24 @@ func makeVirtualService(ovs *resourcev1alpha1.OpenMCPVirtualService) (*v1alpha3.
 
 	return vs, nil
 }
+
+type RegionZone struct {
+	region string
+	zone   string
+}
+
 func createVsHttps(ovs *resourcev1alpha1.OpenMCPVirtualService) ([]*networkingv1alpha3.HTTPRoute, error) {
 	vsHttps := []*networkingv1alpha3.HTTPRoute{}
 
 	locClusters := getLocClusters()
-	usedZones := []string{}
+	usedRegionZones := []RegionZone{}
 
 	for _, ovsHttp := range ovs.Spec.Http {
 
 		// 디폴트 경로 생성
+		exactRegion := "default"
 		exactZone := "default"
-		vsHttp, err := createVsHttp(ovsHttp, exactZone)
+		vsHttp, err := createVsHttp(ovsHttp, exactRegion, exactZone)
 		if err != nil {
 			return nil, err
 		}
@@ -222,27 +236,39 @@ func createVsHttps(ovs *resourcev1alpha1.OpenMCPVirtualService) ([]*networkingv1
 
 		// 지역(클러스터)별 경로 생성
 		for _, locCluster := range locClusters {
+			for _, zone := range locCluster.zones {
 
-			if contains(usedZones, locCluster.zone) {
-				continue
+				skipFlag := false
+				for _, usedRegionZone := range usedRegionZones {
+					if usedRegionZone.region == locCluster.region && usedRegionZone.zone == zone {
+						skipFlag = true
+						break
+					}
+				}
+				if skipFlag {
+					continue
+				}
+
+				usedRegionZones = append(usedRegionZones, RegionZone{locCluster.region, zone})
+
+				exactRegion = locCluster.region
+				exactZone = zone
+
+				vsHttp, err := createVsHttp(ovsHttp, exactRegion, exactZone)
+				if err != nil {
+					return nil, err
+				}
+
+				vsHttps = append(vsHttps, vsHttp)
+
 			}
-
-			exactZone := locCluster.zone
-			usedZones = append(usedZones, locCluster.zone)
-
-			vsHttp, err := createVsHttp(ovsHttp, exactZone)
-			if err != nil {
-				return nil, err
-			}
-
-			vsHttps = append(vsHttps, vsHttp)
 
 		}
 
 	}
 	return vsHttps, nil
 }
-func createVsHttp(ovsHttp *networkingv1alpha3.HTTPRoute, exactZone string) (*networkingv1alpha3.HTTPRoute, error) {
+func createVsHttp(ovsHttp *networkingv1alpha3.HTTPRoute, exactRegion, exactZone string) (*networkingv1alpha3.HTTPRoute, error) {
 	vsHttp := &networkingv1alpha3.HTTPRoute{}
 
 	err := deepcopy.Copy(&vsHttp, &ovsHttp)
@@ -250,6 +276,21 @@ func createVsHttp(ovsHttp *networkingv1alpha3.HTTPRoute, exactZone string) (*net
 		return nil, err
 	}
 
+	for _, match := range vsHttp.Match {
+		stringMatch := &networkingv1alpha3.StringMatch{
+			MatchType: &networkingv1alpha3.StringMatch_Exact{
+				Exact: exactRegion,
+			},
+		}
+		if match.Headers == nil {
+			headers := make(map[string]*networkingv1alpha3.StringMatch)
+			match.Headers = headers
+		}
+
+		match.Headers["client-region"] = stringMatch
+		//vsHttp.Match[i].Headers["client-zone"] = stringMatch
+
+	}
 	for _, match := range vsHttp.Match {
 		stringMatch := &networkingv1alpha3.StringMatch{
 			MatchType: &networkingv1alpha3.StringMatch_Exact{
@@ -262,55 +303,202 @@ func createVsHttp(ovsHttp *networkingv1alpha3.HTTPRoute, exactZone string) (*net
 		}
 
 		match.Headers["client-zone"] = stringMatch
-		//vsHttp.Match[i].Headers["client-zone"] = stringMatch
 
 	}
 
-	vsHttp.Route, _ = createVsHttpRoutes(ovsHttp.Route, exactZone)
+	vsHttp.Route, _ = createVsHttpRoutes(ovsHttp.Route, exactRegion, exactZone)
 
 	return vsHttp, nil
 }
-func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, exactZone string) ([]*networkingv1alpha3.HTTPRouteDestination, error) {
+func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, exactRegion, exactZone string) ([]*networkingv1alpha3.HTTPRouteDestination, error) {
 	vsHttpRoutes := []*networkingv1alpha3.HTTPRouteDestination{}
 	locClusters := getLocClusters()
 
 	for _, ovsHttpRoute := range ovsHttpRoutes {
 
-		if exactZone == "default" {
-			vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, -1, nil, -1)
+		if exactRegion == "default" {
+			vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, -1, nil)
 			if err != nil {
 				return nil, err
+			}
+			if vsHttpRoute == nil {
+				// 해당 Cluster에 해당 서비스가 존재하지 않는경우 생성하지 않음
+				continue
 			}
 			vsHttpRoutes = append(vsHttpRoutes, vsHttpRoute)
 		} else {
 			for i, locCluster := range locClusters {
-				vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, i, &locCluster, len(locClusters))
+				vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, i, &locCluster)
 				if err != nil {
 					return nil, err
+				}
+				if vsHttpRoute == nil {
+					// 해당 Cluster에 해당 서비스가 존재하지 않는경우 생성하지 않음
+					continue
 				}
 				vsHttpRoutes = append(vsHttpRoutes, vsHttpRoute)
 			}
 		}
 
 	}
+	setWeight(vsHttpRoutes, exactRegion, exactZone)
+
 	return vsHttpRoutes, nil
 }
-func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i int, locCluster *LocCluster, locClustersSize int) (*networkingv1alpha3.HTTPRouteDestination, error) {
-	vsRoute := &networkingv1alpha3.HTTPRouteDestination{}
-	err := deepcopy.Copy(&vsRoute, &ovsHttpRoute)
+func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i int, locCluster *LocCluster) (*networkingv1alpha3.HTTPRouteDestination, error) {
+	// 서비스가 있는지 체크
+	svcDomain := ovsHttpRoute.Destination.Host
+	svcDomainSplit := strings.Split(svcDomain, ".")
+
+	svcName := svcDomainSplit[0]
+	svcNS := "default"
+	if len(svcDomainSplit) >= 2 {
+		svcNS = svcDomainSplit[1]
+	}
+
+	if locCluster != nil {
+		svc := &corev1.Service{}
+		err := cm.Cluster_genClients[locCluster.clusterName].Get(context.TODO(), svc, svcNS, svcName)
+		if err != nil && errors.IsNotFound(err) {
+			return nil, nil
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	vsHttpRoute := &networkingv1alpha3.HTTPRouteDestination{}
+	err := deepcopy.Copy(&vsHttpRoute, &ovsHttpRoute)
 	if err != nil {
 		return nil, err
 	}
 	if locCluster != nil {
-		// TODO 서비스가 있는지 체크
-		// TODO Weight 계산
-		vsRoute.Destination.Subset = locCluster.clusterName
-		vsRoute.Weight = 1
-		if i == locClustersSize-1 {
-			vsRoute.Weight = 100 - int32(locClustersSize) + 1
+		vsHttpRoute.Destination.Subset = locCluster.clusterName
+	}
+
+	return vsHttpRoute, nil
+}
+
+type ClusterPrimeNumber struct {
+	clusterName    string
+	primeNumber    float64
+	allocateWeight int
+}
+
+func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegion, fromZone string) {
+
+	clusterWeight := make(map[string]float64)
+	var clusterWeightSum float64 = 0
+
+	SERVER_IP := os.Getenv("GRPC_SERVER")
+	SERVER_PORT := os.Getenv("GRPC_PORT")
+	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
+
+	for _, vsHttpRoute := range vsHttpRoutes {
+
+		svcDomain := vsHttpRoute.Destination.Host
+		svcDomainSplit := strings.Split(svcDomain, ".")
+
+		svcName := svcDomainSplit[0]
+		svcNS := "default"
+
+		if len(svcDomainSplit) >= 2 {
+			svcNS = svcDomainSplit[1]
+		}
+
+		clusterName := vsHttpRoute.Destination.Subset
+		if clusterName != "" {
+			nodeList := &corev1.NodeList{}
+			err := cm.Cluster_genClients[clusterName].List(context.TODO(), nodeList, "default")
+			if err != nil && errors.IsNotFound(err) {
+				return
+			}
+
+			var cluster_X_TotalWeight float64 = 0
+
+			for _, node := range nodeList.Items {
+				toRegion := node.Labels["topology.kubernetes.io/region"]
+				toZone := node.Labels["topology.kubernetes.io/zone"]
+
+				regionZoneInfo := protobuf.RegionZoneInfo{
+					FromRegion:    fromRegion,
+					FromZone:      fromZone,
+					ToRegion:      toRegion,
+					ToZone:        toZone,
+					ToClusterName: clusterName,
+					ToNamespace:   svcNS,
+					ToServiceName: svcName,
+				}
+				grpcResponse, gRPC_err := grpcClient.SendRegionZoneInfo(context.TODO(), &regionZoneInfo)
+				if gRPC_err != nil {
+					fmt.Println(gRPC_err)
+					continue
+				}
+
+				cluster_X_TotalWeight = cluster_X_TotalWeight + float64(grpcResponse.Weight)
+
+				fmt.Println("!!!! [Score Calcuation]", fromRegion, "/", fromZone, " -> ", toRegion, "/", toZone, "(", clusterName, "/", node.Name, "/", svcNS, "/", svcName, "): ", grpcResponse.Weight)
+
+			}
+
+			cluster_X_AVG := cluster_X_TotalWeight / float64(len(nodeList.Items))
+
+			clusterWeight[clusterName] = cluster_X_AVG
+			clusterWeightSum += cluster_X_AVG
+
+			fmt.Println("!!!! ==> Cluster Score AVG:", cluster_X_AVG)
+			fmt.Println("!!!! ----------------------------------")
+
+		}
+	}
+	var totalWeight int32 = 0
+	var orgClusterPrimeNumbers []ClusterPrimeNumber
+
+	for _, vsHttpRoute := range vsHttpRoutes {
+		clusterName := vsHttpRoute.Destination.Subset
+
+		if clusterName == "" {
+			return
+		}
+		orgWeight := clusterWeight[clusterName] / clusterWeightSum * 100
+		var primeNumber float64 = orgWeight - float64(int(orgWeight))
+
+		orgClusterPrimeNumbers = append(orgClusterPrimeNumbers, ClusterPrimeNumber{clusterName, primeNumber, 0})
+
+		weight := int32(math.Floor(orgWeight))
+		vsHttpRoute.Weight = weight
+
+		totalWeight += weight
+	}
+
+	sort.Slice(orgClusterPrimeNumbers, func(i, j int) bool {
+		return orgClusterPrimeNumbers[i].primeNumber > orgClusterPrimeNumbers[j].primeNumber
+	})
+
+	if totalWeight != 100 {
+		restWeight := 100 - totalWeight
+		for restWeight != 0 {
+			for i, _ := range orgClusterPrimeNumbers {
+				orgClusterPrimeNumbers[i].allocateWeight += 1
+				restWeight -= 1
+
+				if restWeight == 0 {
+					break
+				}
+			}
+		}
+
+		for i, vsHttpRoute := range vsHttpRoutes {
+			for j, cpn := range orgClusterPrimeNumbers {
+				if vsHttpRoute.Destination.Subset == cpn.clusterName {
+					vsHttpRoutes[i].Weight = vsHttpRoutes[i].Weight + (int32(cpn.allocateWeight))
+					orgClusterPrimeNumbers[j].allocateWeight = 0
+					break
+				}
+			}
+
 		}
 
 	}
 
-	return vsRoute, nil
 }

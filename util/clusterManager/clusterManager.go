@@ -3,12 +3,13 @@ package clusterManager
 import (
 	"context"
 	"fmt"
+	clientV1alpha1 "openmcp/openmcp/clientset/v1alpha1"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	clientV1alpha1 "openmcp/openmcp/clientset/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"

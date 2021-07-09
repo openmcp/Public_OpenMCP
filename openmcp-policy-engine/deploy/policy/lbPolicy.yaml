@@ -15,4 +15,13 @@ spec:
         - type: Period
           value:
             - "5.0"
+        - type: RegionZoneMatchedScore
+          value:
+            - "100"
+        - type: OnlyRegionMatchedScore
+          value:
+            - "60"
+        - type: NoRegionZoneMatchedScore
+          value:
+            - "20"
   policyStatus: Enabled

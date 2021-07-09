@@ -24,7 +24,4 @@ spec:
         - type: LATENCY
           value:
             - "0.5"
-        - type: GeoRate
-          value:
-            - "0.8"
   policyStatus: Enabled

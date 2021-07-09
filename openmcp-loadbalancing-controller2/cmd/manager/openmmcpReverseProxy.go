@@ -26,6 +26,7 @@ func ExtractIP(target string) (string, error) {
 
 func reverseProxy() {
 	cm := clusterManager.NewClusterManager()
+
 	svc := &corev1.Service{}
 	err := cm.Host_client.Get(context.TODO(), svc, "istio-system", "istio-ingressgateway")
 	if err != nil && errors.IsNotFound(err) {
@@ -43,31 +44,73 @@ func reverseProxy() {
 		req.URL.Scheme = "http"
 		req.URL.Host = origin.Host
 
+		// fmt.Println(req)
 		clientIP, _ := ExtractIP(req.RemoteAddr)
-		//clientIP = "71.67.12.248"
+		//clientIP = "14.128.128.5"
 		ip := net.ParseIP(clientIP)
-		fmt.Println(req.RemoteAddr, clientIP, ip)
+		// fmt.Println(req.RemoteAddr, clientIP, ip)
+
+		// record, err := GeoDB.Country(ip)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
 		record, err := GeoDB.City(ip)
 		if err != nil {
 			log.Fatal(err)
 		}
+		//fmt.Println(record)
+
 		//region 이 국가, zone 이 지역
-		region := record.Country.IsoCode
+		region := "default"
 		zone := "default"
 
-		if len(record.Subdivisions) > 0 {
-			zone = record.Subdivisions[0].Names["en"]
-		} else {
-			//zone = "Seoul"
+		// IsoCode가 있는경우, 실제 OpenMCP 구성된 클러스터의 Region과 일치하면 Region을 할당
+		// 그렇지 않으면 default Region 할당
+		if record.Country.IsoCode != "" {
+			findRegion := false
+			findZone := false
+
+			for _, cluster := range cm.Cluster_list.Items {
+				nodeList := &corev1.NodeList{}
+				err := cm.Cluster_genClients[cluster.Name].List(context.TODO(), nodeList, "default")
+				if err != nil {
+					fmt.Println("get NodeList Error")
+					continue
+				}
+				for _, node := range nodeList.Items {
+
+					nodeRegion := node.Labels["topology.kubernetes.io/region"]
+					nodeZone := node.Labels["topology.kubernetes.io/zone"]
+
+					if nodeRegion == record.Country.IsoCode {
+						findRegion = true
+						region = record.Country.IsoCode
+					}
+
+					if len(record.Subdivisions) > 0 && nodeZone == record.Subdivisions[0].Names["en"] {
+						findZone = true
+						zone = record.Subdivisions[0].Names["en"]
+					}
+
+					if findRegion && findZone {
+						break
+					}
+				}
+				if findRegion && findZone {
+					break
+				}
+			}
 		}
 
 		//국가코드
-		fmt.Println("ISO country code(region): ", region)
-		fmt.Println("ISO country zone: ", zone)
+		fmt.Println("Client IP: ", ip)
+		fmt.Println("Client ISO country code(region): ", region)
+		fmt.Println("Client ISO country zone: ", zone)
 
 		//req.Header.Add("Client-Zone", "usa")
 		//req.Header.Add("Client-Zone", strings.ToLower(zone))
-		req.Header.Add("Client-Zone", strings.ToLower(zone))
+		req.Header.Add("Client-Region", region)
+		req.Header.Add("Client-Zone", zone)
 
 	}
 

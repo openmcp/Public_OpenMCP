@@ -2,9 +2,10 @@ package influx
 
 import (
 	"fmt"
-	"github.com/influxdata/influxdb/client/v2"
 	"openmcp/openmcp/omcplog"
 	"time"
+
+	"github.com/influxdata/influxdb/client/v2"
 )
 
 type Influx struct {
@@ -47,21 +48,36 @@ func (in *Influx) GetCPAMetricsData(cluster string, namespace string, depname st
 
 	return nil
 }
+func (in *Influx) GetClusterPodsData(clusterName, podName string) ([]client.Result, error) {
+	omcplog.V(4).Info("Func GetClusterPodsData Called")
 
-func (in *Influx) GetClusterMetricsData(clusterName string) []client.Result {
+	//fmt.Println("SELECT CPUUsageNanoCores, MemoryUsageBytes  FROM Pods WHERE cluster = '" + clusterName + "' AND pod = '" + podName + "' ORDER BY DESC LIMIT 1")
+	q := client.NewQuery("SELECT CPUUsageNanoCores, MemoryUsageBytes, node FROM Pods WHERE cluster = '"+clusterName+"' AND pod = '"+podName+"' ORDER BY DESC LIMIT 1", "Metrics", "")
+
+	response, err := in.inClient.Query(q)
+
+	if err == nil && response.Error() == nil {
+		return response.Results, nil
+	} else {
+		return nil, err
+		// fmt.Println(err)
+		// fmt.Println(response.Error())
+	}
+
+}
+func (in *Influx) GetClusterMetricsData(clusterName string) ([]client.Result, error) {
 	omcplog.V(4).Info("Func GetClusterMetricsData Called")
 	q := client.NewQuery("SELECT * FROM Nodes WHERE cluster = '"+clusterName+"' GROUP BY * ORDER BY DESC LIMIT 5", "Metrics", "")
 
 	response, err := in.inClient.Query(q)
 
 	if err == nil && response.Error() == nil {
-		return response.Results
+		return response.Results, nil
 	} else {
-		fmt.Println(err)
-		fmt.Println(response.Error())
+		return nil, err
+		// fmt.Println(err)
+		// fmt.Println(response.Error())
 	}
-
-	return nil
 
 }
 

@@ -247,8 +247,8 @@ func initRegistry() {
 		fmt.Println(len(nodes.Items))
 		if len(nodes.Items) > 0 {
 			node := nodes.Items[0]
-			zone := node.Labels["failure-domain.beta.kubernetes.io/zone"]
-			region := node.Labels["failure-domain.beta.kubernetes.io/region"]
+			zone := node.Labels["topology.kubernetes.io/zone"]
+			region := node.Labels["topology.kubernetes.io/region"]
 			loadbalancing.ClusterRegistry[cluster.Name]["Zone"] = zone
 			loadbalancing.ClusterRegistry[cluster.Name]["Region"] = region
 			//country := node.Labels["failure-domain.beta.kubernetes.io/zone"]

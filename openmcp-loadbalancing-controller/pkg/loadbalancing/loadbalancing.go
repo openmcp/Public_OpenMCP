@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/oschwald/geoip2-golang"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"log"
 	"math/rand"
 	"net"
@@ -15,7 +13,6 @@ import (
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/clusterregistry"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/countryregistry"
-	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/geo"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/ingressregistry"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/loadbalancingregistry"
 	"openmcp/openmcp/openmcp-loadbalancing-controller/pkg/loadbalancing/serviceregistry"
@@ -26,6 +23,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/oschwald/geoip2-golang"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	//"math"
 )
 
@@ -126,8 +126,8 @@ func Score(clusters []string, clientIP string, creg clusterregistry.Registry) ma
 
 	omcplog.V(-1).Info("Geo Score")
 
-	for cluster,_ := range GeoScore {
-		omcplog.V(-1).Info(cluster," Geo Score : ", GeoScore[cluster])
+	for cluster, _ := range GeoScore {
+		omcplog.V(-1).Info(cluster, " Geo Score : ", GeoScore[cluster])
 	}
 
 	var sumScore = map[string]float64{}
@@ -148,11 +148,10 @@ func Score(clusters []string, clientIP string, creg clusterregistry.Registry) ma
 	omcplog.V(3).Info("Resource Score")
 	omcplog.V(3).Info(ResourceScore)
 
-
 	omcplog.V(-1).Info("Resource Score")
 
-	for cluster,_ := range ResourceScore {
-		omcplog.V(-1).Info(cluster," Resource Score : ", ResourceScore[cluster])
+	for cluster, _ := range ResourceScore {
+		omcplog.V(-1).Info(cluster, " Resource Score : ", ResourceScore[cluster])
 	}
 
 	return sumScore
@@ -186,24 +185,23 @@ func endpointCluster(score map[string]float64) string {
 		sumScore[cluster] = score[cluster]
 		totalScore = totalScore + sumScore[cluster]
 	}
-        var clusterRatio = map[string]float64{}
+	var clusterRatio = map[string]float64{}
 
-        for cluster,_ := range  score {
+	for cluster, _ := range score {
 		clusterRatio[cluster] = (sumScore[cluster] / totalScore) * 100
 	}
 
-
 	omcplog.V(-1).Info("Traffic Ratio")
 
-	for cluster,_ := range clusterRatio {
-		test := float64(int(clusterRatio[cluster] * 100)) / 100
+	for cluster, _ := range clusterRatio {
+		test := float64(int(clusterRatio[cluster]*100)) / 100
 
 		//vv := fmt.Sprint("%.2f", clusterRatio[cluster])
-		omcplog.V(-1).Info(cluster," Traffic Ratio : ", test, "%")
+		omcplog.V(-1).Info(cluster, " Traffic Ratio : ", test, "%")
 	}
 
 	//omcplog.V(5).Info("Traffic Ratio")
-    //    omcplog.V(5).Info(clusterRatio)
+	//    omcplog.V(5).Info(clusterRatio)
 	rand.Seed(time.Now().UnixNano())
 	n := rand.Float64() * totalScore
 	omcplog.V(4).Info("Random Num : ", n)
@@ -271,10 +269,10 @@ func getCountry(clientIP string) string {
 	//국가코드
 	omcplog.V(5).Info("ISO country code: %v\n", record.Country.IsoCode)
 
-//	fmt.Println("국가 코드")
-//	fmt.Println(record.Country.IsoCode)
-//	fmt.Println("국가/지역1")
-//	fmt.Println(record.Subdivisions)
+	//	fmt.Println("국가 코드")
+	//	fmt.Println(record.Country.IsoCode)
+	//	fmt.Println("국가/지역1")
+	//	fmt.Println(record.Subdivisions)
 
 	if len(record.Subdivisions) > 0 {
 		fmt.Println(record.Subdivisions[0].Names["en"])
@@ -282,8 +280,8 @@ func getCountry(clientIP string) string {
 		fmt.Println("Not Exist")
 	}
 
-//	fmt.Println("국가/지역2")
-//	fmt.Println(record.RepresentedCountry)
+	//	fmt.Println("국가/지역2")
+	//	fmt.Println(record.RepresentedCountry)
 
 	return record.Country.IsoCode
 }
@@ -313,13 +311,12 @@ func getGeo(clientIP string) (string, string) {
 	return region, zone
 }
 
-
-func getContinent(country string) string {
-	return Geo.Geo[country]
-}
+// func getContinent(country string) string {
+// 	return Geo.Geo[country]
+// }
 
 var Policy = map[string]float64{
-	"Period" : 10.0,
+	"Period": 10.0,
 }
 
 func GetPolicy() {
@@ -355,7 +352,7 @@ func geoScore(clusters []string, creg clusterregistry.Registry, clientIP string)
 
 	score := map[string]float64{}
 
-	for _, cluster := range clusters{
+	for _, cluster := range clusters {
 		clusterRegion, err := creg.Region(cluster)
 		if err != nil {
 			omcplog.V(0).Info(cluster + " Not set Country")
