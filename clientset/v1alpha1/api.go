@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -15,6 +16,7 @@ type ExampleV1Alpha1Interface interface {
 	OpenMCPService(namespace string) OpenMCPServiceInterface
 	OpenMCPIngress(namespace string) OpenMCPIngressInterface
 	OpenMCPNamespace(namespace string) OpenMCPNamespaceInterface
+	DestinationRule(namespace string) DestinationRuleInterface
 }
 
 type ExampleV1Alpha1Client struct {
@@ -30,7 +32,23 @@ func NewForConfig(c *rest.Config) (*ExampleV1Alpha1Client, error) {
 	//config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
 	config.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
 	config.UserAgent = rest.DefaultKubernetesUserAgent()
+	client, err := rest.RESTClientFor(&config)
+	if err != nil {
+		return nil, err
+	}
 
+	return &ExampleV1Alpha1Client{restClient: client}, nil
+}
+
+func NewIstioForConfig(c *rest.Config) (*ExampleV1Alpha1Client, error) {
+	//apis.AddToScheme(scheme.Scheme)
+
+	config := *c
+	config.ContentConfig.GroupVersion = &schema.GroupVersion{Group: v1alpha3.GroupName, Version: "v1alpha3"}
+	config.APIPath = "/apis"
+	//config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
+	config.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
+	config.UserAgent = rest.DefaultKubernetesUserAgent()
 	client, err := rest.RESTClientFor(&config)
 	if err != nil {
 		return nil, err
@@ -71,6 +89,12 @@ func (c *ExampleV1Alpha1Client) OpenMCPIngress(namespace string) OpenMCPIngressI
 }
 func (c *ExampleV1Alpha1Client) OpenMCPNamespace(namespace string) OpenMCPNamespaceInterface {
 	return &OpenMCPNamespaceClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) DestinationRule(namespace string) DestinationRuleInterface {
+	return &DestinationRuleClient{
 		restClient: c.restClient,
 		ns:         namespace,
 	}

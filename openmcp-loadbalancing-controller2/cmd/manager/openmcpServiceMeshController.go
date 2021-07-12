@@ -2,7 +2,8 @@ package main
 
 import (
 	"log"
-	OpenMCPVirtualService "openmcp/openmcp/openmcp-loadbalancing-controller2/pkg/OpenMCPVirtualService"
+	"openmcp/openmcp/openmcp-loadbalancing-controller2/pkg/DestinationRule"
+	"openmcp/openmcp/openmcp-loadbalancing-controller2/pkg/OpenMCPVirtualService"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
@@ -17,7 +18,7 @@ func serviceMeshController() {
 	logLevel.KetiLogInit()
 
 	for {
-		omcplog.V(2).Info("Start OpenMCP ServiceMesh Controller")
+		omcplog.V(2).Info("Start OpenMCPServiceMeshController")
 
 		cm := clusterManager.NewClusterManager()
 
@@ -38,18 +39,19 @@ func serviceMeshController() {
 			ghosts = append(ghosts, ghost)
 		}
 
-		co, _ := OpenMCPVirtualService.NewController(live, ghosts, namespace, cm)
+		vs_cont, _ := OpenMCPVirtualService.NewController(live, ghosts, namespace, cm)
+		dr_cont, _ := DestinationRule.NewController(live, ghosts, namespace, cm)
 		reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
 		m := manager.New()
-		m.AddController(co)
+		m.AddController(vs_cont)
+		m.AddController(dr_cont)
 		m.AddController(reshape_cont)
 		m.AddController(loglevel_cont)
 
 		stop := reshape.SetupSignalHandler()
 
-		//fmt.Println(m, stop)
 		if err := m.Start(stop); err != nil {
 			log.Fatal(err)
 		}
