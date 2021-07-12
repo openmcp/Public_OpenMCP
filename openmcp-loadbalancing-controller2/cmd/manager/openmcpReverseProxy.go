@@ -35,7 +35,7 @@ func reverseProxy() {
 	}
 	//origin, _ := url.Parse("http://10.0.3.20:8812/")
 	origin, _ := url.Parse("http://" + svc.Status.LoadBalancer.Ingress[0].IP)
-	//origin, _ := url.Parse("http://10.0.3.195")
+	//origin, _ := url.Parse("http://10.0.6.147")
 
 	director := func(req *http.Request) {
 		req.Header.Add("X-Forwarded-Host", req.Host)
@@ -53,7 +53,7 @@ func reverseProxy() {
 		}
 		//region 이 국가, zone 이 지역
 		region := record.Country.IsoCode
-		zone := "default"
+		zone := "Seoul"
 
 		if len(record.Subdivisions) > 0 {
 			zone = record.Subdivisions[0].Names["en"]
