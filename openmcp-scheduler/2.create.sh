@@ -1,3 +1,3 @@
 #!/bin/bash
 
-kubectl create -f deploy/operator.yaml
+kubectl create -f deploy
