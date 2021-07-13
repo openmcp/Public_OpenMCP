@@ -31,8 +31,9 @@ type AnalyticEngineStruct struct {
 	ClusterResourceUsage map[string]map[string]float64 // ClusterResourceUsage["clusterName]["CPU"] = value
 	//ClusterGeo              map[string]map[string]string
 	NetworkInfos            map[string]map[string]*NetworkInfo
-	ClusterSVCResourceScore map[string]map[string]map[string]float64 // ClusterSVCResourceScore[clusterName][NS]["SVC"] = value
-	GeoScore                []float64                                // 0: RegionZoneMatchedScore, 1: OnlyRegionMatcehdScore, 2: NoRegionZoneMatchedScore
+	ClusterPodResourceScore map[string]map[string]map[string]float64 // ClusterPodResourceScore[clusterName][NS]["Pod"] = value
+	//ClusterSVCResourceScore map[string]map[string]map[string]float64 // ClusterSVCResourceScore[clusterName][NS]["SVC"] = value
+	GeoScore []float64 // 0: RegionZoneMatchedScore, 1: OnlyRegionMatcehdScore, 2: NoRegionZoneMatchedScore
 }
 
 // Network is used to get real-time network information (receive data, transmit data)
@@ -53,7 +54,8 @@ func NewAnalyticEngine(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD 
 	ae.ClusterResourceUsage = make(map[string]map[string]float64)
 	ae.MetricsWeight = make(map[string]float64)
 	ae.NetworkInfos = make(map[string]map[string]*NetworkInfo)
-	ae.ClusterSVCResourceScore = make(map[string]map[string]map[string]float64)
+	ae.ClusterPodResourceScore = make(map[string]map[string]map[string]float64)
+	//ae.ClusterSVCResourceScore = make(map[string]map[string]map[string]float64)
 	ae.GeoScore = []float64{-1, -1, -1}
 
 	return ae
@@ -98,14 +100,24 @@ func (ae *AnalyticEngineStruct) CalcResourceScore(cm *clusterManager.ClusterMana
 				}
 				/*
 					Update {
+						ae.ClusterPodResourceScore
+						ae.GeoScore
+					}
+				*/
+				err = ae.UpdateClusterPodScore(cluster.Name, cm)
+				if err != nil {
+					omcplog.V(0).Info(err)
+				}
+				/*
+					Update {
 						ae.ClusterSVCResourceScore
 						ae.GeoScore
 					}
 				*/
-				err = ae.UpdateClusterSVCScore(cluster.Name, cm)
-				if err != nil {
-					omcplog.V(0).Info(err)
-				}
+				// err = ae.UpdateClusterSVCScore(cluster.Name, cm)
+				// if err != nil {
+				// 	omcplog.V(0).Info(err)
+				// }
 
 				/*
 					Update {
@@ -341,7 +353,7 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 
 	return nil
 }
-func (ae *AnalyticEngineStruct) UpdateClusterSVCScore(clusterName string, cm *clusterManager.ClusterManager) error {
+func (ae *AnalyticEngineStruct) UpdateClusterPodScore(clusterName string, cm *clusterManager.ClusterManager) error {
 
 	var geoRate float64
 	var resourceRate float64
@@ -376,11 +388,11 @@ func (ae *AnalyticEngineStruct) UpdateClusterSVCScore(clusterName string, cm *cl
 	ae.GeoScore[1] = geoRate * OnlyRegionMatchedScore
 	ae.GeoScore[2] = geoRate * NoRegionZoneMatchedScore
 
-	// ae.ClusterSVCResourceScore Update
-	_, exists := ae.ClusterSVCResourceScore[clusterName]
+	// ae.ClusterPodResourceScore Update
+	_, exists := ae.ClusterPodResourceScore[clusterName]
 	if !exists {
-		tempClusterSVCResourceScore := make(map[string]map[string]float64)
-		ae.ClusterSVCResourceScore[clusterName] = tempClusterSVCResourceScore
+		tempClusterPodResourceScore := make(map[string]map[string]float64)
+		ae.ClusterPodResourceScore[clusterName] = tempClusterPodResourceScore
 	}
 
 	openmcpPolicyInstance, err = cm.Crd_client.OpenMCPPolicy("openmcp").Get("analytic-metrics-weight", metav1.GetOptions{})
@@ -433,15 +445,13 @@ func (ae *AnalyticEngineStruct) UpdateClusterSVCScore(clusterName string, cm *cl
 	}
 
 	for _, svc := range svcList.Items {
-		var podCpuUtilizationTotal float64
-		var podMemUtilizationTotal float64
 
 		ns := svc.Namespace
 
-		_, exists = ae.ClusterSVCResourceScore[clusterName][ns]
+		_, exists = ae.ClusterPodResourceScore[clusterName][ns]
 		if !exists {
-			tempClusterSVCResourceScore2 := make(map[string]float64)
-			ae.ClusterSVCResourceScore[clusterName][ns] = tempClusterSVCResourceScore2
+			tempClusterPodResourceScore2 := make(map[string]float64)
+			ae.ClusterPodResourceScore[clusterName][ns] = tempClusterPodResourceScore2
 		}
 
 		matchLabels := client.MatchingLabels{}
@@ -488,8 +498,11 @@ func (ae *AnalyticEngineStruct) UpdateClusterSVCScore(clusterName string, cm *cl
 					podCpuUtilization := 100 - (podCpuUsage/float64(nodeCpuCapacity[clusterName][nodeName]))*100
 					podMemUtilization := 100 - (podMemUsage/float64(nodeMemCapacity[clusterName][nodeName]))*100
 
-					podCpuUtilizationTotal = podCpuUtilizationTotal + podCpuUtilization
-					podMemUtilizationTotal = podMemUtilizationTotal + podMemUtilization
+					// podCpuUtilizationTotal = podCpuUtilizationTotal + podCpuUtilization
+					// podMemUtilizationTotal = podMemUtilizationTotal + podMemUtilization
+
+					score := (podCpuUtilization*CpuWeight + podMemUtilization*MemWeight) * resourceRate
+					ae.ClusterPodResourceScore[clusterName][ns][pod.Name] = score
 
 					fmt.Println("Cluster: ", clusterName)
 					fmt.Println("Node: ", nodeName)
@@ -500,18 +513,186 @@ func (ae *AnalyticEngineStruct) UpdateClusterSVCScore(clusterName string, cm *cl
 				}
 			}
 		}
-		podCpuUtilizationAvg := podCpuUtilizationTotal / float64(len(podList.Items))
-		podMemUtilizationAvg := podMemUtilizationTotal / float64(len(podList.Items))
 
-		score := (podCpuUtilizationAvg*CpuWeight + podMemUtilizationAvg*MemWeight) * resourceRate
-		ae.ClusterSVCResourceScore[clusterName][ns][svc.Name] = score
 	}
 
 	fmt.Println("ae.GeoScore:", ae.GeoScore)
-	fmt.Println("["+clusterName+"] ae.ClusterSVCResourceScore:", ae.ClusterSVCResourceScore[clusterName])
+	fmt.Println("["+clusterName+"] ae.ClusterPodResourceScore:", ae.ClusterPodResourceScore[clusterName])
 
 	return nil
 }
+
+// func (ae *AnalyticEngineStruct) UpdateClusterSVCScore(clusterName string, cm *clusterManager.ClusterManager) error {
+
+// 	var geoRate float64
+// 	var resourceRate float64
+// 	var RegionZoneMatchedScore float64
+// 	var OnlyRegionMatchedScore float64
+// 	var NoRegionZoneMatchedScore float64
+
+// 	// ae.GeoScore Update
+// 	openmcpPolicyInstance, err := cm.Crd_client.OpenMCPPolicy("openmcp").Get("loadbalancing-controller-policy", metav1.GetOptions{})
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	policies := openmcpPolicyInstance.Spec.Template.Spec.Policies
+
+// 	for _, policy := range policies {
+// 		value, _ := strconv.ParseFloat(policy.Value[0], 64)
+// 		if policy.Type == "GeoRate" {
+// 			geoRate = value
+// 			resourceRate = 1 - geoRate
+// 		} else if policy.Type == "RegionZoneMatchedScore" {
+// 			RegionZoneMatchedScore = value
+// 		} else if policy.Type == "OnlyRegionMatchedScore" {
+// 			OnlyRegionMatchedScore = value
+// 		} else if policy.Type == "NoRegionZoneMatchedScore" {
+// 			NoRegionZoneMatchedScore = value
+// 		}
+
+// 	}
+
+// 	ae.GeoScore[0] = geoRate * RegionZoneMatchedScore
+// 	ae.GeoScore[1] = geoRate * OnlyRegionMatchedScore
+// 	ae.GeoScore[2] = geoRate * NoRegionZoneMatchedScore
+
+// 	// ae.ClusterSVCResourceScore Update
+// 	_, exists := ae.ClusterSVCResourceScore[clusterName]
+// 	if !exists {
+// 		tempClusterSVCResourceScore := make(map[string]map[string]float64)
+// 		ae.ClusterSVCResourceScore[clusterName] = tempClusterSVCResourceScore
+// 	}
+
+// 	openmcpPolicyInstance, err = cm.Crd_client.OpenMCPPolicy("openmcp").Get("analytic-metrics-weight", metav1.GetOptions{})
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	policies = openmcpPolicyInstance.Spec.Template.Spec.Policies
+
+// 	var CpuWeight float64
+// 	var MemWeight float64
+// 	for _, policy := range policies {
+// 		value, _ := strconv.ParseFloat(policy.Value[0], 64)
+// 		if policy.Type == "CPU" {
+// 			CpuWeight = value
+// 		} else if policy.Type == "Memory" {
+// 			MemWeight = value
+// 		}
+
+// 	}
+
+// 	nodeCpuCapacity := make(map[string]map[string]int64)
+// 	nodeMemCapacity := make(map[string]map[string]int64)
+
+// 	_, exists = nodeCpuCapacity[clusterName]
+// 	if !exists {
+// 		tempCpuCapacityMap := make(map[string]int64)
+// 		nodeCpuCapacity[clusterName] = tempCpuCapacityMap
+// 	}
+// 	_, exists = nodeMemCapacity[clusterName]
+// 	if !exists {
+// 		tempMemoryCapacityMap := make(map[string]int64)
+// 		nodeMemCapacity[clusterName] = tempMemoryCapacityMap
+// 	}
+
+// 	nodeList := &corev1.NodeList{}
+// 	err = cm.Cluster_genClients[clusterName].List(context.TODO(), nodeList, "default")
+// 	if err != nil {
+// 		return err
+// 	}
+// 	for _, node := range nodeList.Items {
+// 		nodeCpuCapacity[clusterName][node.Name] = node.Status.Capacity.Cpu().Value()
+// 		nodeMemCapacity[clusterName][node.Name] = node.Status.Capacity.Memory().Value()
+// 	}
+
+// 	svcList := &corev1.ServiceList{}
+// 	err = cm.Cluster_genClients[clusterName].List(context.TODO(), svcList, corev1.NamespaceAll)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	for _, svc := range svcList.Items {
+// 		var podCpuUtilizationTotal float64
+// 		var podMemUtilizationTotal float64
+
+// 		ns := svc.Namespace
+
+// 		_, exists = ae.ClusterSVCResourceScore[clusterName][ns]
+// 		if !exists {
+// 			tempClusterSVCResourceScore2 := make(map[string]float64)
+// 			ae.ClusterSVCResourceScore[clusterName][ns] = tempClusterSVCResourceScore2
+// 		}
+
+// 		matchLabels := client.MatchingLabels{}
+
+// 		for key, value := range svc.Spec.Selector {
+// 			matchLabels[key] = value
+// 		}
+// 		podList := &corev1.PodList{}
+// 		err = cm.Cluster_genClients[clusterName].List(context.TODO(), podList, ns, matchLabels)
+// 		if err != nil {
+// 			return err
+// 		}
+
+// 		for _, pod := range podList.Items {
+// 			result, err := ae.Influx.GetClusterPodsData(clusterName, pod.Name)
+// 			if err != nil {
+// 				return err
+// 			}
+// 			if len(result) == 0 {
+// 				return errors.New("Error : Influx DB Data length is 0")
+// 			}
+// 			for _, ser := range result[0].Series {
+// 				for r, _ := range ser.Values {
+// 					var nodeName string
+// 					var podCpuUsage float64
+// 					var podMemUsage float64
+// 					for c, colName := range ser.Columns {
+// 						Strval := fmt.Sprintf("%v", ser.Values[r][c])
+// 						QuanVal, _ := resource.ParseQuantity(Strval)
+
+// 						if colName == "CPUUsageNanoCores" {
+// 							//MetricsMap[colName], _ = strconv.ParseFloat(Strval, 64)
+// 							podCpuUsage = QuanVal.AsApproximateFloat64()
+
+// 							// fmt.Println("check1 - CPUUsageNanoCores: ", Strval, QuanVal, QuanVal.AsApproximateFloat64())
+// 						} else if colName == "MemoryUsageBytes" {
+// 							//time_t = Strval
+// 							// fmt.Println("check2 - MemoryUsageBytes: ", Strval, QuanVal, QuanVal.Value())
+// 							podMemUsage = float64(QuanVal.Value())
+// 						} else if colName == "node" {
+// 							nodeName = Strval
+// 						}
+// 					}
+// 					podCpuUtilization := 100 - (podCpuUsage/float64(nodeCpuCapacity[clusterName][nodeName]))*100
+// 					podMemUtilization := 100 - (podMemUsage/float64(nodeMemCapacity[clusterName][nodeName]))*100
+
+// 					podCpuUtilizationTotal = podCpuUtilizationTotal + podCpuUtilization
+// 					podMemUtilizationTotal = podMemUtilizationTotal + podMemUtilization
+
+// 					fmt.Println("Cluster: ", clusterName)
+// 					fmt.Println("Node: ", nodeName)
+// 					fmt.Println("Pod: ", pod.Name)
+// 					fmt.Println("podCpuUtilization: ", podCpuUtilization)
+// 					fmt.Println("podMemUtilization: ", podMemUtilization)
+
+// 				}
+// 			}
+// 		}
+// 		podCpuUtilizationAvg := podCpuUtilizationTotal / float64(len(podList.Items))
+// 		podMemUtilizationAvg := podMemUtilizationTotal / float64(len(podList.Items))
+
+// 		score := (podCpuUtilizationAvg*CpuWeight + podMemUtilizationAvg*MemWeight) * resourceRate
+// 		ae.ClusterSVCResourceScore[clusterName][ns][svc.Name] = score
+// 	}
+
+// 	fmt.Println("ae.GeoScore:", ae.GeoScore)
+// 	fmt.Println("["+clusterName+"] ae.ClusterSVCResourceScore:", ae.ClusterSVCResourceScore[clusterName])
+
+// 	return nil
+// }
 func (ae *AnalyticEngineStruct) SendLBAnalysis(ctx context.Context, in *protobuf.LBInfo) (*protobuf.ResponseLB, error) {
 	omcplog.V(4).Info("Func SendLBAnalysis Called")
 
@@ -639,7 +820,7 @@ func (ae *AnalyticEngineStruct) SendRegionZoneInfo(ctx context.Context, data *pr
 	omcplog.V(4).Info("Func SendRegionZoneInfo Called")
 
 	var tempGeoScore float64
-	var tempClusterSVCResourceScore float64
+	var tempClusterPodResourceScore float64
 
 	if data.FromRegion == data.ToRegion && data.FromZone == data.ToZone {
 		if ae.GeoScore[0] == -1 {
@@ -658,22 +839,22 @@ func (ae *AnalyticEngineStruct) SendRegionZoneInfo(ctx context.Context, data *pr
 		tempGeoScore = ae.GeoScore[2]
 	}
 
-	_, exists := ae.ClusterSVCResourceScore[data.ToClusterName]
+	_, exists := ae.ClusterPodResourceScore[data.ToClusterName]
 	if !exists {
-		return nil, errors.New("ClusterSVCResourceScore Initiailzing. Retry again")
+		return nil, errors.New("ClusterPodResourceScore Initiailzing. Retry again")
 	}
-	_, exists = ae.ClusterSVCResourceScore[data.ToClusterName][data.ToNamespace]
+	_, exists = ae.ClusterPodResourceScore[data.ToClusterName][data.ToNamespace]
 	if !exists {
-		return nil, errors.New("ClusterSVCResourceScore Initiailzing. Retry again")
+		return nil, errors.New("ClusterPodResourceScore Initiailzing. Retry again")
 	}
-	_, exists = ae.ClusterSVCResourceScore[data.ToClusterName][data.ToNamespace][data.ToServiceName]
+	_, exists = ae.ClusterPodResourceScore[data.ToClusterName][data.ToNamespace][data.ToPodName]
 	if !exists {
-		return nil, errors.New("ClusterSVCResourceScore Initiailzing. Retry again")
+		return nil, errors.New("ClusterPodResourceScore Initiailzing. Retry again")
 	}
 
-	tempClusterSVCResourceScore = ae.ClusterSVCResourceScore[data.ToClusterName][data.ToNamespace][data.ToServiceName]
+	tempClusterPodResourceScore = ae.ClusterPodResourceScore[data.ToClusterName][data.ToNamespace][data.ToPodName]
 
-	weight := float32(tempGeoScore + tempClusterSVCResourceScore)
+	weight := float32(tempGeoScore + tempClusterPodResourceScore)
 
 	omcplog.V(4).Info("FromRegion: ", data.FromRegion)
 	omcplog.V(4).Info("ToRegion: ", data.ToRegion)
@@ -681,16 +862,73 @@ func (ae *AnalyticEngineStruct) SendRegionZoneInfo(ctx context.Context, data *pr
 	omcplog.V(4).Info("ToZone: ", data.ToZone)
 	omcplog.V(4).Info("ToClusterName: ", data.ToClusterName)
 	omcplog.V(4).Info("ToNamespace: ", data.ToNamespace)
-	omcplog.V(4).Info("ToServiceName: ", data.ToServiceName)
+	omcplog.V(4).Info("ToPodName: ", data.ToPodName)
 
 	omcplog.V(4).Info("GeoScore: ", tempGeoScore)
-	omcplog.V(4).Info("ClusterSVCResourceScore: ", tempClusterSVCResourceScore)
+	omcplog.V(4).Info("ClusterPodResourceScore: ", tempClusterPodResourceScore)
 	omcplog.V(4).Info("weight: ", weight)
-	omcplog.V(4).Info("--------------------------------------------")
+	omcplog.V(4).Info("")
 
 	return &protobuf.ResponseWeight{Weight: weight}, nil
 
 }
+
+// func (ae *AnalyticEngineStruct) SendRegionZoneInfo(ctx context.Context, data *protobuf.RegionZoneInfo) (*protobuf.ResponseWeight, error) {
+// 	omcplog.V(4).Info("Func SendRegionZoneInfo Called")
+
+// 	var tempGeoScore float64
+// 	var tempClusterSVCResourceScore float64
+
+// 	if data.FromRegion == data.ToRegion && data.FromZone == data.ToZone {
+// 		if ae.GeoScore[0] == -1 {
+// 			return nil, errors.New("GeoScore Initiailzing. Retry again")
+// 		}
+// 		tempGeoScore = ae.GeoScore[0]
+// 	} else if data.FromRegion == data.ToRegion {
+// 		if ae.GeoScore[1] == -1 {
+// 			return nil, errors.New("GeoScore Initiailzing. Retry again")
+// 		}
+// 		tempGeoScore = ae.GeoScore[1]
+// 	} else {
+// 		if ae.GeoScore[2] == -1 {
+// 			return nil, errors.New("GeoScore Initiailzing. Retry again")
+// 		}
+// 		tempGeoScore = ae.GeoScore[2]
+// 	}
+
+// 	_, exists := ae.ClusterSVCResourceScore[data.ToClusterName]
+// 	if !exists {
+// 		return nil, errors.New("ClusterSVCResourceScore Initiailzing. Retry again")
+// 	}
+// 	_, exists = ae.ClusterSVCResourceScore[data.ToClusterName][data.ToNamespace]
+// 	if !exists {
+// 		return nil, errors.New("ClusterSVCResourceScore Initiailzing. Retry again")
+// 	}
+// 	_, exists = ae.ClusterSVCResourceScore[data.ToClusterName][data.ToNamespace][data.ToServiceName]
+// 	if !exists {
+// 		return nil, errors.New("ClusterSVCResourceScore Initiailzing. Retry again")
+// 	}
+
+// 	tempClusterSVCResourceScore = ae.ClusterSVCResourceScore[data.ToClusterName][data.ToNamespace][data.ToServiceName]
+
+// 	weight := float32(tempGeoScore + tempClusterSVCResourceScore)
+
+// 	omcplog.V(4).Info("FromRegion: ", data.FromRegion)
+// 	omcplog.V(4).Info("ToRegion: ", data.ToRegion)
+// 	omcplog.V(4).Info("FromZone: ", data.FromZone)
+// 	omcplog.V(4).Info("ToZone: ", data.ToZone)
+// 	omcplog.V(4).Info("ToClusterName: ", data.ToClusterName)
+// 	omcplog.V(4).Info("ToNamespace: ", data.ToNamespace)
+// 	omcplog.V(4).Info("ToServiceName: ", data.ToServiceName)
+
+// 	omcplog.V(4).Info("GeoScore: ", tempGeoScore)
+// 	omcplog.V(4).Info("ClusterSVCResourceScore: ", tempClusterSVCResourceScore)
+// 	omcplog.V(4).Info("weight: ", weight)
+// 	omcplog.V(4).Info("")
+
+// 	return &protobuf.ResponseWeight{Weight: weight}, nil
+
+// }
 func (ae *AnalyticEngineStruct) SendHASMaxAnalysis(ctx context.Context, data *protobuf.HASInfo) (*protobuf.ResponseHAS, error) {
 	omcplog.V(4).Info("Func SendHASMaxAnalysis Called")
 

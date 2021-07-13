@@ -20,7 +20,7 @@ message RegionZoneInfo {
     string ToZone = 4;
     string ToClusterName = 5;
     string ToNamespace = 6;
-    string ToServiceName = 7;
+    string ToPodName = 7;
 }
 message ResponseWeight {
     float weight = 1;

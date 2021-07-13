@@ -66,9 +66,9 @@ func reverseProxy() {
 
 		// IsoCode가 있는경우, 실제 OpenMCP 구성된 클러스터의 Region과 일치하면 Region을 할당
 		// 그렇지 않으면 default Region 할당
+		findRegion := false
+		findZone := false
 		if record.Country.IsoCode != "" {
-			findRegion := false
-			findZone := false
 
 			for _, cluster := range cm.Cluster_list.Items {
 				nodeList := &corev1.NodeList{}
@@ -84,12 +84,12 @@ func reverseProxy() {
 
 					if nodeRegion == record.Country.IsoCode {
 						findRegion = true
-						region = record.Country.IsoCode
+						//region = record.Country.IsoCode
 					}
 
 					if len(record.Subdivisions) > 0 && nodeZone == record.Subdivisions[0].Names["en"] {
 						findZone = true
-						zone = record.Subdivisions[0].Names["en"]
+						//zone = record.Subdivisions[0].Names["en"]
 					}
 
 					if findRegion && findZone {
@@ -101,11 +101,37 @@ func reverseProxy() {
 				}
 			}
 		}
+		if findRegion && findZone {
+			region = record.Country.IsoCode
+			zone = record.Subdivisions[0].Names["en"]
 
-		//국가코드
+		}
+
 		fmt.Println("Client IP: ", ip)
-		fmt.Println("Client ISO country code(region): ", region)
-		fmt.Println("Client ISO country zone: ", zone)
+		//국가코드
+		if record.Country.IsoCode != "" {
+			fmt.Print("Client Region: ", record.Country.IsoCode)
+		} else {
+			fmt.Print("Client Region: ", "Not Found")
+		}
+		if findRegion && findZone {
+			fmt.Print(" (Matched) Use '", region, "'")
+		} else {
+			fmt.Print(" (Not Matched) Use '", region, "'")
+		}
+		fmt.Println()
+
+		if len(record.Subdivisions) > 0 {
+			fmt.Print("Client Zone: ", record.Subdivisions[0].Names["en"])
+		} else {
+			fmt.Print("Client Zone: ", "Not Found")
+		}
+		if findRegion && findZone {
+			fmt.Print(" (Matched) Use '", zone, "'")
+		} else {
+			fmt.Print(" (Not Matched) Use '", zone, "'")
+		}
+		fmt.Println()
 
 		//req.Header.Add("Client-Zone", "usa")
 		//req.Header.Add("Client-Zone", strings.ToLower(zone))

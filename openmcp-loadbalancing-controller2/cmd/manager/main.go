@@ -40,6 +40,7 @@ func main() {
 	go reverseProxy()
 	go analyticGRPC()
 	go serviceMeshController()
+	//go OpenMCPVirtualService.SyncWeight()
 
 	wg.Wait()
 

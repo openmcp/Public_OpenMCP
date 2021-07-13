@@ -47,11 +47,18 @@ func serviceMeshController() {
 		m.AddController(reshape_cont)
 		m.AddController(loglevel_cont)
 
+		quit := make(chan bool)
+		quitok := make(chan bool)
+		go OpenMCPVirtualService.SyncWeight(quit, quitok)
+
 		stop := reshape.SetupSignalHandler()
 
 		//fmt.Println(m, stop)
 		if err := m.Start(stop); err != nil {
 			log.Fatal(err)
 		}
+
+		quit <- true
+		<-quitok
 	}
 }

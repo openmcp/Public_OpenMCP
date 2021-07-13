@@ -23,6 +23,7 @@ type ClusterManager struct {
 	Host_client         genericclient.Client
 	Host_kubeClient     *kubernetes.Clientset
 	Crd_client          *clientV1alpha1.ExampleV1Alpha1Client
+	Crd_istio_client    *clientV1alpha1.ExampleV1Alpha1Client
 	Cluster_list        *fedv1b1.KubeFedClusterList
 	Node_list           *corev1.NodeList
 	Cluster_configs     map[string]*rest.Config
@@ -112,6 +113,7 @@ func NewClusterManager() *ClusterManager {
 	host_client := genericclient.NewForConfigOrDie(host_config)
 	host_kubeClient := kubernetes.NewForConfigOrDie(host_config)
 	crd_client, _ := clientV1alpha1.NewForConfig(host_config)
+	crd_istio_client, _ := clientV1alpha1.NewIstioForConfig(host_config)
 
 	cluster_list := ListKubeFedClusters(host_client, fed_namespace)
 	node_list, _ := GetNodeList(host_kubeClient)
@@ -127,6 +129,7 @@ func NewClusterManager() *ClusterManager {
 		Host_client:         host_client,
 		Host_kubeClient:     host_kubeClient,
 		Crd_client:          crd_client,
+		Crd_istio_client:    crd_istio_client,
 		Cluster_list:        cluster_list,
 		Node_list:           node_list,
 		Cluster_configs:     cluster_configs,

@@ -7,6 +7,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 
@@ -25,7 +26,8 @@ import (
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -79,6 +81,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	//		return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
 	//	}
 	//}
+
 	return co, nil
 }
 
@@ -111,7 +114,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		omcplog.V(2).Info("[Delete Detect]")
 		omcplog.V(2).Info("Delete VirtualService")
 		obj := &v1alpha3.VirtualService{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      req.Name,
 				Namespace: req.Namespace,
 			},
@@ -414,40 +417,75 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 				return
 			}
 
-			var cluster_X_TotalWeight float64 = 0
-
-			for _, node := range nodeList.Items {
-				toRegion := node.Labels["topology.kubernetes.io/region"]
-				toZone := node.Labels["topology.kubernetes.io/zone"]
-
-				regionZoneInfo := protobuf.RegionZoneInfo{
-					FromRegion:    fromRegion,
-					FromZone:      fromZone,
-					ToRegion:      toRegion,
-					ToZone:        toZone,
-					ToClusterName: clusterName,
-					ToNamespace:   svcNS,
-					ToServiceName: svcName,
-				}
-				grpcResponse, gRPC_err := grpcClient.SendRegionZoneInfo(context.TODO(), &regionZoneInfo)
-				if gRPC_err != nil {
-					fmt.Println(gRPC_err)
-					continue
-				}
-
-				cluster_X_TotalWeight = cluster_X_TotalWeight + float64(grpcResponse.Weight)
-
-				fmt.Println("!!!! [Score Calcuation]", fromRegion, "/", fromZone, " -> ", toRegion, "/", toZone, "(", clusterName, "/", node.Name, "/", svcNS, "/", svcName, "): ", grpcResponse.Weight)
-
+			svc := &corev1.Service{}
+			err = cm.Cluster_genClients[clusterName].Get(context.TODO(), svc, svcNS, svcName)
+			if err != nil && errors.IsNotFound(err) {
+				fmt.Println("!!!! [Score Calcuation] Cluster: ", clusterName, " is Not Exist Svc : '", svcName, "(", svcNS, ")'")
+				break
 			}
 
-			cluster_X_AVG := cluster_X_TotalWeight / float64(len(nodeList.Items))
+			podList := &corev1.PodList{}
+			listOption := &client.ListOptions{
+				LabelSelector: labels.SelectorFromSet(
+					svc.Spec.Selector,
+				),
+			}
+			err = cm.Cluster_genClients[clusterName].List(context.TODO(), podList, svcNS, listOption)
+			if err != nil && errors.IsNotFound(err) {
+				fmt.Println("!!!! [Score Calcuation] Cluster: ", clusterName, " is Not Exist Pod about Svc: '", svcName, "(", svcNS, ")', LabelSelector: '", svc.Spec.Selector, "'")
+				break
+			}
 
-			clusterWeight[clusterName] = cluster_X_AVG
-			clusterWeightSum += cluster_X_AVG
+			var cluster_X_TotalWeight float64 = 0
 
-			fmt.Println("!!!! ==> Cluster Score AVG:", cluster_X_AVG)
-			fmt.Println("!!!! ----------------------------------")
+			podNodeMatchFind := false
+			for _, pod := range podList.Items {
+
+				for _, node := range nodeList.Items {
+					// if _, ok := node.Labels["node-role.kubernetes.io/master"]; ok {
+					// 	continue
+					// }
+					if pod.Spec.NodeName == node.Name {
+						podNodeMatchFind = true
+
+						toRegion := node.Labels["topology.kubernetes.io/region"]
+						toZone := node.Labels["topology.kubernetes.io/zone"]
+
+						regionZoneInfo := protobuf.RegionZoneInfo{
+							FromRegion:    fromRegion,
+							FromZone:      fromZone,
+							ToRegion:      toRegion,
+							ToZone:        toZone,
+							ToClusterName: clusterName,
+							ToNamespace:   svcNS,
+							ToPodName:     pod.Name,
+						}
+						grpcResponse, gRPC_err := grpcClient.SendRegionZoneInfo(context.TODO(), &regionZoneInfo)
+						if gRPC_err != nil {
+							fmt.Println(gRPC_err)
+							continue
+						}
+
+						cluster_X_TotalWeight = cluster_X_TotalWeight + float64(grpcResponse.Weight)
+
+						fmt.Println("!!!! [Score Calcuation]", fromRegion, "/", fromZone, " -> ", toRegion, "/", toZone, "(", clusterName, "/", node.Name, "/", svcNS, "/", pod.Name, "): ", grpcResponse.Weight)
+						break
+					}
+				}
+				if podNodeMatchFind {
+					break
+				}
+
+			}
+			if cluster_X_TotalWeight != 0 {
+				cluster_X_AVG := cluster_X_TotalWeight / float64(len(podList.Items))
+
+				clusterWeight[clusterName] = cluster_X_AVG
+				clusterWeightSum += cluster_X_AVG
+
+				fmt.Println("!!!! ==> Cluster Score AVG:", cluster_X_AVG)
+				fmt.Println("!!!! ----------------------------------")
+			}
 
 		}
 	}
@@ -471,6 +509,7 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 		totalWeight += weight
 	}
 
+	// weight 스케일링된 값을 100으로 맞춰주는 알고리즘
 	sort.Slice(orgClusterPrimeNumbers, func(i, j int) bool {
 		return orgClusterPrimeNumbers[i].primeNumber > orgClusterPrimeNumbers[j].primeNumber
 	})
@@ -499,6 +538,63 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 
 		}
 
+	}
+
+}
+
+func SyncWeight(quit, quitok chan bool) {
+
+	for {
+		select {
+		case <-quit:
+			omcplog.V(2).Info("SyncWeight Quit")
+			quitok <- true
+			return
+		default:
+			fmt.Println("SyncWeight Called")
+
+			vsList, err := cm.Crd_istio_client.VirtualService(corev1.NamespaceAll).List(metav1.ListOptions{})
+
+			//vsList := &v1alpha3.VirtualServiceList{}
+			//err := cm.Host_client.List(context.TODO(), vsList, corev1.NamespaceAll)
+
+			if err != nil && errors.IsNotFound(err) {
+				fmt.Println(err)
+				time.Sleep(time.Second * 5)
+
+			} else if err != nil {
+				fmt.Println(err)
+				time.Sleep(time.Second * 5)
+				continue
+
+			}
+
+			for _, vs := range vsList.Items {
+				for k, http := range vs.Spec.Http {
+					if len(http.Match) == 0 {
+						continue
+					}
+					if _, ok := http.Match[0].Headers["client-region"]; !ok {
+						continue
+					}
+					if _, ok := http.Match[0].Headers["client-zone"]; !ok {
+						continue
+					}
+					exactRegion := http.Match[0].Headers["client-region"].GetExact()
+					exactZone := http.Match[0].Headers["client-zone"].GetExact()
+					setWeight(vs.Spec.Http[k].Route, exactRegion, exactZone)
+
+				}
+
+				_, err := cm.Crd_istio_client.VirtualService(vs.Namespace).Update(&vs)
+				if err != nil {
+					fmt.Println(err)
+				}
+
+			}
+
+			time.Sleep(time.Second * 5)
+		}
 	}
 
 }
