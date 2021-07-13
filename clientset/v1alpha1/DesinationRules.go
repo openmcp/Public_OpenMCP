@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	"context"
+
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
@@ -53,7 +54,8 @@ func (c *DestinationRuleClient) Get(name string, opts metav1.GetOptions) (*v1alp
 func (c *DestinationRuleClient) Update(destinationrule *v1alpha3.DestinationRule) (*v1alpha3.DestinationRule, error) {
 	result := v1alpha3.DestinationRule{}
 	err := c.restClient.
-		Post().
+		Put().
+		Name(destinationrule.Name).
 		Namespace(c.ns).
 		Resource("destinationrules").
 		Body(destinationrule).

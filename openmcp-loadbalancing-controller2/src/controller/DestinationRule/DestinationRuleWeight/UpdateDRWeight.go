@@ -245,6 +245,7 @@ func AnalyticWeight(quit, quitok chan bool) {
 						},
 						Spec: obj_dr.Spec,
 					}
+					tmp_dr.ResourceVersion = obj_dr.ResourceVersion
 
 					obj_dr.Spec.TrafficPolicy.LoadBalancer.LocalityLbSetting.Distribute = distribute
 
