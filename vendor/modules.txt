@@ -63,6 +63,7 @@ github.com/go-openapi/spec
 # github.com/go-openapi/swag v0.19.5
 github.com/go-openapi/swag
 # github.com/gogo/protobuf v1.3.2
+## explicit
 github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/jsonpb
 github.com/gogo/protobuf/proto

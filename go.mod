@@ -12,6 +12,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.4.0
 	github.com/go-openapi/spec v0.19.8
+	github.com/gogo/protobuf v1.3.2
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/mock v1.4.4 // indirect
 	github.com/golang/protobuf v1.4.3
