@@ -18,6 +18,7 @@ type ExampleV1Alpha1Interface interface {
 	OpenMCPIngress(namespace string) OpenMCPIngressInterface
 	OpenMCPNamespace(namespace string) OpenMCPNamespaceInterface
 	VirtualService(namespace string) VirtualServiceInterface
+	DestinationRule(namespace string) DestinationRuleInterface
 }
 
 type ExampleV1Alpha1Client struct {
@@ -33,7 +34,6 @@ func NewForConfig(c *rest.Config) (*ExampleV1Alpha1Client, error) {
 	//config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
 	config.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
 	config.UserAgent = rest.DefaultKubernetesUserAgent()
-
 	client, err := rest.RESTClientFor(&config)
 	if err != nil {
 		return nil, err
@@ -51,7 +51,6 @@ func NewIstioForConfig(c *rest.Config) (*ExampleV1Alpha1Client, error) {
 	//config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
 	config.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
 	config.UserAgent = rest.DefaultKubernetesUserAgent()
-
 	client, err := rest.RESTClientFor(&config)
 	if err != nil {
 		return nil, err
@@ -96,8 +95,15 @@ func (c *ExampleV1Alpha1Client) OpenMCPNamespace(namespace string) OpenMCPNamesp
 		ns:         namespace,
 	}
 }
+
 func (c *ExampleV1Alpha1Client) VirtualService(namespace string) VirtualServiceInterface {
 	return &VirtualServiceClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) DestinationRule(namespace string) DestinationRuleInterface {
+	return &DestinationRuleClient{
 		restClient: c.restClient,
 		ns:         namespace,
 	}

@@ -36,7 +36,7 @@ func reverseProxy() {
 	}
 	//origin, _ := url.Parse("http://10.0.3.20:8812/")
 	origin, _ := url.Parse("http://" + svc.Status.LoadBalancer.Ingress[0].IP)
-	//origin, _ := url.Parse("http://10.0.3.195")
+	//origin, _ := url.Parse("http://10.0.6.147")
 
 	director := func(req *http.Request) {
 		req.Header.Add("X-Forwarded-Host", req.Host)

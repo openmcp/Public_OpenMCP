@@ -20,7 +20,9 @@ import (
 	//"sync"
 	//"time"
 
+	"openmcp/openmcp/openmcp-loadbalancing-controller2/pkg/DestinationRuleWeight"
 	"sync"
+	"time"
 
 	"github.com/oschwald/geoip2-golang"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -29,18 +31,15 @@ import (
 //var GeoDB, GeoErr = geoip2.Open("/root/GeoLite2-City.mmdb")
 var GeoDB, GeoErr = geoip2.Open("/root/dbip-city-lite-2021-07.mmdb")
 
-func analyticGRPC() {
-
-}
-
 func main() {
 	var wg sync.WaitGroup
 	wg.Add(3)
 
 	go reverseProxy()
-	go analyticGRPC()
 	go serviceMeshController()
 	//go OpenMCPVirtualService.SyncWeight()
+	time.Sleep(time.Second * 2)
+	go DestinationRuleWeight.AnalyticWeight()
 
 	wg.Wait()
 

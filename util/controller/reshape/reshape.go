@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/copier"
 	"k8s.io/klog"
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -22,7 +23,7 @@ var prev_length int = 0
 var cm *clusterManager.ClusterManager
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
-	fmt.Println("Reshape New Controller")
+	omcplog.V(2).Info("Start ReshapeController")
 	c = make(chan string)
 	cm = myClusterManager
 
