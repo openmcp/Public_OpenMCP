@@ -11,7 +11,7 @@ import (
 
 type DestinationRuleInterface interface {
 	List(opts metav1.ListOptions) (*v1alpha3.DestinationRuleList, error)
-	Get(name string) (*v1alpha3.DestinationRule, error)
+	Get(name string, opts metav1.GetOptions) (*v1alpha3.DestinationRule, error)
 	Create(destinationrule *v1alpha3.DestinationRule) (*v1alpha3.DestinationRule, error)
 	Update(destinationrule *v1alpha3.DestinationRule) (*v1alpha3.DestinationRule, error)
 	Watch(opts metav1.ListOptions) (watch.Interface, error)
@@ -36,14 +36,14 @@ func (c *DestinationRuleClient) List(opts metav1.ListOptions) (*v1alpha3.Destina
 	return &result, err
 }
 
-func (c *DestinationRuleClient) Get(name string) (*v1alpha3.DestinationRule, error) {
+func (c *DestinationRuleClient) Get(name string, opts metav1.GetOptions) (*v1alpha3.DestinationRule, error) {
 	result := v1alpha3.DestinationRule{}
 	err := c.restClient.
 		Get().
 		Namespace(c.ns).
 		Resource("destinationrules").
 		Name(name).
-		//VersionedParams(&opts, scheme.ParameterCodec).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Do(context.TODO()).
 		Into(&result)
 
