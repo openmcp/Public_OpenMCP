@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-metric-collector/member/pkg/protobuf"
+	"openmcp/openmcp/openmcp-metric-collector/member/src/protobuf"
 	"time"
 
 	"github.com/influxdata/influxdb/client/v2"

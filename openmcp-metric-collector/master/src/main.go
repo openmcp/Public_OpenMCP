@@ -1,16 +1,17 @@
 package main
 
 import (
-	"admiralty.io/multicluster-controller/pkg/cluster"
-	"admiralty.io/multicluster-controller/pkg/manager"
 	"log"
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-metric-collector/master/pkg/metricCollector"
+	"openmcp/openmcp/openmcp-metric-collector/master/src/metricCollector"
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
 	"os"
 	"runtime"
+
+	"admiralty.io/multicluster-controller/pkg/cluster"
+	"admiralty.io/multicluster-controller/pkg/manager"
 )
 
 const (

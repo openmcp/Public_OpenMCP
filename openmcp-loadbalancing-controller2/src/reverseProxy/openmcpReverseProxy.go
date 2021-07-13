@@ -1,4 +1,4 @@
-package ReverseProxy
+package reverseProxy
 
 import (
 	"context"

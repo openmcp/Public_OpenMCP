@@ -14,7 +14,7 @@ import (
 	"openmcp/openmcp/apis"
 
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-analytic-engine/pkg/protobuf"
+	"openmcp/openmcp/openmcp-analytic-engine/src/protobuf"
 	"openmcp/openmcp/util/clusterManager"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"

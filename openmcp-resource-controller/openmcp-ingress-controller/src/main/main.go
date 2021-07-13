@@ -25,10 +25,11 @@ import (
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
 
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"openmcp/openmcp/openmcp-resource-controller/controllers/openmcp-ingress-controller/pkg/controller"
+	"openmcp/openmcp/openmcp-resource-controller/openmcp-ingress-controller/src/controller"
 	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
+
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
 func main() {
@@ -57,7 +58,7 @@ func main() {
 			fmt.Println(ghost.Name)
 		}
 
-		co, _ := openmcpingress.NewController(live, ghosts, namespace, cm)
+		co, _ := controller.NewController(live, ghosts, namespace, cm)
 		reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
 		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
