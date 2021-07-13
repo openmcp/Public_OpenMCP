@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 
 	//"admiralty.io/multicluster-controller/pkg/cluster"
 	"context"
 	networkingv1alpha3 "istio.io/api/networking/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
-	//v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-loadbalancing-controller2/pkg/protobuf"
+	"openmcp/openmcp/openmcp-analytic-engine/pkg/protobuf"
 	"openmcp/openmcp/util/clusterManager"
 	"os"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 	"time"
 )
@@ -83,7 +84,7 @@ func AnalyticWeight() {
 		//OpenMCPService 조회 ->  Pod Selector 조회 -> 배포된 노드 정보 가져오기
 		//osvcList := &resourcev1alpha1.OpenMCPServiceList{}
 		//err_osvc := liveclient.List(context.TODO(), osvcList)
-		osvcList, err_osvc := cm.Crd_client.OpenMCPService(corev1.NamespaceAll).List()
+		osvcList, err_osvc := cm.Crd_client.OpenMCPService(corev1.NamespaceAll).List(v1.ListOptions{})
 
 		if err_osvc == nil {
 			//fmt.Println("osvcList : ", osvcList)
@@ -92,38 +93,51 @@ func AnalyticWeight() {
 		}
 
 		for _, osvc := range osvcList.Items {
-			target_node_list := map[string]int{}
+			target_node_list := map[string][]string{}
+
 			for _, mcluster := range cm.Cluster_list.Items {
+				podNodeName := ""
+				tmp_pod_list := []string{}
 				cluster_client := cm.Cluster_genClients[mcluster.Name]
 
+				listOption := &client.ListOptions{
+					LabelSelector: labels.SelectorFromSet(
+						osvc.Spec.Template.Spec.Selector,
+					),
+				}
+
 				podList := &corev1.PodList{}
-				err_pod := cluster_client.List(context.TODO(), podList, osvc.Namespace)
+				err_pod := cluster_client.List(context.TODO(), podList, osvc.Namespace, listOption)
 
 				if err_pod == nil {
 					for _, pod := range podList.Items {
-						if pod.Labels["app"] == osvc.Spec.Template.Spec.Selector["app"] {
-							//fmt.Println("selector match : ", pod.Labels["app"]," / ",osvc.Spec.Template.Spec.Selector["app"])
-							cluster_node := mcluster.Name + "/" + pod.Spec.NodeName
-							region_zone := NodeList[cluster_node].node_region + "/" + NodeList[cluster_node].node_zone + "/" + mcluster.Name
-							target_node_list[region_zone] = 1
-						}
+						tmp_pod_list = append(tmp_pod_list, pod.Name)
+						podNodeName = pod.Spec.NodeName
 					}
 				} else {
 					omcplog.V(2).Info(err_pod)
 				}
+
+				if podNodeName != "" {
+					cluster_node := mcluster.Name + "/" + podNodeName
+					region_zone := NodeList[cluster_node].node_region + "/" + NodeList[cluster_node].node_zone + "/" + mcluster.Name
+
+					target_node_list[region_zone] = append(target_node_list[region_zone], tmp_pod_list...)
+				}
 			}
 
+			average_pod_score := 0
 			tmp_rz := map[string][]DRWeight{}
 			for rz, _ := range node_list_all { //from
 				tmp_score := []DRWeight{}
-				for pn, _ := range target_node_list { //to
-					s := analyzeScore(osvc.Name, osvc.Namespace, rz, pn)
-					if s == 0 {
-						s = 1
+				for pn, podlist := range target_node_list { //to
+					for _, podname := range podlist {
+						s := analyzeScore(podname, osvc.Namespace, rz, pn)
+						average_pod_score += s
 					}
 					d := DRWeight{
 						ToRegionZone:    pn,
-						InitScore:       s,
+						InitScore:       average_pod_score / len(podlist),
 						ConvertToWeight: 0,
 					}
 					tmp_score = append(tmp_score, d)
@@ -144,8 +158,18 @@ func AnalyticWeight() {
 					}
 
 					totalweight := 0
-					for _, target := range tmp_score {
+
+					maxscore := 0
+					maxindex := 0
+					for i, target := range tmp_score {
 						totalweight += target.ConvertToWeight
+						if target.ConvertToWeight == 0 {
+							tmp_score[i].ConvertToWeight = 1
+						}
+						if maxscore <= target.ConvertToWeight {
+							maxscore = target.ConvertToWeight
+							maxindex = i
+						}
 					}
 
 					if totalweight > 0 && totalweight < 100 {
@@ -153,6 +177,8 @@ func AnalyticWeight() {
 							a := i % len(tmp_score)
 							tmp_score[a].ConvertToWeight += 1
 						}
+					} else if totalweight > 100 {
+						tmp_score[maxindex].ConvertToWeight -= totalweight - 100
 					}
 				}
 
@@ -194,7 +220,7 @@ func AnalyticWeight() {
 				distribute = append(distribute, tmp_dis)
 			}
 
-			obj_dr, err_get_dr := cm.Crd_istio_client.DestinationRule(osvc.Namespace).Get(osvc.Name)
+			obj_dr, err_get_dr := cm.Crd_istio_client.DestinationRule(osvc.Namespace).Get(osvc.Name, v1.GetOptions{})
 			//obj_dr := &v1alpha3.DestinationRule{}
 			//err_get_dr := liveclient.Get(context.TODO(), osvc_n_ns, obj_dr)
 
@@ -234,7 +260,7 @@ func AnalyticWeight() {
 	}
 }
 
-func analyzeScore(svcname string, svcnamespace string, from string, to string) int {
+func analyzeScore(podname string, namespace string, from string, to string) int {
 	slice_from := strings.Split(from, "/")
 	slice_to := strings.Split(to, "/")
 
@@ -244,8 +270,8 @@ func analyzeScore(svcname string, svcnamespace string, from string, to string) i
 		ToRegion:      slice_to[0],
 		ToZone:        slice_to[1],
 		ToClusterName: slice_to[2],
-		ToNamespace:   svcnamespace,
-		ToServiceName: svcname,
+		ToNamespace:   namespace,
+		ToPodName:     podname,
 	}
 
 	SERVER_IP := os.Getenv("GRPC_SERVER")

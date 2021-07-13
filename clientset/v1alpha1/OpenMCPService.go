@@ -10,8 +10,8 @@ import (
 )
 
 type OpenMCPServiceInterface interface {
-	List() (*resourcev1alpha1.OpenMCPServiceList, error)
-	Get(name string, options metav1.GetOptions) (*resourcev1alpha1.OpenMCPService, error)
+	List(opts metav1.ListOptions) (*resourcev1alpha1.OpenMCPServiceList, error)
+	Get(name string, opts metav1.GetOptions) (*resourcev1alpha1.OpenMCPService, error)
 	Create(deployment *resourcev1alpha1.OpenMCPService) (*resourcev1alpha1.OpenMCPService, error)
 	Watch(opts metav1.ListOptions) (watch.Interface, error)
 	// ...
@@ -22,13 +22,13 @@ type OpenMCPServiceClient struct {
 	ns         string
 }
 
-func (c *OpenMCPServiceClient) List() (*resourcev1alpha1.OpenMCPServiceList, error) {
+func (c *OpenMCPServiceClient) List(opts metav1.ListOptions) (*resourcev1alpha1.OpenMCPServiceList, error) {
 	result := resourcev1alpha1.OpenMCPServiceList{}
 	err := c.restClient.
 		Get().
 		Namespace(c.ns).
 		Resource("openmcpservices").
-		//VersionedParams(&opts, scheme.ParameterCodec).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Do(context.TODO()).
 		Into(&result)
 
