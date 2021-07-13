@@ -21,10 +21,8 @@ import (
 	//"time"
 
 	"openmcp/openmcp/openmcp-loadbalancing-controller2/src/controller"
-	"openmcp/openmcp/openmcp-loadbalancing-controller2/src/controller/DestinationRule/DestinationRuleWeight"
 	"openmcp/openmcp/openmcp-loadbalancing-controller2/src/reverseProxy"
 	"sync"
-	"time"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
@@ -35,9 +33,6 @@ func main() {
 
 	go reverseProxy.ReverseProxy()
 	go controller.ServiceMeshController()
-	//go OpenMCPVirtualService.SyncWeight()
-	time.Sleep(time.Second * 2)
-	go DestinationRuleWeight.AnalyticWeight()
 
 	wg.Wait()
 

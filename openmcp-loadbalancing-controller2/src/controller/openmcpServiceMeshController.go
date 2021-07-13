@@ -3,6 +3,7 @@ package controller
 import (
 	"log"
 	"openmcp/openmcp/openmcp-loadbalancing-controller2/src/controller/DestinationRule"
+	"openmcp/openmcp/openmcp-loadbalancing-controller2/src/controller/DestinationRule/DestinationRuleWeight"
 	"openmcp/openmcp/openmcp-loadbalancing-controller2/src/controller/OpenMCPVirtualService"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
@@ -53,6 +54,7 @@ func ServiceMeshController() {
 		quit := make(chan bool)
 		quitok := make(chan bool)
 		go OpenMCPVirtualService.SyncWeight(quit, quitok)
+		go DestinationRuleWeight.AnalyticWeight(quit, quitok)
 
 		stop := reshape.SetupSignalHandler()
 
@@ -61,6 +63,8 @@ func ServiceMeshController() {
 		}
 
 		quit <- true
+		quit <- true
+		<-quitok
 		<-quitok
 	}
 }
