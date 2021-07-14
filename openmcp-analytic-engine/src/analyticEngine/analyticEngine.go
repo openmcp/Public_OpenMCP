@@ -849,15 +849,15 @@ func (ae *AnalyticEngineStruct) SendRegionZoneInfo(ctx context.Context, data *pr
 
 	_, exists := ae.ClusterPodResourceScore[data.ToClusterName]
 	if !exists {
-		return nil, errors.New("ClusterPodResourceScore Initializing. Retry again")
+		return nil, errors.New("ClusterPodResourceScore Initializing1. Retry again")
 	}
 	_, exists = ae.ClusterPodResourceScore[data.ToClusterName][data.ToNamespace]
 	if !exists {
-		return nil, errors.New("ClusterPodResourceScore Initializing. Retry again")
+		return nil, errors.New("ClusterPodResourceScore Initializing2. Retry again")
 	}
 	_, exists = ae.ClusterPodResourceScore[data.ToClusterName][data.ToNamespace][data.ToPodName]
 	if !exists {
-		return nil, errors.New("ClusterPodResourceScore Initializing. Retry again")
+		return nil, errors.New("ClusterPodResourceScore Initializing3. Retry again")
 	}
 
 	tempClusterPodResourceScore = ae.ClusterPodResourceScore[data.ToClusterName][data.ToNamespace][data.ToPodName]
