@@ -1,5 +1,6 @@
 kubectl create ns openmcp
 kubectl create ns metallb-system
+kubectl create ns istio-system
 
 kubectl create secret generic REPLACE_DOCKERSECRETNAME \
     --from-file=.dockerconfigjson=/root/.docker/config.json \
