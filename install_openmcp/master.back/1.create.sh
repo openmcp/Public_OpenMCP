@@ -1,5 +1,8 @@
 kubectl create ns openmcp
 kubectl create ns metallb-system
+kubectl create ns istio-system
+
+docker login
 
 kubectl create secret generic REPLACE_DOCKERSECRETNAME \
     --from-file=.dockerconfigjson=/root/.docker/config.json \
@@ -7,6 +10,8 @@ kubectl create secret generic REPLACE_DOCKERSECRETNAME \
     --namespace=openmcp
 
 
+echo "--- deploy crds"
+kubectl create -f crds/.
 echo "--- openmcp-cluster-manager"
 kubectl create -f openmcp-cluster-manager/.
 echo "--- openmcp-analytic-engine"
@@ -69,7 +74,9 @@ kubectl create secret generic cacerts -n istio-system \
       --from-file=openmcp/cert-chain.pem
 popd
 
-
+chmod 755 bin/istioctl
+cp bin/istioctl /usr/local/bin
+chmod 755 samples/multicluster/gen-eastwest-gateway.sh
 
 # istio-system 네임 스페이스가 이미 생성 된 경우 여기에 클러스터의 네트워크를 설정해야합니다
 kubectl --context=openmcp get namespace istio-system && \
@@ -120,4 +127,4 @@ kubectl --context=openmcp apply -n istio-system -f \
     samples/multicluster/expose-services.yaml
 
 #istio 인증서 복사
-cp -r certs ../member/istio/
+cp -r certs ../../member/istio/
