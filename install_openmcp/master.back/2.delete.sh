@@ -45,6 +45,6 @@ kubectl delete --context=openmcp -f samples/multicluster/expose-istiod.yaml
 echo "--- delete crds"
 kubectl delete -f crds/.
     
-kubectl delete metallb-system
-kubectl delete istio-system
+kubectl delete ns metallb-system
+kubectl delete ns istio-system
 kubectl delete ns openmcp
