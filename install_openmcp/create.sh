@@ -12,6 +12,7 @@ OMCP_IP=`yq -r .master.internal.ip $CONFFILE`
 OAS_PORT=`yq -r .master.internal.ports.apiServerPort $CONFFILE`
 OCM_PORT=`yq -r .master.internal.ports.clusterManagerPort $CONFFILE`
 OAE_GRPC_PORT=`yq -r .master.internal.ports.analyticEnginePort $CONFFILE`
+OME_GRPC_PORT=`yq -r .master.internal.ports.metricCollectorPort $CONFFILE`
 
 
 OME_GRPC_PUBLIC_IP=`yq -r .master.public.ip $CONFFILE`
@@ -104,7 +105,7 @@ sed -i 's|REPLACE_GRPCPORT|'\"$OAE_GRPC_PORT\"'|g' master/openmcp-loadbalancing-
 
 sed -i 's|REPLACE_GRPCIP|'\"$OME_GRPC_PUBLIC_IP\"'|g' member/metric-collector/operator/operator.yaml
 sed -i 's|REPLACE_GRPCPORT|'\"$OME_GRPC_PUBLIC_PORT\"'|g' member/metric-collector/operator/operator.yaml
-sed -i 's|REPLACE_GRPCPORT|'$OME_GRPC_PUBLIC_PORT'|g' master/openmcp-metric-collector/service.yaml
+sed -i 's|REPLACE_GRPCPORT|'$OME_GRPC_PORT'|g' master/openmcp-metric-collector/service.yaml
 
 sed -i 's|REPLACE_INFLUXDBIP|'\"$OMCP_IP\"'|g' master/openmcp-analytic-engine/operator.yaml
 sed -i 's|REPLACE_INFLUXDBIP|'\"$OMCP_IP\"'|g' master/openmcp-metric-collector/operator.yaml
