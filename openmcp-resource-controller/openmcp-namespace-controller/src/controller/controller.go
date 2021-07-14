@@ -27,7 +27,6 @@ import (
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"admiralty.io/multicluster-controller/pkg/reference"
-	"github.com/getlantern/deepcopy"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -179,13 +178,13 @@ func (r *reconciler) namespaceForOpenMCPNamespace(req reconcile.Request, m *reso
 			APIVersion: "v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      m.Name,
-			Namespace: m.Namespace,
-			Labels:    newLabel,
+			Name: m.Name,
+			//Namespace: m.Namespace,
+			Labels: newLabel,
 		},
 	}
 
-	deepcopy.Copy(&dep.Spec, &m.Spec.Template.Spec)
+	//deepcopy.Copy(&dep.Spec, &m.Spec.Template.Spec)
 
 	reference.SetMulticlusterControllerReference(dep, reference.NewMulticlusterOwnerReference(m, m.GroupVersionKind(), req.Context))
 
@@ -210,7 +209,7 @@ func (r *reconciler) sendSync(secret *corev1.Namespace, command string, clusterN
 			Template:    *secret,
 		},
 	}
-	omcplog.V(5).Info("Delete Check ", s.Spec.Template.(corev1.Namespace).Name, s.Spec.Template.(corev1.Namespace).Namespace)
+	// omcplog.V(5).Info("Delete Check ", s.Spec.Template.(corev1.Namespace).Name, s.Spec.Template.(corev1.Namespace).Namespace)
 
 	err := r.live.Create(context.TODO(), s)
 
@@ -224,11 +223,17 @@ func (r *reconciler) sendSync(secret *corev1.Namespace, command string, clusterN
 
 func (r *reconciler) createNamespace(req reconcile.Request, cm *clusterManager.ClusterManager, instance *resourcev1alpha1.OpenMCPNamespace) error {
 	omcplog.V(4).Info("Function Called createNamespace")
+	dep := r.namespaceForOpenMCPNamespace(req, instance)
+
+	err := cm.Host_client.Create(context.TODO(), dep)
+	if err != nil {
+		return err
+	}
 	cluster_map := make(map[string]int32)
 	for _, cluster := range cm.Cluster_list.Items {
 
 		omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
-		dep := r.namespaceForOpenMCPNamespace(req, instance)
+
 		command := "create"
 		_, err := r.sendSync(dep, command, cluster.Name)
 		cluster_map[cluster.Name] = 1
@@ -238,27 +243,34 @@ func (r *reconciler) createNamespace(req reconcile.Request, cm *clusterManager.C
 	}
 	instance.Status.ClusterMaps = cluster_map
 	instance.Status.ChangeNeed = false
-	err := r.live.Status().Update(context.TODO(), instance)
+	err = r.live.Status().Update(context.TODO(), instance)
 	return err
 }
 
 func (r *reconciler) DeleteNamespace(cm *clusterManager.ClusterManager, name string, namespace string) error {
 	omcplog.V(4).Info("Function Called DeleteNamespace")
 
+	dep := &corev1.Namespace{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Namespace",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+			//Namespace: namespace,
+		},
+	}
+	err := cm.Host_client.Delete(context.TODO(), dep, dep.Namespace, dep.Name)
+	if err != nil && errors.IsNotFound(err) {
+		fmt.Println(err)
+	} else if err != nil {
+		return err
+	}
+
 	for _, cluster := range cm.Cluster_list.Items {
 
 		omcplog.V(3).Info(cluster.Name, " Delete Start")
 
-		dep := &corev1.Namespace{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "Namespace",
-				APIVersion: "v1",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: namespace,
-			},
-		}
 		command := "delete"
 		_, err := r.sendSync(dep, command, cluster.Name)
 
@@ -272,13 +284,21 @@ func (r *reconciler) DeleteNamespace(cm *clusterManager.ClusterManager, name str
 
 func (r *reconciler) updateNamespace(req reconcile.Request, cm *clusterManager.ClusterManager, instance *resourcev1alpha1.OpenMCPNamespace) error {
 	omcplog.V(4).Info("Function Called updateNamespace")
+
+	dep := r.namespaceForOpenMCPNamespace(req, instance)
+	err := cm.Host_client.Update(context.TODO(), dep)
+	if err != nil && errors.IsNotFound(err) {
+		fmt.Println(err)
+	} else if err != nil {
+		return err
+	}
 	cluster_map := make(map[string]int32)
 	obj := &corev1.Namespace{}
 	for _, cluster := range cm.Cluster_list.Items {
 		err := cm.Cluster_genClients[cluster.Name].Get(context.TODO(), obj, instance.Namespace, instance.Name)
 		if err != nil && errors.IsNotFound(err) {
 			omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
-			dep := r.namespaceForOpenMCPNamespace(req, instance)
+
 			command := "create"
 			_, err := r.sendSync(dep, command, cluster.Name)
 			cluster_map[cluster.Name] = 1
@@ -289,7 +309,7 @@ func (r *reconciler) updateNamespace(req reconcile.Request, cm *clusterManager.C
 			omcplog.V(2).Info("Error :", err)
 		} else {
 			omcplog.V(3).Info("Cluster '" + cluster.Name + "' updated")
-			dep := r.namespaceForOpenMCPNamespace(req, instance)
+
 			command := "update"
 			_, err := r.sendSync(dep, command, cluster.Name)
 			cluster_map[cluster.Name] = 1
@@ -301,7 +321,7 @@ func (r *reconciler) updateNamespace(req reconcile.Request, cm *clusterManager.C
 	}
 	instance.Status.ClusterMaps = cluster_map
 	instance.Status.ChangeNeed = false
-	err := r.live.Status().Update(context.TODO(), instance)
+	err = r.live.Status().Update(context.TODO(), instance)
 	return err
 
 }

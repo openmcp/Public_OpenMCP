@@ -35,7 +35,7 @@ import (
 var cm *clusterManager.ClusterManager
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
-	omcplog.V(4).Info("[OpenMCP Deployment] Function Called NewController")
+	omcplog.V(4).Info("[OpenMCP VirtualS] Function Called NewController")
 	cm = myClusterManager
 
 	liveclient, err := live.GetDelegatingClient()
@@ -231,7 +231,7 @@ func createVsHttps(ovs *resourcev1alpha1.OpenMCPVirtualService) ([]*networkingv1
 		// 디폴트 경로 생성
 		exactRegion := "default"
 		exactZone := "default"
-		vsHttp, err := createVsHttp(ovsHttp, exactRegion, exactZone)
+		vsHttp, err := createVsHttp(ovsHttp, exactRegion, exactZone, ovs.Namespace)
 		if err != nil {
 			return nil, err
 		}
@@ -257,7 +257,7 @@ func createVsHttps(ovs *resourcev1alpha1.OpenMCPVirtualService) ([]*networkingv1
 				exactRegion = locCluster.region
 				exactZone = zone
 
-				vsHttp, err := createVsHttp(ovsHttp, exactRegion, exactZone)
+				vsHttp, err := createVsHttp(ovsHttp, exactRegion, exactZone, ovs.Namespace)
 				if err != nil {
 					return nil, err
 				}
@@ -271,7 +271,7 @@ func createVsHttps(ovs *resourcev1alpha1.OpenMCPVirtualService) ([]*networkingv1
 	}
 	return vsHttps, nil
 }
-func createVsHttp(ovsHttp *networkingv1alpha3.HTTPRoute, exactRegion, exactZone string) (*networkingv1alpha3.HTTPRoute, error) {
+func createVsHttp(ovsHttp *networkingv1alpha3.HTTPRoute, exactRegion, exactZone, ns string) (*networkingv1alpha3.HTTPRoute, error) {
 	vsHttp := &networkingv1alpha3.HTTPRoute{}
 
 	err := deepcopy.Copy(&vsHttp, &ovsHttp)
@@ -309,18 +309,18 @@ func createVsHttp(ovsHttp *networkingv1alpha3.HTTPRoute, exactRegion, exactZone 
 
 	}
 
-	vsHttp.Route, _ = createVsHttpRoutes(ovsHttp.Route, exactRegion, exactZone)
+	vsHttp.Route, _ = createVsHttpRoutes(ovsHttp.Route, exactRegion, exactZone, ns)
 
 	return vsHttp, nil
 }
-func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, exactRegion, exactZone string) ([]*networkingv1alpha3.HTTPRouteDestination, error) {
+func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, exactRegion, exactZone, ns string) ([]*networkingv1alpha3.HTTPRouteDestination, error) {
 	vsHttpRoutes := []*networkingv1alpha3.HTTPRouteDestination{}
 	locClusters := getLocClusters()
 
 	for _, ovsHttpRoute := range ovsHttpRoutes {
 
 		if exactRegion == "default" {
-			vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, -1, nil)
+			vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, -1, nil, ns)
 			if err != nil {
 				return nil, err
 			}
@@ -331,7 +331,7 @@ func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination
 			vsHttpRoutes = append(vsHttpRoutes, vsHttpRoute)
 		} else {
 			for i, locCluster := range locClusters {
-				vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, i, &locCluster)
+				vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, i, &locCluster, ns)
 				if err != nil {
 					return nil, err
 				}
@@ -341,20 +341,28 @@ func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination
 				}
 				vsHttpRoutes = append(vsHttpRoutes, vsHttpRoute)
 			}
+			if len(vsHttpRoutes) == 0 {
+				vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, -1, nil, ns)
+				if err != nil {
+					return nil, err
+				}
+				vsHttpRoutes = append(vsHttpRoutes, vsHttpRoute)
+			}
 		}
 
 	}
-	setWeight(vsHttpRoutes, exactRegion, exactZone)
+
+	setWeight(vsHttpRoutes, exactRegion, exactZone, ns)
 
 	return vsHttpRoutes, nil
 }
-func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i int, locCluster *LocCluster) (*networkingv1alpha3.HTTPRouteDestination, error) {
+func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i int, locCluster *LocCluster, ns string) (*networkingv1alpha3.HTTPRouteDestination, error) {
 	// 서비스가 있는지 체크
 	svcDomain := ovsHttpRoute.Destination.Host
 	svcDomainSplit := strings.Split(svcDomain, ".")
 
 	svcName := svcDomainSplit[0]
-	svcNS := "default"
+	svcNS := ns
 	if len(svcDomainSplit) >= 2 {
 		svcNS = svcDomainSplit[1]
 	}
@@ -363,9 +371,11 @@ func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i 
 		svc := &corev1.Service{}
 		err := cm.Cluster_genClients[locCluster.clusterName].Get(context.TODO(), svc, svcNS, svcName)
 		if err != nil && errors.IsNotFound(err) {
+			fmt.Println(err)
 			return nil, nil
 		}
 		if err != nil {
+			fmt.Println(err)
 			return nil, err
 		}
 	}
@@ -388,7 +398,7 @@ type ClusterPrimeNumber struct {
 	allocateWeight int
 }
 
-func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegion, fromZone string) {
+func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegion, fromZone, ns string) {
 
 	clusterWeight := make(map[string]float64)
 	var clusterWeightSum float64 = 0
@@ -403,7 +413,7 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 		svcDomainSplit := strings.Split(svcDomain, ".")
 
 		svcName := svcDomainSplit[0]
-		svcNS := "default"
+		svcNS := ns
 
 		if len(svcDomainSplit) >= 2 {
 			svcNS = svcDomainSplit[1]
@@ -411,6 +421,7 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 
 		clusterName := vsHttpRoute.Destination.Subset
 		if clusterName != "" {
+
 			nodeList := &corev1.NodeList{}
 			err := cm.Cluster_genClients[clusterName].List(context.TODO(), nodeList, "default")
 			if err != nil && errors.IsNotFound(err) {
@@ -493,6 +504,7 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 	var orgClusterPrimeNumbers []ClusterPrimeNumber
 
 	for _, vsHttpRoute := range vsHttpRoutes {
+
 		clusterName := vsHttpRoute.Destination.Subset
 
 		if clusterName == "" {
@@ -507,6 +519,7 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 		vsHttpRoute.Weight = weight
 
 		totalWeight += weight
+
 	}
 
 	// weight 스케일링된 값을 100으로 맞춰주는 알고리즘
@@ -516,7 +529,9 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 
 	if totalWeight != 100 {
 		restWeight := 100 - totalWeight
-		for restWeight != 0 {
+
+		for restWeight > 0 {
+
 			for i, _ := range orgClusterPrimeNumbers {
 				orgClusterPrimeNumbers[i].allocateWeight += 1
 				restWeight -= 1
@@ -525,6 +540,7 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 					break
 				}
 			}
+
 		}
 
 		for i, vsHttpRoute := range vsHttpRoutes {
@@ -582,7 +598,7 @@ func SyncWeight(quit, quitok chan bool) {
 					}
 					exactRegion := http.Match[0].Headers["client-region"].GetExact()
 					exactZone := http.Match[0].Headers["client-zone"].GetExact()
-					setWeight(vs.Spec.Http[k].Route, exactRegion, exactZone)
+					setWeight(vs.Spec.Http[k].Route, exactRegion, exactZone, vs.Namespace)
 
 				}
 

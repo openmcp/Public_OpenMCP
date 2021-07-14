@@ -290,6 +290,7 @@ func analyzeScore(podname string, namespace string, from string, to string) int 
 
 	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
+	fmt.Println(rzinfo)
 	result, err_grpc := grpcClient.SendRegionZoneInfo(context.TODO(), rzinfo)
 
 	if err_grpc != nil {

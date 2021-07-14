@@ -423,6 +423,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			return reconcile.Result{}, err
 		}
 		if command == "create" {
+			subInstance.ResourceVersion = ""
 			err = clusterClient.Create(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
@@ -437,6 +438,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.V(0).Info("[Error] Cannot Delete Namespace : ", err)
 			}
 		} else if command == "update" {
+
 			err = clusterClient.Update(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Updated Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")

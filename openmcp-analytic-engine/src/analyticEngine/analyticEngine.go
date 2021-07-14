@@ -360,10 +360,12 @@ func (ae *AnalyticEngineStruct) UpdateClusterPodScore(clusterName string, cm *cl
 	var RegionZoneMatchedScore float64
 	var OnlyRegionMatchedScore float64
 	var NoRegionZoneMatchedScore float64
+	ClusterPodResourceScore := make(map[string]map[string]map[string]float64)
 
 	// ae.GeoScore Update
 	openmcpPolicyInstance, err := cm.Crd_client.OpenMCPPolicy("openmcp").Get("loadbalancing-controller-policy", metav1.GetOptions{})
 	if err != nil {
+		omcplog.V(0).Info(err)
 		return err
 	}
 
@@ -389,14 +391,15 @@ func (ae *AnalyticEngineStruct) UpdateClusterPodScore(clusterName string, cm *cl
 	ae.GeoScore[2] = geoRate * NoRegionZoneMatchedScore
 
 	// ae.ClusterPodResourceScore Update
-	_, exists := ae.ClusterPodResourceScore[clusterName]
+	_, exists := ClusterPodResourceScore[clusterName]
 	if !exists {
-		tempClusterPodResourceScore := make(map[string]map[string]float64)
-		ae.ClusterPodResourceScore[clusterName] = tempClusterPodResourceScore
+		tmp := make(map[string]map[string]float64)
+		ClusterPodResourceScore[clusterName] = tmp
 	}
 
 	openmcpPolicyInstance, err = cm.Crd_client.OpenMCPPolicy("openmcp").Get("analytic-metrics-weight", metav1.GetOptions{})
 	if err != nil {
+		omcplog.V(0).Info(err)
 		return err
 	}
 
@@ -431,6 +434,7 @@ func (ae *AnalyticEngineStruct) UpdateClusterPodScore(clusterName string, cm *cl
 	nodeList := &corev1.NodeList{}
 	err = cm.Cluster_genClients[clusterName].List(context.TODO(), nodeList, "default")
 	if err != nil {
+		omcplog.V(0).Info(err)
 		return err
 	}
 	for _, node := range nodeList.Items {
@@ -441,6 +445,7 @@ func (ae *AnalyticEngineStruct) UpdateClusterPodScore(clusterName string, cm *cl
 	svcList := &corev1.ServiceList{}
 	err = cm.Cluster_genClients[clusterName].List(context.TODO(), svcList, corev1.NamespaceAll)
 	if err != nil {
+		omcplog.V(0).Info(err)
 		return err
 	}
 
@@ -448,10 +453,10 @@ func (ae *AnalyticEngineStruct) UpdateClusterPodScore(clusterName string, cm *cl
 
 		ns := svc.Namespace
 
-		_, exists = ae.ClusterPodResourceScore[clusterName][ns]
+		_, exists = ClusterPodResourceScore[clusterName][ns]
 		if !exists {
-			tempClusterPodResourceScore2 := make(map[string]float64)
-			ae.ClusterPodResourceScore[clusterName][ns] = tempClusterPodResourceScore2
+			tmp2 := make(map[string]float64)
+			ClusterPodResourceScore[clusterName][ns] = tmp2
 		}
 
 		matchLabels := client.MatchingLabels{}
@@ -462,12 +467,14 @@ func (ae *AnalyticEngineStruct) UpdateClusterPodScore(clusterName string, cm *cl
 		podList := &corev1.PodList{}
 		err = cm.Cluster_genClients[clusterName].List(context.TODO(), podList, ns, matchLabels)
 		if err != nil {
+			omcplog.V(0).Info(err)
 			return err
 		}
 
 		for _, pod := range podList.Items {
 			result, err := ae.Influx.GetClusterPodsData(clusterName, pod.Name)
 			if err != nil {
+				omcplog.V(0).Info(err)
 				return err
 			}
 			if len(result) == 0 {
@@ -502,7 +509,7 @@ func (ae *AnalyticEngineStruct) UpdateClusterPodScore(clusterName string, cm *cl
 					// podMemUtilizationTotal = podMemUtilizationTotal + podMemUtilization
 
 					score := (podCpuUtilization*CpuWeight + podMemUtilization*MemWeight) * resourceRate
-					ae.ClusterPodResourceScore[clusterName][ns][pod.Name] = score
+					ClusterPodResourceScore[clusterName][ns][pod.Name] = score
 
 					fmt.Println("Cluster: ", clusterName)
 					fmt.Println("Node: ", nodeName)
@@ -515,6 +522,7 @@ func (ae *AnalyticEngineStruct) UpdateClusterPodScore(clusterName string, cm *cl
 		}
 
 	}
+	ae.ClusterPodResourceScore = ClusterPodResourceScore
 
 	fmt.Println("ae.GeoScore:", ae.GeoScore)
 	fmt.Println("["+clusterName+"] ae.ClusterPodResourceScore:", ae.ClusterPodResourceScore[clusterName])

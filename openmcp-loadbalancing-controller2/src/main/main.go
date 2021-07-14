@@ -29,7 +29,7 @@ import (
 
 func main() {
 	var wg sync.WaitGroup
-	wg.Add(3)
+	wg.Add(2)
 
 	go reverseProxy.ReverseProxy()
 	go controller.ServiceMeshController()

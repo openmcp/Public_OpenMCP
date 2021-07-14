@@ -29,10 +29,10 @@ spec:
             - name: GRPC_PORT
               value: "32050"
             - name: WATCH_NAMESPACE
-              #value: ""
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
+              value: ""
+              #valueFrom:
+              #  fieldRef:
+              #    fieldPath: metadata.namespace
             - name: POD_NAME
               valueFrom:
                 fieldRef:

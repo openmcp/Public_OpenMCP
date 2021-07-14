@@ -51,8 +51,8 @@ func ServiceMeshController() {
 		m.AddController(reshape_cont)
 		m.AddController(loglevel_cont)
 
-		quit := make(chan bool)
-		quitok := make(chan bool)
+		quit := make(chan bool, 2)
+		quitok := make(chan bool, 2)
 		go OpenMCPVirtualService.SyncWeight(quit, quitok)
 		go DestinationRuleWeight.AnalyticWeight(quit, quitok)
 
