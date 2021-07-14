@@ -139,13 +139,16 @@ func AnalyticWeight(quit, quitok chan bool) {
 				for rz, _ := range node_list_all { //from
 					tmp_score := []DRWeight{}
 					for pn, podlist := range target_node_list { //to
+						tmp_length := len(podlist)
 						for _, podname := range podlist {
 							s := analyzeScore(podname, osvc.Namespace, rz, pn)
 							average_pod_score += s
+							
+							if s == 0 {tmp_length -= 1}
 						}
 						d := DRWeight{
 							ToRegionZone:    pn,
-							InitScore:       average_pod_score / len(podlist),
+							InitScore:       average_pod_score / tmp_length,
 							ConvertToWeight: 0,
 						}
 						tmp_score = append(tmp_score, d)
@@ -293,9 +296,13 @@ func analyzeScore(podname string, namespace string, from string, to string) int 
 	fmt.Println(rzinfo)
 	result, err_grpc := grpcClient.SendRegionZoneInfo(context.TODO(), rzinfo)
 
+	tmp_result := 0
+
 	if err_grpc != nil {
 		omcplog.V(2).Info(err_grpc)
+	}else {
+		tmp_result = int(result.Weight)
 	}
 
-	return int(result.Weight)
+	return tmp_result
 }
