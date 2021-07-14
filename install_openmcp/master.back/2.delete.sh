@@ -38,5 +38,7 @@ echo "--- sync-controller"
 kubectl delete -f openmcp-sync-controller/.
 echo "--- metallb"
 kubectl delete -f metallb/.
+echo "--- delete crds"
+kubectl delete -f crds/.
 
 kubectl delete ns openmcp

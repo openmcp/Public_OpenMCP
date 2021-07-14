@@ -7,6 +7,8 @@ kubectl create secret generic REPLACE_DOCKERSECRETNAME \
     --namespace=openmcp
 
 
+echo "--- deploy crds"
+kubectl create -f crds/.
 echo "--- openmcp-cluster-manager"
 kubectl create -f openmcp-cluster-manager/.
 echo "--- openmcp-analytic-engine"
