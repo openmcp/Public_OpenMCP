@@ -31,6 +31,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	extv1b1 "k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -123,6 +124,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err = clusterClient.Create(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+				if !errors.IsNotFound(err) {
+					return reconcile.Result{}, err // err
+				}
 			} else {
 				omcplog.V(0).Info("[Error] Cannot Create Deployment : ", err)
 			}
@@ -153,6 +157,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err = clusterClient.Create(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+				if !errors.IsNotFound(err) {
+					return reconcile.Result{}, err // err
+				}
 			} else {
 				omcplog.V(0).Info("[Error] Cannot Create Service : ", err)
 			}
@@ -183,6 +190,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err = clusterClient.Create(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+				if !errors.IsNotFound(err) {
+					return reconcile.Result{}, err // err
+				}
 			} else {
 				omcplog.V(0).Info("[Error] Cannot Create Ingress : ", err)
 			}
@@ -213,6 +223,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err = clusterClient.Create(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+				if !errors.IsNotFound(err) {
+					return reconcile.Result{}, err // err
+				}
 			} else {
 				omcplog.V(0).Info("[Error] Cannot Create HorizontalPodAutoscaler : ", err)
 			}
@@ -245,6 +258,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err = clusterClient2.Create(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+				if !errors.IsNotFound(err) {
+					return reconcile.Result{}, err // err
+				}
 			} else {
 				omcplog.V(0).Info("[Error] Cannot Create VerticalPodAutoscaler : ", err)
 			}
@@ -277,6 +293,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err = clusterClient.Create(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+				if !errors.IsNotFound(err) {
+					return reconcile.Result{}, err // err
+				}
 			} else {
 				omcplog.V(0).Info("[Error] Cannot Create ConfigMap : ", err)
 			}
@@ -307,6 +326,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err = clusterClient.Create(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+				if !errors.IsNotFound(err) {
+					return reconcile.Result{}, err // err
+				}
 			} else {
 				omcplog.V(0).Info("[Error] Cannot Create Secret : ", err)
 			}
@@ -337,6 +359,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err = clusterClient.Create(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+				if !errors.IsNotFound(err) {
+					return reconcile.Result{}, err // err
+				}
 			} else {
 				omcplog.V(0).Info("[Error] Cannot Create PersistentVolume : ", err)
 			}
@@ -367,6 +392,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err = clusterClient.Create(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+				if !errors.IsNotFound(err) {
+					return reconcile.Result{}, err // err
+				}
 			} else {
 				omcplog.V(0).Info("[Error] Cannot Create PersistentVolumeClaim : ", err)
 			}
@@ -397,6 +425,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err = clusterClient.Create(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+				if !errors.IsNotFound(err) {
+					return reconcile.Result{}, err // err
+				}
 			} else {
 				omcplog.V(0).Info("[Error] Cannot Create Job : ", err)
 			}
@@ -427,6 +458,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err = clusterClient.Create(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+				if !errors.IsNotFound(err) {
+					return reconcile.Result{}, err // err
+				}
 			} else {
 				omcplog.V(0).Info("[Error] Cannot Create Namespace : ", err)
 			}

@@ -62,8 +62,8 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 }
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
-	omcplog.V(4).Info("DestinationRulesController Reconcile Called")
-	omcplog.V(4).Info("[Resource Info] Namespace : ", req.Namespace, ", Name : ", req.Name)
+	//omcplog.V(4).Info("DestinationRulesController Reconcile Called")
+	//omcplog.V(4).Info("[Resource Info] Namespace : ", req.Namespace, ", Name : ", req.Name)
 
 	// OpenMCPService 존재하지 않으면 DR 삭제
 	check_osvc := &resourcev1alpha1.OpenMCPService{}
@@ -76,6 +76,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			},
 		}
 		err_osvc_dr_delete := r.live.Delete(context.TODO(), obj)
+		delete(DestinationRuleWeight.DistributeList, req.NamespacedName)
+
 		if err_osvc_dr_delete != nil {
 			omcplog.V(2).Info(err_osvc_dr_delete)
 			//return reconcile.Result{}, err_osvc_dr_delete

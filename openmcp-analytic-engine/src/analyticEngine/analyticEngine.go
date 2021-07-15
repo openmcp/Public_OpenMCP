@@ -396,6 +396,11 @@ func (ae *AnalyticEngineStruct) UpdateClusterPodScore(clusterName string, cm *cl
 		tmp := make(map[string]map[string]float64)
 		ClusterPodResourceScore[clusterName] = tmp
 	}
+	_, exists = ae.ClusterPodResourceScore[clusterName]
+	if !exists {
+		tmp := make(map[string]map[string]float64)
+		ae.ClusterPodResourceScore[clusterName] = tmp
+	}
 
 	openmcpPolicyInstance, err = cm.Crd_client.OpenMCPPolicy("openmcp").Get("analytic-metrics-weight", metav1.GetOptions{})
 	if err != nil {
@@ -522,7 +527,7 @@ func (ae *AnalyticEngineStruct) UpdateClusterPodScore(clusterName string, cm *cl
 		}
 
 	}
-	ae.ClusterPodResourceScore = ClusterPodResourceScore
+	ae.ClusterPodResourceScore[clusterName] = ClusterPodResourceScore[clusterName]
 
 	fmt.Println("ae.GeoScore:", ae.GeoScore)
 	fmt.Println("["+clusterName+"] ae.ClusterPodResourceScore:", ae.ClusterPodResourceScore[clusterName])
@@ -847,17 +852,18 @@ func (ae *AnalyticEngineStruct) SendRegionZoneInfo(ctx context.Context, data *pr
 		tempGeoScore = ae.GeoScore[2]
 	}
 
+	fmt.Println(ae.ClusterPodResourceScore)
 	_, exists := ae.ClusterPodResourceScore[data.ToClusterName]
 	if !exists {
-		return nil, errors.New("ClusterPodResourceScore Initializing1. Retry again")
+		return nil, errors.New("Not Exist Cluster '" + data.ToClusterName + "' ClusterPodResourceScore Initializing1. Retry again")
 	}
 	_, exists = ae.ClusterPodResourceScore[data.ToClusterName][data.ToNamespace]
 	if !exists {
-		return nil, errors.New("ClusterPodResourceScore Initializing2. Retry again")
+		return nil, errors.New("Not Exist Namespace '" + data.ToNamespace + "' ClusterPodResourceScore Initializing2. Retry again")
 	}
 	_, exists = ae.ClusterPodResourceScore[data.ToClusterName][data.ToNamespace][data.ToPodName]
 	if !exists {
-		return nil, errors.New("ClusterPodResourceScore Initializing3. Retry again")
+		return nil, errors.New("Not Exist Pod '" + data.ToPodName + "' ClusterPodResourceScore Initializing3. Retry again")
 	}
 
 	tempClusterPodResourceScore = ae.ClusterPodResourceScore[data.ToClusterName][data.ToNamespace][data.ToPodName]

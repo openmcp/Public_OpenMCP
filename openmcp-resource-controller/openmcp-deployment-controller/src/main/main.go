@@ -28,13 +28,15 @@ import (
 	"admiralty.io/multicluster-controller/pkg/manager"
 )
 
+var cm = clusterManager.NewClusterManager()
+
 func main() {
 	logLevel.KetiLogInit()
 
 	for {
 		omcplog.V(2).Info("Start OpenMCP Deployment Controller")
 
-		cm := clusterManager.NewClusterManager()
+		//cm := clusterManager.NewClusterManager()
 
 		host_ctx := "openmcp"
 		namespace := "openmcp"

@@ -204,7 +204,7 @@ func (sched *OpenMCPScheduler) LocalNetworkAnalysis() {
 				node.NodeScore = nodeScore
 			}
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 
 }

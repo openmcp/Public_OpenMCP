@@ -22,6 +22,7 @@ import (
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 	"strconv"
+	"time"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
@@ -225,10 +226,10 @@ func (r *reconciler) createNamespace(req reconcile.Request, cm *clusterManager.C
 	omcplog.V(4).Info("Function Called createNamespace")
 	dep := r.namespaceForOpenMCPNamespace(req, instance)
 
-	err := cm.Host_client.Create(context.TODO(), dep)
-	if err != nil {
-		return err
-	}
+	// err := cm.Host_client.Create(context.TODO(), dep)
+	// if err != nil {
+	// 	return err
+	// }
 	cluster_map := make(map[string]int32)
 	for _, cluster := range cm.Cluster_list.Items {
 
@@ -243,7 +244,7 @@ func (r *reconciler) createNamespace(req reconcile.Request, cm *clusterManager.C
 	}
 	instance.Status.ClusterMaps = cluster_map
 	instance.Status.ChangeNeed = false
-	err = r.live.Status().Update(context.TODO(), instance)
+	err := r.live.Status().Update(context.TODO(), instance)
 	return err
 }
 
@@ -324,4 +325,64 @@ func (r *reconciler) updateNamespace(req reconcile.Request, cm *clusterManager.C
 	err = r.live.Status().Update(context.TODO(), instance)
 	return err
 
+}
+func CheckClusterNamespaceStatus(myClusterManager *clusterManager.ClusterManager, quit, quitok chan bool) {
+	cm = myClusterManager
+	for {
+		select {
+		case <-quit:
+			omcplog.V(2).Info("CheckClusterNamespaceStatus Quit")
+			quitok <- true
+			return
+		default:
+			omcplog.V(2).Info("CheckClusterNamespaceStatus Start")
+			onsList, err := cm.Crd_client.OpenMCPNamespace("default").List(metav1.ListOptions{})
+			if err != nil {
+				fmt.Println(err)
+			}
+			for _, ons := range onsList.Items {
+				nsStatusActiveAll := true
+				for _, cluster := range cm.Cluster_list.Items {
+					ns := &corev1.Namespace{}
+					err := cm.Cluster_genClients[cluster.Name].Get(context.TODO(), ns, corev1.NamespaceDefault, ons.Name)
+					if err != nil {
+						fmt.Println(err)
+					}
+					if ns.Status.Phase != "Active" {
+						nsStatusActiveAll = false
+						break
+					}
+
+				}
+				if nsStatusActiveAll {
+					newLabel := ons.Labels
+					if newLabel == nil {
+						newLabel = make(map[string]string)
+					}
+					newLabel["istio-injection"] = "enabled"
+
+					ns := &corev1.Namespace{
+						TypeMeta: metav1.TypeMeta{
+							Kind:       "Namespace",
+							APIVersion: "v1",
+						},
+						ObjectMeta: metav1.ObjectMeta{
+							Name:   ons.Name,
+							Labels: newLabel,
+						},
+					}
+					reference.SetMulticlusterControllerReference(ns, reference.NewMulticlusterOwnerReference(&ons, ons.GroupVersionKind(), "openmcp"))
+
+					err = cm.Host_client.Create(context.TODO(), ns)
+					if err != nil {
+						fmt.Println(err)
+					}
+				}
+
+			}
+			time.Sleep(1 * time.Second)
+
+		}
+
+	}
 }

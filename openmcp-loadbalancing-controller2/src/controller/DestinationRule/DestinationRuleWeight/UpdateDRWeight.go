@@ -1,7 +1,7 @@
 package DestinationRuleWeight
 
 import (
-	"fmt"
+	//"fmt"
 
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -134,45 +134,51 @@ func AnalyticWeight(quit, quitok chan bool) {
 					}
 				}
 
-				average_pod_score := 0
-				tmp_rz := map[string][]DRWeight{}
-				for rz, _ := range node_list_all { //from
-					tmp_score := []DRWeight{}
-					for pn, podlist := range target_node_list { //to
-						tmp_length := len(podlist)
-						for _, podname := range podlist {
-							s := analyzeScore(podname, osvc.Namespace, rz, pn)
-							average_pod_score += s
+				if len(target_node_list) > 0 {
+					tmp_rz := map[string][]DRWeight{}
+					for rz, _ := range node_list_all { //from
+						tmp_score := []DRWeight{}
+						for pn, podlist := range target_node_list { //to
+							average_pod_score := 0
+							tmp_length := len(podlist)
+							for _, podname := range podlist {
+								s := analyzeScore(podname, osvc.Namespace, rz, pn)
+								average_pod_score += s
 
-							if s == 0 {
-								tmp_length -= 1
+								if s == 0 {
+									tmp_length -= 1
+								}
 							}
-						}
-						initScore := 0
-						if tmp_length != 0 {
-							initScore = average_pod_score / tmp_length
+							initScore := 0
+							if tmp_length != 0 {
+								initScore = average_pod_score / tmp_length
 
+							}
+							d := DRWeight{
+								ToRegionZone:    pn,
+								InitScore:       initScore,
+								ConvertToWeight: 0,
+							}
+							tmp_score = append(tmp_score, d)
 						}
-						d := DRWeight{
-							ToRegionZone:    pn,
-							InitScore:       initScore,
-							ConvertToWeight: 0,
+						//score -> weight 변환
+						var totalscore int
+						totalscore = 0
+						for _, target := range tmp_score {
+							totalscore += target.InitScore
 						}
-						tmp_score = append(tmp_score, d)
-					}
-					//score -> weight 변환
-					var totalscore int
-					totalscore = 0
-					for _, target := range tmp_score {
-						totalscore += target.InitScore
-					}
-					if totalscore > 0 {
+						//if totalscore > 0 {
 
 						for i, target := range tmp_score {
 							var f float32
-							f = float32(target.InitScore) / float32(totalscore)
-							tmp_score[i].ConvertToWeight = int(f * 100)
-							//fmt.Println("init : ", target.InitScore, "total : ", totalscore, "weight : ", tmp_score[i].ConvertToWeight)
+							if totalscore == 0 {
+								tmp_score[i].ConvertToWeight = 0
+							} else {
+								f = float32(target.InitScore) / float32(totalscore)
+								tmp_score[i].ConvertToWeight = int(f * 100)
+							}
+
+							//fmt.Println("[before] init : ", target.InitScore, "total : ", totalscore, "weight : ", tmp_score[i].ConvertToWeight)
 						}
 
 						totalweight := 0
@@ -180,7 +186,6 @@ func AnalyticWeight(quit, quitok chan bool) {
 						maxscore := 0
 						maxindex := 0
 						for i, target := range tmp_score {
-							totalweight += target.ConvertToWeight
 							if target.ConvertToWeight == 0 {
 								tmp_score[i].ConvertToWeight = 1
 							}
@@ -188,6 +193,7 @@ func AnalyticWeight(quit, quitok chan bool) {
 								maxscore = target.ConvertToWeight
 								maxindex = i
 							}
+							totalweight += tmp_score[i].ConvertToWeight
 						}
 
 						if totalweight > 0 && totalweight < 100 {
@@ -198,82 +204,120 @@ func AnalyticWeight(quit, quitok chan bool) {
 						} else if totalweight > 100 {
 							tmp_score[maxindex].ConvertToWeight -= totalweight - 100
 						}
+						//}
+
+						tmp_rz[rz] = tmp_score
+					}
+					osvc_n_ns := types.NamespacedName{
+						Namespace: osvc.Namespace,
+						Name:      osvc.Name,
+					}
+					dl := drInfo{
+						DRScore: tmp_rz,
 					}
 
-					tmp_rz[rz] = tmp_score
-				}
-				osvc_n_ns := types.NamespacedName{
-					Namespace: osvc.Namespace,
-					Name:      osvc.Name,
-				}
-				dl := drInfo{
-					DRScore: tmp_rz,
-				}
+					//DistributeList 갱신
+					DistributeList[osvc_n_ns] = dl
 
-				//DistributeList 갱신
-				DistributeList[osvc_n_ns] = dl
+					//Update DestinationRules
 
-				//Update DestinationRules
+					drweight := map[string][]DRWeight{}
+					drweight = DistributeList[osvc_n_ns].DRScore
 
-				drweight := map[string][]DRWeight{}
-				drweight = DistributeList[osvc_n_ns].DRScore
+					distributeTarget := map[string]map[string]uint32{}
 
-				distributeTarget := map[string]map[string]uint32{}
-
-				for key, value := range drweight {
-					tmp := map[string]uint32{}
-					for _, w := range value {
-						tmp[w.ToRegionZone] = uint32(w.ConvertToWeight)
+					for key, value := range drweight {
+						tmp := map[string]uint32{}
+						for _, w := range value {
+							tmp[w.ToRegionZone] = uint32(w.ConvertToWeight)
+						}
+						distributeTarget[key] = tmp
 					}
-					distributeTarget[key] = tmp
-				}
 
-				distribute := []*networkingv1alpha3.LocalityLoadBalancerSetting_Distribute{}
+					distribute := []*networkingv1alpha3.LocalityLoadBalancerSetting_Distribute{}
 
-				for k, v := range distributeTarget {
-					tmp_dis := &networkingv1alpha3.LocalityLoadBalancerSetting_Distribute{
-						From: k,
-						To:   v,
+					for k, v := range distributeTarget {
+						tmp_dis := &networkingv1alpha3.LocalityLoadBalancerSetting_Distribute{
+							From: k,
+							To:   v,
+						}
+						distribute = append(distribute, tmp_dis)
 					}
-					distribute = append(distribute, tmp_dis)
-				}
 
-				obj_dr, err_get_dr := cm.Crd_istio_client.DestinationRule(osvc.Namespace).Get(osvc.Name, v1.GetOptions{})
-				//obj_dr := &v1alpha3.DestinationRule{}
-				//err_get_dr := liveclient.Get(context.TODO(), osvc_n_ns, obj_dr)
+					obj_dr, err_get_dr := cm.Crd_istio_client.DestinationRule(osvc.Namespace).Get(osvc.Name, v1.GetOptions{})
+					//obj_dr := &v1alpha3.DestinationRule{}
+					//err_get_dr := liveclient.Get(context.TODO(), osvc_n_ns, obj_dr)
 
-				if err_get_dr == nil {
+					if err_get_dr == nil {
 
-					tmp_dr := &v1alpha3.DestinationRule{
-						TypeMeta: v1.TypeMeta{
-							Kind:       "DestinationRule",
-							APIVersion: "networking.istio.io/v1alpha3",
-						},
-						ObjectMeta: v1.ObjectMeta{
-							Name:      obj_dr.Name,
-							Namespace: obj_dr.Namespace,
-						},
-						Spec: obj_dr.Spec,
-					}
-					tmp_dr.ResourceVersion = obj_dr.ResourceVersion
+						tmp_dr := &v1alpha3.DestinationRule{
+							TypeMeta: v1.TypeMeta{
+								Kind:       "DestinationRule",
+								APIVersion: "networking.istio.io/v1alpha3",
+							},
+							ObjectMeta: v1.ObjectMeta{
+								Name:      obj_dr.Name,
+								Namespace: obj_dr.Namespace,
+							},
+							Spec: obj_dr.Spec,
+						}
+						tmp_dr.ResourceVersion = obj_dr.ResourceVersion
 
-					obj_dr.Spec.TrafficPolicy.LoadBalancer.LocalityLbSetting.Distribute = distribute
+						obj_dr.Spec.TrafficPolicy.LoadBalancer.LocalityLbSetting.Distribute = distribute
 
-					_, err_update_dr := cm.Crd_istio_client.DestinationRule(osvc.Namespace).Update(tmp_dr)
-					//err_update_dr := liveclient.Update(context.TODO(), obj_dr)
+						_, err_update_dr := cm.Crd_istio_client.DestinationRule(osvc.Namespace).Update(tmp_dr)
+						//err_update_dr := liveclient.Update(context.TODO(), obj_dr)
 
-					if err_update_dr != nil {
-						omcplog.V(2).Info(err_update_dr)
+						if err_update_dr != nil {
+							omcplog.V(2).Info(err_update_dr)
+						} else {
+							omcplog.V(2).Info("update dr - ", osvc_n_ns)
+						}
 					} else {
-						fmt.Println("update dr - ", osvc_n_ns)
+						omcplog.V(2).Info(err_get_dr)
 					}
-				} else {
-					omcplog.V(2).Info(err_get_dr)
+				}else {
+					osvc_n_ns := types.NamespacedName{
+						Namespace: osvc.Namespace,
+						Name:      osvc.Name,
+					}
+
+					obj_dr, err_get_dr := cm.Crd_istio_client.DestinationRule(osvc.Namespace).Get(osvc.Name, v1.GetOptions{})
+
+					if err_get_dr == nil {
+
+						tmp_dr := &v1alpha3.DestinationRule{
+							TypeMeta: v1.TypeMeta{
+								Kind:       "DestinationRule",
+								APIVersion: "networking.istio.io/v1alpha3",
+							},
+							ObjectMeta: v1.ObjectMeta{
+								Name:      obj_dr.Name,
+								Namespace: obj_dr.Namespace,
+							},
+							Spec: obj_dr.Spec,
+						}
+						tmp_dr.ResourceVersion = obj_dr.ResourceVersion
+
+						obj_dr.Spec.TrafficPolicy.LoadBalancer.LocalityLbSetting.Distribute = nil
+
+						_, err_update_dr := cm.Crd_istio_client.DestinationRule(osvc.Namespace).Update(tmp_dr)
+						//err_update_dr := liveclient.Update(context.TODO(), obj_dr)
+
+						if err_update_dr != nil {
+							omcplog.V(2).Info(err_update_dr)
+						} else {
+							omcplog.V(2).Info("delete distribute in dr - ", osvc_n_ns)
+						}
+					} else {
+						omcplog.V(2).Info(err_get_dr)
+					}
 				}
+
 			}
 
 			omcplog.V(2).Info(">>> Update All DestinationRule Resources ")
-			fmt.Println(DistributeList)
+			//fmt.Println(DistributeList)
 
 			time.Sleep(time.Second * 10)
 		}
@@ -300,15 +344,15 @@ func analyzeScore(podname string, namespace string, from string, to string) int 
 
 	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
-	fmt.Println(rzinfo)
 	result, err_grpc := grpcClient.SendRegionZoneInfo(context.TODO(), rzinfo)
 
 	tmp_result := 0
 
 	if err_grpc != nil {
-		//omcplog.V(2).Info(err_grpc)
+		omcplog.V(2).Info(err_grpc)
 	} else {
 		tmp_result = int(result.Weight)
+		//fmt.Println("result: ", tmp_result)
 	}
 
 	return tmp_result

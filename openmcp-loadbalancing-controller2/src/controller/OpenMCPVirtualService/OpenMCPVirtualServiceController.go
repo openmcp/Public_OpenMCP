@@ -398,14 +398,14 @@ type ClusterPrimeNumber struct {
 	allocateWeight int
 }
 
+var SERVER_IP = os.Getenv("GRPC_SERVER")
+var SERVER_PORT = os.Getenv("GRPC_PORT")
+var grpcClient = protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
+
 func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegion, fromZone, ns string) {
 
 	clusterWeight := make(map[string]float64)
 	var clusterWeightSum float64 = 0
-
-	SERVER_IP := os.Getenv("GRPC_SERVER")
-	SERVER_PORT := os.Getenv("GRPC_PORT")
-	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
 	for _, vsHttpRoute := range vsHttpRoutes {
 
@@ -473,7 +473,7 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 						}
 						grpcResponse, gRPC_err := grpcClient.SendRegionZoneInfo(context.TODO(), &regionZoneInfo)
 						if gRPC_err != nil {
-							fmt.Println(gRPC_err)
+							omcplog.V(0).Info(gRPC_err)
 							continue
 						}
 

@@ -67,10 +67,16 @@ func main() {
 		m.AddController(reshape_cont)
 		m.AddController(loglevel_cont)
 
+		quit := make(chan bool)
+		quitok := make(chan bool)
+		go openmcpnamespace.CheckClusterNamespaceStatus(cm, quit, quitok)
+
 		stop := reshape.SetupSignalHandler()
 
 		if err := m.Start(stop); err != nil {
 			log.Fatal(err)
 		}
+		quit <- true
+		<-quitok
 	}
 }
