@@ -106,9 +106,10 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	}
 
 	//조건 추가 - STATUS 비교
-	if clusterInstance.Spec.JoinStatus == "JOIN" {
+	if clusterInstance.Spec.JoinStatus == "JOIN" && clusterInstance.Spec.MetalLBRange.AddressFrom != "IP_ADDRESS_FROM" && clusterInstance.Spec.MetalLBRange.AddressTo != "IP_ADDRESS_TO" {
+
 		omcplog.V(4).Info(clusterInstance.Name + " [ JOIN ]")
-		omcplog.V(4).Info("Cluster Join---")
+		omcplog.V(4).Info("Metallb Configmap (", clusterInstance.Spec.MetalLBRange.AddressFrom, ",", clusterInstance.Spec.MetalLBRange.AddressTo, ")")
 		joinCheck := MergeConfigAndJoin(*clusterInstance)
 
 		if joinCheck == "TRUE" {
@@ -166,7 +167,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			util.CmdExec2("cp /mnt/config $HOME/.kube/config")
 			util.CmdExec2("chmod 755 " + "/init/vertical-pod-autoscaler/hack/*")
 			util.CmdExec2("/init/vertical-pod-autoscaler/hack/vpa-down.sh " + clusterInstance.Name)
-			util.CmdExec2("kubectl delete secret istio-remote-secret-" + clusterInstance.Name)
+			util.CmdExec2("kubectl delete --context openmcp -n istio-system secret istio-remote-secret-" + clusterInstance.Name)
 			UninstallInitModule(moduleDirectory, clusterInstance.Name)
 
 			omcplog.V(4).Info("Cluster Unjoin---")
@@ -176,6 +177,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		} else {
 			omcplog.V(4).Info("Not Exists Cluster Info")
 		}
+	} else {
+		omcplog.V(4).Info("NOT Ready")
 	}
 
 	return reconcile.Result{}, nil
