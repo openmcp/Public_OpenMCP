@@ -24,21 +24,15 @@ spec:
           - openmcp-loadbalancing-controller
           imagePullPolicy: Always
           env:
-            - name: TEST_IP
-              value : "103.194.252.0"
-            - name: LB
-              value : "RV"
-            - name: isAnalytic
-              value : "yes"
             - name: GRPC_SERVER
-              value: "10.0.3.40"
+              value: 10.0.3.20
             - name: GRPC_PORT
               value: "32050"
             - name: WATCH_NAMESPACE
-              #value: ""
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
+              value: ""
+              #valueFrom:
+              #  fieldRef:
+              #    fieldPath: metadata.namespace
             - name: POD_NAME
               valueFrom:
                 fieldRef:

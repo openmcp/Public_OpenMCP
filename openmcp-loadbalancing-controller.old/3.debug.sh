@@ -1,6 +1,6 @@
 #/bin/bash
 NS=openmcp
-controller_name="openmcp-loadbalancing-controller2"
+controller_name="openmcp-loadbalancing-controller"
 
 NAME=$(kubectl get pod -n $NS | grep -E $controller_name | awk '{print $1}')
 
