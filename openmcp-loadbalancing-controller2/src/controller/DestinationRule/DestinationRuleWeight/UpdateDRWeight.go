@@ -3,6 +3,8 @@ package DestinationRuleWeight
 import (
 	//"fmt"
 
+	"os"
+
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -12,7 +14,6 @@ import (
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-analytic-engine/src/protobuf"
 	"openmcp/openmcp/util/clusterManager"
-	"os"
 	"strings"
 	"time"
 
@@ -46,6 +47,11 @@ func AnalyticWeight(quit, quitok chan bool) {
 
 	DistributeList = map[types.NamespacedName]drInfo{}
 	NodeList = map[string]nodeInfo{}
+
+	SERVER_IP := os.Getenv("GRPC_SERVER")
+	SERVER_PORT := os.Getenv("GRPC_PORT")
+
+	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
 	for {
 		select {
@@ -142,7 +148,7 @@ func AnalyticWeight(quit, quitok chan bool) {
 							average_pod_score := 0
 							tmp_length := len(podlist)
 							for _, podname := range podlist {
-								s := analyzeScore(podname, osvc.Namespace, rz, pn)
+								s := analyzeScore(podname, osvc.Namespace, rz, pn, grpcClient)
 								average_pod_score += s
 
 								if s == 0 {
@@ -276,7 +282,7 @@ func AnalyticWeight(quit, quitok chan bool) {
 					} else {
 						omcplog.V(2).Info(err_get_dr)
 					}
-				}else {
+				} else {
 					osvc_n_ns := types.NamespacedName{
 						Namespace: osvc.Namespace,
 						Name:      osvc.Name,
@@ -325,7 +331,7 @@ func AnalyticWeight(quit, quitok chan bool) {
 	}
 }
 
-func analyzeScore(podname string, namespace string, from string, to string) int {
+func analyzeScore(podname string, namespace string, from string, to string, grpcClient protobuf.RequestAnalysisClient) int {
 	slice_from := strings.Split(from, "/")
 	slice_to := strings.Split(to, "/")
 
@@ -338,11 +344,6 @@ func analyzeScore(podname string, namespace string, from string, to string) int 
 		ToNamespace:   namespace,
 		ToPodName:     podname,
 	}
-
-	SERVER_IP := os.Getenv("GRPC_SERVER")
-	SERVER_PORT := os.Getenv("GRPC_PORT")
-
-	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
 	result, err_grpc := grpcClient.SendRegionZoneInfo(context.TODO(), rzinfo)
 
