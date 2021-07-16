@@ -8,7 +8,7 @@ ENV OPERATOR=/usr/local/bin/openmcp-apiserver \
 COPY _output/bin/openmcp-apiserver ${OPERATOR}
 
 COPY bin /usr/local/bin
-COPY cert /tmp/cert
+#COPY cert /tmp/cert
 RUN  /usr/local/bin/user_setup
 
 ENTRYPOINT ["/usr/local/bin/entrypoint"]

@@ -14,12 +14,14 @@ OCM_PORT=`yq -r .master.internal.ports.clusterManagerPort $CONFFILE`
 OAE_GRPC_PORT=`yq -r .master.internal.ports.analyticEnginePort $CONFFILE`
 OME_GRPC_PORT=`yq -r .master.internal.ports.metricCollectorPort $CONFFILE`
 
-
 OME_GRPC_PUBLIC_IP=`yq -r .master.public.ip $CONFFILE`
 OME_GRPC_PUBLIC_PORT=`yq -r .master.public.ports.metricCollectorPort $CONFFILE`
 
 INFLUXDB_PORT=`yq -r .master.internal.ports.influxDBPort $CONFFILE`
 
+API_APP_KEY=`yq -r .master.APIServer.AppKey $CONFFILE`
+API_USER_NAME=`yq -r .master.APIServer.UserName $CONFFILE`
+API_USER_PW=`yq -r .master.APIServer.UserPW $CONFFILE`
 
 PDNS_IP=`yq -r .powerDNS.internal.ip $CONFFILE`
 PDNS_PUBLIC_IP=`yq -r .powerDNS.public.ip $CONFFILE`
@@ -117,6 +119,10 @@ sed -i 's|REPLACE_INFLUXDBPORT|'\"$INFLUXDB_PORT\"'|g' master/openmcp-analytic-e
 sed -i 's|REPLACE_INFLUXDBPORT|'\"$INFLUXDB_PORT\"'|g' master/openmcp-metric-collector/operator.yaml
 sed -i 's|REPLACE_INFLUXDBPORT|'\"$INFLUXDB_PORT\"'|g' master/openmcp-apiserver/operator.yaml
 
+sed -i 's|REPLACE_API_KEY|'\"$API_APP_KEY\"'|g' master/openmcp-apiserver/operator.yaml
+sed -i 's|REPLACE_API_USER_NAME|'\"$API_USER_Name\"'|g' master/openmcp-apiserver/operator.yaml
+sed -i 's|REPLACE_API_USER_PW|'\"$API_USER_PW\"'|g' master/openmcp-apiserver/operator.yaml
+
 sed -i 's|REPLACE_NFSIP|'\"$OMCP_IP\"'|g' master/influxdb/pv.yaml
 
 sed -i 's|REPLACE_PDNSIP|'$PDNS_PUBLIC_IP':'$PDNS_PUBLIC_PORT'|g' master/configmap/coredns/coredns-cm.yaml
@@ -139,4 +145,4 @@ if [ $OMCP_INSTALL_TYPE == "learning" ]; then
   cp -r member /home/$USERNAME/.init/member
 fi
 
-mkdir -p /home/nfs/pv/influxdb
+

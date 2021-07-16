@@ -1,16 +1,24 @@
 USERNAME="openmcp"
 PASSWORD="keti"
 IP="10.0.3.20"
-PORT="31635"
+PORT="30000"
 NS="default"
 URL="apis/apps/v1/namespaces/$NS/deployments"
 CLUSTER="openmcp"
 
-TOKEN_JSON=`curl -XGET -H "Content-type: application/json" "http://$IP:$PORT/token?username=$USERNAME&password=$PASSWORD"`
+echo -n | openssl s_client -connect $IP:$PORT | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt
+
+TOKEN_JSON=`curl -XPOST \
+        --cacert server.crt \
+        --insecure \
+        -H "Content-type: application/json" \
+        --data "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}" \
+        https://$IP:$PORT/token`
+
 TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
-curl -X POST -H 'Content-Type: application/yaml' -H "Authorization: Bearer $TOKEN" --data '
+curl -X POST --cacert server.crt --insecure -H 'Content-Type: application/yaml' -H "Authorization: Bearer $TOKEN" --data '
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
 metadata:
@@ -30,5 +38,5 @@ spec:
         image: nginx:1.7.9
         ports:
         - containerPort: 80
-' $IP:$PORT/$URL?clustername=$CLUSTER
+' https://$IP:$PORT/$URL?clustername=$CLUSTER
 

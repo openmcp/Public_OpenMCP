@@ -1,9 +1,10 @@
 package influx
 
 import (
-	"github.com/influxdata/influxdb/client/v2"
 	"openmcp/openmcp/omcplog"
 	"strings"
+
+	"github.com/influxdata/influxdb/client/v2"
 )
 
 type Influx struct {
@@ -32,28 +33,27 @@ func InfluxDBClient(INFLUX_IP, INFLUX_PORT, username, password string) client.Cl
 
 func (in *Influx) GetPodData(ns, name, clusterName, timeStart, timeEnd string) []client.Result {
 	omcplog.V(4).Info("Func GetPodData Called")
-	omcplog.V(5).Info("timeStart=",timeStart, ", timeEnd=",timeEnd)
+	omcplog.V(5).Info("timeStart=", timeStart, ", timeEnd=", timeEnd)
 
 	q := client.Query{}
 
 	if timeStart == "" && timeEnd == "" {
 		q = client.NewQuery("SELECT * FROM Pods WHERE pod = '"+name+"' AND namespace = '"+ns+"' AND cluster = '"+clusterName+"' ORDER BY DESC LIMIT 1", "Metrics", "")
-	} else if timeStart != "" && timeEnd != ""{
+	} else if timeStart != "" && timeEnd != "" {
 		timeStarts := strings.Split(timeStart, "_")
 		timeEnds := strings.Split(timeEnd, "_")
-		q = client.NewQuery("SELECT * FROM Pods WHERE pod = '"+name+"' AND namespace = '"+ns+"' AND cluster = '"+clusterName+"' AND time >= '"+timeStarts[0] + " " + timeStarts[1] + "' AND time < '"+timeEnds[0] + " " + timeEnds[1]+"'", "Metrics", "")
-		omcplog.V(5).Info("SELECT * FROM Pods WHERE pod = '"+name+"' AND namespace = '"+ns+"' AND cluster = '"+clusterName+"' AND time >= '"+timeStarts[0] + " " + timeStarts[1] + "' AND time < '"+timeEnds[0] + " " + timeEnds[1]+"'")
-	} else if timeStart != ""{
+		q = client.NewQuery("SELECT * FROM Pods WHERE pod = '"+name+"' AND namespace = '"+ns+"' AND cluster = '"+clusterName+"' AND time >= '"+timeStarts[0]+" "+timeStarts[1]+"' AND time < '"+timeEnds[0]+" "+timeEnds[1]+"'", "Metrics", "")
+		omcplog.V(5).Info("SELECT * FROM Pods WHERE pod = '" + name + "' AND namespace = '" + ns + "' AND cluster = '" + clusterName + "' AND time >= '" + timeStarts[0] + " " + timeStarts[1] + "' AND time < '" + timeEnds[0] + " " + timeEnds[1] + "'")
+	} else if timeStart != "" {
 		timeStarts := strings.Split(timeStart, "_")
-		q = client.NewQuery("SELECT * FROM Pods WHERE pod = '"+name+"' AND namespace = '"+ns+"' AND cluster = '"+clusterName+"' AND time >= '"+timeStarts[0] + " " + timeStarts[1] + "'", "Metrics", "")
-		omcplog.V(5).Info("SELECT * FROM Pods WHERE pod = '"+name+"' AND namespace = '"+ns+"' AND cluster = '"+clusterName+"' AND time >= '"+timeStarts[0] + " " + timeStarts[1]+"'" + "'", "Metrics")
+		q = client.NewQuery("SELECT * FROM Pods WHERE pod = '"+name+"' AND namespace = '"+ns+"' AND cluster = '"+clusterName+"' AND time >= '"+timeStarts[0]+" "+timeStarts[1]+"'", "Metrics", "")
+		omcplog.V(5).Info("SELECT * FROM Pods WHERE pod = '"+name+"' AND namespace = '"+ns+"' AND cluster = '"+clusterName+"' AND time >= '"+timeStarts[0]+" "+timeStarts[1]+"'"+"'", "Metrics")
 	} else if timeEnd != "" {
 		timeEnds := strings.Split(timeEnd, "_")
 		//select * from Pods WHERE pod='nginx-deployment-55fbd9fd6d-h7d8t' AND namespace='default' AND cluster='cluster1' AND time >= '2020-09-03 00:00:00' and time < '2020-09-03 10:00:05';
-		q = client.NewQuery("SELECT * FROM Pods WHERE pod = '"+name+"' AND namespace = '"+ns+"' AND cluster = '"+clusterName+"' AND time < '"+timeEnds[0] + " " + timeEnds[1]+"'", "Metrics", "")
-		omcplog.V(5).Info("SELECT * FROM Pods WHERE pod = '"+name+"' AND namespace = '"+ns+"' AND cluster = '"+clusterName+"' AND time < '"+timeEnds[0] + " " + timeEnds[1]+"'")
+		q = client.NewQuery("SELECT * FROM Pods WHERE pod = '"+name+"' AND namespace = '"+ns+"' AND cluster = '"+clusterName+"' AND time < '"+timeEnds[0]+" "+timeEnds[1]+"'", "Metrics", "")
+		omcplog.V(5).Info("SELECT * FROM Pods WHERE pod = '" + name + "' AND namespace = '" + ns + "' AND cluster = '" + clusterName + "' AND time < '" + timeEnds[0] + " " + timeEnds[1] + "'")
 	}
-
 
 	response, err := in.inClient.Query(q)
 
@@ -62,33 +62,32 @@ func (in *Influx) GetPodData(ns, name, clusterName, timeStart, timeEnd string) [
 		return response.Results
 	}
 
-
 	return nil
 
 }
 func (in *Influx) GetNodeData(name, clusterName, timeStart, timeEnd string) []client.Result {
 	omcplog.V(4).Info("Func GetNodeData Called")
-	omcplog.V(5).Info("timeStart=",timeStart, ", timeEnd=",timeEnd)
+	omcplog.V(5).Info("timeStart=", timeStart, ", timeEnd=", timeEnd)
 
 	q := client.Query{}
 
 	if timeStart == "" && timeEnd == "" {
 		q = client.NewQuery("SELECT * FROM Nodes WHERE node = '"+name+"' AND cluster = '"+clusterName+"' ORDER BY DESC LIMIT 1", "Metrics", "")
-		omcplog.V(5).Info("SELECT * FROM Nodes WHERE node = '"+name+"' AND cluster = '"+clusterName+"' ORDER BY DESC LIMIT 1")
-	} else if timeStart != "" && timeEnd != ""{
+		omcplog.V(5).Info("SELECT * FROM Nodes WHERE node = '" + name + "' AND cluster = '" + clusterName + "' ORDER BY DESC LIMIT 1")
+	} else if timeStart != "" && timeEnd != "" {
 		timeStarts := strings.Split(timeStart, "_")
 		timeEnds := strings.Split(timeEnd, "_")
-		q = client.NewQuery("SELECT * FROM Nodes WHERE node = '"+name+"' AND cluster = '"+clusterName+"' AND time >= '"+timeStarts[0] + " " +timeStarts[1]+"' AND time < '"+timeEnds[0] + " " + timeEnds[1]+"'", "Metrics", "")
-		omcplog.V(5).Info("SELECT * FROM Nodes WHERE node = '"+name+"' AND cluster = '"+clusterName+"' AND time >= '"+timeStarts[0] + " " +timeStarts[1]+"' AND time < '"+timeEnds[0] + " " + timeEnds[1]+"'")
-	} else if timeStart != ""{
+		q = client.NewQuery("SELECT * FROM Nodes WHERE node = '"+name+"' AND cluster = '"+clusterName+"' AND time >= '"+timeStarts[0]+" "+timeStarts[1]+"' AND time < '"+timeEnds[0]+" "+timeEnds[1]+"'", "Metrics", "")
+		omcplog.V(5).Info("SELECT * FROM Nodes WHERE node = '" + name + "' AND cluster = '" + clusterName + "' AND time >= '" + timeStarts[0] + " " + timeStarts[1] + "' AND time < '" + timeEnds[0] + " " + timeEnds[1] + "'")
+	} else if timeStart != "" {
 		timeStarts := strings.Split(timeStart, "_")
-		q = client.NewQuery("SELECT * FROM Nodes WHERE node = '"+name+"' AND cluster = '"+clusterName+"' AND time >= '"+timeStarts[0] + " " + timeStarts[1]+"'", "Metrics", "")
-		omcplog.V(5).Info("SELECT * FROM Nodes WHERE node = '"+name+"' AND cluster = '"+clusterName+"' AND time >= '"+timeStarts[0] + " " + timeStarts[1]+"'")
+		q = client.NewQuery("SELECT * FROM Nodes WHERE node = '"+name+"' AND cluster = '"+clusterName+"' AND time >= '"+timeStarts[0]+" "+timeStarts[1]+"'", "Metrics", "")
+		omcplog.V(5).Info("SELECT * FROM Nodes WHERE node = '" + name + "' AND cluster = '" + clusterName + "' AND time >= '" + timeStarts[0] + " " + timeStarts[1] + "'")
 	} else if timeEnd != "" {
 		timeEnds := strings.Split(timeEnd, "_")
 		//select * from Pods WHERE pod='nginx-deployment-55fbd9fd6d-h7d8t' AND namespace='default' AND cluster='cluster1' AND time >= '2020-09-03 00:00:00' and time < '2020-09-03 10:00:05';
-		q = client.NewQuery("SELECT * FROM Nodes WHERE node = '"+name+"' AND cluster = '"+clusterName+"' AND time < '"+timeEnds[0] + " " + timeEnds[1]+"'", "Metrics", "")
-		omcplog.V(5).Info("SELECT * FROM Nodes WHERE node = '"+name+"' AND cluster = '"+clusterName+"' AND time < '"+timeEnds[0] + " " + timeEnds[1]+"'")
+		q = client.NewQuery("SELECT * FROM Nodes WHERE node = '"+name+"' AND cluster = '"+clusterName+"' AND time < '"+timeEnds[0]+" "+timeEnds[1]+"'", "Metrics", "")
+		omcplog.V(5).Info("SELECT * FROM Nodes WHERE node = '" + name + "' AND cluster = '" + clusterName + "' AND time < '" + timeEnds[0] + " " + timeEnds[1] + "'")
 	}
 
 	response, err := in.inClient.Query(q)
@@ -101,26 +100,26 @@ func (in *Influx) GetNodeData(name, clusterName, timeStart, timeEnd string) []cl
 }
 func (in *Influx) GetStatusData(clusterName, timeStart, timeEnd string) []client.Result {
 	omcplog.V(4).Info("Func GetNodeData Called")
-	omcplog.V(5).Info("timeStart=",timeStart, ", timeEnd=",timeEnd)
+	omcplog.V(5).Info("timeStart=", timeStart, ", timeEnd=", timeEnd)
 
 	q := client.Query{}
 
 	if timeStart == "" && timeEnd == "" {
 		q = client.NewQuery("SELECT * FROM ClusterStatus WHERE cluster = '"+clusterName+"' ORDER BY DESC LIMIT 1", "Metrics", "")
-	} else if timeStart != "" && timeEnd != ""{
+	} else if timeStart != "" && timeEnd != "" {
 		timeStarts := strings.Split(timeStart, "_")
 		timeEnds := strings.Split(timeEnd, "_")
-		q = client.NewQuery("SELECT * FROM ClusterStatus WHERE cluster = '"+clusterName+"' AND time >= '"+timeStarts[0] + " " +timeStarts[1]+"' AND time < '"+timeEnds[0] + " " + timeEnds[1]+"'", "Metrics", "")
-		omcplog.V(5).Info("SELECT * FROM ClusterStatus WHERE cluster = '"+clusterName+"' AND time >= '"+timeStarts[0] + " " +timeStarts[1]+"' AND time < '"+timeEnds[0] + " " + timeEnds[1]+"'")
-	} else if timeStart != ""{
+		q = client.NewQuery("SELECT * FROM ClusterStatus WHERE cluster = '"+clusterName+"' AND time >= '"+timeStarts[0]+" "+timeStarts[1]+"' AND time < '"+timeEnds[0]+" "+timeEnds[1]+"'", "Metrics", "")
+		omcplog.V(5).Info("SELECT * FROM ClusterStatus WHERE cluster = '" + clusterName + "' AND time >= '" + timeStarts[0] + " " + timeStarts[1] + "' AND time < '" + timeEnds[0] + " " + timeEnds[1] + "'")
+	} else if timeStart != "" {
 		timeStarts := strings.Split(timeStart, "_")
-		q = client.NewQuery("SELECT * FROM ClusterStatus WHERE cluster = '"+clusterName+"' AND time >= '"+timeStarts[0] + " " + timeStarts[1]+"'", "Metrics", "")
-		omcplog.V(5).Info("SELECT * FROM ClusterStatus WHERE cluster = '"+clusterName+"' AND time >= '"+timeStarts[0] + " " + timeStarts[1]+"'")
+		q = client.NewQuery("SELECT * FROM ClusterStatus WHERE cluster = '"+clusterName+"' AND time >= '"+timeStarts[0]+" "+timeStarts[1]+"'", "Metrics", "")
+		omcplog.V(5).Info("SELECT * FROM ClusterStatus WHERE cluster = '" + clusterName + "' AND time >= '" + timeStarts[0] + " " + timeStarts[1] + "'")
 	} else if timeEnd != "" {
 		timeEnds := strings.Split(timeEnd, "_")
 		//select * from Pods WHERE pod='nginx-deployment-55fbd9fd6d-h7d8t' AND namespace='default' AND cluster='cluster1' AND time >= '2020-09-03 00:00:00' and time < '2020-09-03 10:00:05';
-		q = client.NewQuery("SELECT * FROM ClusterStatus WHERE cluster = '"+clusterName+"' AND time < '"+timeEnds[0] + " " + timeEnds[1]+"'", "Metrics", "")
-		omcplog.V(5).Info("SELECT * FROM ClusterStatus WHERE cluster = '"+clusterName+"' AND time < '"+timeEnds[0] + " " + timeEnds[1]+"'")
+		q = client.NewQuery("SELECT * FROM ClusterStatus WHERE cluster = '"+clusterName+"' AND time < '"+timeEnds[0]+" "+timeEnds[1]+"'", "Metrics", "")
+		omcplog.V(5).Info("SELECT * FROM ClusterStatus WHERE cluster = '" + clusterName + "' AND time < '" + timeEnds[0] + " " + timeEnds[1] + "'")
 	}
 	response, err := in.inClient.Query(q)
 
@@ -131,17 +130,6 @@ func (in *Influx) GetStatusData(clusterName, timeStart, timeEnd string) []client
 	return nil
 
 }
-
-
-
-
-
-
-
-
-
-
-
 
 //
 //

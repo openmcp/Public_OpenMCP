@@ -1,3 +1,13 @@
+mkdir -p /home/nfs/pv/influxdb
+mkdir -p /home/nfs/pv/api-server/cert
+
+echo "--- API Server Generation Key File"
+openssl genrsa -out server.key 2048
+(echo \r\n ; echo \r\n; echo \r\n; echo \r\n; echo \r\n; echo openmcp; echo \r\n) | openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650
+
+mv server.key /home/nfs/pv/api-server/cert
+mv server.crt /home/nfs/pv/api-server/cert
+
 kubectl create ns openmcp
 kubectl create ns metallb-system
 kubectl create ns istio-system

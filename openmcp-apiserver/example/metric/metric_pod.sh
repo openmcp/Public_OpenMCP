@@ -1,15 +1,23 @@
 USERNAME="openmcp"
 PASSWORD="keti"
 IP="10.0.3.20"
-PORT="31635"
+PORT="30000"
 NS="kube-system"
 POD="kube-apiserver-kube1-master"
 URL="metrics/namespaces/$NS/pods/$POD"
 CLUSTER="cluster1"
 
-TOKEN_JSON=`curl -XGET -H "Content-type: application/json" "http://$IP:$PORT/token?username=$USERNAME&password=$PASSWORD"`
+echo -n | openssl s_client -connect $IP:$PORT | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt
+
+TOKEN_JSON=`curl -XPOST \
+        --cacert server.crt \
+        --insecure \
+        -H "Content-type: application/json" \
+        --data "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}" \
+        https://$IP:$PORT/token`
+
 TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
-curl -X GET -H "Authorization: Bearer $TOKEN" $IP:$PORT/$URL?clustername=$CLUSTER
+curl -X GET --cacert server.srt --insecure -H "Authorization: Bearer $TOKEN" https://$IP:$PORT/$URL?clustername=$CLUSTER
 
