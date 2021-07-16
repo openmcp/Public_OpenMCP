@@ -211,6 +211,7 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 						util.CmdExec2("cp " + dirname + "/istio_install.sh " + dirname + "/istio_install-" + clustername + ".sh")
 						util.CmdExec2("sed -i 's|REPLACE_DIRECTORY|" + dirname + "|g' " + dirname + "/istio_install-" + clustername + ".sh")
 						util.CmdExec2("sed -i 's|REPLACE_CLUSTERNAME|" + clustername + "|g' " + dirname + "/istio_install-" + clustername + ".sh")
+						util.CmdExec2("chmod 755 " + dirname + "/gen-eastwest-gateway.sh")
 						util.CmdExec2("chmod 755 " + dirname + "/istio_install-" + clustername + ".sh")
 						util.CmdExec2(dirname + "/istio_install-" + clustername + ".sh")
 						util.CmdExec2("rm " + dirname + "/istio_install-" + clustername + ".sh")
