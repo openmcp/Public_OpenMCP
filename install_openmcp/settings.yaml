@@ -18,7 +18,6 @@ master:
     ports:
       metricCollectorPort: 3212
   APIServer:
-      Domain: openmcp
       AppKey: openmcp-apiserver
       UserName: openmcp
       UserPW: keti
