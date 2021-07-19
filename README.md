@@ -294,8 +294,8 @@ $ kubectl label nodes <node-name> topology.istio.io/subzone=<cluster-name> --con
 > - JP (Japan)    
 > - IN (India)    
 
-> Zone (ISO 3166-1 alpha-2)  
-> - https://ko.wikipedia.org/wiki/ISO_3166-1
+> Zone (locationInfo.csv)  
+> - https://github.com/openmcp/Public_OpenMCP/blob/master/locationInfo.csv
 ---
 
 ## 2. How to join GKE Cluster to OpenMCP
