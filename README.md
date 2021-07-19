@@ -236,18 +236,7 @@ $ ./install_kubectl_request-join
 $ kubectl join ${OPENMCP_IP_PORT}
 ```
 
-### (3) Join sub-cluster to OpenMCP [In OpenMCP]
-
-Install 'kubectl join-status' plugin on OpenMCP.
-```bash
-$ cd kubectl-plugin
-$ ./install_kubectl_joinstatus
-$ kubectl join-status ${CLUSTER_NAME} JOIN
-Input MetalLB IP Address Range (FROM) : 10.0.3.251
-Input MetalLB IP Address Range (TO) : 10.0.3.260
-```
-
-### (4) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]
+### (3) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]
 
 Tag labels(Region, Zone) on sub-cluster.
 ```bash
