@@ -244,13 +244,12 @@ $ kubectl label nodes <node-name> topology.kubernetes.io/region=<region> --conte
 $ kubectl label nodes <node-name> topology.kubernetes.io/zone=<zone> --context=<cluster-name>
 $ kubectl label nodes <node-name> topology.istio.io/subzone=<cluster-name> --context=<cluster-name>
 ```
-> Region (ISO 3166-1 alpha-2)
+> Region (ISO 3166-1 alpha-2) https://ko.wikipedia.org/wiki/ISO_3166-1
 > - KR (Korea)  
 > - US (USA)  
 > - CH (China)    
 > - JP (Japan)    
 > - IN (India)    
-> REF: https://ko.wikipedia.org/wiki/ISO_3166-1
 
 > Zone (ISO 3166-1 alpha-2)  
 > - https://ko.wikipedia.org/wiki/ISO_3166-1
