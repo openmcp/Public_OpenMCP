@@ -248,7 +248,7 @@ $ vim /etc/hosts
 
 ### (4) Register sub-cluster to OpenMCP [In sub-cluster]
 
-Install 'kubectl join' plugin on sub-cluster.
+Install 'kubectl request-join' plugin on sub-cluster.
 Before execute join command, you must set KUBECONFIG file and ~/.hosts file. 
 
 ```bash
