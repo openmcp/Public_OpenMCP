@@ -55,6 +55,11 @@ else
   rm master/influxdb/deployment-learningmcp.yaml
 fi
 
+# Init Memeber Dir NFS Setting
+INIT_MEMBER_DIR=`pwd`/member
+echo "$INIT_MEMBER_DIR *(rw,no_root_squash,sync)" >> /etc/exports
+exportfs -a
+
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/1.create.sh
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-has-controller/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-scheduler/operator.yaml
@@ -94,6 +99,7 @@ sed -i 's|REPLACE_GRPCIP|'\"$OMCP_IP\"'|g' master/openmcp-has-controller/operato
 sed -i 's|REPLACE_GRPCIP|'\"$OMCP_IP\"'|g' master/openmcp-scheduler/operator.yaml
 sed -i 's|REPLACE_GRPCIP|'\"$OMCP_IP\"'|g' master/openmcp-loadbalancing-controller/operator.yaml
 
+sed -i 's|REPLACE_INIT_MEMBER_DIR|'\"$INIT_MEMBER_DIR\"'|g' master/openmcp-cluster-manager/pv.yaml 
 sed -i 's|REPLACE_OMCPIP|'\"$OMCP_IP\"'|g' master/openmcp-cluster-manager/pv.yaml
 
 sed -i 's|REPLACE_PORT|'$OAS_PORT'|g' master/openmcp-apiserver/service.yaml

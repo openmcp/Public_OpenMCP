@@ -1,0 +1,15 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPPolicy
+metadata:
+  name: log-level
+  namespace: openmcp
+spec:
+  template:
+    spec:
+      targetController:
+        kind: All-OpenMCP-Resource-Controller
+      policies:
+        - type: Level
+          value:
+            - "5"
+  policyStatus: Enabled

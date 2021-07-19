@@ -2,9 +2,9 @@ package controller
 
 import (
 	"log"
-	"openmcp/openmcp/openmcp-loadbalancing-controller2/src/controller/DestinationRule"
-	"openmcp/openmcp/openmcp-loadbalancing-controller2/src/controller/DestinationRule/DestinationRuleWeight"
-	"openmcp/openmcp/openmcp-loadbalancing-controller2/src/controller/OpenMCPVirtualService"
+	"openmcp/openmcp/openmcp-loadbalancing-controller/src/controller/DestinationRule"
+	"openmcp/openmcp/openmcp-loadbalancing-controller/src/controller/DestinationRule/DestinationRuleWeight"
+	"openmcp/openmcp/openmcp-loadbalancing-controller/src/controller/OpenMCPVirtualService"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"

@@ -2,7 +2,7 @@ USERNAME="openmcp"
 PASSWORD="keti"
 IP="10.0.3.20"
 PORT="30000"
-URL="api"
+URL="apis/openmcp.k8s.io/v1alpha1/namespaces/openmcp/openmcpclusters"
 CLUSTER="openmcp"
 
 echo -n | openssl s_client -connect $IP:$PORT | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt
@@ -18,4 +18,3 @@ TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
 curl -X GET --cacert server.srt --insecure -H "Authorization: Bearer $TOKEN" https://$IP:$PORT/$URL?clustername=$CLUSTER
-

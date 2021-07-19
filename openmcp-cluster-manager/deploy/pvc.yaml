@@ -9,6 +9,10 @@ spec:
   resources:
     requests:
       storage: 2Gi
+  storageClassName: cluster-manager
+  selector:
+    matchLabels:
+      app: kube-config
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -21,3 +25,7 @@ spec:
   resources:
     requests:
       storage: 2Gi
+  storageClassName: cluster-manager
+  selector:
+    matchLabels:
+      app: initmodule

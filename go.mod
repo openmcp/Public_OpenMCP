@@ -14,7 +14,7 @@ require (
 	github.com/go-openapi/spec v0.19.8
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
-	github.com/golang/mock v1.4.4 // indirect
+	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.3
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/influxdata/influxdb v1.8.0
@@ -31,7 +31,7 @@ require (
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.0
 	github.com/storageos/go-api v2.3.0+incompatible
-	github.com/stretchr/testify v1.6.1 // indirect
+	github.com/stretchr/testify v1.6.1
 	go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489
 	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6 // indirect
 	google.golang.org/grpc v1.35.0
@@ -46,7 +46,7 @@ require (
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20200710055348-ddb8ec8980e1
 	k8s.io/client-go v0.20.2
 	k8s.io/cluster-registry v0.0.6 // indirect
-	k8s.io/component-base v0.20.2 // indirect
+	k8s.io/component-base v0.20.2
 	k8s.io/klog v1.0.0
 	k8s.io/kube-aggregator v0.19.2
 	k8s.io/kube-openapi v0.0.0-20210305001622-591a79e4bda7

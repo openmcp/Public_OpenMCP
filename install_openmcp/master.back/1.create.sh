@@ -12,6 +12,7 @@ kubectl create ns openmcp
 kubectl create ns metallb-system
 kubectl create ns istio-system
 
+echo "Input Your Docker ID(No Pull Limit Plan)"
 docker login
 
 kubectl create secret generic REPLACE_DOCKERSECRETNAME \
@@ -58,7 +59,6 @@ echo "--- openmcp-dns-controller"
 kubectl create -f openmcp-dns-controller/.
 echo "--- openmcp-loadbalancing-controller"
 kubectl create -f openmcp-loadbalancing-controller/.
-kubectl expose deployment/openmcp-loadbalancing-controller -n openmcp --port 80 --type=LoadBalancer
 echo "--- openmcp-sync-controller"
 kubectl create -f openmcp-sync-controller/.
 echo "--- metallb"

@@ -20,8 +20,8 @@ import (
 	//"sync"
 	//"time"
 
-	"openmcp/openmcp/openmcp-loadbalancing-controller2/src/controller"
-	"openmcp/openmcp/openmcp-loadbalancing-controller2/src/reverseProxy"
+	"openmcp/openmcp/openmcp-loadbalancing-controller/src/controller"
+	"openmcp/openmcp/openmcp-loadbalancing-controller/src/reverseProxy"
 	"sync"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"

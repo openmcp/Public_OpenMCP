@@ -6,7 +6,7 @@ import (
 	"openmcp/openmcp/apis"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-loadbalancing-controller2/src/controller/DestinationRule/DestinationRuleWeight"
+	"openmcp/openmcp/openmcp-loadbalancing-controller/src/controller/DestinationRule/DestinationRuleWeight"
 	"openmcp/openmcp/util/clusterManager"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"

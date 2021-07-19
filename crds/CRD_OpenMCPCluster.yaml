@@ -39,3 +39,8 @@ spec:
     - name: v1alpha1
       served: true
       storage: true
+  additionalPrinterColumns:
+    - name: Status
+      type: string
+      description: The Cluster Join Status
+      JSONPath: .spec.joinStatus  

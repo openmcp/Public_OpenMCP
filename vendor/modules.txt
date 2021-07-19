@@ -17,6 +17,8 @@ github.com/PuerkitoBio/urlesc
 github.com/auth0/go-jwt-middleware
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
+# github.com/blang/semver v3.5.1+incompatible
+github.com/blang/semver
 # github.com/cespare/xxhash/v2 v2.1.1
 github.com/cespare/xxhash/v2
 # github.com/coreos/etcd v3.3.20+incompatible
@@ -75,6 +77,7 @@ github.com/gogo/protobuf/types
 github.com/golang/groupcache/lru
 # github.com/golang/mock v1.4.4
 ## explicit
+github.com/golang/mock/gomock
 # github.com/golang/protobuf v1.4.3
 ## explicit
 github.com/golang/protobuf/proto
@@ -178,6 +181,8 @@ github.com/oschwald/maxminddb-golang
 github.com/pelletier/go-toml
 # github.com/pkg/errors v0.9.1 => github.com/pkg/errors v0.9.1
 github.com/pkg/errors
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
 # github.com/prometheus/client_golang v1.8.0
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
@@ -210,8 +215,12 @@ github.com/spf13/viper
 # github.com/storageos/go-api v2.3.0+incompatible
 ## explicit
 github.com/storageos/go-api/types
+# github.com/stretchr/objx v0.2.0
+github.com/stretchr/objx
 # github.com/stretchr/testify v1.6.1
 ## explicit
+github.com/stretchr/testify/assert
+github.com/stretchr/testify/mock
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
 # go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489
@@ -375,6 +384,8 @@ gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit
 gopkg.in/yaml.v2
+# gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+gopkg.in/yaml.v3
 # istio.io/api v0.0.0-20210520230835-8e3314c46788
 ## explicit
 istio.io/api/analysis/v1alpha1
@@ -487,10 +498,38 @@ k8s.io/apimachinery/third_party/forked/golang/netutil
 k8s.io/apimachinery/third_party/forked/golang/reflect
 # k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20200710055348-ddb8ec8980e1
 ## explicit
+k8s.io/autoscaler/vertical-pod-autoscaler/common
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/logic
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/recommendation
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1
 k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/scheme
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta1
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta2
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test
+k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa
 # k8s.io/client-go v0.20.2
 ## explicit
 k8s.io/client-go/discovery
+k8s.io/client-go/discovery/cached
+k8s.io/client-go/discovery/cached/memory
 k8s.io/client-go/dynamic
 k8s.io/client-go/informers
 k8s.io/client-go/informers/admissionregistration
@@ -644,6 +683,14 @@ k8s.io/client-go/plugin/pkg/client/auth/gcp
 k8s.io/client-go/rest
 k8s.io/client-go/rest/watch
 k8s.io/client-go/restmapper
+k8s.io/client-go/scale
+k8s.io/client-go/scale/scheme
+k8s.io/client-go/scale/scheme/appsint
+k8s.io/client-go/scale/scheme/appsv1beta1
+k8s.io/client-go/scale/scheme/appsv1beta2
+k8s.io/client-go/scale/scheme/autoscalingv1
+k8s.io/client-go/scale/scheme/extensionsint
+k8s.io/client-go/scale/scheme/extensionsv1beta1
 k8s.io/client-go/third_party/forked/golang/template
 k8s.io/client-go/tools/auth
 k8s.io/client-go/tools/cache
@@ -674,6 +721,11 @@ k8s.io/client-go/util/workqueue
 ## explicit
 # k8s.io/component-base v0.20.2
 ## explicit
+k8s.io/component-base/cli/flag
+k8s.io/component-base/metrics
+k8s.io/component-base/metrics/legacyregistry
+k8s.io/component-base/metrics/prometheus/restclient
+k8s.io/component-base/version
 # k8s.io/klog v1.0.0
 ## explicit
 k8s.io/klog

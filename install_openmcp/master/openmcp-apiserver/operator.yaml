@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmcp-apiserver
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openmcp-apiserver
+  template:
+    metadata:
+      labels:
+        name: openmcp-apiserver
+    spec:
+      serviceAccountName: openmcp-apiserver-sa
+      imagePullSecrets:
+        - name: "regcred"
+      containers:
+        - name: openmcp-apiserver
+          # Replace this with the built image name
+          image: ketidevit/openmcp-apiserver:v0.0.1
+          command:
+          - openmcp-apiserver
+          imagePullPolicy: Always
+          volumeMounts:
+          - mountPath: "/tmp/cert"
+            name: cert
+          env:
+            - name: WATCH_NAMESPACE
+              #value: ""
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: API_APP_KEY
+              value: "openmcp-apiserver"
+            - name: API_USER_NAME
+              value: ""
+            - name: API_USER_PW
+              value: "keti"
+            - name: INFLUX_IP
+              value: "10.0.3.20"
+            - name: INFLUX_PORT
+              value: "30004"
+            - name: INFLUX_USERNAME
+              value: "root"
+            - name: INFLUX_PASSWORD
+              value: "root"
+            - name: OPERATOR_NAME
+              value: "openmcp-apiserver"
+          ports:
+          - containerPort: 8080
+            name: http
+      volumes:
+      - name: cert
+        persistentVolumeClaim:
+          claimName: pvc-api-server-cert
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0

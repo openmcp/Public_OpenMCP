@@ -22,7 +22,7 @@ master:
       UserName: openmcp
       UserPW: keti
   metalLB:
-    rangeStartIP: 10.0.3.190
+    rangeStartIP: 10.0.3.191
     rangeEndIP: 10.0.3.200
 
 powerDNS:
