@@ -228,7 +228,7 @@ Before execute join command, you must set KUBECONFIG file and ~/.hosts file.
 
 ```bash
 $ cd kubectl-plugin
-$ ./install_kubectl_join
+$ ./install_kubectl_request-join
 $ kubectl join ${OPENMCP_IP_PORT}
 ```
 
@@ -247,16 +247,17 @@ Input MetalLB IP Address Range (TO) : 10.0.3.260
 
 Tag labels(Region, Zone) on sub-cluster.
 ```bash
-$ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/region=<region> --context=<cluster-name>
-$ kubectl label nodes <node-name> failure-domain.beta.kubernetes.io/zone=<zone> --context=<cluster-name>
+$ kubectl label nodes <node-name> topology.kubernetes.io/region=<region> --context=<cluster-name>
+$ kubectl label nodes <node-name> topology.kubernetes.io/zone=<zone> --context=<cluster-name>
+$ kubectl label nodes <node-name> topology.istio.io/subzone=<cluster-name> --context=<cluster-name>
 ```
-> Region    
-> - AS (Asia)  
-> - AF (Africa)  
-> - AN (Antarctica)    
-> - EU (Europe)    
-> - NA (North America)    
-> - SA (South America)    
+> Region (ISO 3166-1 alpha-2)
+> - KR (Korea)  
+> - US (USA)  
+> - CH (China)    
+> - JP (Japan)    
+> - IN (India)    
+> REF: https://ko.wikipedia.org/wiki/ISO_3166-1
 
 > Zone (ISO 3166-1 alpha-2)  
 > - https://ko.wikipedia.org/wiki/ISO_3166-1
