@@ -95,10 +95,9 @@ default:
   docker:
     imagePullSecretName: regcred
     imagePullPolicy: Always
-
 master:
   internal:
-    ip: 10.0.3.30
+    ip: 10.0.3.20
     ports:
       apiServerPort: 30000
       clusterManagerPort: 30001
@@ -109,8 +108,12 @@ master:
     ip: 119.65.195.180
     ports:
       metricCollectorPort: 3212
+  APIServer:
+      AppKey: openmcp-apiserver
+      UserName: openmcp
+      UserPW: keti
   metalLB:
-    rangeStartIP: 10.0.3.190
+    rangeStartIP: 10.0.3.191
     rangeEndIP: 10.0.3.200
 
 powerDNS:
@@ -123,6 +126,7 @@ powerDNS:
     ip: 119.65.195.180
     ports:
       pdnsPort: 5353
+
 
 $ ./create.sh
 ```
