@@ -225,7 +225,25 @@ users:
     client-key-data: ...
 ```
 
-### (2) Register sub-cluster to OpenMCP [In sub-cluster]
+### (2) Check OpenMCP API Server IP Address in openmcp-cluster [In openmcp-cluster]
+```bash
+$ kubectl get svc -n openmcp openmcp-apiserver
+NAME                TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+openmcp-apiserver   LoadBalancer   XX.XX.XX.XX     <IPADDRESS>   <PORT>:XXXXX/TCP   179m
+```
+
+### (3) register OpenMCP API Server hostname at "/etc/hosts" [In sub-cluster]
+
+Fill in the <IPADDRESS> verified above and enter hostname (openmcp)
+  
+```bash
+$ vim /etc/hosts
+127.0.0.1    localhost
+...
+<IPADDRESS>  openmcp
+```
+
+### (4) Register sub-cluster to OpenMCP [In sub-cluster]
 
 Install 'kubectl join' plugin on sub-cluster.
 Before execute join command, you must set KUBECONFIG file and ~/.hosts file. 
@@ -233,10 +251,32 @@ Before execute join command, you must set KUBECONFIG file and ~/.hosts file.
 ```bash
 $ cd kubectl-plugin
 $ ./install_kubectl_request-join
-$ kubectl join ${OPENMCP_IP_PORT}
+$ kubectl request-join openmcp:<PORT>
+```
+  
+### (5) Check Registered Joinable Cluster [In openmcp-cluster]
+  
+```bash
+$ kubectl get openmcpcluster -n openmcp
+  
+NAME       STATUS
+cluster1   UNJOIN
+cluster2   UNJOIN
+
+```
+  
+### (6) Join sub-cluster to OpenMCP [In openmcp-cluster]
+
+Install 'kubectl join' plugin on sub-cluster.
+Before execute join command, you must set KUBECONFIG file and ~/.hosts file. 
+
+```bash
+$ cd kubectl-plugin
+$ ./install_kubectl_join
+$ kubectl join <CLUSTERNAME>
 ```
 
-### (3) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]
+### (7) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]
 
 Tag labels(Region, Zone) on sub-cluster.
 ```bash
