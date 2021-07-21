@@ -433,13 +433,13 @@ $ az aks list
     ...
   }
 ]
-`
+```
 
 ### (4) Register AKS cluster to OpenMCP
 
 Install 'kubectl regist' plugin on OpenMCP.
 ```
-$ cd kubectl-plug
+$ cd kubectl-plugin
 $ chmod +x kubectl-regist_join
 $ cp kubectl-regist_join /usr/local/bin
 $ kubectl regist-join AKS ${AKS_CLUSTER_NAME} ${OPENMCP_IP_PORT}
