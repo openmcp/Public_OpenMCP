@@ -85,8 +85,8 @@ func CreateClusterResource(name string, config []byte) (string, error) {
 			ClusterPlatformType: "On-Premise",
 			JoinStatus:          "UNJOIN",
 			MetalLBRange: clusterv1alpha1.MetalLBRange{
-				AddressFrom: "IP_ADDRESS_FROM",
-				AddressTo:   "IP_ADDRESS_TO",
+				AddressFrom: "",
+				AddressTo:   "",
 			},
 			KubeconfigInfo: config,
 		},

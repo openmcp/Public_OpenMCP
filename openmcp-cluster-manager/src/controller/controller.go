@@ -113,7 +113,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	} else if clusterInstance.Spec.JoinStatus == "UNJOIN" {
 		omcplog.V(2).Info(clusterInstance.Name + " [ UNJOIN ]")
 
-	} else if clusterInstance.Spec.JoinStatus == "JOINING" && clusterInstance.Spec.MetalLBRange.AddressFrom != "IP_ADDRESS_FROM" && clusterInstance.Spec.MetalLBRange.AddressTo != "IP_ADDRESS_TO" {
+	} else if clusterInstance.Spec.JoinStatus == "JOINING" && clusterInstance.Spec.MetalLBRange.AddressFrom != "" && clusterInstance.Spec.MetalLBRange.AddressTo != "" {
 		joinAvailable := checkClustersJoinState(clusterInstance.Name)
 
 		if joinAvailable == "FALSE" {

@@ -12,6 +12,7 @@ kubectl create ns openmcp
 kubectl create ns metallb-system
 kubectl create ns istio-system
 
+echo "Input Your Docker ID(No Pull Limit Plan)"
 docker login
 
 kubectl create secret generic "regcred" \
@@ -60,6 +61,10 @@ echo "--- openmcp-loadbalancing-controller"
 kubectl create -f openmcp-loadbalancing-controller/.
 echo "--- openmcp-sync-controller"
 kubectl create -f openmcp-sync-controller/.
+echo "--- openmcp-job-controller"
+kubectl apply -f openmcp-job-controller/.
+echo "--- openmcp-namespace-controller"
+kubectl apply -f openmcp-namespace-controller/.
 echo "--- metallb"
 kubectl create -f metallb/.
 echo "--- configmap"

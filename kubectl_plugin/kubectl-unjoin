@@ -6,5 +6,7 @@ if [ "$1" == "" ]; then
   exit 1
 else
   kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"UNJOINING"}]'
+  kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressFrom","value": ""}]'
+  kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressTo","value": ""}]'
 #  kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/JOIN/UNJOIN/g" | kubectl replace -f -
 fi

@@ -39,7 +39,7 @@ spec:
             - name: API_APP_KEY
               value: "openmcp-apiserver"
             - name: API_USER_NAME
-              value: ""
+              value: "openmcp"
             - name: API_USER_PW
               value: "keti"
             - name: INFLUX_IP

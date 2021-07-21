@@ -1,19 +1,32 @@
 #!/bin/bash
 
 
-REQUIRED_PKG=python-pip
-PKG_OK=$(dpkg-query -W --showformat='${Status}\n' $REQUIRED_PKG|grep "install ok installed")
-if [ "" = "$PKG_OK" ]; then
-  echo "No $REQUIRED_PKG. Setting up $REQUIRED_PKG."
-  sudo apt-get --yes install $REQUIRED_PKG 
+# REQUIRED_PKG=python-pip
+# PKG_OK=$(dpkg-query -W --showformat='${Status}\n' $REQUIRED_PKG|grep "install ok installed")
+# if [ "" = "$PKG_OK" ]; then
+#   echo "No $REQUIRED_PKG. Setting up $REQUIRED_PKG."
+#   sudo apt-get --yes install $REQUIRED_PKG 
+# fi
+
+#REQUIRED_PKG=python-pip
+#PKG_OK=$(dpkg-query -W --showformat='${Status}\n' $REQUIRED_PKG|grep "install ok installed")
+#if [ "" = "$PKG_OK" ]; then
+#  echo "No $REQUIRED_PKG. Setting up $REQUIRED_PKG."
+#  sudo apt-get --yes install $REQUIRED_PKG 
+#fi
+
+REQUIRED_PKG2=nfs-kernel-server
+PKG_OK2=$(dpkg-query -W --showformat='${Status}\n' $REQUIRED_PKG2|grep "install ok installed")
+if [ "" = "$PKG_OK2" ]; then
+  echo "No $REQUIRED_PKG2. Setting up $REQUIRED_PKG2."
+  sudo apt-get --yes install $REQUIRED_PKG2 
 fi
 
-REQUIRED_PKG=nfs-kernel-server
-PKG_OK=$(dpkg-query -W --showformat='${Status}\n' $REQUIRED_PKG|grep "install ok installed")
-if [ "" = "$PKG_OK" ]; then
-  echo "No $REQUIRED_PKG. Setting up $REQUIRED_PKG."
-  sudo apt-get --yes install $REQUIRED_PKG 
-fi
+
+curl -O https://bootstrap.pypa.io/pip/2.7/get-pip.py
+python get-pip.py
+rm get-pip.py
+
 
 PYTHON_REQUIRED_PKG=yq
 PKG_OK=$(pip list --disable-pip-version-check | grep $PYTHON_REQUIRED_PKG)
@@ -86,9 +99,9 @@ if [ "" = "$NFS_OK" ]; then
   echo "/root/.kube *(rw,no_root_squash,sync,no_subtree_check)" >> /etc/exports
 fi
 
-NFS_OK2=$(grep -r \'$INIT_MEMBER_DIR\' /etc/exports)
+NFS_OK2=$(grep -r $INIT_MEMBER_DIR /etc/exports)
 if [ "" = "$NFS_OK2" ]; then
-  echo "Not found NFS Setting. ADd Export '$INIT_MEMBER_DIR' in /etc/exports"
+  echo "Not found NFS Setting. Add Export '$INIT_MEMBER_DIR' in /etc/exports"
   echo "$INIT_MEMBER_DIR *(rw,no_root_squash,sync,no_subtree_check)" >> /etc/exports
 fi
 
@@ -99,6 +112,7 @@ if [ "" = "$NFS_OK3" ]; then
 fi
 exportfs -a
 
+echo "Replace Setting Variable"
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/1.create.sh
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-has-controller/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-scheduler/operator.yaml
@@ -140,7 +154,7 @@ sed -i 's|REPLACE_GRPCIP|'\"$OMCP_IP\"'|g' master/openmcp-loadbalancing-controll
 
 sed -i 's|REPLACE_INIT_MEMBER_DIR|'\"$INIT_MEMBER_DIR\"'|g' master/openmcp-cluster-manager/pv.yaml 
 sed -i 's|REPLACE_OMCPIP|'\"$OMCP_IP\"'|g' master/openmcp-cluster-manager/pv.yaml
-sed -i 's|REPLACE_OMCPIP|'\"$OMCP_IP\"'|g'master/openmcp-apiserver/pv.yaml
+sed -i 's|REPLACE_OMCPIP|'\"$OMCP_IP\"'|g' master/openmcp-apiserver/pv.yaml
 
 sed -i 's|REPLACE_PORT|'$OAS_PORT'|g' master/openmcp-apiserver/service.yaml
 sed -i 's|REPLACE_PORT|'$OCM_PORT'|g' master/openmcp-cluster-manager/service.yaml
@@ -183,6 +197,7 @@ sed -i 's|REPLACE_PDNSAPIKEY|'\"$PDNS_API_KEY\"'|g' master/openmcp-dns-controlle
 sed -i 's|REPLACE_ADDRESS_FROM|'"$ADDRESS_FROM"'|g' master/metallb/configmap.yaml
 sed -i 's|REPLACE_ADDRESS_TO|'"$ADDRESS_TO"'|g' master/metallb/configmap.yaml
 
+echo "Replace Setting Variable Complete"
 USERNAME=`whoami`
 
 if [ $OMCP_INSTALL_TYPE == "learning" ]; then
@@ -190,6 +205,9 @@ if [ $OMCP_INSTALL_TYPE == "learning" ]; then
   rm -rf /home/$USERNAME/.init/member
   cp -r member /home/$USERNAME/.init/member
 fi
+
+chmod 755 master/*.sh
+chmod 755 member/istio/*.sh
 
 
 echo "Complete Make Dir(master/member)" 
