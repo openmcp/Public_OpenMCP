@@ -268,23 +268,16 @@ cluster1   UNJOIN
 cluster2   UNJOIN
 
 ```
-  $ chmod +x kubectl-join
-$ cp kubectl-join /usr/local/bin
-### (6) Join sub-cluster to OpenMCP [In openmcp-clu$ chmod +x kubectl-join
-$ cp kubectl-join /usr/local/binster]
+### (6) Join sub-cluster to OpenMCP [In openmcp-cluster]
 
-Install 'kubectl join' plugi$ chmod +x kubectl-join
-$ cp kubectl-join /usr/local/binn on sub-cluster.
-Before execute join command, you must set KUBECONFIG f$ chmod +x kubectl-join
-$ cp kubectl-join /usr/local/binile and ~/.hosts file. $ chmod +x kubectl-join
-$ cp kubectl-join /usr/local/bin
+Install 'kubectl join' plugin on sub-cluster.
+Before execute join command, you must set KUBECONFIG file and ~/.hosts file.
 
 ```bash
 $ cd kubectl-plugin
-$ chmod +x kubectl-join
+$ chmod +x kubec
 $ cp kubectl-join /usr/local/bin
-$ kubectl join <CLUSTERNAME>$ chmod +x kubectl-join
-$ cp kubectl-join /usr/local/bin
+$ kubectl join <CLUSTERNAME>
 ```
 
 ### (7) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]
@@ -336,11 +329,12 @@ $ kubectl regist-join GKE ${GKE_CLUSTER_NAME} ${OPENMCP_IP_PORT}
 
 ### (5) Join GKE cluster to OpenMCP
 
-Install 'kubectl join-status' plugin on OpenMCP.
+Install 'kubectl join' plugin on OpenMCP.
 ```
 $ cd kubectl-plugin
-$ ./install_kubectl_joinstatus
-$ kubectl join-status ${GKE_CLUSTER_NAME} JOIN
+$ chmod +x kubectl-join
+$ cp kubectl-join /usr/local/bin
+$ kubectl join <CLUSTERNAM
 ```
 
 ## 3. How to join EKS Cluster to OpenMCP
@@ -370,11 +364,12 @@ $ aws eks list-clusters
 
 ### (4) Register EKS cluster to OpenMCP
 
-Install 'kubectl register' plugin on OpenMCP.
+Install 'kubectl regist' plugin on OpenMCP.
 ```
 $ cd kubectl-plugin
-$ ./install_kubectl_register
-$ kubectl register EKS ${EKS_CLUSTER_NAME} ${OPENMCP_IP_PORT}
+$ chmod +x kubectl-regist_join
+$ cp kubectl-regist_join /usr/local/bin
+$ kubectl regist-join EKS ${EKS_CLUSTER_NAME} ${OPENMCP_IP_PORT}
 ```
 
 ### (5) Join EKS cluster to OpenMCP
@@ -389,11 +384,12 @@ Default region name [None]: eu-west-2
 Default output format [None]: json
 ```
 
-Install 'kubectl join-status' plugin on OpenMCP.
+Install 'kubectl join' plugin on OpenMCP.
 ```
 $ cd kubectl-plugin
-$ ./install_kubectl_joinstatus
-$ kubectl join-status ${EKS_CLUSTER_NAME} JOIN
+$ chmod +x kubectl-join
+$ cp kubectl-join /usr/local/bin
+$ kubectl join <CLUSTERNAME>
 ```
 
 ## 4. How to join AKS Cluster to OpenMCP
@@ -437,24 +433,26 @@ $ az aks list
     ...
   }
 ]
-```
+`
 
 ### (4) Register AKS cluster to OpenMCP
 
-Install 'kubectl register' plugin on OpenMCP.
+Install 'kubectl regist' plugin on OpenMCP.
 ```
-$ cd kubectl-plugin
-$ ./install_kubectl_register
-$ kubectl register AKS ${AKS_CLUSTER_NAME} ${OPENMCP_IP_PORT}
+$ cd kubectl-plug
+$ chmod +x kubectl-regist_join
+$ cp kubectl-regist_join /usr/local/bin
+$ kubectl regist-join AKS ${AKS_CLUSTER_NAME} ${OPENMCP_IP_PORT}
 ```
 
 ### (5) Join AKS cluster to OpenMCP
 
-Install 'kubectl join-status' plugin on OpenMCP.
+Install 'kubectl join' plugin on OpenMCP.
 ```
 $ cd kubectl-plugin
-$ ./install_kubectl_joinstatus
-$ kubectl join-status ${AKS_CLUSTER_NAME} JOIN
+$ chmod +x kubectl-join
+$ cp kubectl-join /usr/local/bin
+$ kubectl join <CLUSTERNAME>
 ```
 
 # OpenMCP EXAMPLE
