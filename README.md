@@ -47,9 +47,10 @@
 
 ## Requirement
 
-Before you install OpenMCP, Federation is required.
+Before you install OpenMCP, Federation and OpenMCP ExternalServer are required.
 1. GO v1.14
-1. Install [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) (Version: 0.1.0-rc6)
+1. Install [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) (Version: 0.8.1)
+1. External Server(https://github.com/openmcp/external)
 
 -----------------------------------------------------------------------------------------------
 [ Test Environment ]
