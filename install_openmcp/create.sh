@@ -140,7 +140,7 @@ sed -i 's|REPLACE_GRPCIP|'\"$OMCP_IP\"'|g' master/openmcp-loadbalancing-controll
 
 sed -i 's|REPLACE_INIT_MEMBER_DIR|'\"$INIT_MEMBER_DIR\"'|g' master/openmcp-cluster-manager/pv.yaml 
 sed -i 's|REPLACE_OMCPIP|'\"$OMCP_IP\"'|g' master/openmcp-cluster-manager/pv.yaml
-sed -i 's|REPLACE_OMCPIP|'\"$OMCP_IP\"'|g'master/openmcp-apiserver/pv.yaml
+sed -i 's|REPLACE_OMCPIP|'\"$OMCP_IP\"'|g' master/openmcp-apiserver/pv.yaml
 
 sed -i 's|REPLACE_PORT|'$OAS_PORT'|g' master/openmcp-apiserver/service.yaml
 sed -i 's|REPLACE_PORT|'$OCM_PORT'|g' master/openmcp-cluster-manager/service.yaml
