@@ -113,20 +113,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	} else if clusterInstance.Spec.JoinStatus == "UNJOIN" {
 		omcplog.V(2).Info(clusterInstance.Name + " [ UNJOIN ]")
 
-<<<<<<< HEAD
 	} else if clusterInstance.Spec.JoinStatus == "JOINING" && clusterInstance.Spec.MetalLBRange.AddressFrom != "" && clusterInstance.Spec.MetalLBRange.AddressTo != "" {
-		joinAvailable := checkClustersJoinState(clusterInstance.Name)
-
-		if joinAvailable == "FALSE" {
-			omcplog.V(2).Info("Another process is Running. Please Try again later.")
-			omcplog.V(2).Info("You can Check the status of other clusters By Executing the Following command")
-			omcplog.V(2).Info("=> kubectl get openmcpcluster -n openmcp")
-
-			return reconcile.Result{}, nil
-		}
-=======
-	} else if clusterInstance.Spec.JoinStatus == "JOINING" && clusterInstance.Spec.MetalLBRange.AddressFrom != "IP_ADDRESS_FROM" && clusterInstance.Spec.MetalLBRange.AddressTo != "IP_ADDRESS_TO" {
->>>>>>> cf20f052aeb2f8edf0a365e9962236c02efc40d8
 
 		omcplog.V(2).Info(clusterInstance.Name + " [ JOINING ] Start")
 		omcplog.V(4).Info("Metallb Configmap (", clusterInstance.Spec.MetalLBRange.AddressFrom, ",", clusterInstance.Spec.MetalLBRange.AddressTo, ")")
