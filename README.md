@@ -275,7 +275,7 @@ Before execute join command, you must set KUBECONFIG file and ~/.hosts file.
 
 ```bash
 $ cd kubectl-plugin
-$ chmod +x kubec
+$ chmod +x kubectl-join
 $ cp kubectl-join /usr/local/bin
 $ kubectl join <CLUSTERNAME>
 ```
@@ -334,7 +334,7 @@ Install 'kubectl join' plugin on OpenMCP.
 $ cd kubectl-plugin
 $ chmod +x kubectl-join
 $ cp kubectl-join /usr/local/bin
-$ kubectl join <CLUSTERNAM
+$ kubectl join <CLUSTERNAME>
 ```
 
 ## 3. How to join EKS Cluster to OpenMCP
