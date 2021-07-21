@@ -121,6 +121,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			omcplog.V(2).Info("You can Check the status of other clusters By Executing the Following command")
 			omcplog.V(2).Info("=> kubectl get openmcpcluster -n openmcp")
 
+			clusterInstance.Spec.JoinStatus = "UNJOIN"
+
 			return reconcile.Result{}, nil
 		}
 
@@ -160,10 +162,12 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			omcplog.V(2).Info("You can Check the status of other clusters By Executing the Following command")
 			omcplog.V(2).Info("=> kubectl get openmcpcluster -n openmcp")
 
+			clusterInstance.Spec.JoinStatus = "JOIN"
+
 			return reconcile.Result{}, nil
 		}
 
-		omcplog.V(2).Info(clusterInstance.Name + " [ UNJOINING ] Start")
+		omcplog.V(2).Info(clusterInstance.Name + " [ UNJOIN ] Start")
 
 		//config 파일 확인 (클러스터 조인 유무)
 		memberkc := &cobrautil.KubeConfig{}
