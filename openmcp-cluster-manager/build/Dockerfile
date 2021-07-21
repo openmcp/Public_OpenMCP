@@ -19,6 +19,8 @@ COPY bin /usr/local/bin
 
 RUN  /usr/local/bin/user_setup
 
+RUN chmod +x /usr/local/bin/istioctl
+
 RUN chmod +x /usr/local/bin/entrypoint
 
 ENTRYPOINT ["/usr/local/bin/entrypoint"]

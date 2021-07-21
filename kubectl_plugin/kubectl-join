@@ -8,7 +8,7 @@ else
   read -p "Input MetalLB IP Address Range (FROM) : " address_from
   read -p "Input MetalLB IP Address Range (TO) : " address_to
 
-  kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"JOIN"}]'
+  kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"JOINING"}]'
   sleep 2
   kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressFrom","value": '$address_from'}]'
   sleep 2

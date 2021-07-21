@@ -114,6 +114,16 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		omcplog.V(2).Info(clusterInstance.Name + " [ UNJOIN ]")
 
 	} else if clusterInstance.Spec.JoinStatus == "JOINING" && clusterInstance.Spec.MetalLBRange.AddressFrom != "IP_ADDRESS_FROM" && clusterInstance.Spec.MetalLBRange.AddressTo != "IP_ADDRESS_TO" {
+		joinAvailable := checkClustersJoinState(clusterInstance.Name)
+
+		if joinAvailable == "FALSE" {
+			omcplog.V(2).Info("Another process is Running. Please Try again later.")
+			omcplog.V(2).Info("You can Check the status of other clusters By Executing the Following command")
+			omcplog.V(2).Info("=> kubectl get openmcpcluster -n openmcp")
+
+			return reconcile.Result{}, nil
+		}
+
 		omcplog.V(2).Info(clusterInstance.Name + " [ JOINING ] Start")
 		omcplog.V(4).Info("Metallb Configmap (", clusterInstance.Spec.MetalLBRange.AddressFrom, ",", clusterInstance.Spec.MetalLBRange.AddressTo, ")")
 		joinCheck := MergeConfigAndJoin(*clusterInstance)
@@ -143,6 +153,16 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			}
 		}
 	} else if clusterInstance.Spec.JoinStatus == "UNJOINING" {
+		joinAvailable := checkClustersJoinState(clusterInstance.Name)
+
+		if joinAvailable == "FALSE" {
+			omcplog.V(2).Info("Another process is Running. Please Try again later.")
+			omcplog.V(2).Info("You can Check the status of other clusters By Executing the Following command")
+			omcplog.V(2).Info("=> kubectl get openmcpcluster -n openmcp")
+
+			return reconcile.Result{}, nil
+		}
+
 		omcplog.V(2).Info(clusterInstance.Name + " [ UNJOINING ] Start")
 
 		//config 파일 확인 (클러스터 조인 유무)
@@ -203,6 +223,22 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	}
 
 	return reconcile.Result{}, nil
+}
+
+func checkClustersJoinState(name string) string {
+	clusterInstance := &clusterv1alpha1.OpenMCPClusterList{}
+	err := r.live.List(context.TODO(), clusterInstance)
+
+	if err != nil {
+		for _, clusters := range clusterInstance.Items {
+			if clusters.Name != name && (clusters.Spec.JoinStatus == "JOINING" || clusters.Spec.JoinStatus == "UNJOINING") {
+				return "FALSE"
+			}
+		}
+	}
+
+	return "TRUE"
+
 }
 
 func InstallInitModule(directory []string, clustername string, ipaddressfrom string, ipaddressto string) {
