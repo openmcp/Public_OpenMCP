@@ -4,19 +4,19 @@ if [[ "$1" == "GKE" ]] || [[ "$1" == "EKS" ]] || [[ "$1" == "AKS" ]]; then
   echo "Cloud Cluster"
 else
   echo "Error : Input Cloud Cluster Type"
-  echo "ex) kubectl regist-join gke-cluster1 openmcp:8080"
+  echo "ex) kubectl regist-join GKE gke-cluster1 openmcp:8080"
   exit 1
 fi
 
 if [ "$2" = "" ]; then
   echo "Error : Input Cluster Name"
-  echo "ex) kubectl regist-join gke-cluster1 openmcp:8080"
+  echo "ex) kubectl regist-join GKE gke-cluster1 openmcp:8080"
   exit 1
 fi
 
 if [ "$3" = "" ]; then
   echo "Error : Input OpenMCP IP:PORT"
-  echo "ex) kubectl regist-join gke-cluster1 openmcp:8080"
+  echo "ex) kubectl regist-join GKE gke-cluster1 openmcp:8080"
   exit 1
 fi
 
