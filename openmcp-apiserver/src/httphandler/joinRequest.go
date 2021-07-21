@@ -1,16 +1,17 @@
 package httphandler
 
 import (
-	"admiralty.io/multicluster-controller/pkg/cluster"
 	"context"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	clusterv1alpha1 "openmcp/openmcp/apis/cluster/v1alpha1"
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"openmcp/openmcp/omcplog"
+
+	"admiralty.io/multicluster-controller/pkg/cluster"
+	"gopkg.in/yaml.v2"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var Live *cluster.Cluster

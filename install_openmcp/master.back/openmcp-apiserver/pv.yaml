@@ -13,6 +13,6 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   nfs:
     path: /home/nfs/pv/api-server/cert
-    server: "10.0.3.20"
+    server: REPLACE_OMCPIP
     readOnly: false
 

@@ -320,6 +320,7 @@ func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination
 	for _, ovsHttpRoute := range ovsHttpRoutes {
 
 		if exactRegion == "default" {
+			// default 경로생성
 			vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, -1, nil, ns)
 			if err != nil {
 				return nil, err
@@ -341,6 +342,7 @@ func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination
 				}
 				vsHttpRoutes = append(vsHttpRoutes, vsHttpRoute)
 			}
+			// default 경로생성
 			if len(vsHttpRoutes) == 0 {
 				vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, -1, nil, ns)
 				if err != nil {
@@ -357,6 +359,7 @@ func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination
 	return vsHttpRoutes, nil
 }
 func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i int, locCluster *LocCluster, ns string) (*networkingv1alpha3.HTTPRouteDestination, error) {
+	omcplog.V(4).Info("func createVsHttpRoute Called")
 	// 서비스가 있는지 체크
 	svcDomain := ovsHttpRoute.Destination.Host
 	svcDomainSplit := strings.Split(svcDomain, ".")
@@ -367,6 +370,7 @@ func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i 
 		svcNS = svcDomainSplit[1]
 	}
 
+	omcplog.V(4).Info("locCluster: locCluster")
 	if locCluster != nil {
 		svc := &corev1.Service{}
 		err := cm.Cluster_genClients[locCluster.clusterName].Get(context.TODO(), svc, svcNS, svcName)
@@ -378,6 +382,18 @@ func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i 
 			fmt.Println(err)
 			return nil, err
 		}
+		listOption := &client.ListOptions{
+			LabelSelector: labels.SelectorFromSet(
+				svc.Spec.Selector,
+			),
+		}
+		podList := &corev1.PodList{}
+		err = cm.Cluster_genClients[locCluster.clusterName].List(context.TODO(), podList, svcNS, listOption)
+		if len(podList.Items) == 0 {
+			fmt.Println("!!!!", locCluster.clusterName, " is Not Exist Pod about Svc: '", svcName, "(", svcNS, ")', LabelSelector: '", svc.Spec.Selector, "'")
+			return nil, nil
+		}
+
 	}
 
 	vsHttpRoute := &networkingv1alpha3.HTTPRouteDestination{}
@@ -402,8 +418,21 @@ var SERVER_IP = os.Getenv("GRPC_SERVER")
 var SERVER_PORT = os.Getenv("GRPC_PORT")
 var grpcClient = protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
-func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegion, fromZone, ns string) {
+func checkClusterShapeChanged(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination) []*networkingv1alpha3.HTTPRouteDestination {
 
+	resultVsHttpRoutes := []*networkingv1alpha3.HTTPRouteDestination{}
+	for _, vsHttpRoute := range vsHttpRoutes {
+		clusterName := vsHttpRoute.Destination.Subset
+
+		if _, ok := cm.Cluster_genClients[clusterName]; ok {
+			resultVsHttpRoutes = append(resultVsHttpRoutes, vsHttpRoute)
+		}
+	}
+	return resultVsHttpRoutes
+
+}
+func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegion, fromZone, ns string) {
+	omcplog.V(4).Info("func setWeight Called")
 	clusterWeight := make(map[string]float64)
 	var clusterWeightSum float64 = 0
 
@@ -449,7 +478,7 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 
 			var cluster_X_TotalWeight float64 = 0
 
-			podNodeMatchFind := false
+			//podNodeMatchFind := false
 			for _, pod := range podList.Items {
 
 				for _, node := range nodeList.Items {
@@ -457,7 +486,7 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 					// 	continue
 					// }
 					if pod.Spec.NodeName == node.Name {
-						podNodeMatchFind = true
+						//podNodeMatchFind = true
 
 						toRegion := node.Labels["topology.kubernetes.io/region"]
 						toZone := node.Labels["topology.kubernetes.io/zone"]
@@ -483,9 +512,9 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 						break
 					}
 				}
-				if podNodeMatchFind {
-					break
-				}
+				// if podNodeMatchFind {
+				// 	break
+				// }
 
 			}
 			if cluster_X_TotalWeight != 0 {
@@ -503,6 +532,7 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 	var totalWeight int32 = 0
 	var orgClusterPrimeNumbers []ClusterPrimeNumber
 
+	omcplog.V(4).Info("Start Weight Calculation")
 	for _, vsHttpRoute := range vsHttpRoutes {
 
 		clusterName := vsHttpRoute.Destination.Subset
@@ -510,17 +540,23 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 		if clusterName == "" {
 			return
 		}
+		omcplog.V(4).Info("clusterName: ", clusterName)
 		orgWeight := clusterWeight[clusterName] / clusterWeightSum * 100
+		omcplog.V(4).Info("clusterWeight[clusterName]: ", clusterWeight[clusterName])
+		omcplog.V(4).Info("clusterWeightSum: ", clusterWeightSum)
+		omcplog.V(4).Info("orgWeight: ", orgWeight)
 		var primeNumber float64 = orgWeight - float64(int(orgWeight))
 
 		orgClusterPrimeNumbers = append(orgClusterPrimeNumbers, ClusterPrimeNumber{clusterName, primeNumber, 0})
 
 		weight := int32(math.Floor(orgWeight))
 		vsHttpRoute.Weight = weight
+		omcplog.V(4).Info("vsHttpRoute.Weight : ", weight)
 
 		totalWeight += weight
 
 	}
+	omcplog.V(4).Info("totalWeight : ", totalWeight)
 
 	// weight 스케일링된 값을 100으로 맞춰주는 알고리즘
 	sort.Slice(orgClusterPrimeNumbers, func(i, j int) bool {
@@ -574,7 +610,7 @@ func SyncWeight(quit, quitok chan bool) {
 			//vsList := &v1alpha3.VirtualServiceList{}
 			//err := cm.Host_client.List(context.TODO(), vsList, corev1.NamespaceAll)
 
-			if err != nil && errors.IsNotFound(err) {
+			if len(vsList.Items) == 0 {
 				fmt.Println(err)
 				time.Sleep(time.Second * 5)
 
@@ -596,6 +632,9 @@ func SyncWeight(quit, quitok chan bool) {
 					if _, ok := http.Match[0].Headers["client-zone"]; !ok {
 						continue
 					}
+
+					omcplog.V(4).Info("SyncWeight setWeight : ", vs.Name, vs.Namespace)
+
 					exactRegion := http.Match[0].Headers["client-region"].GetExact()
 					exactZone := http.Match[0].Headers["client-zone"].GetExact()
 					setWeight(vs.Spec.Http[k].Route, exactRegion, exactZone, vs.Namespace)

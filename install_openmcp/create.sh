@@ -1,5 +1,27 @@
 #!/bin/bash
-pip install yq
+
+
+REQUIRED_PKG=python-pip
+PKG_OK=$(dpkg-query -W --showformat='${Status}\n' $REQUIRED_PKG|grep "install ok installed")
+if [ "" = "$PKG_OK" ]; then
+  echo "No $REQUIRED_PKG. Setting up $REQUIRED_PKG."
+  sudo apt-get --yes install $REQUIRED_PKG 
+fi
+
+REQUIRED_PKG=nfs-kernel-server
+PKG_OK=$(dpkg-query -W --showformat='${Status}\n' $REQUIRED_PKG|grep "install ok installed")
+if [ "" = "$PKG_OK" ]; then
+  echo "No $REQUIRED_PKG. Setting up $REQUIRED_PKG."
+  sudo apt-get --yes install $REQUIRED_PKG 
+fi
+
+PYTHON_REQUIRED_PKG=yq
+PKG_OK=$(pip list --disable-pip-version-check | grep $PYTHON_REQUIRED_PKG)
+if [ "" = "$PKG_OK" ]; then
+  echo "No $PYTHON_REQUIRED_PKG. Setting up $PYTHON_REQUIRED_PKG."
+  sudo pip install $PYTHON_REQUIRED_PKG 
+fi
+
 
 CONFFILE=settings.yaml
 
@@ -57,7 +79,24 @@ fi
 
 # Init Memeber Dir NFS Setting
 INIT_MEMBER_DIR=`pwd`/member
-echo "$INIT_MEMBER_DIR *(rw,no_root_squash,sync)" >> /etc/exports
+
+NFS_OK=$(grep -r '/root/.kube' /etc/exports)
+if [ "" = "$NFS_OK" ]; then
+  echo "Not found NFS Setting. Add Export '/root/.kube' in /etc/exports"
+  echo "/root/.kube *(rw,no_root_squash,sync,no_subtree_check)" >> /etc/exports
+fi
+
+NFS_OK2=$(grep -r \'$INIT_MEMBER_DIR\' /etc/exports)
+if [ "" = "$NFS_OK2" ]; then
+  echo "Not found NFS Setting. ADd Export '$INIT_MEMBER_DIR' in /etc/exports"
+  echo "$INIT_MEMBER_DIR *(rw,no_root_squash,sync,no_subtree_check)" >> /etc/exports
+fi
+
+NFS_OK3=$(grep -r '/home/nfs' /etc/exports)
+if [ "" = "$NFS_OK3" ]; then
+  echo "Not found NFS Setting. Add Export '/home/nfs' in /etc/exports"
+  echo "/home/nfs *(rw,no_root_squash,sync,no_subtree_check)" >> /etc/exports
+fi
 exportfs -a
 
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/1.create.sh
@@ -101,6 +140,7 @@ sed -i 's|REPLACE_GRPCIP|'\"$OMCP_IP\"'|g' master/openmcp-loadbalancing-controll
 
 sed -i 's|REPLACE_INIT_MEMBER_DIR|'\"$INIT_MEMBER_DIR\"'|g' master/openmcp-cluster-manager/pv.yaml 
 sed -i 's|REPLACE_OMCPIP|'\"$OMCP_IP\"'|g' master/openmcp-cluster-manager/pv.yaml
+sed -i 's|REPLACE_OMCPIP|'\"$OMCP_IP\"'|g'master/openmcp-apiserver/pv.yaml
 
 sed -i 's|REPLACE_PORT|'$OAS_PORT'|g' master/openmcp-apiserver/service.yaml
 sed -i 's|REPLACE_PORT|'$OCM_PORT'|g' master/openmcp-cluster-manager/service.yaml
@@ -126,7 +166,7 @@ sed -i 's|REPLACE_INFLUXDBPORT|'\"$INFLUXDB_PORT\"'|g' master/openmcp-metric-col
 sed -i 's|REPLACE_INFLUXDBPORT|'\"$INFLUXDB_PORT\"'|g' master/openmcp-apiserver/operator.yaml
 
 sed -i 's|REPLACE_API_KEY|'\"$API_APP_KEY\"'|g' master/openmcp-apiserver/operator.yaml
-sed -i 's|REPLACE_API_USER_NAME|'\"$API_USER_Name\"'|g' master/openmcp-apiserver/operator.yaml
+sed -i 's|REPLACE_API_USER_NAME|'\"$API_USER_NAME\"'|g' master/openmcp-apiserver/operator.yaml
 sed -i 's|REPLACE_API_USER_PW|'\"$API_USER_PW\"'|g' master/openmcp-apiserver/operator.yaml
 
 sed -i 's|REPLACE_NFSIP|'\"$OMCP_IP\"'|g' master/influxdb/pv.yaml
@@ -152,3 +192,4 @@ if [ $OMCP_INSTALL_TYPE == "learning" ]; then
 fi
 
 
+echo "Complete Make Dir(master/member)" 

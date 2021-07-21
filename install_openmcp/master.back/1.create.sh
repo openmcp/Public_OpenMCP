@@ -61,6 +61,10 @@ echo "--- openmcp-loadbalancing-controller"
 kubectl create -f openmcp-loadbalancing-controller/.
 echo "--- openmcp-sync-controller"
 kubectl create -f openmcp-sync-controller/.
+echo "--- openmcp-job-controller"
+kubectl apply -f openmcp-job-controller/.
+echo "--- openmcp-namespace-controller"
+kubectl apply -f openmcp-namespace-controller/.
 echo "--- metallb"
 kubectl create -f metallb/.
 echo "--- configmap"

@@ -1,14 +1,25 @@
 package openmcpcluster
 
 import (
+	"context"
+	"fmt"
+	"io/ioutil"
+	"openmcp/openmcp/apis"
+	clusterv1alpha1 "openmcp/openmcp/apis/cluster/v1alpha1"
+	cobrautil "openmcp/openmcp/omcpctl/util"
+	"openmcp/openmcp/omcplog"
+	"openmcp/openmcp/util"
+	"openmcp/openmcp/util/clusterManager"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
-	"context"
-	"fmt"
 	"github.com/jinzhu/copier"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -18,18 +29,8 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"openmcp/openmcp/apis"
-	clusterv1alpha1 "openmcp/openmcp/apis/cluster/v1alpha1"
-	cobrautil "openmcp/openmcp/omcpctl/util"
-	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/util"
-	"openmcp/openmcp/util/clusterManager"
-	"os"
-	"path/filepath"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
-	"strings"
-	"time"
 )
 
 var cm *clusterManager.ClusterManager
@@ -106,9 +107,14 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	}
 
 	//조건 추가 - STATUS 비교
-	if clusterInstance.Spec.JoinStatus == "JOIN" && clusterInstance.Spec.MetalLBRange.AddressFrom != "IP_ADDRESS_FROM" && clusterInstance.Spec.MetalLBRange.AddressTo != "IP_ADDRESS_TO" {
+	if clusterInstance.Spec.JoinStatus == "JOIN" {
+		omcplog.V(2).Info(clusterInstance.Name + " [ JOIN ]")
 
-		omcplog.V(4).Info(clusterInstance.Name + " [ JOIN ]")
+	} else if clusterInstance.Spec.JoinStatus == "UNJOIN" {
+		omcplog.V(2).Info(clusterInstance.Name + " [ UNJOIN ]")
+
+	} else if clusterInstance.Spec.JoinStatus == "JOINING" && clusterInstance.Spec.MetalLBRange.AddressFrom != "IP_ADDRESS_FROM" && clusterInstance.Spec.MetalLBRange.AddressTo != "IP_ADDRESS_TO" {
+		omcplog.V(2).Info(clusterInstance.Name + " [ JOINING ] Start")
 		omcplog.V(4).Info("Metallb Configmap (", clusterInstance.Spec.MetalLBRange.AddressFrom, ",", clusterInstance.Spec.MetalLBRange.AddressTo, ")")
 		joinCheck := MergeConfigAndJoin(*clusterInstance)
 
@@ -127,10 +133,17 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 			InstallInitModule(moduleDirectory, clusterInstance.Name, clusterInstance.Spec.MetalLBRange.AddressFrom, clusterInstance.Spec.MetalLBRange.AddressTo)
 			omcplog.V(4).Info("--- JOIN Complete ---")
-		}
 
-	} else if clusterInstance.Spec.JoinStatus == "UNJOIN" {
-		omcplog.V(4).Info(clusterInstance.Name + " [ UNJOIN ]")
+			clusterInstance.Spec.JoinStatus = "JOIN"
+			err = r.live.Update(context.TODO(), clusterInstance)
+			if err != nil {
+				omcplog.V(0).Info("[" + clusterInstance.Name + "] Error Status Not Changed (JOINING -> JOIN): " + err.Error())
+			} else {
+				omcplog.V(2).Info(clusterInstance.Name + " [ JOINING ] Done.")
+			}
+		}
+	} else if clusterInstance.Spec.JoinStatus == "UNJOINING" {
+		omcplog.V(2).Info(clusterInstance.Name + " [ UNJOINING ] Start")
 
 		//config 파일 확인 (클러스터 조인 유무)
 		memberkc := &cobrautil.KubeConfig{}
@@ -177,6 +190,14 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		} else {
 			omcplog.V(4).Info("Not Exists Cluster Info")
 		}
+		clusterInstance.Spec.JoinStatus = "UNJOIN"
+		err = r.live.Update(context.TODO(), clusterInstance)
+		if err != nil {
+			omcplog.V(0).Info("[" + clusterInstance.Name + "] Error Status Not Changed (UNJOINING -> UNJOIN): " + err.Error())
+		} else {
+			omcplog.V(2).Info(clusterInstance.Name + " [ UNJOINING ] Done.")
+		}
+
 	} else {
 		omcplog.V(4).Info("NOT Ready")
 	}

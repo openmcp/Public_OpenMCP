@@ -28,6 +28,9 @@ spec:
     app: productpage
   template:
     spec:
+      # LoadBalancer Only for Openmcp DNS
+      # default clusterIP beacause OpenMCP Loadbalancer Traffic in
+      type: LoadBalancer
       ports:
       - port: 9080
         name: http

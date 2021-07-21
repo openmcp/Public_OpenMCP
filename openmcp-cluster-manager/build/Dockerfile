@@ -4,11 +4,6 @@ ENV OPERATOR=/usr/local/bin/openmcp-cluster-manager \
     USER_UID=root \
     USER_NAME=openmcp-cluster-manager
 
-# install operator binary
-COPY _output/bin/openmcp-cluster-manager ${OPERATOR}
-
-COPY bin /usr/local/bin
-
 RUN microdnf install unzip openssl
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -16,6 +11,11 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 RUN unzip awscliv2.zip
 
 RUN ./aws/install
+
+# install operator binary
+COPY _output/bin/openmcp-cluster-manager ${OPERATOR}
+
+COPY bin /usr/local/bin
 
 RUN  /usr/local/bin/user_setup
 

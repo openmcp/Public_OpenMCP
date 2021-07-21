@@ -12,7 +12,7 @@ else
 
   kubectl get openmcpcluster \$1 -n openmcp -o yaml | sed "s/IP_ADDRESS_FROM/\$address_from/g" | kubectl replace -f -
   kubectl get openmcpcluster \$1 -n openmcp -o yaml | sed "s/IP_ADDRESS_TO/\$address_to/g" | kubectl replace -f -
-  kubectl get openmcpcluster \$1 -n openmcp -o yaml | sed "s/UNJOIN/JOIN/g" | kubectl replace -f -
+  kubectl get openmcpcluster \$1 -n openmcp -o yaml | sed "s/UNJOIN/JOINING/g" | kubectl replace -f -
 fi
 
 EOF

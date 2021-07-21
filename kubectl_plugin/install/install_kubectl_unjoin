@@ -7,7 +7,7 @@ if [ "\$1" == "" ]; then
   echo "ex) kubectl join cluster1 JOIN"
   exit 1
 else
-  kubectl get openmcpcluster \$1 -n openmcp -o yaml | sed "s/JOIN/UNJOIN/g" | kubectl replace -f -
+  kubectl get openmcpcluster \$1 -n openmcp -o yaml | sed "s/JOIN/UNJOINING/g" | kubectl replace -f -
 fi
 
 EOF

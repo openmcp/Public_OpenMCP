@@ -23,6 +23,7 @@ import (
 	"openmcp/openmcp/openmcp-dns-controller/src/controller/domain"
 	"openmcp/openmcp/openmcp-dns-controller/src/controller/externalDNS"
 	"openmcp/openmcp/openmcp-dns-controller/src/controller/ingressDNS"
+	"openmcp/openmcp/openmcp-dns-controller/src/controller/openmcpservice"
 	"openmcp/openmcp/openmcp-dns-controller/src/controller/serviceDNS"
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/logLevel"
@@ -76,6 +77,10 @@ func main() {
 		if err != nil {
 			omcplog.V(0).Info("err New Controller - ExternalDNS", err)
 		}
+		cont_openmcpservice, err := openmcpservice.NewController(live, ghosts, namespace, cm)
+		if err != nil {
+			omcplog.V(0).Info("err New Controller - ExternalDNS", err)
+		}
 		cont_reshape, err := reshape.NewController(live, ghosts, namespace, cm)
 		if err != nil {
 			omcplog.V(0).Info("err New Controller - Reshape", err)
@@ -91,6 +96,7 @@ func main() {
 		m.AddController(cont_ingressDNS)
 		m.AddController(cont_dnsEndpoint)
 		m.AddController(cont_externalDNS)
+		m.AddController(cont_openmcpservice)
 		m.AddController(cont_reshape)
 		m.AddController(contLoglevel)
 
