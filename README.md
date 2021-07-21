@@ -253,7 +253,8 @@ Before execute join command, you must set KUBECONFIG file and ~/.hosts file.
 
 ```bash
 $ cd kubectl-plugin
-$ ./install_kubectl_request-join
+$ chmod +x kubectl-request_join
+$ cp kubectl-request_join /usr/local/bin
 $ kubectl request-join openmcp:<PORT>
 ```
   
@@ -267,16 +268,23 @@ cluster1   UNJOIN
 cluster2   UNJOIN
 
 ```
-  
-### (6) Join sub-cluster to OpenMCP [In openmcp-cluster]
+  $ chmod +x kubectl-join
+$ cp kubectl-join /usr/local/bin
+### (6) Join sub-cluster to OpenMCP [In openmcp-clu$ chmod +x kubectl-join
+$ cp kubectl-join /usr/local/binster]
 
-Install 'kubectl join' plugin on sub-cluster.
-Before execute join command, you must set KUBECONFIG file and ~/.hosts file. 
+Install 'kubectl join' plugi$ chmod +x kubectl-join
+$ cp kubectl-join /usr/local/binn on sub-cluster.
+Before execute join command, you must set KUBECONFIG f$ chmod +x kubectl-join
+$ cp kubectl-join /usr/local/binile and ~/.hosts file. $ chmod +x kubectl-join
+$ cp kubectl-join /usr/local/bin
 
 ```bash
 $ cd kubectl-plugin
-$ ./install_kubectl_join
-$ kubectl join <CLUSTERNAME>
+$ chmod +x kubectl-join
+$ cp kubectl-join /usr/local/bin
+$ kubectl join <CLUSTERNAME>$ chmod +x kubectl-join
+$ cp kubectl-join /usr/local/bin
 ```
 
 ### (7) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]
@@ -318,11 +326,12 @@ cluster3     asia-east1-a   1.16.13-gke.1   35.201.135.105  e2-medium     1.16.1
 
 ### (4) Register GKE cluster to OpenMCP
 
-Install 'kubectl register' plugin on OpenMCP.
+Install 'kubectl regist' plugin on OpenMCP.
 ```
 $ cd kubectl-plugin
-$ ./install_kubectl_register
-$ kubectl register GKS ${GKE_CLUSTER_NAME} ${OPENMCP_IP_PORT}
+$ chmod +x kubectl-regist_join
+$ cp kubectl-regist_join /usr/local/bin
+$ kubectl regist-join GKE ${GKE_CLUSTER_NAME} ${OPENMCP_IP_PORT}
 ```
 
 ### (5) Join GKE cluster to OpenMCP
