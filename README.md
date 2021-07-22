@@ -342,7 +342,7 @@ $ kubectl join <CLUSTERNAME>
 ## 3. How to join EKS Cluster to OpenMCP
 
 ### (1) Install AWS CLI
-[https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/getting-started-console.html](https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/getting-started-console.html)
+[https://docs.aws.amazon.com/cli/latest/userguide/install-linux.html](https://docs.aws.amazon.com/cli/latest/userguide/install-linux.html)
 
 ### (2) aws configure
 
