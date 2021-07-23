@@ -49,8 +49,9 @@
 
 Before you install OpenMCP, Federation and OpenMCP ExternalServer are required.
 1. GO v1.14
-1. Install [federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) (Version: 0.8.1)
-1. [External](https://github.com/openmcp/external) Server
+1. [Install federation](https://github.com/kubernetes-sigs/kubefed/blob/master/docs/userguide.md) (Version: 0.8.1)
+1. [ExternalServer](https://github.com/openmcp/external)
+1. [flannel CNI](https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml)
 
 -----------------------------------------------------------------------------------------------
 [ Test Environment ]
@@ -341,7 +342,7 @@ $ kubectl join <CLUSTERNAME>
 ## 3. How to join EKS Cluster to OpenMCP
 
 ### (1) Install AWS CLI
-[https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/getting-started-console.html](https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/getting-started-console.html)
+[https://docs.aws.amazon.com/cli/latest/userguide/install-linux.html](https://docs.aws.amazon.com/cli/latest/userguide/install-linux.html)
 
 ### (2) aws configure
 

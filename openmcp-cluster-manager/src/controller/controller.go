@@ -108,6 +108,15 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		return reconcile.Result{}, err
 	}
 
+	metallbrangeCheck := "false"
+	if clusterInstance.Spec.ClusterPlatformType == "GKE" || clusterInstance.Spec.ClusterPlatformType == "AKS" || clusterInstance.Spec.ClusterPlatformType == "EKS" {
+		metallbrangeCheck = "true"
+	} else {
+		if clusterInstance.Spec.MetalLBRange.AddressFrom != "" && clusterInstance.Spec.MetalLBRange.AddressTo != "" {
+			metallbrangeCheck = "true"
+		}
+	}
+
 	//조건 추가 - STATUS 비교
 	if clusterInstance.Spec.JoinStatus == "JOIN" {
 		omcplog.V(2).Info(clusterInstance.Name + " [ JOIN ]")
@@ -115,15 +124,22 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	} else if clusterInstance.Spec.JoinStatus == "UNJOIN" {
 		omcplog.V(2).Info(clusterInstance.Name + " [ UNJOIN ]")
 
-	} else if clusterInstance.Spec.JoinStatus == "JOINING" && clusterInstance.Spec.MetalLBRange.AddressFrom != "" && clusterInstance.Spec.MetalLBRange.AddressTo != "" {
+	} else if clusterInstance.Spec.JoinStatus == "JOINING" && metallbrangeCheck == "true" {
 
 		omcplog.V(2).Info(clusterInstance.Name + " [ JOINING ] Start")
-		omcplog.V(4).Info("Metallb Configmap (", clusterInstance.Spec.MetalLBRange.AddressFrom, ",", clusterInstance.Spec.MetalLBRange.AddressTo, ")")
+		//omcplog.V(4).Info("Metallb Configmap (", clusterInstance.Spec.MetalLBRange.AddressFrom, ",", clusterInstance.Spec.MetalLBRange.AddressTo, ")")
 		joinCheck := MergeConfigAndJoin(*clusterInstance)
 
 		if joinCheck == "TRUE" {
 			omcplog.V(4).Info("OpenMCP Module Deploy---")
-			moduleDirectory := []string{"namespace", "custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap", "istio"}
+
+			var moduleDirectory []string
+			if clusterInstance.Spec.ClusterPlatformType == "GKE" || clusterInstance.Spec.ClusterPlatformType == "AKS" || clusterInstance.Spec.ClusterPlatformType == "EKS" {
+				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap", "istio"}
+			} else {
+				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap", "istio"}
+			}
+
 			for i, dirname := range moduleDirectory {
 				moduleDirectory[i] = "/init/" + dirname
 			}
@@ -140,9 +156,19 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			clusterInstance.Spec.JoinStatus = "JOIN"
 			err = r.live.Update(context.TODO(), clusterInstance)
 			if err != nil {
-				omcplog.V(0).Info("[" + clusterInstance.Name + "] Error Status Not Changed (JOINING -> JOIN): " + err.Error())
+				err = r.live.Update(context.TODO(), clusterInstance)
+				if err != nil {
+					err = r.live.Update(context.TODO(), clusterInstance)
+					if err != nil {
+						omcplog.V(0).Info("[" + clusterInstance.Name + "] Error Status Not Changed (JOINING -> JOIN): " + err.Error())
+					} else {
+						omcplog.V(2).Info("Update " + clusterInstance.Name + " status to JOIN")
+					}
+				} else {
+					omcplog.V(2).Info("Update " + clusterInstance.Name + " status to JOIN")
+				}
 			} else {
-				omcplog.V(2).Info(clusterInstance.Name + " [ JOINING ] Done.")
+				omcplog.V(2).Info("Update " + clusterInstance.Name + " status to JOIN")
 			}
 		}
 	} else if clusterInstance.Spec.JoinStatus == "UNJOINING" {
@@ -183,7 +209,12 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 		if unjoinCheck != "" {
 			omcplog.V(4).Info("OpenMCP Module Delete---")
-			moduleDirectory := []string{"istio", "custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap", "namespace"}
+			var moduleDirectory []string
+			if clusterInstance.Spec.ClusterPlatformType == "GKE" || clusterInstance.Spec.ClusterPlatformType == "AKS" || clusterInstance.Spec.ClusterPlatformType == "EKS" {
+				moduleDirectory = []string{"custom-metrics-apiserver", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap", "istio", "namespace"}
+			} else {
+				moduleDirectory = []string{"custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap", "istio", "namespace"}
+			}
 			for i, dirname := range moduleDirectory {
 				moduleDirectory[i] = "/init/" + dirname
 			}
@@ -204,8 +235,9 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		err = r.live.Update(context.TODO(), clusterInstance)
 		if err != nil {
 			omcplog.V(0).Info("[" + clusterInstance.Name + "] Error Status Not Changed (UNJOINING -> UNJOIN): " + err.Error())
+
 		} else {
-			omcplog.V(2).Info(clusterInstance.Name + " [ UNJOINING ] Done.")
+			omcplog.V(2).Info("Update " + clusterInstance.Name + " status to UNJOIN")
 		}
 
 	} else {
@@ -242,13 +274,18 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 					InstallInitModule([]string{dirname + "/" + f.Name()}, clustername, ipaddressfrom, ipaddressto)
 				} else {
 					if strings.Contains(f.Name(), "istio_install.sh") {
-						util.CmdExec2("cp " + dirname + "/istio_install.sh " + dirname + "/istio_install-" + clustername + ".sh")
-						util.CmdExec2("sed -i 's|REPLACE_DIRECTORY|" + dirname + "|g' " + dirname + "/istio_install-" + clustername + ".sh")
-						util.CmdExec2("sed -i 's|REPLACE_CLUSTERNAME|" + clustername + "|g' " + dirname + "/istio_install-" + clustername + ".sh")
 						util.CmdExec2("chmod 755 " + dirname + "/gen-eastwest-gateway.sh")
-						util.CmdExec2("chmod 755 " + dirname + "/istio_install-" + clustername + ".sh")
-						util.CmdExec2(dirname + "/istio_install-" + clustername + ".sh")
-						util.CmdExec2("rm " + dirname + "/istio_install-" + clustername + ".sh")
+						util.CmdExec2("chmod 755 " + dirname + "/istio_install.sh")
+						util.CmdExec2(dirname + "/istio_install.sh " + dirname + " " + clustername)
+						/*
+							util.CmdExec2("cp " + dirname + "/istio_install.sh " + dirname + "/istio_install-" + clustername + ".sh")
+							util.CmdExec2("sed -i 's|REPLACE_DIRECTORY|" + dirname + "|g' " + dirname + "/istio_install-" + clustername + ".sh")
+							util.CmdExec2("sed -i 's|REPLACE_CLUSTERNAME|" + clustername + "|g' " + dirname + "/istio_install-" + clustername + ".sh")
+							util.CmdExec2("chmod 755 " + dirname + "/gen-eastwest-gateway.sh")
+							util.CmdExec2("chmod 755 " + dirname + "/istio_install-" + clustername + ".sh")
+							util.CmdExec2(dirname + "/istio_install-" + clustername + ".sh")
+							util.CmdExec2("rm " + dirname + "/istio_install-" + clustername + ".sh")
+						*/
 						fmt.Println("*** ", dirname+" created")
 					}
 					if filepath.Ext(f.Name()) == ".yaml" || filepath.Ext(f.Name()) == ".yml" {
@@ -309,6 +346,35 @@ func UninstallInitModule(directory []string, clustername string) {
 				} else {
 					if filepath.Ext(f.Name()) == ".yaml" || filepath.Ext(f.Name()) == ".yml" {
 						if strings.Contains(dirname, "istio") {
+
+						} else if strings.Contains(dirname, "namespace") {
+							ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
+							go func() {
+								util.CmdExec2("/usr/local/bin/kubectl delete -f " + dirname + "/" + f.Name() + " --context " + clustername)
+								cancel()
+							}()
+
+							select {
+							case <-time.After(60 * time.Second):
+								//fmt.Println("fail to delete ns")
+								cancel()
+							case <-ctx.Done():
+								//fmt.Println("success to delete ns")
+							}
+
+							err_ctx := ctx.Err()
+
+							if err_ctx == context.DeadlineExceeded {
+								fmt.Println(ctx.Err())
+								fmt.Println("fail to delete ns")
+								namespace := strings.TrimSuffix(f.Name(), ".yaml")
+								fmt.Println("Force Delete Namespace [" + namespace + "]")
+								util.CmdExec2("chmod 755 /init/delete_ns.sh")
+								util.CmdExec2("/init/delete_ns.sh " + namespace + " " + clustername)
+							} else if err_ctx == context.Canceled {
+								fmt.Println(ctx.Err())
+								fmt.Println("success to delete ns")
+							}
 
 						} else {
 							util.CmdExec2("/usr/local/bin/kubectl delete -f " + dirname + "/" + f.Name() + " --context " + clustername)
@@ -686,15 +752,40 @@ func UnjoinAndDeleteConfig(memberkc *cobrautil.KubeConfig, openmcpkc *cobrautil.
 		//1. DELETE cluster role binding / cluster role / namespace
 		err_deletecrb := cluster_client.RbacV1().ClusterRoleBindings().Delete(context.TODO(), "kubefed-controller-manager:"+target_name+"-openmcp", metav1.DeleteOptions{})
 		err_deletecr := cluster_client.RbacV1().ClusterRoles().Delete(context.TODO(), "kubefed-controller-manager:"+target_name+"-openmcp", metav1.DeleteOptions{})
-		err_deletens := cluster_client.CoreV1().Namespaces().Delete(context.TODO(), "kube-federation-system", metav1.DeleteOptions{})
+		//err_deletens := cluster_client.CoreV1().Namespaces().Delete(context.TODO(), "kube-federation-system", metav1.DeleteOptions{})
 
-		if err_deletecrb == nil && err_deletecr == nil && err_deletens == nil {
+		ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
+		go func() {
+			util.CmdExec2("/usr/local/bin/kubectl delete ns kube-federation-system --context " + target_name)
+			cancel()
+		}()
+
+		select {
+		case <-time.After(60 * time.Second):
+			fmt.Println("fail to delete ns kube-federation-system")
+			cancel()
+		case <-ctx.Done():
+			fmt.Println("success to delete ns kube-federation-system")
+		}
+
+		err_ctx := ctx.Err()
+
+		if err_ctx == context.DeadlineExceeded {
+			fmt.Println(ctx.Err())
+			fmt.Println("Force Delete Namespace [kube-federation-system]")
+			util.CmdExec2("chmod 755 /init/delete_ns.sh")
+			util.CmdExec2("/init/delete_ns.sh kube-federation-system " + target_name)
+		} else if err_ctx == context.Canceled {
+			fmt.Println(ctx.Err())
+		}
+
+		if err_deletecrb == nil && err_deletecr == nil {
 			omcplog.V(4).Info("[Step 1] DELETE CR/CRB/NS Resource in ", target_name)
 		} else {
 			omcplog.V(4).Info("Fail to DELETE CR/CRB/NS Resource in ", target_name)
 			omcplog.V(4).Info("err_deletecrb: ", err_deletecrb)
 			omcplog.V(4).Info("err_deletecr: ", err_deletecr)
-			omcplog.V(4).Info("err_deletens: ", err_deletens)
+			//omcplog.V(4).Info("err_deletens: ", err_deletens)
 		}
 
 		kfc_instance := &fedv1b1.KubeFedCluster{}

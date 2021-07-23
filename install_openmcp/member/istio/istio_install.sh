@@ -1,7 +1,7 @@
 #!/bin/bash
 
-DIR=REPLACE_DIRECTORY
-CTX=REPLACE_CLUSTERNAME
+DIR=$1
+CTX=$2
 
 # istio 클러스터간 통신을 위해 $CTX에 인증서 배포
 #pushd certs
@@ -28,10 +28,10 @@ istioctl x create-remote-secret \
 
 
 # Configure $CTX as a remote
-export DISCOVERY_ADDRESS=$(kubectl \
-    --context=openmcp \
-    -n istio-system get svc istio-eastwestgateway \
-    -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+#export DISCOVERY_ADDRESS=$(kubectl \
+#    --context=openmcp \
+#    -n istio-system get svc istio-eastwestgateway \
+#    -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
 # $CTX에 대한 Istio configuration 을 만듭니다.
 cat <<EOF > $CTX.yaml
@@ -49,7 +49,7 @@ spec:
       multiCluster:
         clusterName: $CTX
       network: network-$CTX
-      remotePilotAddress: ${DISCOVERY_ADDRESS}
+      remotePilotAddress: 119.65.195.180
 EOF
 
 # $CTX에 configuration 적용
