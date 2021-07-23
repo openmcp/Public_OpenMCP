@@ -3,14 +3,18 @@ kind: Service
 metadata:
   name: openmcp-analytic-engine
   namespace: openmcp
+  annotations:
+    metallb.universe.tf/allow-shared-ip: openmcp
   labels:
     name: openmcp-analytic-engine
+  
 spec:
+  loadBalancerIP: 10.0.3.191
   type: LoadBalancer
   ports:
   - port: 2050
     targetPort: 2050
-    nodePort: 32050
+    nodePort: 30002
     protocol: TCP
   selector:
     name: openmcp-analytic-engine

@@ -29,46 +29,47 @@ import (
 	openmcpservice "openmcp/openmcp/openmcp-resource-controller/openmcp-service-controller/src/controller"
 	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 func main() {
 	logLevel.KetiLogInit()
-	for {
-		cm := clusterManager.NewClusterManager()
 
-		host_ctx := "openmcp"
-		namespace := "openmcp"
+	cm := clusterManager.NewClusterManager()
 
-		host_cfg := cm.Host_config
-		live := cluster.New(host_ctx, host_cfg, cluster.Options{})
+	host_ctx := "openmcp"
+	namespace := corev1.NamespaceAll
 
-		ghosts := []*cluster.Cluster{}
+	host_cfg := cm.Host_config
+	live := cluster.New(host_ctx, host_cfg, cluster.Options{})
 
-		for _, ghost_cluster := range cm.Cluster_list.Items {
-			ghost_ctx := ghost_cluster.Name
-			ghost_cfg := cm.Cluster_configs[ghost_ctx]
+	ghosts := []*cluster.Cluster{}
 
-			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
+	for _, ghost_cluster := range cm.Cluster_list.Items {
+		ghost_ctx := ghost_cluster.Name
+		ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
-			ghosts = append(ghosts, ghost)
-		}
-		for _, ghost := range ghosts {
-			fmt.Println(ghost.Name)
-		}
-		co, _ := openmcpservice.NewController(live, ghosts, namespace, cm)
-		reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
-		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
+		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
 
-		m := manager.New()
-		m.AddController(co)
-		m.AddController(reshape_cont)
-		m.AddController(loglevel_cont)
+		ghosts = append(ghosts, ghost)
+	}
+	for _, ghost := range ghosts {
+		fmt.Println(ghost.Name)
+	}
+	co, _ := openmcpservice.NewController(live, ghosts, namespace, cm)
+	reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
+	loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
-		stop := reshape.SetupSignalHandler()
+	m := manager.New()
+	m.AddController(co)
+	m.AddController(reshape_cont)
+	m.AddController(loglevel_cont)
 
-		if err := m.Start(stop); err != nil {
-			log.Fatal(err)
-		}
+	stop := reshape.SetupSignalHandler()
+
+	if err := m.Start(stop); err != nil {
+		log.Fatal(err)
 	}
 
 }

@@ -8,6 +8,7 @@ import (
 	clusterv1alpha1 "openmcp/openmcp/apis/cluster/v1alpha1"
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"openmcp/openmcp/omcplog"
+	"openmcp/openmcp/openmcp-cluster-manager/src/resource"
 	"openmcp/openmcp/util"
 	"openmcp/openmcp/util/clusterManager"
 	"os"
@@ -20,6 +21,7 @@ import (
 	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"github.com/jinzhu/copier"
 	"gopkg.in/yaml.v2"
+
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -147,9 +149,15 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 		omcplog.V(2).Info(clusterInstance.Name + " [ UNJOINING ] Start")
 
+		// 그동안 OpenMCP리소스로 배포된 하위 리소스 제거
+		err := resource.DeleteSubResourceAll(clusterInstance.Name, cm)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+
 		//config 파일 확인 (클러스터 조인 유무)
 		memberkc := &cobrautil.KubeConfig{}
-		err := yaml.Unmarshal(clusterInstance.Spec.KubeconfigInfo, memberkc)
+		err = yaml.Unmarshal(clusterInstance.Spec.KubeconfigInfo, memberkc)
 		memberIP := memberkc.Clusters[0].Cluster.Server
 
 		openmcpkc := &cobrautil.KubeConfig{}

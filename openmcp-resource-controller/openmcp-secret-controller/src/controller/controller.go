@@ -11,30 +11,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package openmcpsecret 
+package controller
 
 import (
-	"admiralty.io/multicluster-controller/pkg/cluster"
-	"admiralty.io/multicluster-controller/pkg/controller"
-	"admiralty.io/multicluster-controller/pkg/reconcile"
-	"admiralty.io/multicluster-controller/pkg/reference"
 	"context"
 	"fmt"
-	"github.com/getlantern/deepcopy"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"openmcp/openmcp/apis"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strconv"
+
+	"admiralty.io/multicluster-controller/pkg/cluster"
+	"admiralty.io/multicluster-controller/pkg/controller"
+	"admiralty.io/multicluster-controller/pkg/reconcile"
+	"admiralty.io/multicluster-controller/pkg/reference"
+	"github.com/getlantern/deepcopy"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-
 var cm *clusterManager.ClusterManager
+
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
 	omcplog.V(4).Info("Function Called NewController")
 	cm = myClusterManager
@@ -54,14 +55,12 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 
 	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{})
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
-                return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
+		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
-
 
 	if err := co.WatchResourceReconcileObject(context.TODO(), live, &resourcev1alpha1.OpenMCPSecret{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
-
 
 	for _, ghost := range ghosts {
 		if err := co.WatchResourceReconcileController(context.TODO(), ghost, &corev1.Secret{}, controller.WatchOptions{}); err != nil {
@@ -76,15 +75,17 @@ type reconciler struct {
 	ghosts         []client.Client
 	ghostNamespace string
 }
+
 var i int = 0
+
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	omcplog.V(4).Info("Function Called Reconcile")
 	i += 1
-	omcplog.V(5).Info("********* [",i,"] *********")
-	omcplog.V(3).Info(req.Context," / ", req.Namespace," / ", req.Name)
+	omcplog.V(5).Info("********* [", i, "] *********")
+	omcplog.V(3).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
 
-        instance := &resourcev1alpha1.OpenMCPSecret{}
-        err := r.live.Get(context.TODO(), req.NamespacedName, instance)
+	instance := &resourcev1alpha1.OpenMCPSecret{}
+	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 
 	omcplog.V(3).Info("instance Name: ", instance.Name)
 	omcplog.V(3).Info("instance Namespace : ", instance.Namespace)
@@ -143,8 +144,6 @@ func (r *reconciler) secretForOpenMCPSecret(req reconcile.Request, m *resourcev1
 	return dep
 }
 
-
-
 func (r *reconciler) createSecret(req reconcile.Request, cm *clusterManager.ClusterManager, instance *resourcev1alpha1.OpenMCPSecret) error {
 	omcplog.V(4).Info("Function Called createSecret")
 	cluster_map := make(map[string]int32)
@@ -163,7 +162,6 @@ func (r *reconciler) createSecret(req reconcile.Request, cm *clusterManager.Clus
 	err := r.live.Status().Update(context.TODO(), instance)
 	return err
 }
-
 
 func (r *reconciler) updateSecret(req reconcile.Request, cm *clusterManager.ClusterManager, instance *resourcev1alpha1.OpenMCPSecret) error {
 	omcplog.V(4).Info("Function Called updateSecret")
@@ -186,7 +184,7 @@ func (r *reconciler) DeleteSecret(cm *clusterManager.ClusterManager, name string
 
 	for _, cluster := range cm.Cluster_list.Items {
 
-		omcplog.V(3).Info(cluster.Name," Delete Start")
+		omcplog.V(3).Info(cluster.Name, " Delete Start")
 
 		dep := &corev1.Secret{
 			TypeMeta: metav1.TypeMeta{
@@ -210,6 +208,7 @@ func (r *reconciler) DeleteSecret(cm *clusterManager.ClusterManager, name string
 }
 
 var syncIndex int = 0
+
 func (r *reconciler) sendSync(secret *corev1.Secret, command string, clusterName string) (string, error) {
 	omcplog.V(4).Info("Function Called sendSync")
 
@@ -237,5 +236,3 @@ func (r *reconciler) sendSync(secret *corev1.Secret, command string, clusterName
 	omcplog.V(0).Info(s.Name)
 	return s.Name, err
 }
-
-

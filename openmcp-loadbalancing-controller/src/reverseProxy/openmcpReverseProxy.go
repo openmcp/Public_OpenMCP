@@ -28,8 +28,8 @@ func ExtractIP(target string) (string, error) {
 	return ip, nil
 }
 
-func ReverseProxy() {
-	cm := clusterManager.NewClusterManager()
+func ReverseProxy(myClusterManager *clusterManager.ClusterManager) {
+	cm := myClusterManager
 
 	svc := &corev1.Service{}
 	err := cm.Host_client.Get(context.TODO(), svc, "istio-system", "istio-ingressgateway")

@@ -3,7 +3,10 @@ kind: Service
 metadata:
   name: openmcp-apiserver
   namespace: openmcp
+  annotations:
+    metallb.universe.tf/allow-shared-ip: openmcp
 spec:
+  loadBalancerIP: 10.0.3.191
   selector:
     name: openmcp-apiserver
   ports:
@@ -11,3 +14,5 @@ spec:
     targetPort: 8080
     nodePort: 30000
   type: LoadBalancer
+  #externalTrafficPolicy: Local
+

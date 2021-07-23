@@ -3,9 +3,12 @@ kind: Service
 metadata:
   name: openmcp-cluster-manager
   namespace: openmcp
+  annotations:
+    metallb.universe.tf/allow-shared-ip: openmcp
   labels:
     name: openmcp-cluster-manager
 spec:
+  loadBalancerIP: 10.0.3.191
   type: LoadBalancer
   ports:
   - port: 2052

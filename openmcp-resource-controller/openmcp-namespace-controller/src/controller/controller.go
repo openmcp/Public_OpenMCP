@@ -338,45 +338,76 @@ func CheckClusterNamespaceStatus(myClusterManager *clusterManager.ClusterManager
 			omcplog.V(2).Info("CheckClusterNamespaceStatus Start")
 			onsList, err := cm.Crd_client.OpenMCPNamespace("default").List(metav1.ListOptions{})
 			if err != nil {
-				fmt.Println(err)
+				omcplog.V(0).Info(err)
 			}
 			for _, ons := range onsList.Items {
 				nsStatusActiveAll := true
 				for _, cluster := range cm.Cluster_list.Items {
 					ns := &corev1.Namespace{}
 					err := cm.Cluster_genClients[cluster.Name].Get(context.TODO(), ns, corev1.NamespaceDefault, ons.Name)
-					if err != nil {
-						fmt.Println(err)
-					}
-					if ns.Status.Phase != "Active" {
+					if err != nil && errors.IsNotFound(err) {
+						omcplog.V(2).Info(err, ": Create Namespace In Cluster '", cluster.Name, "'")
+						newLabel := ons.Labels
+						if newLabel == nil {
+							newLabel = make(map[string]string)
+						}
+						newLabel["istio-injection"] = "enabled"
+
+						CreateNSInstance := &corev1.Namespace{
+							TypeMeta: metav1.TypeMeta{
+								Kind:       "Namespace",
+								APIVersion: "v1",
+							},
+							ObjectMeta: metav1.ObjectMeta{
+								Name:   ons.Name,
+								Labels: newLabel,
+							},
+						}
+						reference.SetMulticlusterControllerReference(CreateNSInstance, reference.NewMulticlusterOwnerReference(&ons, ons.GroupVersionKind(), "openmcp"))
+
+						err2 := cm.Cluster_genClients[cluster.Name].Create(context.TODO(), CreateNSInstance)
+						if err2 != nil {
+							omcplog.V(0).Info(err2)
+						}
 						nsStatusActiveAll = false
-						break
+
+					} else if err != nil && errors.IsAlreadyExists(err) {
+						if ns.Status.Phase != "Active" {
+							nsStatusActiveAll = false
+							break
+						}
+
+					} else if err != nil {
+						omcplog.V(0).Info(err)
+						nsStatusActiveAll = false
+					} else {
+						if ns.Status.Phase != "Active" {
+							nsStatusActiveAll = false
+							break
+						}
 					}
 
 				}
 				if nsStatusActiveAll {
-					newLabel := ons.Labels
-					if newLabel == nil {
-						newLabel = make(map[string]string)
-					}
-					newLabel["istio-injection"] = "enabled"
+					ns := CreateNSFromONS(ons)
 
-					ns := &corev1.Namespace{
-						TypeMeta: metav1.TypeMeta{
-							Kind:       "Namespace",
-							APIVersion: "v1",
-						},
-						ObjectMeta: metav1.ObjectMeta{
-							Name:   ons.Name,
-							Labels: newLabel,
-						},
-					}
-					reference.SetMulticlusterControllerReference(ns, reference.NewMulticlusterOwnerReference(&ons, ons.GroupVersionKind(), "openmcp"))
+					checkNS := &corev1.Namespace{}
+					err := cm.Host_client.Get(context.TODO(), checkNS, corev1.NamespaceDefault, ons.Name)
+					if err != nil && errors.IsNotFound(err) {
 
-					err = cm.Host_client.Create(context.TODO(), ns)
-					if err != nil {
-						fmt.Println(err)
+						err = cm.Host_client.Create(context.TODO(), ns)
+						if err != nil {
+							omcplog.V(0).Info(err)
+						}
+					} else if err == nil {
+						err = cm.Host_client.Update(context.TODO(), ns)
+						if err != nil {
+							omcplog.V(0).Info(err)
+						}
+					} else {
+						omcplog.V(0).Info(err)
 					}
+
 				}
 
 			}
@@ -385,4 +416,25 @@ func CheckClusterNamespaceStatus(myClusterManager *clusterManager.ClusterManager
 		}
 
 	}
+}
+
+func CreateNSFromONS(ons resourcev1alpha1.OpenMCPNamespace) *corev1.Namespace {
+	newLabel := ons.Labels
+	if newLabel == nil {
+		newLabel = make(map[string]string)
+	}
+	newLabel["istio-injection"] = "enabled"
+
+	ns := &corev1.Namespace{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Namespace",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   ons.Name,
+			Labels: newLabel,
+		},
+	}
+	reference.SetMulticlusterControllerReference(ns, reference.NewMulticlusterOwnerReference(&ons, ons.GroupVersionKind(), "openmcp"))
+	return ns
 }

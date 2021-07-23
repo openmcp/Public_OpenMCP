@@ -35,43 +35,42 @@ import (
 func main() {
 
 	logLevel.KetiLogInit()
-	for {
-		cm := clusterManager.NewClusterManager()
 
-		host_ctx := "openmcp"
-		namespace := "openmcp"
+	cm := clusterManager.NewClusterManager()
 
-		host_cfg := cm.Host_config
-		live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
+	host_ctx := "openmcp"
+	namespace := "openmcp"
 
-		ghosts := []*cluster.Cluster{}
+	host_cfg := cm.Host_config
+	live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
 
-		for _, ghost_cluster := range cm.Cluster_list.Items {
-			ghost_ctx := ghost_cluster.Name
-			ghost_cfg := cm.Cluster_configs[ghost_ctx]
+	ghosts := []*cluster.Cluster{}
 
-			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
+	for _, ghost_cluster := range cm.Cluster_list.Items {
+		ghost_ctx := ghost_cluster.Name
+		ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
-			ghosts = append(ghosts, ghost)
-		}
-		for _, ghost := range ghosts {
-			fmt.Println(ghost.Name)
-		}
+		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
 
-		co, _ := controller.NewController(live, ghosts, namespace, cm)
-		reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
-		loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
+		ghosts = append(ghosts, ghost)
+	}
+	for _, ghost := range ghosts {
+		fmt.Println(ghost.Name)
+	}
 
-		m := manager.New()
-		m.AddController(co)
-		m.AddController(reshape_cont)
-		m.AddController(loglevel_cont)
+	co, _ := controller.NewController(live, ghosts, namespace, cm)
+	reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
+	loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
-		stop := reshape.SetupSignalHandler()
+	m := manager.New()
+	m.AddController(co)
+	m.AddController(reshape_cont)
+	m.AddController(loglevel_cont)
 
-		if err := m.Start(stop); err != nil {
-			log.Fatal(err)
-		}
+	stop := reshape.SetupSignalHandler()
+
+	if err := m.Start(stop); err != nil {
+		log.Fatal(err)
 	}
 
 }

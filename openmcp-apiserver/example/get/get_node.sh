@@ -18,4 +18,4 @@ TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
 curl -X GET --cacert server.crt --insecure -H "Authorization: Bearer $TOKEN" https://$IP:$PORT/$URLPATH?clustername=$CLUSTER
-
+rm server.crt

@@ -170,6 +170,49 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 	}
 
+	// Check Service in cluster
+	if instance.Status.BlockSubResource == false {
+		omcplog.V(2).Info("[Member Cluster Check Service]")
+		sync_req_name := ""
+		for k, v := range instance.Status.ClusterMaps {
+			cluster_name := k
+			replica := v
+
+			if v == 0 {
+				continue
+			}
+			if _, ok := cm.Cluster_genClients[cluster_name]; !ok {
+				r.updateService(req, cm, instance)
+			}
+			found := &corev1.Service{}
+			cluster_client := cm.Cluster_genClients[cluster_name]
+			err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+
+			if err != nil && errors.IsNotFound(err) {
+				// Delete Service Detected
+				omcplog.V(2).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
+				svc := r.serviceForOpenMCPService(req, instance, cluster_name)
+
+				command := "create"
+				omcplog.V(3).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+command+", Replicas :", replica, ")")
+				sync_req_name, err = r.sendSync(svc, command, cluster_name)
+
+				if err != nil {
+					return reconcile.Result{}, err
+				}
+
+			}
+
+		}
+		omcplog.V(3).Info("sync_req_name : ", sync_req_name)
+
+		err = r.live.Status().Update(context.TODO(), instance)
+		if err != nil {
+			omcplog.V(0).Info("Failed to update instance status", err)
+			return reconcile.Result{}, err
+		}
+	}
+
 	return reconcile.Result{}, nil // err
 }
 

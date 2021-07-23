@@ -32,6 +32,7 @@ type OpenMCPDeploymentSpec struct {
 	Labels   map[string]string   `json:"labels,omitempty" protobuf:"bytes,11,opt,name=labels"`
 	Affinity map[string][]string `json:"affinity,omitempty" protobuf:"bytes,3,opt,name=affinity"`
 	Policy   map[string]string   `json:"policy,omitempty" protobuf:"bytes,3,opt,name=policy"`
+
 	//Placement
 }
 
@@ -143,6 +144,7 @@ type OpenMCPDeploymentStatus struct {
 	SchedulingComplete        bool                  `json:"schedulingComplete"`
 	CreateSyncRequestComplete bool                  `json:"createSyncRequestComplete"`
 	SyncRequestName           string                `json:"syncRequestName"`
+	BlockSubResource          bool                  `json:"blockSubResource" protobuf:"bytes,3,opt,name=blockSubResource"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -237,9 +239,10 @@ type OpenMCPServiceStatus struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	//Replicas int32 `json:"replicas"`
-	ClusterMaps map[string]int32   `json:"clusterMaps"`
-	LastSpec    OpenMCPServiceSpec `json:"lastSpec"`
-	ChangeNeed  bool               `json:"changeNeed"`
+	ClusterMaps      map[string]int32   `json:"clusterMaps"`
+	LastSpec         OpenMCPServiceSpec `json:"lastSpec"`
+	ChangeNeed       bool               `json:"changeNeed"`
+	BlockSubResource bool               `json:"blockSubResource" protobuf:"bytes,3,opt,name=blockSubResource"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

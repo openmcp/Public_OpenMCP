@@ -6,7 +6,7 @@ import (
 	"openmcp/openmcp/apis"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-loadbalancing-controller/src/controller/DestinationRule/DestinationRuleWeight"
+	"openmcp/openmcp/openmcp-loadbalancing-controller/src/syncWeight"
 	"openmcp/openmcp/util/clusterManager"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
@@ -76,7 +76,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			},
 		}
 		err_osvc_dr_delete := r.live.Delete(context.TODO(), obj)
-		delete(DestinationRuleWeight.DistributeList, req.NamespacedName)
+		delete(syncWeight.DistributeList, req.NamespacedName)
 
 		if err_osvc_dr_delete != nil {
 			omcplog.V(2).Info(err_osvc_dr_delete)
@@ -97,9 +97,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		if err_dr != nil && errors.IsNotFound(err_dr) {
 
 			//원본----------------------------------------------------
-			drweight := map[string][]DestinationRuleWeight.DRWeight{}
+			drweight := map[string][]syncWeight.DRWeight{}
 
-			drweight = DestinationRuleWeight.DistributeList[req.NamespacedName].DRScore
+			drweight = syncWeight.DistributeList[req.NamespacedName].DRScore
 
 			distributeTarget := map[string]map[string]uint32{}
 

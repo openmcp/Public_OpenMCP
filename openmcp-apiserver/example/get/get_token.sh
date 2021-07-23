@@ -18,3 +18,4 @@ TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
 echo $TOKEN
+rm server.crt

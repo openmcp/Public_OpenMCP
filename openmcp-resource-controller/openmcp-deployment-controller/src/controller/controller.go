@@ -139,7 +139,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			//} else if instance.Status.SchedulingNeed == true && instance.Status.SchedulingComplete == false {
 		} else if instance.Status.SchedulingNeed == true && instance.Status.SchedulingComplete == false {
 			omcplog.V(2).Info("Scheduling Wait")
-			return reconcile.Result{}, err
+			return reconcile.Result{}, nil
 
 		} else if instance.Status.SchedulingNeed == false && instance.Status.SchedulingComplete == true {
 
@@ -270,55 +270,57 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 
 	// Check Deployment in cluster
-	omcplog.V(2).Info("[Member Cluster Check Deployment]")
-	sync_req_name := ""
-	for k, v := range instance.Status.ClusterMaps {
-		cluster_name := k
-		replica := v
+	if instance.Status.BlockSubResource == false {
+		omcplog.V(2).Info("[Member Cluster Check Deployment]")
+		sync_req_name := ""
+		for k, v := range instance.Status.ClusterMaps {
+			cluster_name := k
+			replica := v
 
-		if replica == 0 {
-			continue
-		}
-
-		if _, ok := cm.Cluster_genClients[cluster_name]; !ok {
-			instance.Status.CreateSyncRequestComplete = false
-			instance.Status.SchedulingNeed = true
-			instance.Status.SchedulingComplete = false
-			err = r.live.Status().Update(context.TODO(), instance)
-			if err != nil {
-				omcplog.V(0).Info("Failed to update instance status", err)
-				return reconcile.Result{}, err
-			}
-			return reconcile.Result{}, nil
-
-		}
-		found := &appsv1.Deployment{}
-		cluster_client := cm.Cluster_genClients[cluster_name]
-		err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
-
-		if err != nil && errors.IsNotFound(err) {
-			// Delete Deployment Detected
-			omcplog.V(2).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
-			dep := r.deploymentForOpenMCPDeployment(req, instance, replica, cluster_name)
-
-			command := "create"
-			omcplog.V(3).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
-			sync_req_name, err = r.sendSync(dep, command, cluster_name)
-
-			if err != nil {
-				return reconcile.Result{}, err
+			if replica == 0 {
+				continue
 			}
 
+			if _, ok := cm.Cluster_genClients[cluster_name]; !ok {
+				instance.Status.CreateSyncRequestComplete = false
+				instance.Status.SchedulingNeed = true
+				instance.Status.SchedulingComplete = false
+				err = r.live.Status().Update(context.TODO(), instance)
+				if err != nil {
+					omcplog.V(0).Info("Failed to update instance status", err)
+					return reconcile.Result{}, err
+				}
+				return reconcile.Result{}, nil
+
+			}
+			found := &appsv1.Deployment{}
+			cluster_client := cm.Cluster_genClients[cluster_name]
+			err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+
+			if err != nil && errors.IsNotFound(err) {
+				// Delete Deployment Detected
+				omcplog.V(2).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
+				dep := r.deploymentForOpenMCPDeployment(req, instance, replica, cluster_name)
+
+				command := "create"
+				omcplog.V(3).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
+				sync_req_name, err = r.sendSync(dep, command, cluster_name)
+
+				if err != nil {
+					return reconcile.Result{}, err
+				}
+
+			}
+
 		}
+		instance.Status.SyncRequestName = sync_req_name
+		omcplog.V(3).Info("sync_req_name : ", sync_req_name)
 
-	}
-	instance.Status.SyncRequestName = sync_req_name
-	omcplog.V(3).Info("sync_req_name : ", sync_req_name)
-
-	err = r.live.Status().Update(context.TODO(), instance)
-	if err != nil {
-		omcplog.V(0).Info("Failed to update instance status", err)
-		return reconcile.Result{}, err
+		err = r.live.Status().Update(context.TODO(), instance)
+		if err != nil {
+			omcplog.V(0).Info("Failed to update instance status", err)
+			return reconcile.Result{}, err
+		}
 	}
 
 	return reconcile.Result{}, nil // err

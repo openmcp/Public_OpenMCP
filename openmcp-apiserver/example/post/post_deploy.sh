@@ -39,4 +39,4 @@ spec:
         ports:
         - containerPort: 80
 ' https://$IP:$PORT/$URL?clustername=$CLUSTER
-
+rm server.crt

@@ -19,7 +19,7 @@ spec:
       containers:
         - name: openmcp-cluster-manager
           # Replace this with the built image name
-          image: ketidevit/openmcp-cluster-manager:v0.0.1
+          image: ketidevit/openmcp-cluster-manager:v0.0.2
           command:
           - openmcp-cluster-manager
           imagePullPolicy: Always

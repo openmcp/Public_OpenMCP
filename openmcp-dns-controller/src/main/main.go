@@ -37,75 +37,71 @@ import (
 func main() {
 	logLevel.KetiLogInit()
 
-	for {
+	cm := clusterManager.NewClusterManager()
 
-		cm := clusterManager.NewClusterManager()
+	host_ctx := "openmcp"
+	namespace := "openmcp"
 
-		host_ctx := "openmcp"
-		namespace := "openmcp"
+	host_cfg := cm.Host_config
+	live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
 
-		host_cfg := cm.Host_config
-		live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
+	ghosts := []*cluster.Cluster{}
 
-		ghosts := []*cluster.Cluster{}
+	for _, ghost_cluster := range cm.Cluster_list.Items {
+		ghost_ctx := ghost_cluster.Name
+		ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
-		for _, ghost_cluster := range cm.Cluster_list.Items {
-			ghost_ctx := ghost_cluster.Name
-			ghost_cfg := cm.Cluster_configs[ghost_ctx]
+		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
+		ghosts = append(ghosts, ghost)
+	}
 
-			ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
-			ghosts = append(ghosts, ghost)
-		}
+	cont_serviceDNS, err := serviceDNS.NewController(live, ghosts, namespace, cm)
+	if err != nil {
+		omcplog.V(0).Info("err New Controller - ServiceDNS", err)
+	}
+	cont_domain, err := domain.NewController(live, ghosts, namespace, cm)
+	if err != nil {
+		omcplog.V(0).Info("err New Controller - Domain", err)
+	}
+	cont_ingressDNS, err := ingressDNS.NewController(live, ghosts, namespace, cm)
+	if err != nil {
+		omcplog.V(0).Info("err New Controller - IngressDNS", err)
+	}
+	cont_dnsEndpoint, err := dnsEndpoint.NewController(live, ghosts, namespace, cm)
+	if err != nil {
+		omcplog.V(0).Info("err New Controller - DNSEndpoint", err)
+	}
+	cont_externalDNS, err := externalDNS.NewController(live, ghosts, namespace, cm)
+	if err != nil {
+		omcplog.V(0).Info("err New Controller - ExternalDNS", err)
+	}
+	cont_openmcpservice, err := openmcpservice.NewController(live, ghosts, namespace, cm)
+	if err != nil {
+		omcplog.V(0).Info("err New Controller - ExternalDNS", err)
+	}
+	cont_reshape, err := reshape.NewController(live, ghosts, namespace, cm)
+	if err != nil {
+		omcplog.V(0).Info("err New Controller - Reshape", err)
+	}
+	contLoglevel, err := logLevel.NewController(live, ghosts, namespace)
+	if err != nil {
+		omcplog.V(0).Info("err New Controller - logLevel", err)
+	}
 
-		cont_serviceDNS, err := serviceDNS.NewController(live, ghosts, namespace, cm)
-		if err != nil {
-			omcplog.V(0).Info("err New Controller - ServiceDNS", err)
-		}
-		cont_domain, err := domain.NewController(live, ghosts, namespace, cm)
-		if err != nil {
-			omcplog.V(0).Info("err New Controller - Domain", err)
-		}
-		cont_ingressDNS, err := ingressDNS.NewController(live, ghosts, namespace, cm)
-		if err != nil {
-			omcplog.V(0).Info("err New Controller - IngressDNS", err)
-		}
-		cont_dnsEndpoint, err := dnsEndpoint.NewController(live, ghosts, namespace, cm)
-		if err != nil {
-			omcplog.V(0).Info("err New Controller - DNSEndpoint", err)
-		}
-		cont_externalDNS, err := externalDNS.NewController(live, ghosts, namespace, cm)
-		if err != nil {
-			omcplog.V(0).Info("err New Controller - ExternalDNS", err)
-		}
-		cont_openmcpservice, err := openmcpservice.NewController(live, ghosts, namespace, cm)
-		if err != nil {
-			omcplog.V(0).Info("err New Controller - ExternalDNS", err)
-		}
-		cont_reshape, err := reshape.NewController(live, ghosts, namespace, cm)
-		if err != nil {
-			omcplog.V(0).Info("err New Controller - Reshape", err)
-		}
-		contLoglevel, err := logLevel.NewController(live, ghosts, namespace)
-		if err != nil {
-			omcplog.V(0).Info("err New Controller - logLevel", err)
-		}
+	m := manager.New()
+	m.AddController(cont_serviceDNS)
+	m.AddController(cont_domain)
+	m.AddController(cont_ingressDNS)
+	m.AddController(cont_dnsEndpoint)
+	m.AddController(cont_externalDNS)
+	m.AddController(cont_openmcpservice)
+	m.AddController(cont_reshape)
+	m.AddController(contLoglevel)
 
-		m := manager.New()
-		m.AddController(cont_serviceDNS)
-		m.AddController(cont_domain)
-		m.AddController(cont_ingressDNS)
-		m.AddController(cont_dnsEndpoint)
-		m.AddController(cont_externalDNS)
-		m.AddController(cont_openmcpservice)
-		m.AddController(cont_reshape)
-		m.AddController(contLoglevel)
+	stop := reshape.SetupSignalHandler()
 
-		stop := reshape.SetupSignalHandler()
-
-		if err := m.Start(stop); err != nil {
-			log.Fatal(err)
-		}
-
+	if err := m.Start(stop); err != nil {
+		log.Fatal(err)
 	}
 
 }

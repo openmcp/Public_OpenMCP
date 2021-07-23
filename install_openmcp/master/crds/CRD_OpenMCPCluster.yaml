@@ -39,16 +39,3 @@ spec:
     - name: v1alpha1
       served: true
       storage: true
-  additionalPrinterColumns:
-    - name: Status
-      type: string
-      description: The Cluster Join Status
-      JSONPath: .spec.joinStatus  
-    - name: MetalLB_Range_From
-      type: string
-      description: The Cluster MetalLB Range From
-      JSONPath: .spec.metalLBRange.addressFrom
-    - name: MetalLB_Range_To
-      type: string
-      description: The Cluster MetalLB Range To
-      JSONPath: .spec.metalLBRange.addressTo

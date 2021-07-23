@@ -22,3 +22,4 @@ TOKEN=`echo "$TOKEN" | tr -d '"'`
 
 curl -X DELETE --cacert server.srt --insecure -H "Authorization: Bearer $TOKEN" https://$IP:$PORT/$URL?clustername=$CLUSTER
 
+rm server.crt

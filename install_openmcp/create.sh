@@ -60,7 +60,7 @@ API_USER_PW=`yq -r .master.APIServer.UserPW $CONFFILE`
 
 PDNS_IP=`yq -r .powerDNS.internal.ip $CONFFILE`
 PDNS_PUBLIC_IP=`yq -r .powerDNS.public.ip $CONFFILE`
-PDNS_PUBLIC_PORT=`yq -r .powerDNS.public.Ports.pdnsPort $CONFFILE`
+PDNS_PUBLIC_PORT=`yq -r .powerDNS.public.ports.pdnsPort $CONFFILE`
 PDNS_API_KEY=`yq -r .powerDNS.apiKey $CONFFILE`
 
 ADDRESS_FROM=`yq -r .master.metalLB.rangeStartIP $CONFFILE`
