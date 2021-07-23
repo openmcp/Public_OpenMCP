@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ "$1" == "GKE" ]] || [[ "$1" == "EKS" ]] || [[ "$1" == "AKS" ]]; then
-  echo "Cloud Cluster"
+  echo "Cloud Cluster [$1]"
 else
   echo "Error : Input Cloud Cluster Type"
   echo "ex) kubectl regist-join GKE gke-cluster1 openmcp:8080"
