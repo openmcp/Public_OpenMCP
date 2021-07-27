@@ -259,7 +259,7 @@ Install 'kubectl request-join' plugin on sub-cluster.
 Before execute join command, you must set KUBECONFIG file and ~/.hosts file. 
 
 ```bash
-$ cd kubectl-plugin
+$ cd kubectl_plugin
 $ chmod +x kubectl-request_join
 $ cp kubectl-request_join /usr/local/bin
 $ kubectl request-join
