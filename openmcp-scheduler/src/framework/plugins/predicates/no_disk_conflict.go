@@ -2,6 +2,7 @@ package predicates
 
 import (
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
+	"openmcp/openmcp/util/clusterManager"
 
 	v1 "k8s.io/api/core/v1"
 )
@@ -13,11 +14,11 @@ func (pl *NoDiskConflict) Name() string {
 	return "NoDiskConflict"
 }
 
-func (pl *NoDiskConflict) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
+func (pl *NoDiskConflict) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, cm *clusterManager.ClusterManager) bool {
 
 	// check all nodes in this cluster
 	for _, node := range clusterInfo.Nodes {
-		// if node.PreFilter == false || node.PreFilterA == false {
+		// if node.PreFilter == false || node.PreFilterTwoStep == false {
 		// 	omcplog.V(0).Infof("preFilter True", pl.Name(), node.PreFilter)
 		// 	continue
 		// }

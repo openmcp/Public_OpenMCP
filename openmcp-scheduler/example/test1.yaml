@@ -5,12 +5,6 @@ metadata:
   namespace: openmcp
 spec:
   replicas: 20
-  affinity: 
-    region: 
-      - AS
-    zone: 
-      - KR
-      - CH
   labels:
       app: openmcp-nginx
       test: "yes"

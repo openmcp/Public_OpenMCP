@@ -3,6 +3,7 @@ package predicates
 import (
 	_ "openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
+	"openmcp/openmcp/util/clusterManager"
 )
 
 type MatchClusterAffinity struct{}
@@ -57,7 +58,7 @@ func (pl *MatchClusterAffinity) PreFilter(newPod *ketiresource.Pod, clusterInfo 
 		}
 		if node_result == true {
 			// omcplog.V(0).Info(clusterInfo.ClusterName + "True")
-			clusterInfo.PreFilterA = true
+			clusterInfo.PreFilterTwoStep = true
 
 			return true
 		}
@@ -66,12 +67,12 @@ func (pl *MatchClusterAffinity) PreFilter(newPod *ketiresource.Pod, clusterInfo 
 	return false
 
 }
-func (pl *MatchClusterAffinity) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
+func (pl *MatchClusterAffinity) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, cm *clusterManager.ClusterManager) bool {
 
 	if len(newPod.Affinity) == 0 {
 		return true
 	}
-	if clusterInfo.PreFilterA == true {
+	if clusterInfo.PreFilterTwoStep == true {
 		return true
 	}
 	return false

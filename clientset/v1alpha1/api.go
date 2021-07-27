@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	clusterv1alpha1 "openmcp/openmcp/apis/cluster/v1alpha1"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -31,6 +32,22 @@ func NewForConfig(c *rest.Config) (*ExampleV1Alpha1Client, error) {
 
 	config := *c
 	config.ContentConfig.GroupVersion = &schema.GroupVersion{Group: resourcev1alpha1.GroupName, Version: resourcev1alpha1.GroupVersion}
+	config.APIPath = "/apis"
+	//config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
+	config.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
+	config.UserAgent = rest.DefaultKubernetesUserAgent()
+	client, err := rest.RESTClientFor(&config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ExampleV1Alpha1Client{restClient: client}, nil
+}
+func NewClusterForConfig(c *rest.Config) (*ExampleV1Alpha1Client, error) {
+	//apis.AddToScheme(scheme.Scheme)
+
+	config := *c
+	config.ContentConfig.GroupVersion = &schema.GroupVersion{Group: clusterv1alpha1.GroupName, Version: clusterv1alpha1.GroupVersion}
 	config.APIPath = "/apis"
 	//config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
 	config.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
@@ -92,6 +109,12 @@ func (c *ExampleV1Alpha1Client) OpenMCPIngress(namespace string) OpenMCPIngressI
 }
 func (c *ExampleV1Alpha1Client) OpenMCPNamespace(namespace string) OpenMCPNamespaceInterface {
 	return &OpenMCPNamespaceClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPCluster(namespace string) OpenMCPClusterInterface {
+	return &OpenMCPClusterClient{
 		restClient: c.restClient,
 		ns:         namespace,
 	}

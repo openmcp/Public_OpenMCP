@@ -68,7 +68,7 @@ func NewControllers(cm *clusterManager.ClusterManager, scheduler *openmcpschedul
 		ghosts = append(ghosts, ghost)
 	}
 
-	sched_cont, err := NewController(live, ghosts, namespace, scheduler)
+	sched_cont, err := NewController(live, ghosts, namespace, scheduler, cm)
 	if err != nil {
 		omcplog.V(0).Info("err New Controller - Scheduler", err)
 	}
@@ -93,9 +93,11 @@ func NewControllers(cm *clusterManager.ClusterManager, scheduler *openmcpschedul
 	}
 }
 
-func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, scheduler *openmcpscheduler.OpenMCPScheduler) (*controller.Controller, error) {
-	omcplog.V(4).Info("[OpenMCP Deployment] Function Called NewController")
+var cm *clusterManager.ClusterManager
 
+func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, scheduler *openmcpscheduler.OpenMCPScheduler, clusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
+	omcplog.V(4).Info("[OpenMCP Deployment] Function Called NewController")
+	cm = clusterManager
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
@@ -127,7 +129,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	return co, nil
 }
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
-
 	// Fetch the OpenMCPDeployment instance
 	newDeployment := &resourcev1alpha1.OpenMCPDeployment{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, newDeployment)
@@ -136,7 +137,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	if err != nil && errors.IsNotFound(err) {
 		omcplog.V(0).Info("Not Found::", newDeployment.GetName)
 		r.scheduler.IsResource = false
-		///////////////////////////////post schduling/////////////////////////////./1
+		///////////////////////////////post schduling///////////////////////////////
 		postlist := r.scheduler.PostDeployments
 		if postlist.Len() > 0 {
 			omcplog.V(0).Info("post scheduler")
@@ -250,7 +251,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 		if IsExist {
 			IsExist = false
-			omcplog.V(5).Infof("리소스 변경 기존보다 커짐")
+			//omcplog.V(5).Infof("리소스 변경 기존보다 커짐")
 			for clustername, cnt := range newDeployment.Status.ClusterMaps {
 				cluster_replicas_map[clustername] = cluster_replicas_map[clustername] + cnt
 				omcplog.V(5).Infof("  clustermap =", cluster_replicas_map)
@@ -260,9 +261,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		newDeployment.Status.Replicas = temp
 		newDeployment.Status.SchedulingNeed = false
 		newDeployment.Status.SchedulingComplete = true
-
+		//		omcplog.V(5).Infof("cluster map =", cluster_replicas_map)
 		if !(len(cluster_replicas_map) == 0) {
-
 			omcplog.V(2).Info("=> Scheduling Result : ", cluster_replicas_map)
 		}
 		err := r.live.Status().Update(context.TODO(), newDeployment)

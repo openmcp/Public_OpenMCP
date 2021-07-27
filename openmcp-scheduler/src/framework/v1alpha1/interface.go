@@ -3,6 +3,7 @@ package v1alpha1
 import (
 	"container/list"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
+	"openmcp/openmcp/util/clusterManager"
 )
 
 const (
@@ -28,7 +29,7 @@ type OpenmcpClusterPostFilteredStatus map[string]bool
 type OpenmcpFramework interface {
 	// RunFilterPluginsOnClusters runs the set of configured filtering plugins.
 	// It returns a map that stores for each filtering plugin name the corresponding
-	RunFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster) OpenmcpClusterFilteredStatus
+	RunFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, cm *clusterManager.ClusterManager) OpenmcpClusterFilteredStatus
 	EraseFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, request map[string]int32) string
 	// RunScorePluginsOnClusters runs the set of configured scoring plugins.
 	// It returns a map that stores for each
@@ -49,7 +50,7 @@ type OpenmcpPlugin interface {
 // return "false" if the pod can not be deployed into the cluster
 type OpenmcpFilterPlugin interface {
 	OpenmcpPlugin
-	Filter(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool
+	Filter(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, cm *clusterManager.ClusterManager) bool
 }
 
 // type EraseFilterPlugin interface {

@@ -11,29 +11,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package openmcpservice // import "admiralty.io/multicluster-controller/examples/serviceDNS/pkg/controller/serviceDNS"
+package OpenMCPService // import "admiralty.io/multicluster-controller/examples/serviceDNS/pkg/controller/serviceDNS"
 
 import (
 	"context"
 	"fmt"
 	"openmcp/openmcp/apis"
 	dnsv1alpha1 "openmcp/openmcp/apis/dns/v1alpha1"
-	ketiv1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	"openmcp/openmcp/omcplog"
+	"openmcp/openmcp/openmcp-dns-controller/src/controller/serviceDNSRecord"
 	"openmcp/openmcp/util/clusterManager"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var cm *clusterManager.ClusterManager
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
-	omcplog.V(4).Info(">>> OpenMCPService NewController()")
+	omcplog.V(4).Info(">>> ServiceDNS NewController()")
 	cm = myClusterManager
 
 	liveclient, err := live.GetDelegatingClient()
@@ -53,17 +55,14 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
-
-	if err := co.WatchResourceReconcileObject(context.TODO(), live, &ketiv1alpha1.OpenMCPService{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(context.TODO(), live, &resourcev1alpha1.OpenMCPService{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
-	/*
-		for _, ghost := range ghosts {
-			if err := co.WatchResourceReconcileController(context.TODO(), ghost, &corev1.Service{}, controller.WatchOptions{}); err != nil {
-				return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
-			}
+	for _, ghost := range ghosts {
+		if err := co.WatchResourceReconcileController(context.TODO(), ghost, &corev1.Service{}, controller.WatchOptions{}); err != nil {
+			return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 		}
-	*/
+	}
 
 	return co, nil
 }
@@ -79,68 +78,27 @@ var i int = 0
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	omcplog.V(4).Info("Function Called Reconcile")
 	i += 1
-	omcplog.V(5).Info("********* [ OpenMCP OpenMCPService", i, "] *********")
+	omcplog.V(5).Info("********* [ OpenMCPService Controller", i, "] *********")
 	omcplog.V(5).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
 
-	// Return for OpenMCPService deletion request
-	omcplog.V(2).Info("ServiceDNSRecord Request")
-	osvc := &ketiv1alpha1.OpenMCPService{}
+	omcplog.V(2).Info("Service Request")
+	osvc := &resourcev1alpha1.OpenMCPService{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, osvc)
-	omcplog.V(2).Info("[Get] OpenMCPService")
-	if err != nil {
-		if errors.IsNotFound(err) {
-			// Delete
-			omcplog.V(0).Info("OpenMCPService has been deleted. Delete Default OpenMCPServiceDNSRecord")
-			instance_osvcdnsr := &dnsv1alpha1.OpenMCPServiceDNSRecord{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      req.Name,
-					Namespace: req.Namespace,
-				},
-				Spec: dnsv1alpha1.OpenMCPServiceDNSRecordSpec{
-					DomainRef: "openmcp-default-domain",
-					RecordTTL: 300,
-				},
-			}
-			err = r.live.Delete(context.TODO(), instance_osvcdnsr)
-			if err != nil && !errors.IsAlreadyExists(err) {
-				omcplog.V(0).Info(err)
-			}
+	if err != nil && errors.IsNotFound(err) {
+		omcplog.V(2).Info("Deleted Service. Ignore Request")
+		return reconcile.Result{}, nil
+	}
 
-			return reconcile.Result{}, err
+	if err == nil {
+		omcplog.V(2).Info("Create or Update Service.")
+		omcplog.V(2).Info("get ServiceDNSRecord")
+		instanceServiceRecord := &dnsv1alpha1.OpenMCPServiceDNSRecord{}
+		err2 := r.live.Get(context.TODO(), req.NamespacedName, instanceServiceRecord)
+		if err2 != nil && errors.IsNotFound(err2) {
+			omcplog.V(0).Info("OpenMCPServiceDNSRecord Not Exist")
+			return reconcile.Result{}, nil
 		}
-
-		return reconcile.Result{}, err
-	}
-	omcplog.V(2).Info("OpenMCPService Create Detection")
-
-	instance_default_domain := &dnsv1alpha1.OpenMCPDomain{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "openmcp-default-domain",
-			Namespace: "kube-federation-system",
-		},
-		Domain: "openmcp.example.org",
-	}
-
-	instance_osvcdnsr := &dnsv1alpha1.OpenMCPServiceDNSRecord{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      osvc.Name,
-			Namespace: osvc.Namespace,
-		},
-		Spec: dnsv1alpha1.OpenMCPServiceDNSRecordSpec{
-			DomainRef: "openmcp-default-domain",
-			RecordTTL: 300,
-		},
-	}
-	err = r.live.Create(context.TODO(), instance_default_domain)
-	if err != nil && !errors.IsAlreadyExists(err) {
-		omcplog.V(0).Info(err)
-	}
-	err = r.live.Create(context.TODO(), instance_osvcdnsr)
-	if err != nil && !errors.IsAlreadyExists(err) {
-		omcplog.V(0).Info(err)
-	}
-
-	/*
+		omcplog.V(2).Info("[Get] OpenMCPServiceDNSRecord")
 
 		// Check if a OpenMCPDomain exists
 		instanceDomain := &dnsv1alpha1.OpenMCPDomain{}
@@ -151,25 +109,30 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			Namespace: domainNamespace,
 			Name:      domainName,
 		}
-		err = r.live.Get(context.TODO(), nsn, instanceDomain)
-		omcplog.V(2).Info("[Get] OpenMCPDomain")
-
-		if err != nil {
-			// OpenMCPDomain is not Exist
+		err3 := r.live.Get(context.TODO(), nsn, instanceDomain)
+		if err3 != nil && errors.IsNotFound(err3) {
 			omcplog.V(0).Info("OpenMCPDomain Not Exist")
 			return reconcile.Result{}, nil
 		}
+		omcplog.V(2).Info("[Get] OpenMCPDomain")
 
 		// Status Update if OpenMCPServiceDNSRecord and OpenMCPDomain exist
 		omcplog.V(2).Info("ServiceDNSRecord Status Update")
-		FillStatus(instanceServiceRecord, instanceDomain)
+		serviceDNSRecord.FillStatus(instanceServiceRecord, instanceDomain)
 
-		err = r.live.Status().Update(context.TODO(), instanceServiceRecord)
-		if err != nil {
-			omcplog.V(0).Info("[OpenMCP Service DNS Record Controller] : ", err)
-			return reconcile.Result{}, nil
+		err4 := r.live.Status().Update(context.TODO(), instanceServiceRecord)
+		if err4 != nil {
+			omcplog.V(0).Info("[OpenMCP Service DNS Record Controller] : ", err4)
+			return reconcile.Result{}, err4
 		}
-	*/
+
+	} else if err != nil && errors.IsNotFound(err) {
+		omcplog.V(0).Info("[Service Deleted]: ignore request")
+		return reconcile.Result{}, nil
+	} else {
+		omcplog.V(0).Info("[Service Deleted]: ignore request")
+		return reconcile.Result{}, nil
+	}
 
 	return reconcile.Result{}, nil
 }

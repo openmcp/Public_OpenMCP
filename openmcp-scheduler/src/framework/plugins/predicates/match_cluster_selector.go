@@ -2,6 +2,7 @@ package predicates
 
 import (
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
+	"openmcp/openmcp/util/clusterManager"
 	"strings"
 )
 
@@ -13,7 +14,7 @@ func (pl *MatchClusterSelector) Name() string {
 	return "MatchClusterSelector"
 }
 
-func (pl *MatchClusterSelector) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
+func (pl *MatchClusterSelector) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, cm *clusterManager.ClusterManager) bool {
 
 	// Node must have labels correspoinding to new Pod's NodeSelector
 	// Example of *.yaml for a new OpenMCPDeployemt as folllow:
@@ -28,12 +29,11 @@ func (pl *MatchClusterSelector) Filter(newPod *ketiresource.Pod, clusterInfo *ke
 	}
 
 	for _, node := range clusterInfo.Nodes {
-		// if node.PreFilter == false || node.PreFilterA == false {
+		// if node.PreFilter == false || node.PreFilterTwoStep == false {
 		// 	omcplog.V(0).Infof("preFilter True", pl.Name(), node.PreFilter)
 		// 	continue
 		// }
 		node_result := true
-
 		// NodeSelector's type is map[string]string
 		// if you want to more information, check "k8s.io/api/core/v1"
 		for key, pod_value := range newPod.Pod.Spec.NodeSelector {

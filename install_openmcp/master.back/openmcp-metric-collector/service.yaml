@@ -3,10 +3,13 @@ kind: Service
 metadata:
   name: openmcp-metric-collector
   namespace: openmcp
+  annotations:
+    metallb.universe.tf/allow-shared-ip: openmcp
   labels:
     name: openmcp-metric-collector
 spec:
   type: LoadBalancer
+  loadBalancerIP: REPLACE_MC_LBIP
   ports:
   - port: 2051
     targetPort: 2051

@@ -3,6 +3,7 @@ package predicates
 import (
 	"container/list"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
+	"openmcp/openmcp/util/clusterManager"
 )
 
 type PodFitsResources struct{}
@@ -26,7 +27,7 @@ func (pl *PodFitsResources) PreFilter(newPod *ketiresource.Pod, clusterInfo *ket
 
 }
 
-func (pl *PodFitsResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
+func (pl *PodFitsResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, cm *clusterManager.ClusterManager) bool {
 
 	for _, node := range clusterInfo.Nodes {
 		node_result := true

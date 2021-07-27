@@ -3,6 +3,7 @@ PASSWORD="keti"
 IP="10.0.3.20"
 PORT="30000"
 URL="apis/openmcp.k8s.io/v1alpha1/namespaces/openmcp/openmcpclusters"
+URL="apis/core.kubefed.io/v1beta1/namespaces/kube-federation-system/kubefedclusters/cluster1"
 CLUSTER="openmcp"
 
 echo -n | openssl s_client -connect $IP:$PORT | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt

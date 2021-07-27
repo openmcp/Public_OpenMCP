@@ -22,7 +22,7 @@ type Cluster struct {
 	RequestedResource   *Resource
 	AllocatableResource *Resource
 	PreFilter           bool
-	PreFilterA          bool
+	PreFilterTwoStep    bool
 }
 
 // NodeInfo is node level aggregated information.

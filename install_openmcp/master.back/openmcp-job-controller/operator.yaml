@@ -15,14 +15,14 @@ spec:
     spec:
       serviceAccountName: openmcp-job-controller
       imagePullSecrets:
-        - name: regcred
+        - name: REPLACE_DOCKERSECRETNAME
       containers:
         - name: openmcp-job-controller
           # Replace this with the built image name
           image: ketidevit/openmcp-job-controller:v0.0.1
           command:
           - openmcp-job-controller
-          imagePullPolicy: Always
+          imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
           env:
             - name: WATCH_NAMESPACE
               #value: ""

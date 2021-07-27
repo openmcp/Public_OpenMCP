@@ -8,6 +8,7 @@ import (
 	"openmcp/openmcp/openmcp-scheduler/src/framework/plugins/predicates"
 	"openmcp/openmcp/openmcp-scheduler/src/framework/plugins/priorities"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
+	"openmcp/openmcp/util/clusterManager"
 )
 
 type openmcpFramework struct {
@@ -44,6 +45,7 @@ func NewFramework(grpcClient protobuf.RequestAnalysisClient) OpenmcpFramework {
 			&predicates.MatchClusterAffinity{},
 			&predicates.PodFitsHostPorts{},
 			&predicates.NoDiskConflict{},
+			&predicates.ClusterJoninCheck{},
 		},
 		scorePlugins: []OpenmcpScorePlugin{
 			&priorities.MostRequested{},
@@ -75,7 +77,7 @@ func (f *openmcpFramework) RunPostFilterPluginsOnClusters(pod *ketiresource.Pod,
 	sucess := false
 	var err error
 	for _, cluster := range clusters {
-		cluster.PreFilterA = false
+		cluster.PreFilterTwoStep = false
 		cluster.PreFilter = false
 		result[cluster.ClusterName] = true
 		for _, pl := range f.postfilterPlugins {
@@ -113,25 +115,24 @@ func (f *openmcpFramework) EraseFilterPluginsOnClusters(pod *ketiresource.Pod, c
 	return pr
 }
 
-func (f *openmcpFramework) RunFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster) OpenmcpClusterFilteredStatus {
+func (f *openmcpFramework) RunFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, cm *clusterManager.ClusterManager) OpenmcpClusterFilteredStatus {
 	result := make(map[string]bool)
-
 	if clusters == nil {
 		return nil
 	}
 	for _, cluster := range clusters {
-		cluster.PreFilterA = false
+		cluster.PreFilterTwoStep = false
 		cluster.PreFilter = false
 		result[cluster.ClusterName] = true
 		for _, pl := range f.prefilterPlugins {
 			pl.PreFilter(pod, cluster)
 		}
-		if cluster.PreFilter == false || cluster.PreFilterA == false {
+		if cluster.PreFilter == false || cluster.PreFilterTwoStep == false {
 			result[cluster.ClusterName] = false
 			continue
 		}
 		for _, pl := range f.filterPlugins {
-			isFiltered := pl.Filter(pod, cluster)
+			isFiltered := pl.Filter(pod, cluster, cm)
 			result[cluster.ClusterName] = result[cluster.ClusterName] && isFiltered
 			if !result[cluster.ClusterName] {
 				break

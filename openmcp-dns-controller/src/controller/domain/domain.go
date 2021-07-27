@@ -6,7 +6,7 @@ import (
 	"openmcp/openmcp/apis"
 	dnsv1alpha1 "openmcp/openmcp/apis/dns/v1alpha1"
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-dns-controller/src/controller/serviceDNS"
+	"openmcp/openmcp/openmcp-dns-controller/src/controller/serviceDNSRecord"
 	"openmcp/openmcp/util/clusterManager"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
@@ -85,7 +85,7 @@ func (r *reconciler) UpdateStatusServiceDNSRecordFromDelete() error {
 			omcplog.V(2).Info("[OpenMCP Domain Controller] Service DNS Record Delete :", instanceServiceRecordList.Items[deleted_index].Name)
 
 			omcplog.V(2).Info("ServiceRecord Clear Status")
-			serviceDNS.ClearStatus(&instanceServiceRecordList.Items[deleted_index])
+			serviceDNSRecord.ClearStatus(&instanceServiceRecordList.Items[deleted_index])
 			err = r.live.Status().Update(context.TODO(), &instanceServiceRecordList.Items[deleted_index])
 			if err != nil {
 				return err
@@ -108,7 +108,7 @@ func (r *reconciler) UpdateStatusServiceDNSRecordFromCreate(instanceDomain *dnsv
 		if instanceServiceRecord.Spec.DomainRef == instanceDomain.Name {
 
 			omcplog.V(2).Info("ServiceRecord Fill Status")
-			serviceDNS.FillStatus(&instanceServiceRecord, instanceDomain)
+			serviceDNSRecord.FillStatus(&instanceServiceRecord, instanceDomain)
 
 			err = r.live.Status().Update(context.TODO(), &instanceServiceRecord)
 			if err != nil {

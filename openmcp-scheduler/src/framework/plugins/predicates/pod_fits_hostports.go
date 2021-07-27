@@ -3,6 +3,7 @@ package predicates
 import (
 	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
+	"openmcp/openmcp/util/clusterManager"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
@@ -19,7 +20,7 @@ const (
 func (pl *PodFitsHostPorts) Name() string {
 	return "PodFitsHostPorts"
 }
-func (pl *PodFitsHostPorts) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
+func (pl *PodFitsHostPorts) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, cm *clusterManager.ClusterManager) bool {
 	// Requested ports should be available for newPod
 	// Example of *.yaml for a new OpenMCPDeployemt as folllow:
 	//   spec:
@@ -40,7 +41,7 @@ func (pl *PodFitsHostPorts) Filter(newPod *ketiresource.Pod, clusterInfo *ketire
 
 	// It checks all nodes in clusterInfo and returns true if any node has an available port
 	for _, node := range clusterInfo.Nodes {
-		// if node.PreFilter == false || node.PreFilterA == false {
+		// if node.PreFilter == false || node.PreFilterTwoStep == false {
 		// 	omcplog.V(0).Infof("preFilter True", pl.Name(), node.PreFilter)
 		// 	continue
 		// }

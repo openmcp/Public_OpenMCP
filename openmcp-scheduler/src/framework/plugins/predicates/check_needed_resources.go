@@ -2,6 +2,7 @@ package predicates
 
 import (
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
+	"openmcp/openmcp/util/clusterManager"
 )
 
 type CheckNeededResources struct{}
@@ -11,7 +12,7 @@ func (pl *CheckNeededResources) Name() string {
 }
 
 // Return true if there is at least 1 node that have AdditionalResources
-func (pl *CheckNeededResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
+func (pl *CheckNeededResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, cm *clusterManager.ClusterManager) bool {
 
 	// Node must have all of the additional resource
 	// Example of *.yaml for a new OpenMCPDeployemt as folllow:

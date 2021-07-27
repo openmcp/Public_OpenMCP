@@ -27,6 +27,7 @@ type OpenMCPDeploymentClient struct {
 
 func (c *OpenMCPDeploymentClient) List(opts metav1.ListOptions) (*resourcev1alpha1.OpenMCPDeploymentList, error) {
 	result := resourcev1alpha1.OpenMCPDeploymentList{}
+	//c.restClient.Get().Namespace(c.ns).Resource()
 	err := c.restClient.
 		Get().
 		Namespace(c.ns).

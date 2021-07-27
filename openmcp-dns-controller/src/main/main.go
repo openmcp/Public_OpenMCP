@@ -19,18 +19,20 @@ package main
 import (
 	"log"
 	"openmcp/openmcp/omcplog"
+	"openmcp/openmcp/openmcp-dns-controller/src/controller/OpenMCPService"
 	"openmcp/openmcp/openmcp-dns-controller/src/controller/dnsEndpoint"
 	"openmcp/openmcp/openmcp-dns-controller/src/controller/domain"
-	"openmcp/openmcp/openmcp-dns-controller/src/controller/externalDNS"
-	"openmcp/openmcp/openmcp-dns-controller/src/controller/ingressDNS"
-	"openmcp/openmcp/openmcp-dns-controller/src/controller/openmcpservice"
-	"openmcp/openmcp/openmcp-dns-controller/src/controller/serviceDNS"
+	"openmcp/openmcp/openmcp-dns-controller/src/controller/ingressCluster"
+	"openmcp/openmcp/openmcp-dns-controller/src/controller/ingressDNSRecord"
+	"openmcp/openmcp/openmcp-dns-controller/src/controller/service"
+	"openmcp/openmcp/openmcp-dns-controller/src/controller/serviceDNSRecord"
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
+	corev1 "k8s.io/api/core/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
@@ -40,7 +42,7 @@ func main() {
 	cm := clusterManager.NewClusterManager()
 
 	host_ctx := "openmcp"
-	namespace := "openmcp"
+	namespace := corev1.NamespaceAll
 
 	host_cfg := cm.Host_config
 	live := cluster.New(host_ctx, host_cfg, cluster.Options{CacheOptions: cluster.CacheOptions{}})
@@ -55,7 +57,7 @@ func main() {
 		ghosts = append(ghosts, ghost)
 	}
 
-	cont_serviceDNS, err := serviceDNS.NewController(live, ghosts, namespace, cm)
+	cont_service, err := service.NewController(live, ghosts, namespace, cm)
 	if err != nil {
 		omcplog.V(0).Info("err New Controller - ServiceDNS", err)
 	}
@@ -63,7 +65,7 @@ func main() {
 	if err != nil {
 		omcplog.V(0).Info("err New Controller - Domain", err)
 	}
-	cont_ingressDNS, err := ingressDNS.NewController(live, ghosts, namespace, cm)
+	cont_serviceDNSRecord, err := serviceDNSRecord.NewController(live, ghosts, namespace, cm)
 	if err != nil {
 		omcplog.V(0).Info("err New Controller - IngressDNS", err)
 	}
@@ -71,13 +73,17 @@ func main() {
 	if err != nil {
 		omcplog.V(0).Info("err New Controller - DNSEndpoint", err)
 	}
-	cont_externalDNS, err := externalDNS.NewController(live, ghosts, namespace, cm)
+	cont_ingressDNSRecord, err := ingressDNSRecord.NewController(live, ghosts, namespace, cm)
 	if err != nil {
 		omcplog.V(0).Info("err New Controller - ExternalDNS", err)
 	}
-	cont_openmcpservice, err := openmcpservice.NewController(live, ghosts, namespace, cm)
+	cont_ingressCluster, err := ingressCluster.NewController(live, ghosts, namespace, cm)
 	if err != nil {
-		omcplog.V(0).Info("err New Controller - ExternalDNS", err)
+		omcplog.V(0).Info("err New Controller - OpenMCPService", err)
+	}
+	cont_OpenMCPService, err := OpenMCPService.NewController(live, ghosts, namespace, cm)
+	if err != nil {
+		omcplog.V(0).Info("err New Controller - Service", err)
 	}
 	cont_reshape, err := reshape.NewController(live, ghosts, namespace, cm)
 	if err != nil {
@@ -89,12 +95,14 @@ func main() {
 	}
 
 	m := manager.New()
-	m.AddController(cont_serviceDNS)
 	m.AddController(cont_domain)
-	m.AddController(cont_ingressDNS)
+	m.AddController(cont_service)
+	m.AddController(cont_OpenMCPService)
+	m.AddController(cont_ingressCluster)
+	m.AddController(cont_serviceDNSRecord)
+	m.AddController(cont_ingressDNSRecord)
 	m.AddController(cont_dnsEndpoint)
-	m.AddController(cont_externalDNS)
-	m.AddController(cont_openmcpservice)
+
 	m.AddController(cont_reshape)
 	m.AddController(contLoglevel)
 

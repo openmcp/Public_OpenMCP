@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package externalDNS
+package ingressCluster
 
 import (
 	"context"
@@ -19,20 +19,20 @@ import (
 	"openmcp/openmcp/apis"
 	dnsv1alpha1 "openmcp/openmcp/apis/dns/v1alpha1"
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-dns-controller/src/mypdns"
+	"openmcp/openmcp/openmcp-dns-controller/src/controller/ingressDNSRecord"
 	"openmcp/openmcp/util/clusterManager"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
-	"k8s.io/apimachinery/pkg/api/errors"
+	extv1b1 "k8s.io/api/extensions/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var cm *clusterManager.ClusterManager
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
-	omcplog.V(4).Info(">>> externalDNS NewController()")
+	omcplog.V(4).Info(">>> IngressDNS NewController()")
 	cm = myClusterManager
 
 	liveclient, err := live.GetDelegatingClient()
@@ -53,8 +53,14 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-	if err := co.WatchResourceReconcileObject(context.TODO(), live, &dnsv1alpha1.OpenMCPDNSEndpoint{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(context.TODO(), live, &extv1b1.Ingress{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
+	}
+
+	for _, ghost := range ghosts {
+		if err := co.WatchResourceReconcileController(context.TODO(), ghost, &extv1b1.Ingress{}, controller.WatchOptions{}); err != nil {
+			return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
+		}
 	}
 
 	return co, nil
@@ -74,35 +80,21 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	omcplog.V(5).Info("********* [ OpenMCP Domain", i, "] *********")
 	omcplog.V(5).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
 
-	omcplog.V(2).Info("PdnsNewClient")
-	pdnsClient, err := mypdns.PdnsNewClient()
+	instanceIngressRecord := &dnsv1alpha1.OpenMCPIngressDNSRecord{}
+	err := r.live.Get(context.TODO(), req.NamespacedName, instanceIngressRecord)
 	if err != nil {
-		omcplog.V(0).Info(err)
-	}
-
-	instance := &dnsv1alpha1.OpenMCPDNSEndpoint{}
-	err = r.live.Get(context.TODO(), req.NamespacedName, instance)
-	omcplog.V(2).Info("[Get] OpenMCPDNSEndpoint")
-
-	if err != nil && errors.IsNotFound(err) {
-		omcplog.V(2).Info("DNSEndpoint Delete Detection, PowerDNS Info Delete")
-		err = mypdns.DeleteZone(pdnsClient, r.live)
-		if err != nil {
-			omcplog.V(0).Info("[OpenMCP External DNS Controller] : Delete?  ", err)
-		}
+		// Delete
+		omcplog.V(2).Info("IngressDNSRecord Delete Detection")
 		return reconcile.Result{}, nil
 	}
+	omcplog.V(2).Info("IngressDNSRecord or Ingress Create Detection")
 
-	for _, domain := range instance.Spec.Domains {
-		if domain == "" {
-			continue
-		}
-		omcplog.V(2).Info("DNSEndpoint Create/Update Detection, PowerDNS Info Refresh")
-		err = mypdns.SyncZone(pdnsClient, domain, instance.Spec.Endpoints)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
-
+	omcplog.V(2).Info("IngressDNSRecord Status Update")
+	ingressDNSRecord.FillStatus(instanceIngressRecord)
+	err = r.live.Status().Update(context.TODO(), instanceIngressRecord)
+	if err != nil {
+		omcplog.V(0).Info("[OpenMCP Ingress DNS Record Controller] : ", err)
+		return reconcile.Result{}, nil
 	}
 
 	return reconcile.Result{}, nil // err

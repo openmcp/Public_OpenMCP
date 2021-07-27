@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+
+	//clusterv1alpha1 "openmcp/openmcp/apis/cluster/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-analytic-engine/src/protobuf"
 	ketiframework "openmcp/openmcp/openmcp-scheduler/src/framework/v1alpha1"
@@ -48,6 +50,8 @@ func NewScheduler(cm *clusterManager.ClusterManager, grpcClient protobuf.Request
 
 func (sched *OpenMCPScheduler) Scheduling(dep *resourcev1alpha1.OpenMCPDeployment, posted bool, requestclusters []string) (map[string]int32, error) {
 	startTime := time.Now()
+	// Get CLusterClients from clusterManager
+	//clusterv1alpha1.OpenMCPCluster
 	cm := sched.ClusterManager
 
 	// Get CLusterClients from clusterManager
@@ -116,10 +120,10 @@ func (sched *OpenMCPScheduler) EraseScheduling(dep *resourcev1alpha1.OpenMCPDepl
 }
 
 func (sched *OpenMCPScheduler) ScheduleOne(newPod *ketiresource.Pod, replicas int32, dep *resourcev1alpha1.OpenMCPDeployment, posted bool, requestclusters []string) (string, error) {
-	filterdResult := sched.Framework.RunFilterPluginsOnClusters(newPod, sched.ClusterInfos)
+
+	filterdResult := sched.Framework.RunFilterPluginsOnClusters(newPod, sched.ClusterInfos, sched.ClusterManager)
 
 	filteredCluster := make(map[string]*ketiresource.Cluster)
-	// 	omcplog.V(0).Infof("    => type!! [%v]", reflect.TypeOf(list))
 
 	for clusterName, isfiltered := range filterdResult {
 		if isfiltered {
@@ -272,7 +276,6 @@ func (sched *OpenMCPScheduler) SetupResources() error {
 	// Setup Clusters
 	for clusterName, _ := range sched.ClusterClients {
 		pods, _ := sched.ClusterClients[clusterName].CoreV1().Pods(metav1.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
-
 		// informations on cluster level
 		allPods := make([]*ketiresource.Pod, 0)
 		allNodes := make([]*ketiresource.NodeInfo, 0)
@@ -393,6 +396,7 @@ func (sched *OpenMCPScheduler) SetupResources() error {
 			RequestedResource:   cluster_request,
 			AllocatableResource: cluster_allocatable,
 		}
+		omcplog.V(0).Info("Setup ClusterInfos =", sched.ClusterInfos)
 	}
 
 	return nil
