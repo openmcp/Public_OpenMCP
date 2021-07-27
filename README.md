@@ -281,7 +281,7 @@ Install 'kubectl join' plugin on sub-cluster.
 Before execute join command, you must set KUBECONFIG file and ~/.hosts file.
 
 ```bash
-$ cd kubectl-plugin
+$ cd kubectl_plugin
 $ chmod +x kubectl-join
 $ cp kubectl-join /usr/local/bin
 $ kubectl join <CLUSTERNAME>
@@ -328,7 +328,7 @@ cluster3     asia-east1-a   1.16.13-gke.1   35.201.135.105  e2-medium     1.16.1
 
 Install 'kubectl regist' plugin on OpenMCP.
 ```
-$ cd kubectl-plugin
+$ cd kubectl_plugin
 $ chmod +x kubectl-regist_join
 $ cp kubectl-regist_join /usr/local/bin
 $ kubectl regist-join GKE ${GKE_CLUSTER_NAME} ${OPENMCP_IP_PORT}
@@ -338,7 +338,7 @@ $ kubectl regist-join GKE ${GKE_CLUSTER_NAME} ${OPENMCP_IP_PORT}
 
 Install 'kubectl join' plugin on OpenMCP.
 ```
-$ cd kubectl-plugin
+$ cd kubectl_plugin
 $ chmod +x kubectl-join
 $ cp kubectl-join /usr/local/bin
 $ kubectl join <CLUSTERNAME>
@@ -373,7 +373,7 @@ $ aws eks list-clusters
 
 Install 'kubectl regist' plugin on OpenMCP.
 ```
-$ cd kubectl-plugin
+$ cd kubectl_plugin
 $ chmod +x kubectl-regist_join
 $ cp kubectl-regist_join /usr/local/bin
 $ kubectl regist-join EKS ${EKS_CLUSTER_NAME} ${OPENMCP_IP_PORT}
@@ -393,7 +393,7 @@ Default output format [None]: json
 
 Install 'kubectl join' plugin on OpenMCP.
 ```
-$ cd kubectl-plugin
+$ cd kubectl_plugin
 $ chmod +x kubectl-join
 $ cp kubectl-join /usr/local/bin
 $ kubectl join <CLUSTERNAME>
@@ -446,7 +446,7 @@ $ az aks list
 
 Install 'kubectl regist' plugin on OpenMCP.
 ```
-$ cd kubectl-plugin
+$ cd kubectl_plugin
 $ chmod +x kubectl-regist_join
 $ cp kubectl-regist_join /usr/local/bin
 $ kubectl regist-join AKS ${AKS_CLUSTER_NAME} ${OPENMCP_IP_PORT}
@@ -456,7 +456,7 @@ $ kubectl regist-join AKS ${AKS_CLUSTER_NAME} ${OPENMCP_IP_PORT}
 
 Install 'kubectl join' plugin on OpenMCP.
 ```
-$ cd kubectl-plugin
+$ cd kubectl_plugin
 $ chmod +x kubectl-join
 $ cp kubectl-join /usr/local/bin
 $ kubectl join <CLUSTERNAME>
