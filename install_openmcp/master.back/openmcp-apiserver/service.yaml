@@ -6,7 +6,6 @@ metadata:
   annotations:
     metallb.universe.tf/allow-shared-ip: openmcp
 spec:
-  loadBalancerIP: REPLACE_AS_LBIP
   selector:
     name: openmcp-apiserver
   ports:

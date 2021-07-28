@@ -28,10 +28,10 @@ istioctl x create-remote-secret \
 
 
 # Configure $CTX as a remote
-#export DISCOVERY_ADDRESS=$(kubectl \
-#    --context=openmcp \
-#    -n istio-system get svc istio-eastwestgateway \
-#    -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+export DISCOVERY_ADDRESS=$(kubectl \
+    --context=openmcp \
+    -n istio-system get svc istio-eastwestgateway \
+    -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
 # $CTX에 대한 Istio configuration 을 만듭니다.
 cat <<EOF > $CTX.yaml
@@ -49,7 +49,7 @@ spec:
       multiCluster:
         clusterName: $CTX
       network: network-$CTX
-      remotePilotAddress: 119.65.195.180
+      remotePilotAddress: ${DISCOVERY_ADDRESS}
 EOF
 
 # $CTX에 configuration 적용

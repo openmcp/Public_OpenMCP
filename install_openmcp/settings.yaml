@@ -16,23 +16,18 @@ master:
     # MetricCollector는 멤버클러스터 gke, eks, aks의 접근이 가능해야 하므로 외부 IP 포트포워딩 필요
     # MetricCollector의 포트포워딩 설정 Exapmple (119.65.195.180:3212 -> 10.0.3.20:30002)
     APIServer:
-      LoadBalancerIP: 10.0.3.191
       NodePort: 30000
       AppKey: openmcp-apiserver
       UserName: openmcp
       UserPW: keti
     AnalyticEngine:
-      LoadBalancerIP: 10.0.3.191
       NodePort: 30001
     MetricCollector:
-      LoadBalancerIP: 10.0.3.191
       NodePort: 30002
       externalPort: 3212 # 119.65.195.180:3212 (MetricCollector는 멤버클러스터 gke, eks, aks의 접근이 가능해야 하므로 외부 IP 가 필요)
     InfluxDB:
-      LoadBalancerIP: 10.0.3.191
       NodePort: 30003
     LoadBalancingController:
-      LoadBalancerIP: 10.0.3.192
       NodePort: 30004
 externalServer:
   ServerIP:

@@ -9,7 +9,6 @@ metadata:
     name: openmcp-analytic-engine
   
 spec:
-  loadBalancerIP: 10.0.3.191
   type: LoadBalancer
   ports:
   - port: 2050

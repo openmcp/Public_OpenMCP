@@ -15,7 +15,7 @@ spec:
     spec:
       serviceAccountName: openmcp-namespace-controller
       imagePullSecrets:
-        - name: regcred
+        - name: "regcred"
       containers:
         - name: openmcp-namespace-controller
           # Replace this with the built image name

@@ -1,7 +1,9 @@
 USERNAME="openmcp"
 PASSWORD="keti"
-IP="10.0.3.20"
-PORT="30000"
+#IP="10.0.3.20"
+#PORT="30000"
+IP="openmcp-apiserver.openmcp.default-domain.svc.openmcp.example.org"
+PORT="8080"
 NODE="kube1-master"
 URL="metrics/nodes/$NODE"
 CLUSTER="cluster1"
@@ -19,5 +21,5 @@ TOKEN_JSON=`curl -XPOST \
 TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
-curl -X GET --cacert server.srt --insecure -H "Authorization: Bearer $TOKEN" https://$IP:$PORT/$URL?clustername=$CLUSTER
+curl -X GET --cacert server.crt -H "Authorization: Bearer $TOKEN" https://$IP:$PORT/$URL?clustername=$CLUSTER
 

@@ -173,12 +173,6 @@ func CreateEndpointsFromServiceDNS(instanceServiceRecord *dnsv1alpha1.OpenMCPSer
 
 	targetsAll := []string{}
 	for _, dns := range instanceServiceRecord.Status.DNS {
-		if dns.Region == "" || dns.Zones == nil {
-			continue
-		}
-		region := dns.Region
-		dnsName := name + "." + namespace + "." + domainRef + ".svc." + region + "." + domain
-
 		targets := []string{}
 		for _, ingress := range dns.LoadBalancer.Ingress {
 
@@ -205,6 +199,12 @@ func CreateEndpointsFromServiceDNS(instanceServiceRecord *dnsv1alpha1.OpenMCPSer
 			}
 
 		}
+
+		if dns.Region == "" || dns.Zones == nil {
+			continue
+		}
+		region := dns.Region
+		dnsName := name + "." + namespace + "." + domainRef + ".svc." + region + "." + domain
 
 		// DNS where only Region exists
 		endpoint := CreateEndpoint(dnsName, recordTTL, recordType, targets)

@@ -1,7 +1,9 @@
 USERNAME="openmcp"
 PASSWORD="keti"
-IP="10.0.3.20"
-PORT="30000"
+#IP="10.0.3.20"
+#PORT="30000"
+IP="openmcp-apiserver.openmcp.default-domain.svc.openmcp.example.org"
+PORT="8080"
 NS="default"
 URL="apis/apps/v1/namespaces/$NS/deployments"
 CLUSTER="openmcp"
@@ -18,7 +20,7 @@ TOKEN_JSON=`curl -XPOST \
 TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
-curl -X POST --cacert server.crt --insecure -H 'Content-Type: application/yaml' -H "Authorization: Bearer $TOKEN" --data '
+curl -X POST --cacert server.crt -H 'Content-Type: application/yaml' -H "Authorization: Bearer $TOKEN" --data '
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
 metadata:

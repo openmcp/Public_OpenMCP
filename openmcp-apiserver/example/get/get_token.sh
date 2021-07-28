@@ -1,7 +1,9 @@
 USERNAME="openmcp"
 PASSWORD="keti"
-IP="10.0.3.20"
-PORT="30000"
+#IP="10.0.3.20"
+#PORT="30000"
+IP="openmcp-apiserver.openmcp.default-domain.svc.openmcp.example.org"
+PORT="8080"
 URLPATH="token"
 
 

@@ -2,8 +2,16 @@ mkdir -p /home/nfs/pv/influxdb
 mkdir -p /home/nfs/pv/api-server/cert
 
 echo "--- API Server Generation Key File"
-openssl genrsa -out server.key 2048
-(echo \r\n ; echo \r\n; echo \r\n; echo \r\n; echo \r\n; echo openmcp; echo \r\n) | openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650
+#openssl genrsa -out server.key 2048
+#echo \r\n ; echo \r\n; echo \r\n; echo \r\n; echo \r\n; echo openmcp-apiserver.openmcp.default-domain.svc.openmcp.example.org; echo \r\n) | openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650
+openssl req \
+    -x509 \
+    -nodes \
+    -newkey rsa:2048 \
+    -keyout server.key \
+    -out server.crt \
+    -days 3650 \
+    -subj "/C=KR/ST=Seoul/L=Seoul/O=Global Company/OU=IT Department/CN=openmcp-apiserver.openmcp.default-domain.svc.openmcp.example.org"
 
 mv server.key /home/nfs/pv/api-server/cert
 mv server.crt /home/nfs/pv/api-server/cert
@@ -142,3 +150,6 @@ kubectl --context=openmcp apply -n istio-system -f \
 
 #istio 인증서 복사
 cp -r certs ../../member/istio/
+
+# Core DNS 리스타트
+kubectl delete pod --namespace kube-system --selector k8s-app=kube-dns

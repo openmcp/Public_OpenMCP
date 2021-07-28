@@ -112,12 +112,15 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 		err2 := r.live.Get(context.TODO(), req.NamespacedName, instance_osvcdnsr)
 		if err2 != nil && errors.IsNotFound(err2) {
+			omcplog.V(0).Info("[OpenMCPAPIServer] Create OpenMCPServiceDNSDomain")
 			err3 := r.live.Create(context.TODO(), instance_osvcdnsr)
 			if err3 != nil {
+				omcplog.V(0).Info(err3)
 				return reconcile.Result{}, err3
 			}
 		}
 		serviceDNSRecord.FillStatusInOpenMCP(instance_osvcdnsr, instance_default_domain)
+		omcplog.V(0).Info("[OpenMCPAPIServer] Update OpenMCPServiceDNSDomain")
 		err4 := r.live.Status().Update(context.TODO(), instance_osvcdnsr)
 		if err4 != nil {
 			omcplog.V(0).Info(err4)

@@ -10,7 +10,7 @@ data:
       health
       kubernetes cluster.local in-addr.arpa ip6.arpa {
         pods insecure
-        upstream
+        #upstream
         fallthrough in-addr.arpa ip6.arpa
         ttl 30
       }
@@ -25,5 +25,5 @@ data:
     .:53 {
       errors
       cache 30
-      forward . 119.65.195.180:null
+      forward . 119.65.195.180:5353
     }

@@ -8,7 +8,6 @@ metadata:
   labels:
     name: openmcp-metric-collector
 spec:
-  loadBalancerIP: 10.0.3.191
   type: LoadBalancer
   ports:
   - port: 2051

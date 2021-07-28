@@ -49,23 +49,18 @@ OMCP_EXTERNAL_IP=`yq -r .master.ServerIP.external $CONFFILE`
 ADDRESS_FROM=`yq -r .master.metalLB.rangeStartIP $CONFFILE`
 ADDRESS_TO=`yq -r .master.metalLB.rangeEndIP $CONFFILE`
 
-OAS_LB_IP=`yq -r .master.Moudules.APIServer.LoadBalancerIP $CONFFILE`
 OAS_NODE_PORT=`yq -r .master.Moudules.APIServer.NodePort $CONFFILE`
 API_APP_KEY=`yq -r .master.Moudules.APIServer.AppKey $CONFFILE`
 API_USER_NAME=`yq -r .master.Moudules.APIServer.UserName $CONFFILE`
 API_USER_PW=`yq -r .master.Moudules.APIServer.UserPW $CONFFILE`
 
-OAE_LB_IP=`yq -r .master.Moudules.AnalyticEngine.LoadBalancerIP $CONFFILE`
 OAE_NODE_PORT=`yq -r .master.Moudules.AnalyticEngine.NodePort $CONFFILE`
 
-OME_LB_IP=`yq -r .master.Moudules.MetricCollector.LoadBalancerIP $CONFFILE`
 OME_NODE_PORT=`yq -r .master.Moudules.MetricCollector.NodePort $CONFFILE`
 OME_EXTERNAL_PORT=`yq -r .master.Moudules.MetricCollector.externalPort $CONFFILE`
 
-INFLUXDB_LB_IP=`yq -r .master.Moudules.InfluxDB.LoadBalancerIP $CONFFILE`
 INFLUXDB_NODE_PORT=`yq -r .master.Moudules.InfluxDB.NodePort $CONFFILE`
 
-LB_LB_IP=`yq -r .master.Moudules.LoadBalancingController.LoadBalancerIP $CONFFILE`
 LB_NODE_PORT=`yq -r .master.Moudules.LoadBalancingController.NodePort $CONFFILE`
 
 PDNS_IP=`yq -r .externalServer.ServerIP.internal $CONFFILE`
@@ -121,6 +116,14 @@ if [ "" = "$NFS_OK3" ]; then
 fi
 exportfs -a
 
+# Init /etc/resolv.conf
+DNS_OK=$(grep -r "nameserver ${PDNS_IP}" /etc/resolv.conf)
+if [ "" = "$DNS_OK" ]; then
+  echo "Not found External DNS Server. Add 'nameserver ${PDNS_IP}' in /etc/resolv.conf"
+  sed -i "1s/^/nameserver ${PDNS_IP}\n /" /etc/resolv.conf
+fi
+
+
 echo "Replace Setting Variable"
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/1.create.sh
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-has-controller/operator.yaml
@@ -169,11 +172,8 @@ sed -i 's|REPLACE_INIT_MEMBER_DIR|'\"$INIT_MEMBER_DIR\"'|g' master/openmcp-clust
 sed -i 's|REPLACE_OMCPIP|'\"$OMCP_IP\"'|g' master/openmcp-cluster-manager/pv.yaml
 sed -i 's|REPLACE_OMCPIP|'\"$OMCP_IP\"'|g' master/openmcp-apiserver/pv.yaml
 
-sed -i 's|REPLACE_AS_LBIP|'$OAS_LB_IP'|g' master/openmcp-apiserver/service.yaml
 sed -i 's|REPLACE_PORT|'$OAS_NODE_PORT'|g' master/openmcp-apiserver/service.yaml
 
-
-sed -i 's|REPLACE_AE_LBIP|'$OAE_LB_IP'|g' master/openmcp-analytic-engine/service.yaml
 sed -i 's|REPLACE_GRPCPORT|'$OAE_NODE_PORT'|g' master/openmcp-analytic-engine/service.yaml
 
 sed -i 's|REPLACE_GRPCPORT|'\"$OAE_NODE_PORT\"'|g' master/openmcp-has-controller/operator.yaml
@@ -183,14 +183,12 @@ sed -i 's|REPLACE_GRPCPORT|'\"$OAE_NODE_PORT\"'|g' master/openmcp-loadbalancing-
 sed -i 's|REPLACE_GRPCIP|'\"$OMCP_EXTERNAL_IP\"'|g' member/metric-collector/operator/operator.yaml
 sed -i 's|REPLACE_GRPCPORT|'\"$OME_EXTERNAL_PORT\"'|g' member/metric-collector/operator/operator.yaml
 
-sed -i 's|REPLACE_MC_LBIP|'$OME_LB_IP'|g' master/openmcp-metric-collector/service.yaml
 sed -i 's|REPLACE_GRPCPORT|'$OME_NODE_PORT'|g' master/openmcp-metric-collector/service.yaml
 
 sed -i 's|REPLACE_INFLUXDBIP|'\"$OMCP_IP\"'|g' master/openmcp-analytic-engine/operator.yaml
 sed -i 's|REPLACE_INFLUXDBIP|'\"$OMCP_IP\"'|g' master/openmcp-metric-collector/operator.yaml
 sed -i 's|REPLACE_INFLUXDBIP|'\"$OMCP_IP\"'|g' master/openmcp-apiserver/operator.yaml
 
-sed -i 's|REPLACE_INFLUX_LBIP|'$INFLUXDB_LB_IP'|g' master/influxdb/service.yaml
 sed -i 's|REPLACE_INFLUXDBPORT|'$INFLUXDB_NODE_PORT'|g' master/influxdb/service.yaml
 
 sed -i 's|REPLACE_INFLUXDBPORT|'\"$INFLUXDB_NODE_PORT\"'|g' master/openmcp-analytic-engine/operator.yaml
@@ -201,8 +199,7 @@ sed -i 's|REPLACE_API_KEY|'\"$API_APP_KEY\"'|g' master/openmcp-apiserver/operato
 sed -i 's|REPLACE_API_USER_NAME|'\"$API_USER_NAME\"'|g' master/openmcp-apiserver/operator.yaml
 sed -i 's|REPLACE_API_USER_PW|'\"$API_USER_PW\"'|g' master/openmcp-apiserver/operator.yaml
 
-sed -i 's|REPLACE_LB_LBIP|'$LB_LB_IP'|g' master/influxdb/service.yaml
-sed -i 's|REPLACE_PORT|'$LB_NODE_PORT'|g' master/influxdb/service.yaml
+sed -i 's|REPLACE_PORT|'$LB_NODE_PORT'|g' master/openmcp-loadbalancing-controller/service.yaml
 
 sed -i 's|REPLACE_NFSIP|'\"$OMCP_IP\"'|g' master/influxdb/pv.yaml
 

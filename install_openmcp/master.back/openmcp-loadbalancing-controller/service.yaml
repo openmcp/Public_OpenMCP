@@ -4,7 +4,6 @@ metadata:
   name: openmcp-loadbalancing-controller
   namespace: openmcp
 spec:
-  loadBalancerIP: REPLACE_LB_LBIP
   selector:
     name: openmcp-loadbalancing-controller
   ports:

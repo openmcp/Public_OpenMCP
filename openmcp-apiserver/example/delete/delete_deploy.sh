@@ -1,7 +1,9 @@
 USERNAME="openmcp"
 PASSWORD="keti"
-IP="10.0.3.20"
-PORT="30000"
+#IP="10.0.3.20"
+#PORT="30000"
+IP="openmcp-apiserver.openmcp.default-domain.svc.openmcp.example.org"
+PORT="8080"
 NS="default"
 POD="example-nginx-deploy"
 URL="apis/apps/v1/namespaces/$NS/deployments/$POD"
@@ -20,6 +22,6 @@ TOKEN_JSON=`curl -XPOST \
 TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
-curl -X DELETE --cacert server.srt --insecure -H "Authorization: Bearer $TOKEN" https://$IP:$PORT/$URL?clustername=$CLUSTER
+curl -X DELETE --cacert server.crt -H "Authorization: Bearer $TOKEN" https://$IP:$PORT/$URL?clustername=$CLUSTER
 
 rm server.crt
