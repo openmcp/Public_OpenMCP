@@ -34,8 +34,6 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "openmcp-deployment-controller"
-      imagePullSecrets:
-        - name: openmcp-private-registry
       tolerations:
         - key: node.kubernetes.io/not-ready
           effect: NoExecute

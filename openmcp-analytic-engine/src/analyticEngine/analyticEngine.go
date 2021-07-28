@@ -265,91 +265,94 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 	var totalCpuCore int64 = 0
 
 	time_t := ""
-	for _, ser := range result[0].Series {
-		nodeCapacity := &corev1.Node{}
-		err := cm.Cluster_genClients[ser.Tags["cluster"]].Get(context.TODO(), nodeCapacity, "", ser.Tags["node"])
-		if err != nil {
-			omcplog.V(0).Info("nodelist err!  : ", err)
-			continue
-		} else {
-			omcplog.V(2).Info("[CPU Capacity] ", ser.Tags["cluster"], "/", ser.Tags["node"], "/", nodeCapacity.Status.Capacity.Cpu().Value())
-		}
 
-		totalCpuCore = totalCpuCore + nodeCapacity.Status.Capacity.Cpu().Value()
+	if len(result) > 0 {
+		for _, ser := range result[0].Series {
+			nodeCapacity := &corev1.Node{}
+			err := cm.Cluster_genClients[ser.Tags["cluster"]].Get(context.TODO(), nodeCapacity, "", ser.Tags["node"])
+			if err != nil {
+				omcplog.V(0).Info("nodelist err!  : ", err)
+				continue
+			} else {
+				omcplog.V(2).Info("[CPU Capacity] ", ser.Tags["cluster"], "/", ser.Tags["node"], "/", nodeCapacity.Status.Capacity.Cpu().Value())
+			}
 
-		for c, colName := range ser.Columns {
-			for r, _ := range ser.Values {
+			totalCpuCore = totalCpuCore + nodeCapacity.Status.Capacity.Cpu().Value()
 
-				Strval := fmt.Sprintf("%v", ser.Values[r][c])
-				QuanVal, _ := resource.ParseQuantity(Strval)
+			for c, colName := range ser.Columns {
+				for r, _ := range ser.Values {
 
-				if r == 0 {
-					if colName == "NetworkLatency" {
-						MetricsMap[colName], _ = strconv.ParseFloat(Strval, 64)
-					} else if colName == "time" {
-						time_t = Strval
-					} else {
-						if _, ok := MetricsMap[colName]; ok {
-							if colName == "CPUUsageNanoCores" {
-								MetricsMap[colName] = MetricsMap[colName] + float64(QuanVal.AsApproximateFloat64())
-							} else {
-								MetricsMap[colName] = MetricsMap[colName] + float64(QuanVal.Value())
-							}
+					Strval := fmt.Sprintf("%v", ser.Values[r][c])
+					QuanVal, _ := resource.ParseQuantity(Strval)
 
+					if r == 0 {
+						if colName == "NetworkLatency" {
+							MetricsMap[colName], _ = strconv.ParseFloat(Strval, 64)
+						} else if colName == "time" {
+							time_t = Strval
 						} else {
-							if colName == "CPUUsageNanoCores" {
-								MetricsMap[colName] = MetricsMap[colName] + float64(QuanVal.AsApproximateFloat64())
+							if _, ok := MetricsMap[colName]; ok {
+								if colName == "CPUUsageNanoCores" {
+									MetricsMap[colName] = MetricsMap[colName] + float64(QuanVal.AsApproximateFloat64())
+								} else {
+									MetricsMap[colName] = MetricsMap[colName] + float64(QuanVal.Value())
+								}
+
 							} else {
-								MetricsMap[colName] = float64(QuanVal.Value())
+								if colName == "CPUUsageNanoCores" {
+									MetricsMap[colName] = MetricsMap[colName] + float64(QuanVal.AsApproximateFloat64())
+								} else {
+									MetricsMap[colName] = float64(QuanVal.Value())
+								}
 							}
 						}
-					}
 
-				} else if r == 4 {
-					if _, ok := prevMetricsMap[colName]; ok {
-						prevMetricsMap[colName] = prevMetricsMap[colName] + float64(QuanVal.Value())
-					} else {
-						prevMetricsMap[colName] = float64(QuanVal.Value())
+					} else if r == 4 {
+						if _, ok := prevMetricsMap[colName]; ok {
+							prevMetricsMap[colName] = prevMetricsMap[colName] + float64(QuanVal.Value())
+						} else {
+							prevMetricsMap[colName] = float64(QuanVal.Value())
+						}
 					}
 				}
 			}
+
 		}
 
+		cpuScore := MetricsMap["CPUUsageNanoCores"] / float64(totalCpuCore) * 100
+		memScore := (MetricsMap["MemoryUsageBytes"] / (MetricsMap["MemoryUsageBytes"] + MetricsMap["MemoryAvailableBytes"])) * 100
+		netScore := ((MetricsMap["NetworkRxBytes"] - prevMetricsMap["NetworkRxBytes"]) + (MetricsMap["NetworkTxBytes"] - prevMetricsMap["NetworkTxBytes"])) / 1000000
+		diskScore := (MetricsMap["FsUsedBytes"] / MetricsMap["FsCapacityBytes"]) * 100
+		latencyScore := MetricsMap["NetworkLatency"] * 1000
+
+		if len(result[0].Series) != 0 {
+			ae.Influx.InsertClusterStatus(clusterName, time_t, cpuScore, memScore, netScore, diskScore, latencyScore)
+		}
+
+		score = cpuScore*ae.MetricsWeight["CPU"] + memScore*ae.MetricsWeight["Memory"] + diskScore*ae.MetricsWeight["FS"] + netScore*ae.MetricsWeight["NET"] + latencyScore*ae.MetricsWeight["LATENCY"]
+
+		scoreMap["cpu"] = cpuScore
+		scoreMap["memory"] = memScore
+		scoreMap["network"] = netScore
+		scoreMap["disk"] = diskScore
+		scoreMap["latency"] = latencyScore
+
+		// if score > 0 && clusterName == "eks-cluster1" {
+		// 	omcplog.V(2).Info("--------------------------------------------------------")
+		// 	omcplog.V(2).Info(" rx -> ", MetricsMap["NetworkRxBytes"]-prevMetricsMap["NetworkRxBytes"])
+		// 	omcplog.V(2).Info(" tx -> ", MetricsMap["NetworkTxBytes"]-prevMetricsMap["NetworkTxBytes"])
+		// 	omcplog.V(2).Info(" cpuscore : ", cpuScore, MetricsMap["CPUUsageNanoCores"], float64(totalCpuCore))
+		// 	omcplog.V(2).Info(" memScore : ", memScore)
+		// 	omcplog.V(2).Info(" netScore : ", netScore)
+		// 	omcplog.V(2).Info(" diskScore : ", diskScore)
+		// 	omcplog.V(2).Info(" latencyScore : ", latencyScore)
+		// 	omcplog.V(2).Info("\"", clusterName, "\" totalScore : ", score)
+		// 	omcplog.V(2).Info("--------------------------------------------------------")
+		// }
+
+		ae.ResourceScore[clusterName] = score
+		ae.ClusterResourceUsage[clusterName] = scoreMap
 	}
-
-	cpuScore := MetricsMap["CPUUsageNanoCores"] / float64(totalCpuCore) * 100
-	memScore := (MetricsMap["MemoryUsageBytes"] / (MetricsMap["MemoryUsageBytes"] + MetricsMap["MemoryAvailableBytes"])) * 100
-	netScore := ((MetricsMap["NetworkRxBytes"] - prevMetricsMap["NetworkRxBytes"]) + (MetricsMap["NetworkTxBytes"] - prevMetricsMap["NetworkTxBytes"])) / 1000000
-	diskScore := (MetricsMap["FsUsedBytes"] / MetricsMap["FsCapacityBytes"]) * 100
-	latencyScore := MetricsMap["NetworkLatency"] * 1000
-
-	if len(result[0].Series) != 0 {
-		ae.Influx.InsertClusterStatus(clusterName, time_t, cpuScore, memScore, netScore, diskScore, latencyScore)
-	}
-
-	score = cpuScore*ae.MetricsWeight["CPU"] + memScore*ae.MetricsWeight["Memory"] + diskScore*ae.MetricsWeight["FS"] + netScore*ae.MetricsWeight["NET"] + latencyScore*ae.MetricsWeight["LATENCY"]
-
-	scoreMap["cpu"] = cpuScore
-	scoreMap["memory"] = memScore
-	scoreMap["network"] = netScore
-	scoreMap["disk"] = diskScore
-	scoreMap["latency"] = latencyScore
-
-	// if score > 0 && clusterName == "eks-cluster1" {
-	// 	omcplog.V(2).Info("--------------------------------------------------------")
-	// 	omcplog.V(2).Info(" rx -> ", MetricsMap["NetworkRxBytes"]-prevMetricsMap["NetworkRxBytes"])
-	// 	omcplog.V(2).Info(" tx -> ", MetricsMap["NetworkTxBytes"]-prevMetricsMap["NetworkTxBytes"])
-	// 	omcplog.V(2).Info(" cpuscore : ", cpuScore, MetricsMap["CPUUsageNanoCores"], float64(totalCpuCore))
-	// 	omcplog.V(2).Info(" memScore : ", memScore)
-	// 	omcplog.V(2).Info(" netScore : ", netScore)
-	// 	omcplog.V(2).Info(" diskScore : ", diskScore)
-	// 	omcplog.V(2).Info(" latencyScore : ", latencyScore)
-	// 	omcplog.V(2).Info("\"", clusterName, "\" totalScore : ", score)
-	// 	omcplog.V(2).Info("--------------------------------------------------------")
-	// }
-
-	ae.ResourceScore[clusterName] = score
-	ae.ClusterResourceUsage[clusterName] = scoreMap
 
 	return nil
 }

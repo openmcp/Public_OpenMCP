@@ -277,6 +277,7 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 						util.CmdExec2("chmod 755 " + dirname + "/gen-eastwest-gateway.sh")
 						util.CmdExec2("chmod 755 " + dirname + "/istio_install.sh")
 						util.CmdExec2(dirname + "/istio_install.sh " + dirname + " " + clustername)
+						fmt.Println("*** ", dirname+" created")
 						/*
 							util.CmdExec2("cp " + dirname + "/istio_install.sh " + dirname + "/istio_install-" + clustername + ".sh")
 							util.CmdExec2("sed -i 's|REPLACE_DIRECTORY|" + dirname + "|g' " + dirname + "/istio_install-" + clustername + ".sh")
@@ -286,7 +287,6 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 							util.CmdExec2(dirname + "/istio_install-" + clustername + ".sh")
 							util.CmdExec2("rm " + dirname + "/istio_install-" + clustername + ".sh")
 						*/
-						fmt.Println("*** ", dirname+" created")
 					}
 					if filepath.Ext(f.Name()) == ".yaml" || filepath.Ext(f.Name()) == ".yml" {
 						if strings.Contains(dirname, "metric-collector/operator") {
@@ -304,6 +304,10 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/metallb_configmap_" + clustername + ".yaml --context " + clustername)
 							util.CmdExec2("rm " + dirname + "/metallb_configmap_" + clustername + ".yaml")
 							fmt.Println("*** ", dirname+"/metallb_configmap_"+clustername+" created")
+						} else if strings.Contains(dirname, "configmap/coredns") {
+							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/" + f.Name() + " --context " + clustername)
+							util.CmdExec2("/usr/local/bin/kubectl delete pod --namespace kube-system --selector k8s-app=kube-dns")
+							fmt.Println("*** ", dirname+" restarted")
 						} else {
 							if strings.Contains(dirname, "istio") {
 							} else {
@@ -432,10 +436,6 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 
 		mem_user := memberkc.Users[0]
 		mem_user.Name = clusterInstance.Name
-
-		/*if clusterInstance.Spec.ClusterPlatformType == "GKE" {
-			mem_user.User.AuthProvider.Config.AccessToken = clusterInstance.Spec.GkeAccessToken
-		}*/
 
 		openmcpkc.Clusters = append(openmcpkc.Clusters, mem_cluster)
 		openmcpkc.Contexts = append(openmcpkc.Contexts, mem_context)
