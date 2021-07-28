@@ -127,7 +127,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	} else if clusterInstance.Spec.JoinStatus == "JOINING" && metallbrangeCheck == "true" {
 
 		omcplog.V(2).Info(clusterInstance.Name + " [ JOINING ] Start")
-		//omcplog.V(4).Info("Metallb Configmap (", clusterInstance.Spec.MetalLBRange.AddressFrom, ",", clusterInstance.Spec.MetalLBRange.AddressTo, ")")
+		omcplog.V(4).Info("Metallb Configmap (", clusterInstance.Spec.MetalLBRange.AddressFrom, ",", clusterInstance.Spec.MetalLBRange.AddressTo, ")")
 		joinCheck := MergeConfigAndJoin(*clusterInstance)
 
 		if joinCheck == "TRUE" {

@@ -28,49 +28,56 @@ func deleteSubResourceDeployment(clusterName string, cm *clusterManager.ClusterM
 
 	for _, odep := range odepList.Items {
 
-		omcplog.V(2).Info("[Resource Clean] '" + odep.Name + "' Update BlockSubResource = true")
-		odep.Status.BlockSubResource = true
-		_, err2 := cm.Crd_client.OpenMCPDeployment(odep.Namespace).UpdateStatus(&odep)
-		if err2 != nil {
-			return err2
-		}
-
 		if _, ok := cm.Cluster_genClients[clusterName]; ok {
-			omcplog.V(2).Info("[Resource Clean] Find Deployment '" + odep.Name + "' in Cluster")
+
+			omcplog.V(2).Info("[Resource Clean] Try Find Deployment '" + odep.Name + "' in Cluster")
 			dep := &appsv1.Deployment{}
 			err3 := cm.Cluster_genClients[clusterName].Get(context.TODO(), dep, odep.Namespace, odep.Name)
 			if err3 != nil && errors.IsNotFound(err3) {
 				omcplog.V(2).Info("[Resource Clean] is Not Found Deployment. Continue Next Deployment")
 
 			} else if err3 == nil {
-				omcplog.V(2).Info("[Resource Clean] Find Deployment '" + odep.Name + "' in Cluster. Delete Start")
+
+				omcplog.V(2).Info("[Resource Clean] Found Deployment '" + odep.Name + "' in Cluster. Update BlockSubResource = true")
+				odep.Status.BlockSubResource = true
+				_, err2 := cm.Crd_client.OpenMCPDeployment(odep.Namespace).UpdateStatus(&odep)
+				if err2 != nil {
+					return err2
+				}
+				omcplog.V(2).Info("[Resource Clean] '" + odep.Name + "' in Cluster Delete Start")
+
 				err4 := cm.Cluster_genClients[clusterName].Delete(context.TODO(), dep, odep.Namespace, odep.Name)
 				if err4 != nil {
 					return err4
 				}
-				omcplog.V(2).Info("[Resource Clean] Deleteed Deployment '" + odep.Name + "' in Cluster")
+				omcplog.V(2).Info("[Resource Clean] Deleted Deployment '" + odep.Name + "' in Cluster")
 
-				odep.Status.ClusterMaps[clusterName] -= *dep.Spec.Replicas
-				odep.Status.SchedulingNeed = true
-				odep.Status.SchedulingComplete = false
+				changed_odep, err5 := cm.Crd_client.OpenMCPDeployment(odep.Namespace).Get(odep.Name, metav1.GetOptions{})
+				if err5 != nil {
+					omcplog.V(0).Info("[Resource Clean] Error: ", err5)
+				}
+
+				changed_odep.Status.ClusterMaps[clusterName] -= *dep.Spec.Replicas
+				changed_odep.Status.SchedulingNeed = true
+				changed_odep.Status.SchedulingComplete = false
+				changed_odep.Status.BlockSubResource = false
+				omcplog.V(2).Info("[Resource Clean] ReSchduling And BlockSubResource = false")
+				_, err6 := cm.Crd_client.OpenMCPDeployment(changed_odep.Namespace).UpdateStatus(changed_odep)
+				if err6 != nil {
+					omcplog.V(0).Info(err6)
+				}
+				omcplog.V(2).Info("[Resource Clean] Done. OpenMCPDeployment Stauts Changed")
 
 			} else {
 				return err3
 			}
 		}
 
-		omcplog.V(2).Info("[Resource Clean] ReSchduling And BlockSubResource = false")
-
-		changed_odep, err5 := cm.Crd_client.OpenMCPDeployment(odep.Namespace).Get(odep.Name, metav1.GetOptions{})
-		if err5 != nil {
-			omcplog.V(0).Info("[Resource Clean] Error: ", err5)
-		}
-		changed_odep.Status.BlockSubResource = false
-		_, err6 := cm.Crd_client.OpenMCPDeployment(odep.Namespace).UpdateStatus(changed_odep)
-		if err6 != nil {
-			omcplog.V(0).Info(err6)
-		}
-		omcplog.V(2).Info("[Resource Clean] Done. OpenMCPDeployment Stauts Changed")
+		// changed_odep, err5 := cm.Crd_client.OpenMCPDeployment(odep.Namespace).Get(odep.Name, metav1.GetOptions{})
+		// if err5 != nil {
+		// 	omcplog.V(0).Info("[Resource Clean] Error: ", err5)
+		// }
+		// changed_odep.Status.BlockSubResource = false
 
 	}
 	return nil
