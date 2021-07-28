@@ -141,4 +141,5 @@ kubectl --context=openmcp apply -n istio-system -f \
     samples/multicluster/expose-services.yaml
 
 #istio 인증서 복사
+rm -r ../../member/istio/certs
 cp -r certs ../../member/istio/
