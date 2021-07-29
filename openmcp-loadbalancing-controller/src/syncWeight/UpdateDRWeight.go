@@ -95,6 +95,8 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 				node_list_all[region_zone] = 1
 			}
 
+			distributeListTm := map[types.NamespacedName]drInfo{}
+
 			//OpenMCPService 조회 ->  Pod Selector 조회 -> 배포된 노드 정보 가져오기
 			//osvcList := &resourcev1alpha1.OpenMCPServiceList{}
 			//err_osvc := liveclient.List(context.TODO(), osvcList)
@@ -222,13 +224,13 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 						DRScore: tmp_rz,
 					}
 
-					//DistributeList 갱신
-					DistributeList[osvc_n_ns] = dl
+					//distributeListTm 갱신
+					distributeListTm[osvc_n_ns] = dl
 
 					//Update DestinationRules
 
 					drweight := map[string][]DRWeight{}
-					drweight = DistributeList[osvc_n_ns].DRScore
+					drweight = distributeListTm[osvc_n_ns].DRScore
 
 					distributeTarget := map[string]map[string]uint32{}
 
@@ -321,6 +323,8 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 				}
 
 			}
+
+			DistributeList = distributeListTm
 
 			omcplog.V(2).Info(">>> Update All DestinationRule Resources ")
 			//fmt.Println(DistributeList)
