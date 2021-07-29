@@ -858,15 +858,15 @@ func (ae *AnalyticEngineStruct) SendRegionZoneInfo(ctx context.Context, data *pr
 	fmt.Println(ae.ClusterPodResourceScore)
 	_, exists := ae.ClusterPodResourceScore[data.ToClusterName]
 	if !exists {
-		return nil, errors.New("Not Exist Cluster '" + data.ToClusterName + "' ClusterPodResourceScore Initializing1. Retry again")
+		return nil, errors.New("Not Exist Cluster '" + data.ToClusterName + "' - ClusterPodResourceScore is Initializing. Try again")
 	}
 	_, exists = ae.ClusterPodResourceScore[data.ToClusterName][data.ToNamespace]
 	if !exists {
-		return nil, errors.New("Not Exist Namespace '" + data.ToNamespace + "' ClusterPodResourceScore Initializing2. Retry again")
+		return nil, errors.New("Not Exist Namespace '" + data.ToNamespace + "' - ClusterPodResourceScore is Initializing. Try again")
 	}
 	_, exists = ae.ClusterPodResourceScore[data.ToClusterName][data.ToNamespace][data.ToPodName]
 	if !exists {
-		return nil, errors.New("Not Exist Pod '" + data.ToPodName + "' ClusterPodResourceScore Initializing3. Retry again")
+		return nil, errors.New("Not Exist Pod '" + data.ToPodName + "' - ClusterPodResourceScore is Initializing or Pod has Pending State. Try again")
 	}
 
 	tempClusterPodResourceScore = ae.ClusterPodResourceScore[data.ToClusterName][data.ToNamespace][data.ToPodName]
