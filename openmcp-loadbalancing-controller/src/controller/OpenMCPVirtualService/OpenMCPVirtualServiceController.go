@@ -494,7 +494,7 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 
 						cluster_X_TotalWeight = cluster_X_TotalWeight + float64(grpcResponse.Weight)
 
-						fmt.Println("!!!! [Score Calcuation]", fromRegion, "/", fromZone, " -> ", toRegion, "/", toZone, "(", clusterName, "/", node.Name, "/", svcNS, "/", pod.Name, "): ", grpcResponse.Weight)
+						fmt.Println("*** [Score Calcuation]", fromRegion, "/", fromZone, " -> ", toRegion, "/", toZone, "(", clusterName, "/", node.Name, "/", svcNS, "/", pod.Name, "): ", grpcResponse.Weight)
 						break
 					}
 				}
@@ -509,8 +509,8 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 				clusterWeight[clusterName] = cluster_X_AVG
 				clusterWeightSum += cluster_X_AVG
 
-				fmt.Println("!!!! ==> Cluster Score AVG:", cluster_X_AVG)
-				fmt.Println("!!!! ----------------------------------")
+				fmt.Println("*** ==> Cluster Score AVG:", cluster_X_AVG)
+				//fmt.Println("----------------------------------")
 			}
 
 		}
