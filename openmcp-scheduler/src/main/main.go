@@ -44,7 +44,6 @@ func main() {
 	}
 	defer conn.Close()
 	grpcClient := protobuf.NewRequestAnalysisClient(conn)
-
 	// Start Openmcp-Scheduler
 	for {
 		omcplog.V(0).Info("***** [START] OpenMCP Scheduler *****")

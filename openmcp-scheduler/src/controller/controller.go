@@ -20,7 +20,6 @@ import (
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	openmcpscheduler "openmcp/openmcp/openmcp-scheduler/src"
-	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
@@ -91,6 +90,7 @@ func NewControllers(cm *clusterManager.ClusterManager, scheduler *openmcpschedul
 	if err := m.Start(stop); err != nil {
 		omcplog.V(0).Info(err)
 	}
+
 }
 
 var cm *clusterManager.ClusterManager
@@ -110,9 +110,8 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		}
 		ghostclients = append(ghostclients, ghostclient)
 	}
-
-	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace, scheduler: scheduler}, controller.Options{})
-
+	recon := &reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace, scheduler: scheduler}
+	co := controller.New(recon, controller.Options{})
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
@@ -126,91 +125,75 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 			return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
 		}
 	}
+	recon.scheduler.Live = &recon.live
 	return co, nil
 }
+
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	// Fetch the OpenMCPDeployment instance
+	r.scheduler.Live = &r.live
 	newDeployment := &resourcev1alpha1.OpenMCPDeployment{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, newDeployment)
 	IsExist := false
 	clusters := newDeployment.Spec.Clusters
 	if err != nil && errors.IsNotFound(err) {
 		omcplog.V(0).Info("Not Found::", newDeployment.GetName)
-		r.scheduler.IsResource = false
-		///////////////////////////////post schduling///////////////////////////////
-		postlist := r.scheduler.PostDeployments
-		if postlist.Len() > 0 {
-			omcplog.V(0).Info("post scheduler")
-			r.scheduler.SetupResources()
-			omcplog.V(0).Info("post SetupResources")
-
-			firstdeploy := (postlist.Front()).Value.(*ketiresource.PostDelployment)
-			firstdeploy.Fcnt -= 1
-			if firstdeploy.RemainReplica < 0 || firstdeploy.Fcnt < 0 {
-				postlist.Remove(postlist.Front())
-				omcplog.V(0).Info("Remove Frist PostPods  post length =>", postlist.Len())
-				return reconcile.Result{}, nil
-				// firstdeploy = (postlist.Front()).Value.(*ketiresource.PostDelployment)
-			}
-			postdeployment := firstdeploy.NewDeployment
-			omcplog.V(0).Info("RemainReplica", firstdeploy.RemainReplica)
-			omcplog.V(0).Infof("Post Resource Get => [Name] : %v", postdeployment.Name)
-			omcplog.V(5).Infof("Existng Deployment Replicas => [Name] : %v", firstdeploy.NewDeployment.Status.Replicas)
-			firstdeploy.NewDeployment.Status.Replicas = firstdeploy.RemainReplica
-			exist := firstdeploy.NewDeployment.Status.ClusterMaps
-			backup := firstdeploy.NewDeployment.Status.ClusterMaps
-			omcplog.V(0).Infof("Existing MAPPING => [Name] : %v", exist)
-			cluster_replicas_map, _ := r.scheduler.Scheduling(postdeployment, true, clusters)
-			for key, val := range exist {
-
-				_, exists := exist[key]
-				if !exists {
-					cluster_replicas_map[key] = 1
-				} else {
-					cluster_replicas_map[key] += val
-				}
-			}
-			omcplog.V(5).Infof("insert MAPPING => [Name] : %v", cluster_replicas_map)
-			if len(cluster_replicas_map) == 0 {
-				return reconcile.Result{}, nil
-			}
-			postdeployment.Status.ClusterMaps = cluster_replicas_map
-
-			postdeployment.Status.Replicas = newDeployment.Spec.Replicas
-			omcplog.V(5).Infof("Post  =>: %v", postdeployment.Status.ClusterMaps)
-			postdeployment.Status.SchedulingNeed = false
-			postdeployment.Status.SchedulingComplete = true
-			postdeployment.Status.CreateSyncRequestComplete = false
-			//cmd.CreateResource(&postdeployment.GetName())
-
-			//type OpenMCPDeploymentTemplateSpec struct {
-			// omcplog.V(0).Info("=> Scheduling Image : ", postdeployment.Spec.Template.Spec.Template)
-			// omcplog.V(0).Info("Existing Image=>",postdeployment.Spec.Template.Spec.Template.Spec.Containers[0].Image)
-			// postdeployment.Spec.Template.Spec.Template.Spec.Containers[0].Image="nginx:1.13"
-
-			// update OpenMCPDeployment to deploydd
-			//func (c *client) Patch(ctx context.Context, obj Object, patch Patch, opts ...PatchOption) error {
-			//func (sw *statusWriter) Update(ctx context.Context, obj Object, opts ...UpdateOption) error {
-
-			opts := &client.PatchOptions{DryRun: []string{"Bye", "Pippa"}}
-
-			err := r.live.Status().Patch(context.TODO(), postdeployment, client.MergeFrom(postdeployment), opts)
-
-			if err != nil {
-				omcplog.V(0).Infof("Failed to update instance status, %v", err)
-				postdeployment.Status.ClusterMaps = backup
-				return reconcile.Result{}, err
-			}
-			postlist.Remove(postlist.Front())
-		}
 		return reconcile.Result{}, nil
 	}
 
-	// apply 처리
-
+	// apply &&create 처리
 	if newDeployment.Status.SchedulingNeed == true && newDeployment.Status.SchedulingComplete == false {
 		lastspec := newDeployment.Status.LastSpec
 		temp := newDeployment.Spec.Replicas
+
+		// unjoin join 요청된경우에는 클러스터맵이 있음
+		if newDeployment.Status.ClusterMaps != nil {
+			count := 0
+			chagnedp := map[string]int32{}
+			//replica 개수와 배포된 포드의 개수확인
+			for key, val := range newDeployment.Status.ClusterMaps {
+				_, exists := newDeployment.Status.ClusterMaps[key]
+				if !exists {
+					count = 1
+					chagnedp[key] = 1
+				} else {
+					count += int(val)
+					chagnedp[key] += val
+				}
+			}
+			//allreschedcheck := false
+			//두조건이 같다면 전체 리스케줄링 따라서 아닌경우에만 처리해주면 됨
+			if int32(count) != temp {
+				//allreschedcheck = true
+				extra_replicas := temp - int32(count)
+				newDeployment.Spec.Replicas = extra_replicas
+				omcplog.V(5).Infof("  ClusterJoin Resource Get => [Name] : %v, [Namespace]  : %v", newDeployment.Name, newDeployment.Namespace)
+				cluster_replicas_map, _ := r.scheduler.Scheduling(newDeployment, false, clusters)
+				for key, val := range cluster_replicas_map {
+					_, exists := cluster_replicas_map[key]
+					if !exists {
+						chagnedp[key] = 1
+					} else {
+						chagnedp[key] += val
+					}
+				}
+				newDeployment.Status.ClusterMaps = chagnedp
+				newDeployment.Status.Replicas = temp
+				newDeployment.Status.SchedulingNeed = false
+				newDeployment.Status.SchedulingComplete = true
+				//		omcplog.V(5).Infof("cluster map =", cluster_replicas_map)
+				if !(len(cluster_replicas_map) == 0) {
+					omcplog.V(2).Info("=> ClusterJoin Scheduling Result : ", chagnedp)
+				}
+				err := r.live.Status().Update(context.TODO(), newDeployment)
+				if err != nil {
+					omcplog.V(0).Infof(" ClusterJoin Failed to update instance status, %v", err)
+					return reconcile.Result{}, err
+				}
+				return reconcile.Result{}, nil
+			}
+		}
+
 		//ex 래플리카 8 에서 7로 변경될경우 수행 기존보다 현재가 더작은경우  수행
 		if lastspec.Replicas != 0 && lastspec.Replicas > newDeployment.Spec.Replicas {
 			decre := lastspec.Replicas - newDeployment.Spec.Replicas

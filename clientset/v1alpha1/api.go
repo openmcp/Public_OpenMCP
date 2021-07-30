@@ -18,6 +18,9 @@ type ExampleV1Alpha1Interface interface {
 	OpenMCPService(namespace string) OpenMCPServiceInterface
 	OpenMCPIngress(namespace string) OpenMCPIngressInterface
 	OpenMCPNamespace(namespace string) OpenMCPNamespaceInterface
+	OpenMCPConfigMap(namespace string) OpenMCPConfigMapInterface
+	OpenMCPJob(namespace string) OpenMCPJobInterface
+	OpenMCPSecret(namespace string) OpenMCPSecretInterface
 	OpenMCPVirtualService(namespace string) VirtualServiceInterface
 	VirtualService(namespace string) VirtualServiceInterface
 	DestinationRule(namespace string) DestinationRuleInterface
@@ -109,6 +112,24 @@ func (c *ExampleV1Alpha1Client) OpenMCPIngress(namespace string) OpenMCPIngressI
 }
 func (c *ExampleV1Alpha1Client) OpenMCPNamespace(namespace string) OpenMCPNamespaceInterface {
 	return &OpenMCPNamespaceClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPConfigMap(namespace string) OpenMCPConfigMapInterface {
+	return &OpenMCPConfigMapClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPJob(namespace string) OpenMCPJobInterface {
+	return &OpenMCPJobClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPSecret(namespace string) OpenMCPSecretInterface {
+	return &OpenMCPSecretClient{
 		restClient: c.restClient,
 		ns:         namespace,
 	}

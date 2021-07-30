@@ -21,6 +21,7 @@ import (
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -69,7 +70,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		}
 	}
 
-	r.newClusterDeployNamespace()
+	//r.newClusterDeployNamespace()
 	return co, nil
 }
 func (r *reconciler) newClusterDeployNamespace() error {
@@ -90,7 +91,6 @@ func (r *reconciler) newClusterDeployNamespace() error {
 
 			err = cm.Cluster_genClients[cl.Name].Get(context.TODO(), ns, metav1.NamespaceDefault, ons.Name)
 			if err != nil && errors.IsNotFound(err) {
-				ons.Status.ChangeNeed = true
 				err = r.live.Status().Update(context.TODO(), &ons)
 				if err != nil {
 					omcplog.V(1).Info("Failed to update instance status", err)
@@ -146,7 +146,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			return reconcile.Result{}, err
 		}
 		return reconcile.Result{}, nil
-	} else {
+	}
+	if !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec) {
 		err := r.updateNamespace(req, cm, instance)
 		if err != nil {
 			omcplog.V(1).Info(err)
@@ -162,6 +163,39 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	//}
 	//
 	//return reconcile.Result{}, nil // err
+	// Check Job in cluster
+	if instance.Status.BlockSubResource == false {
+		omcplog.V(2).Info("[Member Cluster Check Job]")
+		for k, v := range instance.Status.ClusterMaps {
+			cluster_name := k
+			replica := v
+
+			if v == 0 {
+				continue
+			}
+			found := &corev1.Namespace{}
+			cluster_client := cm.Cluster_genClients[cluster_name]
+			err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+
+			if err != nil && errors.IsNotFound(err) {
+				// Delete Service Detected
+				omcplog.V(2).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
+				svc := r.namespaceForOpenMCPNamespace(req, instance)
+
+				command := "create"
+				omcplog.V(3).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+command+", Replicas :", replica, ")")
+				_, err = r.sendSync(svc, command, cluster_name)
+
+				if err != nil {
+					return reconcile.Result{}, err
+				}
+
+			}
+
+		}
+
+	}
+	return reconcile.Result{}, nil // err
 }
 
 func (r *reconciler) namespaceForOpenMCPNamespace(req reconcile.Request, m *resourcev1alpha1.OpenMCPNamespace) *corev1.Namespace {
@@ -232,18 +266,25 @@ func (r *reconciler) createNamespace(req reconcile.Request, cm *clusterManager.C
 	// }
 	cluster_map := make(map[string]int32)
 	for _, cluster := range cm.Cluster_list.Items {
+		found := &corev1.Namespace{}
+		cluster_client := cm.Cluster_genClients[cluster.Name]
 
-		omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
+		err := cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 
-		command := "create"
-		_, err := r.sendSync(dep, command, cluster.Name)
-		cluster_map[cluster.Name] = 1
-		if err != nil {
-			return err
+		if err != nil && errors.IsNotFound(err) {
+			omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
+
+			command := "create"
+			_, err := r.sendSync(dep, command, cluster.Name)
+			cluster_map[cluster.Name] = 1
+			if err != nil {
+				return err
+			}
 		}
+
 	}
 	instance.Status.ClusterMaps = cluster_map
-	instance.Status.ChangeNeed = false
+	instance.Status.LastSpec = instance.Spec
 	err := r.live.Status().Update(context.TODO(), instance)
 	return err
 }
@@ -286,43 +327,19 @@ func (r *reconciler) DeleteNamespace(cm *clusterManager.ClusterManager, name str
 func (r *reconciler) updateNamespace(req reconcile.Request, cm *clusterManager.ClusterManager, instance *resourcev1alpha1.OpenMCPNamespace) error {
 	omcplog.V(4).Info("Function Called updateNamespace")
 
-	dep := r.namespaceForOpenMCPNamespace(req, instance)
-	err := cm.Host_client.Update(context.TODO(), dep)
-	if err != nil && errors.IsNotFound(err) {
-		fmt.Println(err)
-	} else if err != nil {
-		return err
-	}
-	cluster_map := make(map[string]int32)
-	obj := &corev1.Namespace{}
 	for _, cluster := range cm.Cluster_list.Items {
-		err := cm.Cluster_genClients[cluster.Name].Get(context.TODO(), obj, instance.Namespace, instance.Name)
-		if err != nil && errors.IsNotFound(err) {
-			omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
 
-			command := "create"
-			_, err := r.sendSync(dep, command, cluster.Name)
-			cluster_map[cluster.Name] = 1
-			if err != nil {
-				return err
-			}
-		} else if err != nil {
-			omcplog.V(2).Info("Error :", err)
-		} else {
-			omcplog.V(3).Info("Cluster '" + cluster.Name + "' updated")
-
-			command := "update"
-			_, err := r.sendSync(dep, command, cluster.Name)
-			cluster_map[cluster.Name] = 1
-			if err != nil {
-				return err
-			}
+		omcplog.V(3).Info("Cluster '" + cluster.Name + "' updated")
+		dep := r.namespaceForOpenMCPNamespace(req, instance)
+		command := "update"
+		_, err := r.sendSync(dep, command, cluster.Name)
+		if err != nil {
+			return err
 		}
 
 	}
-	instance.Status.ClusterMaps = cluster_map
-	instance.Status.ChangeNeed = false
-	err = r.live.Status().Update(context.TODO(), instance)
+	instance.Status.LastSpec = instance.Spec
+	err := r.live.Status().Update(context.TODO(), instance)
 	return err
 
 }
@@ -342,11 +359,18 @@ func CheckClusterNamespaceStatus(myClusterManager *clusterManager.ClusterManager
 			}
 			for _, ons := range onsList.Items {
 				nsStatusActiveAll := true
-				for _, cluster := range cm.Cluster_list.Items {
+
+				for k, v := range ons.Status.ClusterMaps {
+					clusterName := k
+
+					if v == 0 {
+						continue
+					}
+
 					ns := &corev1.Namespace{}
-					err := cm.Cluster_genClients[cluster.Name].Get(context.TODO(), ns, corev1.NamespaceDefault, ons.Name)
+					err = cm.Cluster_genClients[clusterName].Get(context.TODO(), ns, corev1.NamespaceDefault, ons.Name)
 					if err != nil && errors.IsNotFound(err) {
-						omcplog.V(2).Info(err, ": Create Namespace In Cluster '", cluster.Name, "'")
+						omcplog.V(2).Info(err, ": Create Namespace In Cluster '", clusterName, "'")
 						newLabel := ons.Labels
 						if newLabel == nil {
 							newLabel = make(map[string]string)
@@ -365,7 +389,7 @@ func CheckClusterNamespaceStatus(myClusterManager *clusterManager.ClusterManager
 						}
 						reference.SetMulticlusterControllerReference(CreateNSInstance, reference.NewMulticlusterOwnerReference(&ons, ons.GroupVersionKind(), "openmcp"))
 
-						err2 := cm.Cluster_genClients[cluster.Name].Create(context.TODO(), CreateNSInstance)
+						err2 := cm.Cluster_genClients[clusterName].Create(context.TODO(), CreateNSInstance)
 						if err2 != nil {
 							omcplog.V(0).Info(err2)
 						}
@@ -380,6 +404,7 @@ func CheckClusterNamespaceStatus(myClusterManager *clusterManager.ClusterManager
 					} else if err != nil {
 						omcplog.V(0).Info(err)
 						nsStatusActiveAll = false
+						break
 					} else {
 						if ns.Status.Phase != "Active" {
 							nsStatusActiveAll = false

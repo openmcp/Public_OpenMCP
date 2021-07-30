@@ -12,7 +12,7 @@ spec:
   ports:
   - port: 2051
     targetPort: 2051
-    nodePort: 30003
+    nodePort: 30002
     protocol: TCP
   selector:
     name: openmcp-metric-collector

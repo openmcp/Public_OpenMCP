@@ -231,6 +231,11 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		} else {
 			omcplog.V(4).Info("Not Exists Cluster Info")
 		}
+		clusterInstance := &clusterv1alpha1.OpenMCPCluster{}
+		err = r.live.Get(context.TODO(), request.NamespacedName, clusterInstance)
+		if err != nil {
+			omcplog.V(0).Info("[" + clusterInstance.Name + "] Get OpenMCPCluster Error: " + err.Error())
+		}
 		clusterInstance.Spec.JoinStatus = "UNJOIN"
 		err = r.live.Update(context.TODO(), clusterInstance)
 		if err != nil {

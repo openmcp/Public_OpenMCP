@@ -4,12 +4,11 @@ metadata:
   name: openmcp-loadbalancing-controller
   namespace: openmcp
 spec:
-  loadBalancerIP: 10.0.3.192
   selector:
     name: openmcp-loadbalancing-controller
   ports:
   - port: 80
     targetPort: 80
-    nodePort: 30005
+    nodePort: 30004
   type: LoadBalancer
   externalTrafficPolicy: Local
