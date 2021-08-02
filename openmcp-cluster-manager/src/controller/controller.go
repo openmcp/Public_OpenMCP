@@ -422,6 +422,16 @@ func MergeConfigAndJoin(clusterInstance clusterv1alpha1.OpenMCPCluster) string {
 
 	if clusterName != "" {
 		omcplog.V(4).Info("Already Join")
+
+		clusterInstance.Spec.JoinStatus = "JOIN"
+		err = r.live.Update(context.TODO(), &clusterInstance)
+		if err != nil {
+			omcplog.V(0).Info("[" + clusterInstance.Name + "] Error Status Not Changed (JOINING -> JOIN): " + err.Error())
+
+		} else {
+			omcplog.V(2).Info("Update " + clusterInstance.Name + " status to JOIN")
+		}
+
 		return "FALSE"
 	} else {
 		//없으면 추가
