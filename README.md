@@ -253,41 +253,7 @@ $ vim /etc/resolv.conf
 nameserver <EXTERNAL_SERVER_IP>
 ```
 
-### (4) Register sub-cluster to OpenMCP [In sub-cluster]
-
-Install 'kubectl request-join' plugin on sub-cluster.
-Before execute join command, you must set KUBECONFIG file and ~/.hosts file. 
-
-```bash
-$ cd kubectl_plugin
-$ chmod +x kubectl-request_join
-$ cp kubectl-request_join /usr/local/bin
-$ kubectl request-join
-```
-  
-### (5) Check Registered Joinable Cluster [In openmcp-cluster]
-  
-```bash
-$ kubectl get openmcpcluster -n openmcp
-  
-NAME       STATUS
-cluster1   UNJOIN
-cluster2   UNJOIN
-
-```
-### (6) Join sub-cluster to OpenMCP [In openmcp-cluster]
-
-Install 'kubectl join' plugin on sub-cluster.
-Before execute join command, you must set KUBECONFIG file and ~/.hosts file.
-
-```bash
-$ cd kubectl_plugin
-$ chmod +x kubectl-join
-$ cp kubectl-join /usr/local/bin
-$ kubectl join <CLUSTERNAME>
-```
-
-### (7) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]
+### (4) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]
 
 Tag labels(Region, Zone) on sub-cluster.
 ```bash
@@ -304,6 +270,41 @@ $ kubectl label nodes <node-name> topology.istio.io/subzone=<cluster-name> --con
 
 > Zone (locationInfo.csv)  
 > - https://github.com/openmcp/Public_OpenMCP/blob/master/locationInfo.csv
+
+### (5) Register sub-cluster to OpenMCP [In sub-cluster]
+
+Install 'kubectl request-join' plugin on sub-cluster.
+Before execute join command, you must set KUBECONFIG file and ~/.hosts file. 
+
+```bash
+$ cd kubectl_plugin
+$ chmod +x kubectl-request_join
+$ cp kubectl-request_join /usr/local/bin
+$ kubectl request-join
+```
+  
+### (6) Check Registered Joinable Cluster [In openmcp-cluster]
+  
+```bash
+$ kubectl get openmcpcluster -n openmcp
+  
+NAME       STATUS
+cluster1   UNJOIN
+cluster2   UNJOIN
+
+```
+### (7) Join sub-cluster to OpenMCP [In openmcp-cluster]
+
+Install 'kubectl join' plugin on sub-cluster.
+Before execute join command, you must set KUBECONFIG file and ~/.hosts file.
+
+```bash
+$ cd kubectl_plugin
+$ chmod +x kubectl-join
+$ cp kubectl-join /usr/local/bin
+$ kubectl join <CLUSTERNAME>
+```
+
 ---
 
 ## 2. How to join GKE Cluster to OpenMCP
