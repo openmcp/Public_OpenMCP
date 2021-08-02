@@ -4,24 +4,35 @@ OPENMCP_API_SERVER="openmcp-apiserver.openmcp.default-domain.svc.openmcp.example
 PORT="8080"
 KUBECONFIG=`echo $KUBECONFIG`
 
-echo "-----------------------------------------------------------"
-echo "You Must Set '~/.hosts' File Before Request Join To OpenMCP"
-echo "-----------------------------------------------------------"
-
 if [ "$KUBECONFIG" == "" ]; then
   echo "Set KUBECONFIG Variable [~/.kube/config]"
   KUBECONFIG=~/.kube/config
 fi
 
-#if [ "$1" == "" ]; then
-#  echo "Please Set OpenMCP IP:PORT"
-#  echo "ex) kubectl request-join 0.0.0.0:0"
-#  exit 1
-#fi
+result=$(kubectl get nodes -o=jsonpath='{range .items[*]}{.metadata.name},{.metadata.labels.topology\.kubernetes\.io/region},{.metadata.labels.topology\.kubernetes\.io/zone}#{end}')
+nodeinfo=(`echo $result | tr "#" "\n"`)
 
-echo ">>> Request OpenMCP to join cluster"
+if [ ${#nodeinfo[@]} == 0 ]; then
+  exit
+else
+  tmp=(`echo ${nodeinfo[0]} | tr "," "\n"`)
+  if [ ${#tmp[@]} == 3 ]; then
+    checkRegion=${tmp[1]}
+  fi
 
-#echo -n | openssl s_client -connect $1 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt
-echo -n | openssl s_client -connect $OPENMCP_API_SERVER:$PORT | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt
-curl https://$OPENMCP_API_SERVER:$PORT/join -F file=@"$KUBECONFIG" --cacert server.crt
-rm server.crt
+  for x in "${nodeinfo[@]}"
+  do
+    regionzone=(`echo $x | tr "," "\n"`)
+    length=${#regionzone[@]}
+    if [[ $length != 3 ]] || [[ $checkRegion != ${regionzone[1]} ]]; then
+      echo "Error: You Should set region/zone label on all nodes. (All Nodes must have the same region)"
+      echo "- [${regionzone[0]}] node has a problem "
+      exit
+    fi
+  done
+
+  echo "Request Join to OpenMCP"
+  echo -n | openssl s_client -connect $OPENMCP_API_SERVER:$PORT | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt
+  curl "https://$OPENMCP_API_SERVER:$PORT/join" -F data=$result -F file=@"$KUBECONFIG" --cacert server.crt
+  rm server.crt
+fi
