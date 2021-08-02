@@ -5,12 +5,13 @@ CTX=$2
 
 # istio 클러스터간 통신을 위해 $CTX에 인증서 배포
 #pushd certs
-kubectl create secret generic cacerts -n istio-system --context $CTX \
-      --from-file=$DIR/certs/openmcp/ca-cert.pem \
-      --from-file=$DIR/certs/openmcp/ca-key.pem \
-      --from-file=$DIR/certs/openmcp/root-cert.pem \
-      --from-file=$DIR/certs/openmcp/cert-chain.pem
+#kubectl create secret generic cacerts -n istio-system --context $CTX \
+#      --from-file=$DIR/certs/openmcp/ca-cert.pem \
+#      --from-file=$DIR/certs/openmcp/ca-key.pem \
+#      --from-file=$DIR/certs/openmcp/root-cert.pem \
+#      --from-file=$DIR/certs/openmcp/cert-chain.pem
 #popd
+kubectl get secret -n istio-system cacerts -o yaml | kubectl create -n istio-system --context $2 -f -
 
 # istio-system 네임 스페이스가 이미 생성 된 경우 여기에 클러스터의 네트워크를 설정해야합니다
 kubectl --context=$CTX get namespace istio-system && \

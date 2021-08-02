@@ -1,0 +1,42 @@
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: influxdb
+  namespace: openmcp
+spec:
+  selector:
+    matchLabels:
+      app: influxdb
+  replicas: 1 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: influxdb
+    spec:
+      containers:
+      - name: influxdb
+        image: docker.io/influxdb:1.6.4
+        imagePullPolicy: Always
+        envFrom:
+        - secretRef:
+            name: influxdb-creds
+        volumeMounts:
+        - mountPath: /var/lib/influxdb
+          name: var-lib-influxdb
+        - mountPath: /etc/localtime
+          name: timezone-config
+      volumes:
+      - name: var-lib-influxdb
+        persistentVolumeClaim:
+          claimName: pvc-influxdb
+      - name: timezone-config
+        hostPath:
+          path: /usr/share/zoneinfo/Asia/Seoul
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0
+

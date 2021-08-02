@@ -8,7 +8,9 @@ import (
 	clusterv1alpha1 "openmcp/openmcp/apis/cluster/v1alpha1"
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/openmcp-cluster-manager/src/resource"
+	"openmcp/openmcp/openmcp-cluster-manager/src/influx"
+	"openmcp/openmcp/openmcp-cluster-manager/src/resourceCreate"
+	"openmcp/openmcp/openmcp-cluster-manager/src/resourceDelete"
 	"openmcp/openmcp/util"
 	"openmcp/openmcp/util/clusterManager"
 	"os"
@@ -151,6 +153,13 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			//fmt.Println(moduleDirectory)
 
 			InstallInitModule(moduleDirectory, clusterInstance.Name, clusterInstance.Spec.MetalLBRange.AddressFrom, clusterInstance.Spec.MetalLBRange.AddressTo)
+
+			// 그동안 OpenMCP리소스로 배포된 하위 리소스 생성
+			err := resourceCreate.CreateSubResourceAll(clusterInstance.Name, cm)
+			if err != nil {
+				return reconcile.Result{}, err
+			}
+
 			omcplog.V(4).Info("--- JOIN Complete ---")
 
 			clusterInstance.Spec.JoinStatus = "JOIN"
@@ -174,12 +183,6 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	} else if clusterInstance.Spec.JoinStatus == "UNJOINING" {
 
 		omcplog.V(2).Info(clusterInstance.Name + " [ UNJOINING ] Start")
-
-		// 그동안 OpenMCP리소스로 배포된 하위 리소스 제거
-		err := resource.DeleteSubResourceAll(clusterInstance.Name, cm)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
 
 		//config 파일 확인 (클러스터 조인 유무)
 		memberkc := &cobrautil.KubeConfig{}
@@ -223,6 +226,17 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			util.CmdExec2("/init/vertical-pod-autoscaler/hack/vpa-down.sh " + clusterInstance.Name)
 			util.CmdExec2("kubectl delete --context openmcp -n istio-system secret istio-remote-secret-" + clusterInstance.Name)
 			UninstallInitModule(moduleDirectory, clusterInstance.Name)
+
+			// 그동안 OpenMCP리소스로 배포된 하위 리소스 제거
+			err := resourceDelete.DeleteSubResourceAll(clusterInstance.Name, cm)
+			if err != nil {
+				omcplog.V(0).Info(err)
+			}
+
+			err = influx.ClearInfluxDB(clusterInstance.Name)
+			if err != nil {
+				omcplog.V(0).Info(err)
+			}
 
 			omcplog.V(4).Info("Cluster Unjoin---")
 			UnjoinAndDeleteConfig(memberkc, openmcpkc)

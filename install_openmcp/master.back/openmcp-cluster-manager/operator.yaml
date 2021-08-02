@@ -39,6 +39,15 @@ spec:
               mountPath: /mnt
             - name: initmodule
               mountPath: /init
+          env:
+          - name: INFLUX_IP
+            value: REPLACE_INFLUXDBIP
+          - name: INFLUX_PORT
+            value: REPLACE_INFLUXDBPORT
+          - name: INFLUX_USERNAME
+            value: "root"
+          - name: INFLUX_PASSWORD
+            value: "root"
       volumes:
         - name: kubeconfig
           persistentVolumeClaim:

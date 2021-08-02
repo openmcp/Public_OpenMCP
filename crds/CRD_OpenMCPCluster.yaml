@@ -52,3 +52,11 @@ spec:
       type: string
       description: The Cluster MetalLB Range To
       JSONPath: .spec.metalLBRange.addressTo
+    - name: NODE_REGION
+      type: string
+      description: Node Region info
+      JSONPath: .spec.nodeInfo.region
+    - name: NODE_ZONE
+      type: string
+      description: Node Zone info
+      JSONPath: .spec.nodeInfo.zone
