@@ -253,13 +253,13 @@ $ vim /etc/resolv.conf
 nameserver <EXTERNAL_SERVER_IP>
 ```
 
-### (4) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]
+### (4) Register Region and Zone to All Nodes of sub-cluster [In sub-cluster]
 
 Tag labels(Region, Zone) on sub-cluster.
 ```bash
-$ kubectl label nodes <node-name> topology.kubernetes.io/region=<region> --context=<cluster-name>
-$ kubectl label nodes <node-name> topology.kubernetes.io/zone=<zone> --context=<cluster-name>
-$ kubectl label nodes <node-name> topology.istio.io/subzone=<cluster-name> --context=<cluster-name>
+$ kubectl label nodes <node-name> topology.kubernetes.io/region=<region> 
+$ kubectl label nodes <node-name> topology.kubernetes.io/zone=<zone>
+$ kubectl label nodes <node-name> topology.istio.io/subzone=<cluster-name>
 ```
 > Region (ISO 3166-1 alpha-2) https://ko.wikipedia.org/wiki/ISO_3166-1
 > - KR (Korea)  
@@ -283,7 +283,7 @@ $ cp kubectl-request_join /usr/local/bin
 $ kubectl request-join
 ```
   
-### (6) Check Registered Joinable Cluster [In openmcp-cluster]
+### (6) Check Registered OpenMCPCluster [In openmcp-cluster]
   
 ```bash
 $ kubectl get openmcpcluster -n openmcp
@@ -302,7 +302,7 @@ Before execute join command, you must set KUBECONFIG file and ~/.hosts file.
 $ cd kubectl_plugin
 $ chmod +x kubectl-join
 $ cp kubectl-join /usr/local/bin
-$ kubectl join <CLUSTERNAME>
+$ kubectl join <CLUSTERNAME> <PLATFORMTYPE>
 ```
 
 ---
@@ -342,7 +342,7 @@ Install 'kubectl join' plugin on OpenMCP.
 $ cd kubectl_plugin
 $ chmod +x kubectl-join
 $ cp kubectl-join /usr/local/bin
-$ kubectl join <CLUSTERNAME>
+$ kubectl join <CLUSTERNAME> <PLATFORMTYPE>
 ```
 
 ## 3. How to join EKS Cluster to OpenMCP
@@ -397,7 +397,7 @@ Install 'kubectl join' plugin on OpenMCP.
 $ cd kubectl_plugin
 $ chmod +x kubectl-join
 $ cp kubectl-join /usr/local/bin
-$ kubectl join <CLUSTERNAME>
+$ kubectl join <CLUSTERNAME> <PLATFORMTYPE>
 ```
 
 ## 4. How to join AKS Cluster to OpenMCP
