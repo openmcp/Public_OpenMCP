@@ -69,7 +69,7 @@ func (c *OpenMCPServiceClient) UpdateStatus(svc *resourcev1alpha1.OpenMCPService
 		Put().
 		Name(svc.Name).
 		Namespace(c.ns).
-		Resource("openmcpdeployments").
+		Resource("openmcpservices").
 		SubResource("status").
 		Body(svc).
 		Do(context.TODO()).

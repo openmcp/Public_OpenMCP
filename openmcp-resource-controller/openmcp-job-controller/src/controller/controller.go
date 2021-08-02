@@ -14,26 +14,29 @@ limitations under the License.
 package openmcpjob
 
 import (
-	"admiralty.io/multicluster-controller/pkg/cluster"
-	"admiralty.io/multicluster-controller/pkg/controller"
-	"admiralty.io/multicluster-controller/pkg/reconcile"
-	"admiralty.io/multicluster-controller/pkg/reference"
 	"context"
 	"fmt"
-	"github.com/getlantern/deepcopy"
-	batchv1 "k8s.io/api/batch/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"openmcp/openmcp/apis"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"reflect"
 	"strconv"
+
+	"admiralty.io/multicluster-controller/pkg/cluster"
+	"admiralty.io/multicluster-controller/pkg/controller"
+	"admiralty.io/multicluster-controller/pkg/reconcile"
+	"admiralty.io/multicluster-controller/pkg/reference"
+	"github.com/getlantern/deepcopy"
+	batchv1 "k8s.io/api/batch/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var cm *clusterManager.ClusterManager
+
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
 	omcplog.V(4).Info("Function Called NewController")
 	cm = myClusterManager
@@ -56,11 +59,9 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
 
-
 	if err := co.WatchResourceReconcileObject(context.TODO(), live, &resourcev1alpha1.OpenMCPJob{}, controller.WatchOptions{}); err != nil {
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
-
 
 	for _, ghost := range ghosts {
 		if err := co.WatchResourceReconcileController(context.TODO(), ghost, &batchv1.Job{}, controller.WatchOptions{}); err != nil {
@@ -75,13 +76,14 @@ type reconciler struct {
 	ghosts         []client.Client
 	ghostNamespace string
 }
+
 var i int = 0
+
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	omcplog.V(4).Info("Function Called Reconcile")
 	i += 1
-	omcplog.V(5).Info("********* [",i,"] *********")
-	omcplog.V(3).Info(req.Context," / ", req.Namespace," / ", req.Name)
-
+	omcplog.V(5).Info("********* [", i, "] *********")
+	omcplog.V(3).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
 
 	// Fetch the OpenMCPDeployment instance
 	instance := &resourcev1alpha1.OpenMCPJob{}
@@ -109,24 +111,53 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			return reconcile.Result{}, err
 		}
 		return reconcile.Result{}, nil
-	} else {
+	}
+	if !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec) {
+		omcplog.V(3).Info("Job Update Start")
+
 		err := r.updateJob(req, cm, instance)
 		if err != nil {
-			omcplog.V(1).Info(err)
+			omcplog.V(0).Info(err)
 			return reconcile.Result{}, err
 		}
 		return reconcile.Result{}, nil
-	}
 
-	err = r.live.Status().Update(context.TODO(), instance)
-	if err != nil {
-		omcplog.V(1).Info("Failed to update instance status", err)
-		return reconcile.Result{}, err
+	}
+	// Check Job in cluster
+	if instance.Status.BlockSubResource == false {
+		omcplog.V(2).Info("[Member Cluster Check Job]")
+		for k, v := range instance.Status.ClusterMaps {
+			cluster_name := k
+			replica := v
+
+			if v == 0 {
+				continue
+			}
+			found := &batchv1.Job{}
+			cluster_client := cm.Cluster_genClients[cluster_name]
+			err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+
+			if err != nil && errors.IsNotFound(err) {
+				// Delete Service Detected
+				omcplog.V(2).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
+				svc := r.jobForOpenMCPJob(req, instance)
+
+				command := "create"
+				omcplog.V(3).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+command+", Replicas :", replica, ")")
+				_, err = r.sendSync(svc, command, cluster_name)
+
+				if err != nil {
+					return reconcile.Result{}, err
+				}
+
+			}
+
+		}
+
 	}
 
 	return reconcile.Result{}, nil // err
 }
-
 
 func (r *reconciler) jobForOpenMCPJob(req reconcile.Request, m *resourcev1alpha1.OpenMCPJob) *batchv1.Job {
 	omcplog.V(4).Info("Function Called secretForOpenMCPSecret")
@@ -149,33 +180,39 @@ func (r *reconciler) jobForOpenMCPJob(req reconcile.Request, m *resourcev1alpha1
 	return dep
 }
 
-
 func (r *reconciler) createJob(req reconcile.Request, cm *clusterManager.ClusterManager, instance *resourcev1alpha1.OpenMCPJob) error {
 	omcplog.V(4).Info("Function Called createJob")
 	cluster_map := make(map[string]int32)
 	for _, cluster := range cm.Cluster_list.Items {
+		found := &batchv1.Job{}
+		cluster_client := cm.Cluster_genClients[cluster.Name]
 
-		omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
-		dep := r.jobForOpenMCPJob(req, instance)
-		command := "create"
-		_, err := r.sendSync(dep, command, cluster.Name)
-		cluster_map[cluster.Name] = 1
-		if err != nil {
-			return err
+		err := cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+
+		if err != nil && errors.IsNotFound(err) {
+			omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
+			dep := r.jobForOpenMCPJob(req, instance)
+			command := "create"
+			_, err := r.sendSync(dep, command, cluster.Name)
+			cluster_map[cluster.Name] = 1
+			if err != nil {
+				return err
+			}
 		}
+
 	}
 	instance.Status.ClusterMaps = cluster_map
+	instance.Status.LastSpec = instance.Spec
 	err := r.live.Status().Update(context.TODO(), instance)
 	return err
 }
-
 
 func (r *reconciler) DeleteJob(cm *clusterManager.ClusterManager, name string, namespace string) error {
 	omcplog.V(4).Info("Function Called DeleteJob")
 
 	for _, cluster := range cm.Cluster_list.Items {
 
-		omcplog.V(3).Info(cluster.Name," Delete Start")
+		omcplog.V(3).Info(cluster.Name, " Delete Start")
 
 		dep := &batchv1.Job{
 			TypeMeta: metav1.TypeMeta{
@@ -198,8 +235,8 @@ func (r *reconciler) DeleteJob(cm *clusterManager.ClusterManager, name string, n
 	return nil
 }
 
-
 var syncIndex int = 0
+
 func (r *reconciler) sendSync(secret *batchv1.Job, command string, clusterName string) (string, error) {
 	omcplog.V(4).Info("Function Called sendSync")
 
@@ -241,7 +278,9 @@ func (r *reconciler) updateJob(req reconcile.Request, cm *clusterManager.Cluster
 			return err
 		}
 	}
-	return nil
+	instance.Status.LastSpec = instance.Spec
+
+	err := r.live.Status().Update(context.TODO(), instance)
+
+	return err
 }
-
-

@@ -30,7 +30,7 @@ kubectl create secret generic "regcred" \
 
 
 echo "--- deploy crds"
-kubectl create -f crds/.
+kubectl create -f ../../crds/.
 echo "--- openmcp-cluster-manager"
 kubectl create -f openmcp-cluster-manager/.
 echo "--- openmcp-analytic-engine"

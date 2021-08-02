@@ -1,0 +1,16 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPPolicy
+metadata:
+  name: post-schduling
+  namespace: openmcp
+spec:
+  template:
+    spec:
+      targetController:
+        kind: OpenMCPSchduler
+      policies:
+        - type: priority
+          value:
+            - FIPO
+  rangeOfApplication: All
+  policyStatus: Enabled

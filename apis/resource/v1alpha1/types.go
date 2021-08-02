@@ -192,8 +192,10 @@ type OpenMCPIngressStatus struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	// Replicas int32 `json:"replicas"`
-	ClusterMaps map[string]int32 `json:"clusterMaps"`
-	ChangeNeed  bool             `json:"changeNeed"`
+	ClusterMaps      map[string]int32   `json:"clusterMaps"`
+	ChangeNeed       bool               `json:"changeNeed"`
+	LastSpec         OpenMCPIngressSpec `json:"lastSpec"`
+	BlockSubResource bool               `json:"blockSubResource" protobuf:"bytes,3,opt,name=blockSubResource"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -348,8 +350,10 @@ type OpenMCPConfigMapStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	ClusterMaps     map[string]int32 `json:"clusterMaps"`
-	SyncRequestName string           `json:"syncRequestName"`
+	ClusterMaps      map[string]int32     `json:"clusterMaps"`
+	SyncRequestName  string               `json:"syncRequestName"`
+	LastSpec         OpenMCPConfigMapSpec `json:"lastSpec"`
+	BlockSubResource bool                 `json:"blockSubResource" protobuf:"bytes,3,opt,name=blockSubResource"`
 }
 
 // OpenMCPConfigMap is the Schema for the openmcpconfigmaps API
@@ -383,7 +387,9 @@ type OpenMCPSecretStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	ClusterMaps map[string]int32 `json:"clusterMaps"`
+	ClusterMaps      map[string]int32  `json:"clusterMaps"`
+	LastSpec         OpenMCPSecretSpec `json:"lastSpec"`
+	BlockSubResource bool              `json:"blockSubResource" protobuf:"bytes,3,opt,name=blockSubResource"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -421,7 +427,9 @@ type OpenMCPJobStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	ClusterMaps map[string]int32 `json:"clusterMaps"`
+	ClusterMaps      map[string]int32 `json:"clusterMaps"`
+	LastSpec         OpenMCPJobSpec   `json:"lastSpec"`
+	BlockSubResource bool             `json:"blockSubResource" protobuf:"bytes,3,opt,name=blockSubResource"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -460,8 +468,9 @@ type OpenMCPNamespaceStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	ClusterMaps map[string]int32 `json:"clusterMaps"`
-	ChangeNeed  bool             `json:"changeneed"`
+	ClusterMaps      map[string]int32     `json:"clusterMaps"`
+	LastSpec         OpenMCPNamespaceSpec `json:"lastSpec"`
+	BlockSubResource bool                 `json:"blockSubResource" protobuf:"bytes,3,opt,name=blockSubResource"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

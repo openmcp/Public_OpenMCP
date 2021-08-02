@@ -24,8 +24,9 @@ import (
 	"openmcp/openmcp/openmcp-dns-controller/src/controller/domain"
 	"openmcp/openmcp/openmcp-dns-controller/src/controller/ingressCluster"
 	"openmcp/openmcp/openmcp-dns-controller/src/controller/ingressDNSRecord"
-	"openmcp/openmcp/openmcp-dns-controller/src/controller/service"
 	"openmcp/openmcp/openmcp-dns-controller/src/controller/serviceDNSRecord"
+	"openmcp/openmcp/openmcp-dns-controller/src/controller/serviceInCluster"
+	"openmcp/openmcp/openmcp-dns-controller/src/controller/serviceInOpenMCP"
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
@@ -57,7 +58,11 @@ func main() {
 		ghosts = append(ghosts, ghost)
 	}
 
-	cont_service, err := service.NewController(live, ghosts, namespace, cm)
+	cont_serviceInOpenMCP, err := serviceInOpenMCP.NewController(live, ghosts, namespace, cm)
+	if err != nil {
+		omcplog.V(0).Info("err New Controller - ServiceDNS", err)
+	}
+	cont_serviceInCluster, err := serviceInCluster.NewController(live, ghosts, namespace, cm)
 	if err != nil {
 		omcplog.V(0).Info("err New Controller - ServiceDNS", err)
 	}
@@ -96,7 +101,8 @@ func main() {
 
 	m := manager.New()
 	m.AddController(cont_domain)
-	m.AddController(cont_service)
+	m.AddController(cont_serviceInOpenMCP)
+	m.AddController(cont_serviceInCluster)
 	m.AddController(cont_OpenMCPService)
 	m.AddController(cont_ingressCluster)
 	m.AddController(cont_serviceDNSRecord)

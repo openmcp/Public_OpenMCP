@@ -19,6 +19,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type OpenMCPScheduler struct {
@@ -30,6 +31,9 @@ type OpenMCPScheduler struct {
 	IsNetwork       bool
 	IsResource      bool
 	PostDeployments *list.List
+	PostThread      bool
+	Selectpolicy    string
+	Live            *client.Client
 }
 
 func NewScheduler(cm *clusterManager.ClusterManager, grpcClient protobuf.RequestAnalysisClient) *OpenMCPScheduler {
@@ -42,9 +46,141 @@ func NewScheduler(cm *clusterManager.ClusterManager, grpcClient protobuf.Request
 	sched.PostDeployments = list.New()
 	if !sched.IsNetwork {
 		go sched.LocalNetworkAnalysis()
+		go sched.Postschduling()
+		sched.IsNetwork = true
 		omcplog.V(0).Infof("LocalNetworkAnalysis Start")
+
 	}
 	return sched
+
+}
+func (sched *OpenMCPScheduler) PostsMonitoring() {
+	sched.SetupResources()
+	postlist := sched.PostDeployments
+	osvc_list := &resourcev1alpha1.OpenMCPDeploymentList{}
+	if sched.Live == nil {
+		omcplog.V(0).Info("sched.Live NIL")
+		return
+	}
+	openmcpPolicyInstance, perr := sched.ClusterManager.Crd_client.OpenMCPPolicy("openmcp").Get("post-schduling", metav1.GetOptions{})
+	if perr == nil {
+		policies := openmcpPolicyInstance.Spec.Template.Spec.Policies
+		for _, policy := range policies {
+			if policy.Type == "priority" {
+				sched.Selectpolicy = policy.Value[0]
+			}
+		}
+	}
+	(*(sched.Live)).List(context.TODO(), osvc_list)
+	for e := postlist.Front(); e != nil; e = postlist.Front().Next() {
+		deploy := e.Value.(*ketiresource.PostDelployment)
+		checked := false
+
+		//omcplog.V(0).Info("postlist e =", deploy.NewDeployment.GetName())
+		for _, has := range osvc_list.Items {
+			if has.GetName() == deploy.NewDeployment.GetName() {
+				//omcplog.V(0).Info("has name =", has.GetName())
+				checked = true
+			}
+		}
+		if checked == false {
+			//removename := deploy.NewDeployment.GetName()
+			postlist.Remove(e)
+			//omcplog.V(0).Info("remove postdeploy", removename)
+			return
+		}
+	}
+
+}
+
+func (sched *OpenMCPScheduler) Postschduling() {
+	omcplog.V(0).Info("postschduling start")
+	for {
+		sched.PostsMonitoring()
+		time.Sleep(3 * time.Second)
+		//newDeployment := &resourcev1alpha1.OpenMCPDeployment{}
+		postlist := sched.PostDeployments
+		//omcplog.V(0).Info(" postlist len", postlist)
+		if postlist.Len() > 0 {
+			var firstdeploy *ketiresource.PostDelployment
+			if sched.Selectpolicy == "FIFO" {
+				firstdeploy = (postlist.Front()).Value.(*ketiresource.PostDelployment)
+
+			} else if sched.Selectpolicy == "LRU" {
+				minresource := (postlist.Front()).Value.(*ketiresource.PostDelployment)
+				for e := postlist.Front(); e != nil; e = postlist.Front().Next() {
+					deploy := e.Value.(*ketiresource.PostDelployment)
+					newPod := newPodFromOpenMCPDeployment(deploy.NewDeployment)
+					oldPod := newPodFromOpenMCPDeployment(minresource.NewDeployment)
+					if newPod.RequestedResource.MilliCPU < oldPod.RequestedResource.Memory {
+						minresource = deploy
+					}
+				}
+				firstdeploy = minresource
+			} else {
+				//잘못된 policy 정책이 들어왔을 경우 FIFO로 수행
+				firstdeploy = (postlist.Front()).Value.(*ketiresource.PostDelployment)
+			}
+
+			postdeployment := firstdeploy.NewDeployment
+			omcplog.V(0).Info("RemainReplica", firstdeploy.RemainReplica)
+			firstdeploy.NewDeployment.Status.Replicas = firstdeploy.RemainReplica
+			exist := postdeployment.Status.ClusterMaps
+			backup := map[string]int32{}
+			backup = exist
+			cluster_replicas_map, _ := sched.Scheduling(postdeployment, true, postdeployment.Spec.Clusters)
+			replicacount := 0
+			chagnedp := map[string]int32{}
+			for key, val := range exist {
+				_, exists := exist[key]
+				if !exists {
+					chagnedp[key] = 1
+				} else {
+					chagnedp[key] += val
+				}
+			}
+			for key, val := range cluster_replicas_map {
+				_, exists := cluster_replicas_map[key]
+				if !exists {
+					chagnedp[key] = 1
+					replicacount++
+				} else {
+					chagnedp[key] += val
+					replicacount += int(val)
+				}
+			}
+			if len(cluster_replicas_map) == 0 {
+				continue
+			}
+			//postdeployment.Status.ClusterMaps = exist
+
+			//postdeployment.Status.Replicas = newDeployment.Spec.Replicas
+
+			opts := &client.PatchOptions{DryRun: []string{"All"}}
+			(*sched.Live).Status().Patch(context.TODO(), postdeployment, client.MergeFrom(postdeployment), opts)
+			postdeployment.Status.ClusterMaps = chagnedp
+			postdeployment.Status.SchedulingNeed = false
+			postdeployment.Status.SchedulingComplete = true
+			postdeployment.Status.CreateSyncRequestComplete = false
+
+			err := (*sched.Live).Status().Update(context.TODO(), postdeployment)
+			if err != nil {
+				omcplog.V(0).Infof("Failed to update instance status, %v", err)
+				postdeployment.Status.ClusterMaps = backup
+			} else {
+				firstdeploy.RemainReplica = firstdeploy.RemainReplica - int32(replicacount)
+				if firstdeploy.RemainReplica <= 0 {
+					postlist.Remove(postlist.Front())
+				}
+				omcplog.V(5).Infof(" MAPP =>: %v", chagnedp)
+				omcplog.V(0).Infof("Remain count : %v exist count : %v", firstdeploy.RemainReplica, replicacount)
+			}
+
+		} else {
+			//omcplog.V(0).Infof("len 0")
+			continue
+		}
+	}
 
 }
 
@@ -190,8 +326,8 @@ func (sched *OpenMCPScheduler) LocalNetworkAnalysis() {
 				client := sched.GRPC_Client
 				result, err := client.SendNetworkAnalysis(context.TODO(), node_info)
 				if err != nil || result == nil {
-					omcplog.V(0).Infof("cannot get %v's data from openmcp-analytic-engine", node.NodeName)
-					omcplog.V(0).Info(err)
+					//omcplog.V(0).Infof("cannot get %v's data from openmcp-analytic-engine", node.NodeName)
+					//omcplog.V(0).Info(err)
 					continue
 				}
 				if result.RX == -1 || result.TX == -1 {
@@ -304,7 +440,6 @@ func (sched *OpenMCPScheduler) SetupResources() error {
 					}
 				}
 			}
-
 			newPod := &ketiresource.Pod{
 				Pod:                &pod,
 				ClusterName:        clusterName,
@@ -396,7 +531,6 @@ func (sched *OpenMCPScheduler) SetupResources() error {
 			RequestedResource:   cluster_request,
 			AllocatableResource: cluster_allocatable,
 		}
-		omcplog.V(0).Info("Setup ClusterInfos =", sched.ClusterInfos)
 	}
 
 	return nil

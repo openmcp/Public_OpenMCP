@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package service // import "admiralty.io/multicluster-controller/examples/serviceDNS/pkg/controller/serviceDNS"
+package serviceInOpenMCP // import "admiralty.io/multicluster-controller/examples/serviceDNS/pkg/controller/serviceDNS"
 
 import (
 	"context"
@@ -112,7 +112,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 		err2 := r.live.Get(context.TODO(), req.NamespacedName, instance_osvcdnsr)
 		if err2 != nil && errors.IsNotFound(err2) {
-			omcplog.V(0).Info("[OpenMCPAPIServer] Create OpenMCPServiceDNSDomain")
+			omcplog.V(0).Info("[OpenMCPAPIServer] Create OpenMCPServiceDNSReocrd")
 			err3 := r.live.Create(context.TODO(), instance_osvcdnsr)
 			if err3 != nil {
 				omcplog.V(0).Info(err3)
@@ -120,7 +120,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			}
 		}
 		serviceDNSRecord.FillStatusInOpenMCP(instance_osvcdnsr, instance_default_domain)
-		omcplog.V(0).Info("[OpenMCPAPIServer] Update OpenMCPServiceDNSDomain")
+		omcplog.V(0).Info("[OpenMCPAPIServer] Update OpenMCPServiceDNSReocrd")
 		err4 := r.live.Status().Update(context.TODO(), instance_osvcdnsr)
 		if err4 != nil {
 			omcplog.V(0).Info(err4)

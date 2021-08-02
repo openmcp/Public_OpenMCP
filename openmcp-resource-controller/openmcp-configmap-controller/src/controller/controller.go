@@ -21,6 +21,7 @@ import (
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
+	"reflect"
 	"strconv"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
@@ -102,6 +103,17 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		omcplog.V(1).Info(err)
 		return reconcile.Result{}, err
 	}
+	if !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec) {
+		omcplog.V(3).Info("Service Update Start")
+
+		err := r.updateConfigMap(req, cm, instance)
+		if err != nil {
+			omcplog.V(0).Info(err)
+			return reconcile.Result{}, err
+		}
+		return reconcile.Result{}, nil
+
+	}
 	if instance.Status.ClusterMaps == nil {
 		err := r.createConfigMap(req, cm, instance)
 		if err != nil {
@@ -109,20 +121,49 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			return reconcile.Result{}, err
 		}
 		return reconcile.Result{}, nil
-	} else {
-		err := r.updateConfigMap(req, cm, instance)
+	}
+	if instance.Status.BlockSubResource == false {
+		omcplog.V(2).Info("[Member Cluster Check ConfigMap]")
+		sync_req_name := ""
+		for k, v := range instance.Status.ClusterMaps {
+			cluster_name := k
+			replica := v
+
+			if v == 0 {
+				continue
+			}
+			// if _, ok := cm.Cluster_genClients[cluster_name]; !ok {
+			// 	r.updateConfigMap(req, cm, instance)
+			// }
+			found := &corev1.ConfigMap{}
+			cluster_client := cm.Cluster_genClients[cluster_name]
+			err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+
+			if err != nil && errors.IsNotFound(err) {
+				// Delete ConfigMap Detected
+				omcplog.V(2).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
+				configmap := r.configmapForOpenMCPConfigMap(req, instance)
+
+				command := "create"
+				omcplog.V(3).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+command+", Replicas :", replica, ")")
+				sync_req_name, err = r.sendSync(configmap, command, cluster_name)
+
+				if err != nil {
+					return reconcile.Result{}, err
+				}
+
+			}
+
+		}
+		omcplog.V(3).Info("sync_req_name : ", sync_req_name)
+
+		err = r.live.Status().Update(context.TODO(), instance)
 		if err != nil {
-			omcplog.V(1).Info(err)
+			omcplog.V(0).Info("Failed to update instance status", err)
 			return reconcile.Result{}, err
 		}
-		return reconcile.Result{}, nil
 	}
 
-	err = r.live.Status().Update(context.TODO(), instance)
-	if err != nil {
-		omcplog.V(1).Info("Failed to update instance status", err)
-		return reconcile.Result{}, err
-	}
 	return reconcile.Result{}, nil
 }
 
@@ -147,18 +188,27 @@ func (r *reconciler) createConfigMap(req reconcile.Request, cm *clusterManager.C
 	omcplog.V(4).Info("Function Called createConfigMap")
 	cluster_map := make(map[string]int32)
 	for _, cluster := range cm.Cluster_list.Items {
+		cluster_map[cluster.Name] = 0
+	}
+	for _, cluster := range cm.Cluster_list.Items {
+		found := &corev1.ConfigMap{}
+		cluster_client := cm.Cluster_genClients[cluster.Name]
 
-		omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
-		dep := r.configmapForOpenMCPConfigMap(req, instance)
-		command := "create"
-		_, err := r.sendSync(dep, command, cluster.Name)
-		cluster_map[cluster.Name] = 1
-		if err != nil {
-			omcplog.V(0).Info(err)
-			return err
+		err := cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+		if err != nil && errors.IsNotFound(err) {
+			omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
+			dep := r.configmapForOpenMCPConfigMap(req, instance)
+			command := "create"
+			_, err := r.sendSync(dep, command, cluster.Name)
+			cluster_map[cluster.Name] = 1
+			if err != nil {
+				omcplog.V(0).Info(err)
+				return err
+			}
 		}
 	}
 	instance.Status.ClusterMaps = cluster_map
+	instance.Status.LastSpec = instance.Spec
 	omcplog.V(3).Info("Update Status")
 	err := r.live.Status().Update(context.TODO(), instance)
 	return err
@@ -169,15 +219,20 @@ func (r *reconciler) updateConfigMap(req reconcile.Request, cm *clusterManager.C
 
 	for _, cluster := range cm.Cluster_list.Items {
 
-		omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
-		dep := r.configmapForOpenMCPConfigMap(req, instance)
+		configmap := r.configmapForOpenMCPConfigMap(req, instance)
 		command := "update"
-		_, err := r.sendSync(dep, command, cluster.Name)
+		omcplog.V(3).Info("Update ConfigMap")
+		_, err := r.sendSync(configmap, command, cluster.Name)
 		if err != nil {
 			return err
 		}
+
 	}
-	return nil
+
+	instance.Status.LastSpec = instance.Spec
+
+	err := r.live.Status().Update(context.TODO(), instance)
+	return err
 }
 
 func (r *reconciler) DeleteConfigMap(cm *clusterManager.ClusterManager, name string, namespace string) error {

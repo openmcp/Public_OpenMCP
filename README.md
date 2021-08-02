@@ -6,12 +6,13 @@
 - [How To Join Cluster](#how-to-join-cluster)
   - [1. How to join Kubernetes Cluster to OpenMCP](#1-How-to-join-Kubernetes-Cluster-to-OpenMCP)
     - [(1) (option) Rename cluster name [In sub-cluster]](#1-option-Rename-cluster-name-In-sub-cluster)
-    - [(2) Check OpenMCP API Server IP Address in openmcp-cluster [In openmcp-cluster]](#2-Check-OpenMCP-API-Server-IP-Address-in-openmcp-cluster-In-openmcp-cluster)
-    - [(3) register OpenMCP API Server hostname at "/etc/hosts" [In sub-cluster]](#3-register-OpenMCP-API-Server-hostname-at-"/etc/hosts"-In-sub-cluster)
-    - [(4) Register sub-cluster to OpenMCP [In sub-cluster]](#4-Register-sub-cluster-to-OpenMCP-In-sub-cluster)
-    - [(5) Check Registered Joinable Cluster [In openmcp-cluster]](#5-Check-Registered-Joinable-Cluster-In-openmcp-cluster)
-    - [(6) Join sub-cluster to OpenMCP [In openmcp-cluster]](#6-Join-sub-cluster-to-OpenMCP-In-openmcp-cluster)
-    - [(7) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]](#7-Register-Region-and-Zone-to-Master-Node-of-sub-cluster-In-OpenMCP)
+    - [(2) Check Status OpenMCP API Server [In openmcp-cluster]](#2-Check-Status-OpenMCP-API-Server-In-openmcp-cluster)
+    - [(3) Register DNS Server [In sub-cluster]](#3-Register-DNS-Server-In-sub-cluster)
+    - [(4) Register Region and Zone to All Nodes of sub-cluster [In sub-cluster]](#4-Register-Region-and-Zone-to-All-Nodes-of-sub-cluster-In-sub-cluster)
+    - [(5) Register sub-cluster to OpenMCP [In sub-cluster]](#5-Register-sub-cluster-to-OpenMCP-In-sub-cluster)
+    - [(6) Check Registered OpenMCPCluster [In openmcp-cluster]](#6-Check-Registered-OpenMCPCluster-In-openmcp-cluster)
+    - [(7) Join sub-cluster to OpenMCP [In openmcp-cluster]](#7-Join-sub-cluster-to-OpenMCP-In-openmcp-cluster)
+    
   - [2. How to join GKE Cluster to OpenMCP](#2-How-to-join-GKE-Cluster-to-OpenMCP)
     - [(1) Install Cloud SDK](#1-Install-Cloud-SDK)
     - [(2) gcloud init](#2-gcloud-init)
@@ -230,7 +231,7 @@ users:
     client-key-data: ...
 ```
 
-### (2) Check Status OpenMCP API Server in openmcp-cluster [In openmcp-cluster]
+### (2) Check Status OpenMCP API Server [In openmcp-cluster]
 ```bash
 $ kubectl get pod,svc -n openmcp
 ME                                                    READY   STATUS    RESTARTS   AGE
@@ -243,7 +244,7 @@ NAME                                       TYPE           CLUSTER-IP       EXTER
 service/openmcp-apiserver                  LoadBalancer   10.96.65.179     XX.XX.XX.XX   8080:30000/TCP   54s
 ```
 
-### (3) register DNS Server at "/etc/resolv.conf" [In sub-cluster]
+### (3) Register DNS Server [In sub-cluster]
 
 Write the [<EXTERNAL_SERVER_IP>](https://github.com/openmcp/external) of the external server at the top of the '/etc/resolv.conf' file.
 This is to join the OpenMCP cluster through DNS Domain on the API server.
@@ -253,7 +254,25 @@ $ vim /etc/resolv.conf
 nameserver <EXTERNAL_SERVER_IP>
 ```
 
-### (4) Register sub-cluster to OpenMCP [In sub-cluster]
+### (4) Register Region and Zone to All Nodes of sub-cluster [In sub-cluster]
+
+Tag labels(Region, Zone) on sub-cluster.
+```bash
+$ kubectl label nodes <node-name> topology.kubernetes.io/region=<region> 
+$ kubectl label nodes <node-name> topology.kubernetes.io/zone=<zone>
+$ kubectl label nodes <node-name> topology.istio.io/subzone=<cluster-name>
+```
+> Region (ISO 3166-1 alpha-2) https://ko.wikipedia.org/wiki/ISO_3166-1
+> - KR (Korea)  
+> - US (USA)  
+> - CH (China)    
+> - JP (Japan)    
+> - IN (India)    
+
+> Zone (locationInfo.csv)  
+> - https://github.com/openmcp/Public_OpenMCP/blob/master/locationInfo.csv
+
+### (5) Register sub-cluster to OpenMCP [In sub-cluster]
 
 Install 'kubectl request-join' plugin on sub-cluster.
 Before execute join command, you must set KUBECONFIG file and ~/.hosts file. 
@@ -265,7 +284,7 @@ $ cp kubectl-request_join /usr/local/bin
 $ kubectl request-join
 ```
   
-### (5) Check Registered Joinable Cluster [In openmcp-cluster]
+### (6) Check Registered OpenMCPCluster [In openmcp-cluster]
   
 ```bash
 $ kubectl get openmcpcluster -n openmcp
@@ -275,7 +294,7 @@ cluster1   UNJOIN
 cluster2   UNJOIN
 
 ```
-### (6) Join sub-cluster to OpenMCP [In openmcp-cluster]
+### (7) Join sub-cluster to OpenMCP [In openmcp-cluster]
 
 Install 'kubectl join' plugin on sub-cluster.
 Before execute join command, you must set KUBECONFIG file and ~/.hosts file.
@@ -287,23 +306,6 @@ $ cp kubectl-join /usr/local/bin
 $ kubectl join <CLUSTERNAME>
 ```
 
-### (7) Register Region and Zone to Master Node of sub-cluster [In OpenMCP]
-
-Tag labels(Region, Zone) on sub-cluster.
-```bash
-$ kubectl label nodes <node-name> topology.kubernetes.io/region=<region> --context=<cluster-name>
-$ kubectl label nodes <node-name> topology.kubernetes.io/zone=<zone> --context=<cluster-name>
-$ kubectl label nodes <node-name> topology.istio.io/subzone=<cluster-name> --context=<cluster-name>
-```
-> Region (ISO 3166-1 alpha-2) https://ko.wikipedia.org/wiki/ISO_3166-1
-> - KR (Korea)  
-> - US (USA)  
-> - CH (China)    
-> - JP (Japan)    
-> - IN (India)    
-
-> Zone (locationInfo.csv)  
-> - https://github.com/openmcp/Public_OpenMCP/blob/master/locationInfo.csv
 ---
 
 ## 2. How to join GKE Cluster to OpenMCP

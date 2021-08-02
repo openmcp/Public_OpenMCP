@@ -44,7 +44,7 @@ spec:
             - name: INFLUX_IP
               value: "10.0.3.20"
             - name: INFLUX_PORT
-              value: "30004"
+              value: "30003"
             - name: INFLUX_USERNAME
               value: "root"
             - name: INFLUX_PASSWORD

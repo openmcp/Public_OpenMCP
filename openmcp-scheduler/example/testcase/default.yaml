@@ -4,7 +4,7 @@ metadata:
   name: example-openmcpdeployment-default
   namespace: openmcp
 spec:
-  replicas: 5
+  replicas: 20
   labels:
       app: openmcp-nginx
       test: "yes"
@@ -17,5 +17,5 @@ spec:
             name: nginx
             resources:
               requests:
-                memory: "10"
+                memory: "100"
                 cpu: "1"

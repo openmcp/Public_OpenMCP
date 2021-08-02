@@ -45,7 +45,6 @@ func SyncVSWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 					vs, err2 := OpenMCPVirtualService.MakeVirtualService(&ovs)
 					if err2 != nil {
 						omcplog.V(0).Info("Error:", err2)
-
 					}
 					if err == nil {
 						// Update VirtualService

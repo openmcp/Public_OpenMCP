@@ -327,7 +327,17 @@ func FillStatus(instanceServiceRecord *dnsv1alpha1.OpenMCPServiceDNSRecord, inst
 		// Node Info of Cluster (Zone, Region)
 		lb := corev1.LoadBalancerStatus{}
 		instanceService := &corev1.Service{}
-		err = cluster_client.Get(context.TODO(), instanceService, instanceServiceRecord.Namespace, instanceServiceRecord.Name)
+
+		// if default domain use
+		// OpenmcpService made default dns with SERVICENAME +"-by-openmcp"
+		name := instanceServiceRecord.Name
+		last11 := name[len(name)-11:]
+
+		if last11 == "-by-openmcp" {
+			name = name[:len(name)-11]
+
+		}
+		err = cluster_client.Get(context.TODO(), instanceService, instanceServiceRecord.Namespace, name)
 		if err == nil {
 			// Get lb information if service exists
 			lb = instanceService.Status.LoadBalancer

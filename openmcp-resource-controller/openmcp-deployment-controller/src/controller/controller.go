@@ -113,7 +113,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err := r.DeleteDeploys(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
 
 			omcplog.V(2).Info("Service Notify Send")
-			r.ServiceNotifyAll(req.Namespace)
+			//r.ServiceNotifyAll(req.Namespace)
 
 			return reconcile.Result{}, err
 		}
@@ -198,8 +198,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 				}
 			}
-			omcplog.V(2).Info("Service Notify Send")
-			r.ServiceNotify(instance.Spec.Labels, instance.Namespace)
+			// omcplog.V(2).Info("Service Notify Send")
+			// r.ServiceNotify(instance.Spec.Labels, instance.Namespace)
 
 			instance.Status.LastSpec = instance.Spec
 			instance.Status.CreateSyncRequestComplete = true
@@ -238,12 +238,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 		}
 		if !reflect.DeepEqual(instance.Status.LastSpec.Labels, instance.Spec.Labels) {
-			last_label := instance.Status.LastSpec.Labels
-			current_label := instance.Spec.Labels
-			omcplog.V(2).Info("Label Changed")
-			omcplog.V(2).Info("Service Notify")
-			r.ServiceNotify(last_label, instance.Namespace)
-			r.ServiceNotify(current_label, instance.Namespace)
+			// last_label := instance.Status.LastSpec.Labels
+			// current_label := instance.Spec.Labels
+			// omcplog.V(2).Info("Label Changed")
+			// omcplog.V(2).Info("Service Notify")
+			// r.ServiceNotify(last_label, instance.Namespace)
+			// r.ServiceNotify(current_label, instance.Namespace)
 		}
 
 		instance.Status.LastSpec = instance.Spec
@@ -281,18 +281,18 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				continue
 			}
 
-			if _, ok := cm.Cluster_genClients[cluster_name]; !ok {
-				instance.Status.CreateSyncRequestComplete = false
-				instance.Status.SchedulingNeed = true
-				instance.Status.SchedulingComplete = false
-				err = r.live.Status().Update(context.TODO(), instance)
-				if err != nil {
-					omcplog.V(0).Info("Failed to update instance status", err)
-					return reconcile.Result{}, err
-				}
-				return reconcile.Result{}, nil
+			// if _, ok := cm.Cluster_genClients[cluster_name]; !ok {
+			// 	instance.Status.CreateSyncRequestComplete = false
+			// 	instance.Status.SchedulingNeed = true
+			// 	instance.Status.SchedulingComplete = false
+			// 	err = r.live.Status().Update(context.TODO(), instance)
+			// 	if err != nil {
+			// 		omcplog.V(0).Info("Failed to update instance status", err)
+			// 		return reconcile.Result{}, err
+			// 	}
+			// 	return reconcile.Result{}, nil
 
-			}
+			// }
 			found := &appsv1.Deployment{}
 			cluster_client := cm.Cluster_genClients[cluster_name]
 			err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)

@@ -2,17 +2,19 @@ package v1alpha1
 
 import (
 	"context"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 )
 
 type OpenMCPIngressInterface interface {
 	List(opts metav1.ListOptions) (*resourcev1alpha1.OpenMCPIngressList, error)
 	Get(name string, options metav1.GetOptions) (*resourcev1alpha1.OpenMCPIngress, error)
-	Create(deployment *resourcev1alpha1.OpenMCPIngress) (*resourcev1alpha1.OpenMCPIngress, error)
+	Create(oing *resourcev1alpha1.OpenMCPIngress) (*resourcev1alpha1.OpenMCPIngress, error)
+	UpdateStatus(oing *resourcev1alpha1.OpenMCPIngress) (*resourcev1alpha1.OpenMCPIngress, error)
 	Watch(opts metav1.ListOptions) (watch.Interface, error)
 	// ...
 }
@@ -27,7 +29,7 @@ func (c *OpenMCPIngressClient) List(opts metav1.ListOptions) (*resourcev1alpha1.
 	err := c.restClient.
 		Get().
 		Namespace(c.ns).
-		Resource("openmcpingresss").
+		Resource("openmcpingresses").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Do(context.TODO()).
 		Into(&result)
@@ -40,7 +42,7 @@ func (c *OpenMCPIngressClient) Get(name string, opts metav1.GetOptions) (*resour
 	err := c.restClient.
 		Get().
 		Namespace(c.ns).
-		Resource("openmcpingresss").
+		Resource("openmcpingresses").
 		Name(name).
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Do(context.TODO()).
@@ -49,13 +51,27 @@ func (c *OpenMCPIngressClient) Get(name string, opts metav1.GetOptions) (*resour
 	return &result, err
 }
 
-func (c *OpenMCPIngressClient) Create(deployment *resourcev1alpha1.OpenMCPIngress) (*resourcev1alpha1.OpenMCPIngress, error) {
+func (c *OpenMCPIngressClient) Create(oing *resourcev1alpha1.OpenMCPIngress) (*resourcev1alpha1.OpenMCPIngress, error) {
 	result := resourcev1alpha1.OpenMCPIngress{}
 	err := c.restClient.
 		Post().
 		Namespace(c.ns).
-		Resource("openmcpingresss").
-		Body(deployment).
+		Resource("openmcpingresses").
+		Body(oing).
+		Do(context.TODO()).
+		Into(&result)
+
+	return &result, err
+}
+func (c *OpenMCPIngressClient) UpdateStatus(oing *resourcev1alpha1.OpenMCPIngress) (*resourcev1alpha1.OpenMCPIngress, error) {
+	result := resourcev1alpha1.OpenMCPIngress{}
+	err := c.restClient.
+		Put().
+		Name(oing.Name).
+		Namespace(c.ns).
+		Resource("openmcpingresses").
+		SubResource("status").
+		Body(oing).
 		Do(context.TODO()).
 		Into(&result)
 
@@ -67,7 +83,7 @@ func (c *OpenMCPIngressClient) Watch(opts metav1.ListOptions) (watch.Interface, 
 	return c.restClient.
 		Get().
 		Namespace(c.ns).
-		Resource("openmcpingresss").
+		Resource("openmcpingresses").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Watch(context.TODO())
 }

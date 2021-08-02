@@ -98,7 +98,7 @@ func (c *OpenMCPDeploymentClient) Watch(opts metav1.ListOptions) (watch.Interfac
 	return c.restClient.
 		Get().
 		Namespace(c.ns).
-		Resource("openmcpdeployment").
+		Resource("openmcpdeployments").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Watch(context.TODO())
 }

@@ -188,12 +188,14 @@ sed -i 's|REPLACE_GRPCPORT|'$OME_NODE_PORT'|g' master/openmcp-metric-collector/s
 sed -i 's|REPLACE_INFLUXDBIP|'\"$OMCP_IP\"'|g' master/openmcp-analytic-engine/operator.yaml
 sed -i 's|REPLACE_INFLUXDBIP|'\"$OMCP_IP\"'|g' master/openmcp-metric-collector/operator.yaml
 sed -i 's|REPLACE_INFLUXDBIP|'\"$OMCP_IP\"'|g' master/openmcp-apiserver/operator.yaml
+sed -i 's|REPLACE_INFLUXDBIP|'\"$OMCP_IP\"'|g' master/openmcp-cluster-manager/operator.yaml
 
 sed -i 's|REPLACE_INFLUXDBPORT|'$INFLUXDB_NODE_PORT'|g' master/influxdb/service.yaml
 
 sed -i 's|REPLACE_INFLUXDBPORT|'\"$INFLUXDB_NODE_PORT\"'|g' master/openmcp-analytic-engine/operator.yaml
 sed -i 's|REPLACE_INFLUXDBPORT|'\"$INFLUXDB_NODE_PORT\"'|g' master/openmcp-metric-collector/operator.yaml
 sed -i 's|REPLACE_INFLUXDBPORT|'\"$INFLUXDB_NODE_PORT\"'|g' master/openmcp-apiserver/operator.yaml
+sed -i 's|REPLACE_INFLUXDBPORT|'\"$INFLUXDB_NODE_PORT\"'|g' master/openmcp-cluster-manager/operator.yaml
 
 sed -i 's|REPLACE_API_KEY|'\"$API_APP_KEY\"'|g' master/openmcp-apiserver/operator.yaml
 sed -i 's|REPLACE_API_USER_NAME|'\"$API_USER_NAME\"'|g' master/openmcp-apiserver/operator.yaml

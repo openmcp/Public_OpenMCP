@@ -21,6 +21,7 @@ import (
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
+	"reflect"
 	"strconv"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
@@ -107,20 +108,51 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			return reconcile.Result{}, err
 		}
 		return reconcile.Result{}, nil
-	} else {
+	}
+	if !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec) {
+		omcplog.V(3).Info("Job Update Start")
+
 		err := r.updateSecret(req, cm, instance)
 		if err != nil {
-			omcplog.V(1).Info(err)
+			omcplog.V(0).Info(err)
 			return reconcile.Result{}, err
 		}
 		return reconcile.Result{}, nil
+
+	}
+	// Check Job in cluster
+	if instance.Status.BlockSubResource == false {
+		omcplog.V(2).Info("[Member Cluster Check Secret]")
+		for k, v := range instance.Status.ClusterMaps {
+			cluster_name := k
+			replica := v
+
+			if v == 0 {
+				continue
+			}
+			found := &corev1.Secret{}
+			cluster_client := cm.Cluster_genClients[cluster_name]
+			err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+
+			if err != nil && errors.IsNotFound(err) {
+				// Delete Service Detected
+				omcplog.V(2).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
+				sec := r.secretForOpenMCPSecret(req, instance)
+
+				command := "create"
+				omcplog.V(3).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+command+", Replicas :", replica, ")")
+				_, err = r.sendSync(sec, command, cluster_name)
+
+				if err != nil {
+					return reconcile.Result{}, err
+				}
+
+			}
+
+		}
+
 	}
 
-	err = r.live.Status().Update(context.TODO(), instance)
-	if err != nil {
-		omcplog.V(1).Info("Failed to update instance status", err)
-		return reconcile.Result{}, err
-	}
 	return reconcile.Result{}, nil
 }
 
@@ -148,17 +180,25 @@ func (r *reconciler) createSecret(req reconcile.Request, cm *clusterManager.Clus
 	omcplog.V(4).Info("Function Called createSecret")
 	cluster_map := make(map[string]int32)
 	for _, cluster := range cm.Cluster_list.Items {
+		found := &corev1.Secret{}
+		cluster_client := cm.Cluster_genClients[cluster.Name]
 
-		omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
-		dep := r.secretForOpenMCPSecret(req, instance)
-		command := "create"
-		_, err := r.sendSync(dep, command, cluster.Name)
-		cluster_map[cluster.Name] = 1
-		if err != nil {
-			return err
+		err := cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+
+		if err != nil && errors.IsNotFound(err) {
+			omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
+			dep := r.secretForOpenMCPSecret(req, instance)
+			command := "create"
+			_, err := r.sendSync(dep, command, cluster.Name)
+			cluster_map[cluster.Name] = 1
+			if err != nil {
+				return err
+			}
 		}
+
 	}
 	instance.Status.ClusterMaps = cluster_map
+	instance.Status.LastSpec = instance.Spec
 	err := r.live.Status().Update(context.TODO(), instance)
 	return err
 }
@@ -176,7 +216,11 @@ func (r *reconciler) updateSecret(req reconcile.Request, cm *clusterManager.Clus
 			return err
 		}
 	}
-	return nil
+	instance.Status.LastSpec = instance.Spec
+
+	err := r.live.Status().Update(context.TODO(), instance)
+
+	return err
 }
 
 func (r *reconciler) DeleteSecret(cm *clusterManager.ClusterManager, name string, namespace string) error {

@@ -13,7 +13,7 @@ spec:
   ports:
   - port: 2050
     targetPort: 2050
-    nodePort: 30002
+    nodePort: 30001
     protocol: TCP
   selector:
     name: openmcp-analytic-engine
