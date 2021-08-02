@@ -1,18 +1,27 @@
 #!/bin/bash
 
 if [ "$1" == "" ]; then
-  echo "Please Input cluster name and platform if you need"
-  echo "ex) kubectl join cluster1 (PLATFORM)"
+  echo "Please Input cluster name"
+  echo "ex) kubectl join cluster1"
   exit 1
-elif [[ "$2" == "GKE" ]] || [[ "$2" == "EKS" ]] || [[ "$2" == "AKS" ]]; then
-  kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"JOINING"}]'
 else
-  read -p "Input MetalLB IP Address Range (FROM) : " address_from
-  read -p "Input MetalLB IP Address Range (TO) : " address_to
+  platform=$(kubectl get openmcpcluster $1 -n openmcp --context=openmcp -o jsonpath='{.spec.clusterPlatformType}')
 
-  kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressFrom","value": '$address_from'}]'
-  sleep 2
-  kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressTo","value": '$address_to'}]'
-  sleep 2
-  kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"JOINING"}]'
+  if [ "$platform" == "" ]; then
+    echo "Please Input cluster name correctly"
+    exit
+  else
+    if [[ "$platform" == "GKE" ]] || [[ "$platform" == "EKS" ]] || [[ "$platform" == "AKS" ]]; then
+      kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"JOINING"}]'
+    elif [ "$platform" == "On-Premise" ]; then
+      read -p "Input MetalLB IP Address Range (FROM) : " address_from
+      read -p "Input MetalLB IP Address Range (TO) : " address_to
+
+      kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"JOINING"}]'
+      sleep 2
+      kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressFrom","value": '$address_from'}]'
+      sleep 2
+      kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressTo","value": '$address_to'}]'
+    fi
+  fi
 fi

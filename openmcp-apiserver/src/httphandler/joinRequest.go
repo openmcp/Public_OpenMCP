@@ -95,15 +95,17 @@ func CreateClusterResource(name string, config []byte, nodeinfo string) (string,
 	for key, _ := range regionmap {
 		if regionstr != "" {
 			regionstr = regionstr + "," + key
+		} else {
+			regionstr = key
 		}
-		regionstr = key
 	}
 
 	for key, _ := range zonemap {
 		if zonestr != "" {
 			zonestr = zonestr + "," + key
+		} else {
+			zonestr = key
 		}
-		zonestr = key
 	}
 
 	ni := clusterv1alpha1.NodeInfo{
