@@ -6,7 +6,7 @@
 - [How To Join Cluster](#how-to-join-cluster)
   - [1. How to join Kubernetes Cluster to OpenMCP](#1-How-to-join-Kubernetes-Cluster-to-OpenMCP)
     - [(1) (option) Rename cluster name [In sub-cluster]](#1-option-Rename-cluster-name-In-sub-cluster)
-    - [(2) Check Status OpenMCP API Server in openmcp-cluster [In openmcp-cluster]](#2-Check-Status-OpenMCP-API-Server-In-openmcp-cluster)
+    - [(2) Check Status OpenMCP API Server [In openmcp-cluster]](#2-Check-Status-OpenMCP-API-Server-In-openmcp-cluster)
     - [(3) Register DNS Server [In sub-cluster]](#3-Register-DNS-Server-In-sub-cluster)
     - [(4) Register Region and Zone to All Nodes of sub-cluster [In sub-cluster]](#4-Register-Region-and-Zone-to-All-Nodes-of-sub-cluster-In-sub-cluster)
     - [(5) Register sub-cluster to OpenMCP [In sub-cluster]](#5-Register-sub-cluster-to-OpenMCP-In-sub-cluster)
