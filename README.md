@@ -7,7 +7,7 @@
   - [1. How to join Kubernetes Cluster to OpenMCP](#1-How-to-join-Kubernetes-Cluster-to-OpenMCP)
     - [(1) (option) Rename cluster name [In sub-cluster]](#1-option-Rename-cluster-name-In-sub-cluster)
     - [(2) Check Status OpenMCP API Server in openmcp-cluster [In openmcp-cluster]](#2-Check-Status-OpenMCP-API-Server-In-openmcp-cluster)
-    - [(3) Register DNS Server at "/etc/resolv.conf" [In sub-cluster]](#3-Register-DNS-Server-at-etc-resolv-conf-In-sub-cluster)
+    - [(3) Register DNS Server [In sub-cluster]](#3-Register-DNS-Server-In-sub-cluster)
     - [(4) Register Region and Zone to All Nodes of sub-cluster [In sub-cluster]](#4-Register-Region-and-Zone-to-All-Nodes-of-sub-cluster-In-sub-cluster)
     - [(5) Register sub-cluster to OpenMCP [In sub-cluster]](#5-Register-sub-cluster-to-OpenMCP-In-sub-cluster)
     - [(6) Check Registered OpenMCPCluster [In openmcp-cluster]](#6-Check-Registered-OpenMCPCluster-In-openmcp-cluster)
@@ -244,7 +244,7 @@ NAME                                       TYPE           CLUSTER-IP       EXTER
 service/openmcp-apiserver                  LoadBalancer   10.96.65.179     XX.XX.XX.XX   8080:30000/TCP   54s
 ```
 
-### (3) Register DNS Server at "/etc/resolv.conf" [In sub-cluster]
+### (3) Register DNS Server [In sub-cluster]
 
 Write the [<EXTERNAL_SERVER_IP>](https://github.com/openmcp/external) of the external server at the top of the '/etc/resolv.conf' file.
 This is to join the OpenMCP cluster through DNS Domain on the API server.
