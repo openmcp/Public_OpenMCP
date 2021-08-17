@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"openmcp/openmcp/apis"
 	nanumv1alpha1 "openmcp/openmcp/apis/snapshot/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-snapshot/pkg/util"
@@ -22,7 +23,6 @@ import (
 	// "sigs.k8s.io/kubefed/pkg/controller/util"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/kubefed/pkg/apis"
 	"sigs.k8s.io/kubefed/pkg/client/generic"
 	// "openmcp/openmcp/snapshot/pkg/controller"
 )
@@ -73,9 +73,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		omcplog.Error("adding APIs to live cluster's scheme: ", err)
 		return nil, err
 	}
-	omcplog.V(4).Info("-----------")
-	omcplog.V(4).Info(live)
-	omcplog.V(4).Info("-----------")
 	if err := co.WatchResourceReconcileObject(context.TODO(), live, &nanumv1alpha1.Snapshot{}, controller.WatchOptions{}); err != nil {
 		omcplog.Error("setting up Pod watch in live cluster: ", err)
 		return nil, err
@@ -136,7 +133,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			omcplog.V(4).Info("volumeSnapshotKey : " + volumeSnapshotKey)
 			volumeSnapshotErr, errDetail := volumeSnapshotRun(r, &snapshotSources, groupSnapshotKey, volumeSnapshotKey, pvIdx)
 			if volumeSnapshotErr != nil {
-				if errDetail.Error() == "Command Error : TargetFile is empty!" {
+				if errDetail == nil {
+					omcplog.Error("volumeSnapshotRun error : ", volumeSnapshotErr)
+					r.MakeStatusWithSource(instance, false, snapshotSources, volumeSnapshotErr, errDetail)
+					omcplog.V(3).Info("Snapshot Failed")
+					return reconcile.Result{Requeue: false}, nil
+				} else if errDetail.Error() == "Command Error : TargetFile is empty!" {
 					// 타겟이 없은 경우 성공처리
 					omcplog.V(3).Info("snapshot volume is zero.")
 					instance.Spec.SnapshotSources[idx].VolumeDataSource.VolumeSnapshotKey += " Empty"
