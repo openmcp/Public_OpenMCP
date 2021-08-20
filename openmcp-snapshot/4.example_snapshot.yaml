@@ -6,17 +6,17 @@ spec:
   snapshotSources:
   - resourceCluster: cluster1
     resourceNamespace: default
-    resourceType: PersistentVolume
-    resourceName: iot-gateway-pv
-  - resourceCluster: cluster1
-    resourceNamespace: default
-    resourceType: PersistentVolumeClaim
-    resourceName: iot-gateway-pvc
-  - resourceCluster: cluster1
-    resourceNamespace: default
     resourceType: Deployment
     resourceName: iot-gateway
   - resourceCluster: cluster1
     resourceNamespace: default
     resourceType: Service
     resourceName: iot-gateway-sv
+#  - resourceCluster: cluster1
+#    resourceNamespace: default
+#    resourceType: PersistentVolume
+#    resourceName: iot-gateway-pv
+#  - resourceCluster: cluster1
+#    resourceNamespace: default
+#    resourceType: PersistentVolumeClaim
+#    resourceName: iot-gateway-pvc

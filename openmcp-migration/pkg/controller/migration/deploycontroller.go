@@ -4,6 +4,7 @@ import (
 	"context"
 	v1alpha1 "openmcp/openmcp/apis/migration/v1alpha1"
 	"openmcp/openmcp/omcplog"
+	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
 )
@@ -143,8 +144,13 @@ func migdeployNotVolume(migSource MigrationControllerResource, resource v1alpha1
 	targetResource.ResourceVersion = ""
 	targetErr := targetClient.Create(context.TODO(), targetResource)
 	if targetErr != nil {
-		omcplog.Error("target cluster create error : ", targetErr)
-		return targetErr
+		if strings.Contains(targetErr.Error(), "already exists") {
+			omcplog.V(3).Info("target cluster create error : ", targetErr)
+			omcplog.V(3).Info("continue...")
+		} else {
+			omcplog.Error("target cluster create error : ", targetErr)
+			return targetErr
+		}
 	}
 	omcplog.V(3).Info("Create for target cluster end")
 

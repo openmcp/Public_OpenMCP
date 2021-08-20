@@ -62,7 +62,8 @@ type SnapshotStatus struct {
 	//LastSuccessDate metav1.Time `json:"lastSuccessDate,omitempty"`
 	ElapsedTime string `json:"ElapsedTime,omitempty"`
 	// isVolumeSnapshot
-	IsVolumeSnapshot bool `json:"isVolumeSnapshot,omitempty"`
+	IsVolumeSnapshot bool             `json:"isVolumeSnapshot,omitempty"`
+	SnapshotSources  []SnapshotSource `json:"snapshotSource"`
 }
 
 // +genclient
