@@ -15,6 +15,7 @@ import (
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
@@ -115,13 +116,19 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	//groupSnapshot 키값에 사용될 시간 추출
 	//startTime := strconv.Itoa(int(time.Now().Unix()))
 	groupSnapshotKey := strconv.Itoa(int(time.Now().Unix()))
+
 	omcplog.V(3).Info(time.Now())
 	omcplog.V(4).Info("[Reconcile] startTime : " + groupSnapshotKey)
 	instance.Status.IsVolumeSnapshot = false
 	instance.Spec.GroupSnapshotKey = groupSnapshotKey
 	//instance.Status.SnapshotKey = startTime
+
+	// 스냅샷 Resource 정보들을 가공하는 부분
+	instance.Status.SnapshotSources = instance.Spec.DeepCopy().SnapshotSources
+	setResourceForOnlyDeploy(&instance.Status)
+
 	pvIdx := 1
-	for idx, snapshotSources := range instance.Spec.SnapshotSources {
+	for idx, snapshotSources := range instance.Status.SnapshotSources {
 		resourceType := snapshotSources.ResourceType
 		omcplog.V(4).Info("\n[" + strconv.Itoa(idx) + "] : Resource : " + resourceType)
 
@@ -129,7 +136,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			instance.Status.IsVolumeSnapshot = true
 			volumeSnapshotKey := util.MakeVolumeProcessResourceKey(groupSnapshotKey, strconv.Itoa(int(startDate.Unix())), strconv.Itoa(pvIdx))
 			volumeDataSource := &nanumv1alpha1.VolumeDataSource{VolumeSnapshotKey: volumeSnapshotKey}
-			instance.Spec.SnapshotSources[idx].VolumeDataSource = volumeDataSource
+			instance.Status.SnapshotSources[idx].VolumeDataSource = volumeDataSource
 			omcplog.V(4).Info("volumeSnapshotKey : " + volumeSnapshotKey)
 			volumeSnapshotErr, errDetail := volumeSnapshotRun(r, &snapshotSources, groupSnapshotKey, volumeSnapshotKey, pvIdx)
 			if volumeSnapshotErr != nil {
@@ -141,7 +148,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				} else if errDetail.Error() == "Command Error : TargetFile is empty!" {
 					// 타겟이 없은 경우 성공처리
 					omcplog.V(3).Info("snapshot volume is zero.")
-					instance.Spec.SnapshotSources[idx].VolumeDataSource.VolumeSnapshotKey += " Empty"
+					instance.Status.SnapshotSources[idx].VolumeDataSource.VolumeSnapshotKey += " Empty"
 				} else {
 					omcplog.Error("volumeSnapshotRun error : ", errDetail)
 					r.MakeStatusWithSource(instance, false, snapshotSources, volumeSnapshotErr, errDetail)
@@ -152,7 +159,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			pvIdx++
 		}
 		etcdSnapshotKeyAllPath, etcdSnapshotErr := etcdSnapshotRun(r, &snapshotSources, groupSnapshotKey)
-		instance.Spec.SnapshotSources[idx].ResourceSnapshotKey = etcdSnapshotKeyAllPath
+		instance.Status.SnapshotSources[idx].ResourceSnapshotKey = etcdSnapshotKeyAllPath
 		if etcdSnapshotErr != nil {
 			omcplog.Error("etcdSnapshotRun error : ", etcdSnapshotErr)
 			r.MakeStatusWithSource(instance, false, snapshotSources, etcdSnapshotErr, nil)
@@ -227,4 +234,108 @@ func (r *reconciler) makeStatusRun(instance *nanumv1alpha1.Snapshot, snapshotSta
 	time.Sleep(5 * time.Second)
 
 	omcplog.V(3).Info("live update end")
+}
+
+// setResource : Deploy
+func setResourceForOnlyDeploy(status *nanumv1alpha1.SnapshotStatus) error {
+	resourceList := status.SnapshotSources
+
+	for _, resource := range resourceList {
+		namespace := resource.ResourceNamespace
+		resourceName := resource.ResourceName
+		sourceClient := cm.Cluster_genClients[resource.ResourceCluster]
+		pvcNames := []string{}
+		pvNames := []string{}
+
+		if resource.ResourceType == config.DEPLOY {
+			// 1. Deployment 데이터를 가져온다.
+			omcplog.V(0).Info("- 1. getDeployment -")
+			omcplog.V(0).Info(resourceName)
+
+			sourceDeploy := &appsv1.Deployment{}
+			_ = sourceClient.Get(context.TODO(), sourceDeploy, namespace, resourceName)
+			omcplog.V(0).Info(sourceDeploy)
+			volumeInfo := sourceDeploy.Spec.Template.Spec.DeepCopy().Volumes
+			omcplog.V(0).Info(volumeInfo)
+			for i, volume := range volumeInfo {
+				// 2. PVC 정보가 있는지 체크하고 있으면 기입.
+				omcplog.V(0).Info("- 2. check deployment -" + string(rune(i)))
+				omcplog.V(0).Info(volume)
+				pvcInfo := volume.PersistentVolumeClaim
+				if pvcInfo == nil {
+					continue
+				} else {
+					omcplog.V(0).Info("--- pvc bingo ---")
+					pvcNames = append(pvcNames, pvcInfo.ClaimName)
+
+					// 3. PVC 정보를 토대로 PV 라벨 정보 추출 후 이름 추출.
+					sourcePVC := &corev1.PersistentVolumeClaim{}
+					_ = sourceClient.Get(context.TODO(), sourcePVC, namespace, pvcInfo.ClaimName)
+					pvc_matchLabel := sourcePVC.Spec.Selector.DeepCopy().MatchLabels
+					omcplog.V(0).Info("- 3. check pvc -")
+					omcplog.V(0).Info(pvc_matchLabel)
+					sourcePVList := &corev1.PersistentVolumeList{}
+					_ = sourceClient.List(context.TODO(), sourcePVList, namespace, &client.ListOptions{
+						LabelSelector: labels.SelectorFromSet(labels.Set(pvc_matchLabel)),
+					})
+					for _, pv := range sourcePVList.Items {
+						omcplog.V(0).Info("- 4. check pv -")
+						omcplog.V(0).Info(pv)
+						pvNames = append(pvNames, pv.Name)
+					}
+				}
+			}
+
+			// 5. 저장된 pvName, pvcName 을 토대로 리스트 재작성.
+			for _, pvName := range pvNames {
+				tmp := nanumv1alpha1.SnapshotSource{}
+				tmp.ResourceName = pvName
+				tmp.ResourceType = config.PV
+				resourceList = append(resourceList, tmp)
+			}
+			for _, pvcName := range pvcNames {
+				tmp := nanumv1alpha1.SnapshotSource{}
+				tmp.ResourceName = pvcName
+				tmp.ResourceType = config.PVC
+				resourceList = append(resourceList, tmp)
+			}
+		}
+	}
+
+	omcplog.V(0).Info("- resourceList fix -")
+	omcplog.V(0).Info(resourceList)
+
+	// 6. 기존에 하던 데이터 보정 실행 (동일 객체 제거, Deployment를 제일 앞으로)
+	fixedResourceList := []nanumv1alpha1.SnapshotSource{}
+	//동일 객체 제거
+	for _, resource := range resourceList {
+		isConflict := false
+		for _, fixedResource := range fixedResourceList {
+			if fixedResource.ResourceName == resource.ResourceName && fixedResource.ResourceType == resource.ResourceType {
+				// 동일한 경우 리스트에 추가하지 않는다.
+				omcplog.V(0).Info(" -- conflict resource ")
+				omcplog.V(0).Info(resource)
+				isConflict = true
+			}
+		}
+		if !isConflict {
+			fixedResourceList = append(fixedResourceList, resource)
+		}
+	}
+	omcplog.V(0).Info(fixedResourceList)
+	//Deploy를 가장 앞으로.
+	for i, fixedResource := range fixedResourceList {
+		if fixedResource.ResourceType == config.DEPLOY {
+			tmp := fixedResourceList[i]
+			fixedResourceList[i] = fixedResourceList[0]
+			fixedResourceList[0] = tmp
+		}
+	}
+
+	omcplog.V(0).Info("->")
+	omcplog.V(0).Info(fixedResourceList)
+	omcplog.V(0).Info("--------------------")
+
+	resourceList = fixedResourceList
+	return nil
 }
