@@ -2,6 +2,7 @@ package predicates
 
 import (
 	"container/list"
+	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
 	"openmcp/openmcp/util/clusterManager"
 )
@@ -39,8 +40,17 @@ func (pl *PodFitsResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketire
 		if node.AllocatableResource.EphemeralStorage < newPod.RequestedResource.EphemeralStorage {
 			node_result = false
 		}
-
+		if node.AllocatableResource.MilliCPU < newPod.RequestedResource.MilliCPU {
+			node_result = false
+		}
 		if node_result == true {
+			node.AllocatableResource.EphemeralStorage -= newPod.RequestedResource.EphemeralStorage
+			// omcplog.V(5).Info("EphemeralStorage = ", node.AllocatableResource.EphemeralStorage)
+			node.AllocatableResource.MilliCPU -= newPod.RequestedResource.MilliCPU
+			// omcplog.V(5).Info("MilliCPU = ", node.AllocatableResource.MilliCPU)
+			node.AllocatableResource.Memory -= newPod.RequestedResource.Memory
+			omcplog.V(5).Info("RequestedResource = ", newPod.RequestedResource.MilliCPU)
+			omcplog.V(5).Info("MilliCPU = ", node.AllocatableResource.MilliCPU)
 			return true
 		}
 	}

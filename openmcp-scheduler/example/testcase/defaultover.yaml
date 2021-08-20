@@ -4,7 +4,7 @@ metadata:
   name: example-openmcpdeployment-defaultover
   namespace: openmcp
 spec:
-  replicas: 100
+  replicas: 20
   labels:
       app: openmcp-nginx
       test: "yes"
@@ -12,6 +12,8 @@ spec:
     spec:
       template:
         spec:
+          imagePullSecrets:
+          - name: regcred
           containers:
           - image: nginx
             name: nginx

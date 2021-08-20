@@ -4,8 +4,6 @@ import (
 	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
 	"openmcp/openmcp/util/clusterManager"
-
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 /*
@@ -18,8 +16,8 @@ func (pl *ClusterJoninCheck) Name() string {
 }
 
 func (pl *ClusterJoninCheck) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, cm *clusterManager.ClusterManager) bool {
-	clusterList, err := cm.Crd_cluster_client.OpenMCPCluster("openmcp").List(v1.ListOptions{})
-	if err != nil {
+	clusterList := clusterInfo.ClusterList
+	if clusterList == nil {
 		omcplog.V(0).Infof("That instance did not get information from crd cluster.")
 	}
 	// joinCluster := make(map[string]bool)

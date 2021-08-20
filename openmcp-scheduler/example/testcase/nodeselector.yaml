@@ -12,6 +12,8 @@ spec:
     spec:
       template:
         spec:
+          imagePullSecrets:
+          - name: regcred        
           containers:
           - image: nginx
             name: nginx
@@ -20,4 +22,4 @@ spec:
                 memory: "100"
                 cpu: "1"
           -nodeSelector:
-            disktype: ssd
+            disktype: SSD

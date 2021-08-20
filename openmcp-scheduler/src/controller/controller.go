@@ -128,7 +128,11 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	recon.scheduler.Live = &recon.live
 	return co, nil
 }
+func (r *reconciler) JoinReconcile(newDeployment *resourcev1alpha1.OpenMCPDeployment) *resourcev1alpha1.OpenMCPDeployment {
 
+	return newDeployment
+
+}
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	// Fetch the OpenMCPDeployment instance
 	r.scheduler.Live = &r.live
@@ -191,6 +195,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					return reconcile.Result{}, err
 				}
 				return reconcile.Result{}, nil
+			} else {
+				//조인 언조인이후 동일한 경우 전체 리스케줄링하기 때문에 아래 단계로 전체 수행하면됨
 			}
 		}
 
@@ -225,7 +231,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		if lastspec.Replicas != 0 && lastspec.Replicas < newDeployment.Spec.Replicas {
 			IsExist = true
 			//남은 개수만큼  분리
-			omcplog.V(5).Infof("남은개수만큼 지정", lastspec.Replicas, newDeployment.Spec.Replicas)
+			//omcplog.V(5).Infof("남은개수만큼 지정", lastspec.Replicas, newDeployment.Spec.Replicas)
 			newDeployment.Spec.Replicas = newDeployment.Spec.Replicas - lastspec.Replicas
 		}
 

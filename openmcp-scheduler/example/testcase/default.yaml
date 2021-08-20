@@ -12,6 +12,8 @@ spec:
     spec:
       template:
         spec:
+          imagePullSecrets:
+          - name: regcred        
           containers:
           - image: nginx
             name: nginx

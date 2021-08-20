@@ -1,6 +1,7 @@
 package resourceinfo
 
 import (
+	"openmcp/openmcp/apis/cluster/v1alpha1"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 
 	corev1 "k8s.io/api/core/v1"
@@ -21,6 +22,7 @@ type Cluster struct {
 	Nodes               []*NodeInfo
 	RequestedResource   *Resource
 	AllocatableResource *Resource
+	ClusterList         *v1alpha1.OpenMCPClusterList
 	PreFilter           bool
 	PreFilterTwoStep    bool
 }
@@ -80,7 +82,6 @@ func NewResource() *Resource {
 
 func AddResources(res, new *Resource) *Resource {
 
-	//????? 확인중
 	return &Resource{
 		MilliCPU:         res.MilliCPU + new.MilliCPU,
 		Memory:           res.Memory + new.Memory,

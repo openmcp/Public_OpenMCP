@@ -25,6 +25,10 @@ echo "--- openmcp-ingress-controller"
 kubectl delete -f openmcp-ingress-controller/.
 echo "--- openmcp-service-controller"
 kubectl delete -f openmcp-service-controller/.
+echo "--- openmcp-job-controller"
+kubectl delete -f openmcp-job-controller/.
+echo "--- openmcp-namespace-controller"
+kubectl delete -f openmcp-namespace-controller/.
 echo "--- openmcp-policy-engine"
 kubectl delete -f openmcp-policy-engine/.
 echo "   ==> Delete Policy"
