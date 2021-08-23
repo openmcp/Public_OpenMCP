@@ -4,6 +4,7 @@ import (
 	"context"
 	v1alpha1 "openmcp/openmcp/apis/migration/v1alpha1"
 	"openmcp/openmcp/omcplog"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 )
@@ -33,8 +34,13 @@ func migpv(migSource MigrationControllerResource, resource v1alpha1.MigrationSou
 
 	targetErr := targetClient.Create(context.TODO(), targetResource)
 	if targetErr != nil {
-		omcplog.Error("target cluster create error : ", targetErr)
-		return targetErr
+		if strings.Contains(targetErr.Error(), "already exists") {
+			omcplog.V(3).Info("target cluster create error : ", targetErr)
+			omcplog.V(3).Info("continue...")
+		} else {
+			omcplog.Error("target cluster create error : ", targetErr)
+			return targetErr
+		}
 	}
 
 	sourceErr := sourceClient.Delete(context.TODO(), sourceResource, nameSpace, resource.ResourceName)

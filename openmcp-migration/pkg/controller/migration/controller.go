@@ -27,6 +27,7 @@ import (
 
 	"openmcp/openmcp/apis"
 	v1alpha1 "openmcp/openmcp/apis/migration/v1alpha1"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	config "openmcp/openmcp/openmcp-migration/pkg/util"
 	"openmcp/openmcp/util/clusterManager"
@@ -40,6 +41,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
@@ -88,21 +90,138 @@ type reconciler struct {
 	live           client.Client
 	ghosts         []client.Client
 	ghostNamespace string
+	moveCount      int32
 }
 
+// sourceResource : Deploy인 경우 0번에, PV인 경우 pvCheck 를 true로 리턴시키는 함수.
 func sortResource(migraionSource v1alpha1.MigrationServiceSource) ([]v1alpha1.MigrationSource, bool) {
 	resourceList := migraionSource.MigrationSources
 	pvCheck := false
-	for i, j := range resourceList {
-		if j.ResourceType == config.DEPLOY {
+	for i, resource := range resourceList {
+		if resource.ResourceType == config.DEPLOY {
 			tmp := resourceList[i]
 			resourceList[i] = resourceList[0]
 			resourceList[0] = tmp
-		} else if j.ResourceType == config.PV {
+		} else if resource.ResourceType == config.PV {
 			pvCheck = true
 		}
 	}
 	return resourceList, pvCheck
+}
+
+// setResource : Deploy
+func (r *reconciler) setResourceForOnlyDeploy(migraionSource v1alpha1.MigrationServiceSource, migSource *MigrationControllerResource) error {
+
+	sourceClient := migSource.sourceClient
+	pvcNames := []string{}
+	pvNames := []string{}
+
+	resourceList := migraionSource.MigrationSources
+	pvCheck := false
+	namespace := migraionSource.NameSpace
+	for i, resource := range resourceList {
+		resourceName := resource.ResourceName
+		if resource.ResourceType == config.DEPLOY {
+
+			// 0. OpenMCPDeployment 의 기능을 잠시 정지시킨다.
+			err := r.setBeforeOpenmcpDeploymnet(migraionSource, i)
+			if err != nil {
+				omcplog.Error("setBeforeOpenmcpDeploymnet error : ", err)
+				return err
+			}
+
+			// 1. Deployment 데이터를 가져온다.
+			omcplog.V(0).Info("- 1. getDeployment -")
+			omcplog.V(0).Info(resource.ResourceName)
+
+			sourceDeploy := &appsv1.Deployment{}
+			_ = sourceClient.Get(context.TODO(), sourceDeploy, namespace, resourceName)
+			omcplog.V(0).Info(sourceDeploy)
+			volumeInfo := sourceDeploy.Spec.Template.Spec.DeepCopy().Volumes
+			omcplog.V(0).Info(volumeInfo)
+			for i, volume := range volumeInfo {
+				// 2. PVC 정보가 있는지 체크하고 있으면 기입.
+				omcplog.V(0).Info("- 2. check deployment -" + string(rune(i)))
+				omcplog.V(0).Info(volume)
+				pvcInfo := volume.PersistentVolumeClaim
+				if pvcInfo == nil {
+					continue
+				} else {
+					omcplog.V(0).Info("--- pvc bingo ---")
+					pvcNames = append(pvcNames, pvcInfo.ClaimName)
+
+					// 3. PVC 정보를 토대로 PV 라벨 정보 추출 후 이름 추출.
+					sourcePVC := &corev1.PersistentVolumeClaim{}
+					_ = sourceClient.Get(context.TODO(), sourcePVC, namespace, pvcInfo.ClaimName)
+					pvc_matchLabel := sourcePVC.Spec.Selector.DeepCopy().MatchLabels
+					omcplog.V(0).Info("- 3. check pvc -")
+					omcplog.V(0).Info(pvc_matchLabel)
+					sourcePVList := &corev1.PersistentVolumeList{}
+					_ = sourceClient.List(context.TODO(), sourcePVList, namespace, &client.ListOptions{
+						LabelSelector: labels.SelectorFromSet(labels.Set(pvc_matchLabel)),
+					})
+					for _, pv := range sourcePVList.Items {
+						omcplog.V(0).Info("- 4. check pv -")
+						omcplog.V(0).Info(pv)
+						pvNames = append(pvNames, pv.Name)
+					}
+				}
+			}
+
+			// 5. 저장된 pvName, pvcName 을 토대로 리스트 재작성.
+			for _, pvName := range pvNames {
+				tmp := v1alpha1.MigrationSource{}
+				tmp.ResourceName = pvName
+				tmp.ResourceType = config.PV
+				resourceList = append(resourceList, tmp)
+				pvCheck = true
+			}
+			for _, pvcName := range pvcNames {
+				tmp := v1alpha1.MigrationSource{}
+				tmp.ResourceName = pvcName
+				tmp.ResourceType = config.PVC
+				resourceList = append(resourceList, tmp)
+				pvCheck = true
+			}
+		}
+	}
+	omcplog.V(0).Info("- resourceList fix -")
+	omcplog.V(0).Info(resourceList)
+
+	// 6. 기존에 하던 데이터 보정 실행 (동일 객체 제거, Deployment를 제일 앞으로)
+	fixedResourceList := []v1alpha1.MigrationSource{}
+	//동일 객체 제거
+	for _, resource := range resourceList {
+		isConflict := false
+		for _, fixedResource := range fixedResourceList {
+			if fixedResource.ResourceName == resource.ResourceName && fixedResource.ResourceType == resource.ResourceType {
+				// 동일한 경우 리스트에 추가하지 않는다.
+				omcplog.V(0).Info(" -- conflict resource ")
+				omcplog.V(0).Info(resource)
+				isConflict = true
+			}
+		}
+		if !isConflict {
+			fixedResourceList = append(fixedResourceList, resource)
+		}
+	}
+	omcplog.V(0).Info(fixedResourceList)
+	//Deploy를 가장 앞으로.
+	for i, fixedResource := range fixedResourceList {
+		if fixedResource.ResourceType == config.DEPLOY {
+			tmp := fixedResourceList[i]
+			fixedResourceList[i] = fixedResourceList[0]
+			fixedResourceList[0] = tmp
+		}
+	}
+
+	omcplog.V(0).Info("->")
+	omcplog.V(0).Info(fixedResourceList)
+	omcplog.V(0).Info("--------------------")
+
+	migSource.resourceList = fixedResourceList
+	migSource.pvCheck = pvCheck
+	return nil
 }
 
 type MigrationControllerResource struct {
@@ -118,10 +237,30 @@ type MigrationControllerResource struct {
 	resourceRequire corev1.ResourceList
 }
 
-func MigrationControllerResourceInit(migraionSource v1alpha1.MigrationServiceSource) (MigrationControllerResource, error) {
+func ResourceInit(migraionSource v1alpha1.MigrationServiceSource) (MigrationControllerResource, error) {
 	migSource := MigrationControllerResource{}
 
+	migSource.targetCluster = migraionSource.TargetCluster
+	migSource.sourceCluster = migraionSource.SourceCluster
+	migSource.nameSpace = migraionSource.NameSpace
+	migSource.targetClient = cm.Cluster_genClients[migraionSource.TargetCluster]
+	migSource.sourceClient = cm.Cluster_genClients[migraionSource.SourceCluster]
+	migSource.serviceName = migraionSource.ServiceName
 	migSource.resourceList, migSource.pvCheck = sortResource(migraionSource)
+
+	var err error
+	err = getVolumePath(&migSource)
+	if err != nil {
+		omcplog.Error("getVolumePath error : ", err)
+		return migSource, err
+	}
+
+	return migSource, nil
+}
+
+// ResourceInitForOnlyDeployment
+func (r *reconciler) ResourceInitForOnlyDeployment(migraionSource v1alpha1.MigrationServiceSource) (MigrationControllerResource, error) {
+	migSource := MigrationControllerResource{}
 	migSource.targetCluster = migraionSource.TargetCluster
 	migSource.sourceCluster = migraionSource.SourceCluster
 	migSource.nameSpace = migraionSource.NameSpace
@@ -130,7 +269,14 @@ func MigrationControllerResourceInit(migraionSource v1alpha1.MigrationServiceSou
 	migSource.serviceName = migraionSource.ServiceName
 
 	var err error
-	err, migSource.volumePath, migSource.resourceRequire = getVolumePath(migraionSource)
+	//migSource.resourceList, migSource.pvCheck = setResourceForOnlyDeploy(migraionSource)
+	err = r.setResourceForOnlyDeploy(migraionSource, &migSource)
+	if err != nil {
+		omcplog.Error("setResourceForOnlyDeploy error : ", err)
+		return migSource, err
+	}
+	//err, migSource.volumePath, migSource.resourceRequire = getVolumePath(migraionSource)
+	err = getVolumePath(&migSource)
 	if err != nil {
 		omcplog.Error("getVolumePath error : ", err)
 		return migSource, err
@@ -138,6 +284,7 @@ func MigrationControllerResourceInit(migraionSource v1alpha1.MigrationServiceSou
 
 	return migSource, nil
 }
+
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	omcplog.V(3).Info("Migration Start : Reconcile")
 	startDate := time.Now()
@@ -163,7 +310,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	for _, migraionSource := range instance.Spec.MigrationServiceSources {
 		omcplog.V(4).Info(migraionSource)
-		migSource, initErr := MigrationControllerResourceInit(migraionSource)
+		//migSource, initErr := ResourceInit(migraionSource)
+		migSource, initErr := r.ResourceInitForOnlyDeployment(migraionSource)
 		if initErr != nil {
 			omcplog.Error("MigrationControllerResource Init error : ", initErr)
 			r.MakeStatusWithMigSource(instance, false, migraionSource, initErr)
@@ -198,11 +346,19 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				}
 			}
 		} else {
-			for _, resource := range migSource.resourceList {
+			for i, resource := range migSource.resourceList {
 				resourceType := resource.ResourceType
 				if resourceType == config.DEPLOY {
 					migErr = migdeployNotVolume(migSource, resource)
 					checkResourceName = resource.ResourceName
+
+					err := r.setAfterOpenmcpDeploymnet(migSource, i)
+					if err != nil {
+						omcplog.Error("setBeforeOpenmcpDeploymnet error : ", err)
+						r.MakeStatusWithResource(instance, false, migraionSource, resource, err)
+						omcplog.Error("Migration Failed")
+						return reconcile.Result{Requeue: false}, nil
+					}
 				} else if resourceType == config.SERVICE {
 					migErr = migserviceNotVolume(migSource, resource)
 				} else {
@@ -275,6 +431,55 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	r.MakeStatus(instance, true, elapsed.String(), nil)
 
 	return reconcile.Result{Requeue: false}, nil
+}
+
+func (r *reconciler) setBeforeOpenmcpDeploymnet(migraionSource v1alpha1.MigrationServiceSource, idx int) error {
+	odeploy := &resourcev1alpha1.OpenMCPDeployment{}
+	err := r.live.Get(context.TODO(), types.NamespacedName{Name: migraionSource.MigrationSources[idx].ResourceName, Namespace: migraionSource.NameSpace}, odeploy)
+	if err != nil {
+		omcplog.Error("setBeforeOpenmcpDeploymnet error : ", err)
+		return err
+	}
+	omcplog.V(4).Info("--- odeploy status ---")
+	omcplog.V(4).Info(odeploy.Status)
+	moveCount := odeploy.Status.ClusterMaps[migraionSource.SourceCluster]
+	omcplog.V(4).Info(moveCount)
+	r.moveCount = moveCount
+
+	odeploy.Status.BlockSubResource = true
+	err = r.live.Status().Update(context.TODO(), odeploy)
+	if err != nil {
+		omcplog.V(3).Info(err, "-----------")
+	}
+	omcplog.V(4).Info("setBeforeOpenmcpDeploymnet end")
+	omcplog.V(4).Info("---------------")
+
+	return nil
+}
+
+func (r *reconciler) setAfterOpenmcpDeploymnet(micSource MigrationControllerResource, idx int) error {
+	odeploy := &resourcev1alpha1.OpenMCPDeployment{}
+	err := r.live.Get(context.TODO(), types.NamespacedName{Name: micSource.resourceList[idx].ResourceName, Namespace: micSource.nameSpace}, odeploy)
+	if err != nil {
+		omcplog.Error("setAfterOpenmcpDeploymnet error : ", err)
+		return err
+	}
+	omcplog.V(4).Info("--- odeploy ---")
+	omcplog.V(4).Info(odeploy.Status)
+	omcplog.V(4).Info(r.moveCount)
+
+	odeploy.Status.BlockSubResource = false
+	odeploy.Status.ClusterMaps[micSource.sourceCluster] -= r.moveCount
+	odeploy.Status.ClusterMaps[micSource.targetCluster] += r.moveCount
+
+	err = r.live.Status().Update(context.TODO(), odeploy)
+	if err != nil {
+		omcplog.V(3).Info(err, "-----------")
+	}
+	omcplog.V(4).Info("setAfterOpenmcpDeploymnet end")
+	omcplog.V(4).Info("---------------")
+
+	return nil
 }
 
 func (r *reconciler) MakeStatusWithResource(instance *v1alpha1.Migration, migrationStatus bool, migraionSource v1alpha1.MigrationServiceSource, resource v1alpha1.MigrationSource, err error) {
@@ -508,27 +713,28 @@ func CreateLinkShare(client generic.Client, sourceResource *appsv1.Deployment, v
 	return true, nil, nfsNewPv, nfsNewPvc
 	// return true, nil
 }
-func getVolumePath(migraionSource v1alpha1.MigrationServiceSource) (error, string, corev1.ResourceList) {
+func getVolumePath(migSource *MigrationControllerResource) error {
+	omcplog.V(0).Info("--- get Volume Path ---")
+	//func getVolumePath(migraionSource v1alpha1.MigrationServiceSource, migSource *MigrationControllerResource) error {
 	pvcName := ""
 	dpResource := &appsv1.Deployment{}
 	pvcResource := &corev1.PersistentVolumeClaim{}
-	sourceCluster := migraionSource.SourceCluster
-	sourceClient := cm.Cluster_genClients[sourceCluster]
+	sourceClient := migSource.sourceClient
 	volumeName := ""
 	mountPath := ""
-	for _, resource := range migraionSource.MigrationSources {
+	for _, resource := range migSource.resourceList {
 		if resource.ResourceType == config.PVC {
 			pvcName = resource.ResourceName
-			err := sourceClient.Get(context.TODO(), pvcResource, migraionSource.NameSpace, resource.ResourceName)
+			err := sourceClient.Get(context.TODO(), pvcResource, migSource.nameSpace, resource.ResourceName)
 			if err != nil {
 				omcplog.Error("failed get Source PVC :  ", err)
-				return err, "", nil
+				return err
 			}
 		} else if resource.ResourceType == config.DEPLOY {
-			err := sourceClient.Get(context.TODO(), dpResource, migraionSource.NameSpace, resource.ResourceName)
+			err := sourceClient.Get(context.TODO(), dpResource, migSource.nameSpace, resource.ResourceName)
 			if err != nil {
 				omcplog.Error("failed get Source Deploy : ", err)
-				return err, "", nil
+				return err
 			}
 		} else {
 			continue
@@ -536,15 +742,15 @@ func getVolumePath(migraionSource v1alpha1.MigrationServiceSource) (error, strin
 	}
 	if pvcName == "" {
 		omcplog.V(3).Info("MigrationSpec pvcName none")
-		return nil, "", nil
+		return nil
 	}
 	if dpResource.Name == "" {
 		omcplog.V(3).Info("Source dpResourceName none")
-		return nil, "", nil
+		return nil
 	}
 	if pvcResource.Name == "" {
 		omcplog.V(3).Info("Source pvcResourceName none")
-		return nil, "", nil
+		return nil
 	}
 
 	volumeList := dpResource.Spec.Template.Spec.Volumes
@@ -555,7 +761,7 @@ func getVolumePath(migraionSource v1alpha1.MigrationServiceSource) (error, strin
 	}
 	if volumeName == "" {
 		omcplog.Error(fmt.Errorf("error volume name nil : dpResource / " + dpResource.String()))
-		return fmt.Errorf("error volume name nil : dpResource / " + dpResource.String()), "", nil
+		return fmt.Errorf("error volume name nil : dpResource / " + dpResource.String())
 	}
 
 	containerList := dpResource.Spec.Template.Spec.Containers
@@ -568,7 +774,7 @@ func getVolumePath(migraionSource v1alpha1.MigrationServiceSource) (error, strin
 	}
 	if mountPath == "" {
 		omcplog.Error(fmt.Errorf("error mount path nil : dpResource / " + dpResource.String()))
-		return fmt.Errorf("error mount path nil : dpResource / " + dpResource.String()), "", nil
+		return fmt.Errorf("error mount path nil : dpResource / " + dpResource.String())
 	}
 	storageSize := corev1.ResourceList{}
 	if pvcResource.Spec.Resources.Requests.Storage() != nil {
@@ -578,7 +784,13 @@ func getVolumePath(migraionSource v1alpha1.MigrationServiceSource) (error, strin
 			corev1.ResourceStorage: resource.MustParse(config.DEFAULT_VOLUME_SIZE),
 		}
 	}
-	return nil, mountPath, storageSize
+	omcplog.V(0).Info("mountPath : ")
+	omcplog.V(0).Info(mountPath)
+	omcplog.V(0).Info("storageSize : ")
+	omcplog.V(0).Info(storageSize)
+	migSource.volumePath = mountPath
+	migSource.resourceRequire = storageSize
+	return nil
 }
 
 func checkNameSpace(client generic.Client, namespace string) bool {

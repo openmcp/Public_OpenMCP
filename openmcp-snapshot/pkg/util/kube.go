@@ -62,12 +62,12 @@ func FindErrorForEvent(targetListClient *kubernetes.Clientset, resourceName stri
 
 	isSuccessfulCreate := false
 	for _, event := range events.Items {
-		matchResult, regexpErr = regexp.MatchString(resourceName, event.Name)
+		matchResult, regexpErr = regexp.MatchString(resourceName, event.Name+"-") //job/sns-1629180186-1629180186-1-job가 아닌 pod/sns-1629180186-1629180186-1-job-9954d를 검출하기 위함
 		if regexpErr == nil && matchResult == true {
 			omcplog.V(3).Info(event.Reason)
 			if event.Reason == "SuccessfulCreate" {
 				isSuccessfulCreate = true
-				omcplog.V(3).Info("-- job running success")
+				omcplog.V(3).Info("-- job- running success")
 				break
 			}
 			tmpEvent := Event{}

@@ -1,0 +1,13 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: Migration
+metadata:
+  name: migrations2
+spec:
+  MigrationServiceSource:
+  - SourceCluster: cluster2
+    TargetCluster: cluster1
+    NameSpace: openmcp
+    ServiceName: openmcp-deploy
+    MigrationSource:
+    - ResourceName: openmcp-deployment
+      ResourceType: Deployment

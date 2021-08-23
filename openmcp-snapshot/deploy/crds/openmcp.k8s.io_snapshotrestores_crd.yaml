@@ -13,7 +13,6 @@ spec:
     singular: snapshotrestore
   scope: Namespaced
   versions:
-  - name: v1alpha1
   - additionalPrinterColumns:
     - description: Created time stamp
       jsonPath: .metadata.creationTimestamp
