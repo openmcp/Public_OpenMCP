@@ -24,6 +24,7 @@ func DeleteSubResourceAll(clusterName string, cm *clusterManager.ClusterManager)
 	_ = deleteSubResourceJob(clusterName, cm)
 	_ = deleteSubResourceSecret(clusterName, cm)
 	_ = deleteSubResourceNamespace(clusterName, cm)
+
 	return nil
 }
 

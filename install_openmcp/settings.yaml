@@ -6,7 +6,7 @@ default:
 master:
   ServerIP:
     internal: 10.0.3.20
-    external: 119.65.195.180
+    external: 106.251.64.250
   metalLB:
     rangeStartIP: 10.0.3.191
     rangeEndIP: 10.0.3.200
@@ -32,7 +32,7 @@ master:
 externalServer:
   ServerIP:
     internal: 10.0.3.12
-    external: 119.65.195.180
+    external: 106.251.64.250
   powerDNS:
     apiKey: 1234
     externalPort: 5353 # Member클러스터의 접근을위해 DNS PORT 53을 포트포워딩 (119.65.195.180:5353 -> 10.0.3.12:53)

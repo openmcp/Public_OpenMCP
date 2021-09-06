@@ -3,6 +3,7 @@ package priorities
 import (
 	//"openmcp/openmcp/omcplog"
 
+	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
 )
 
@@ -63,5 +64,6 @@ func (pl *BalancedNetworkAllocation) Score(pod *ketiresource.Pod, clusterInfo *k
 		return pl.prescoring[clusterInfo.ClusterName]
 	}
 	score := pl.prescoring[clusterInfo.ClusterName]
+	omcplog.V(4).Info("BalancedNetworkAllocation score = ", score)
 	return score
 }

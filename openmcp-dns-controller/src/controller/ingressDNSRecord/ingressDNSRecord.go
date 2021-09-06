@@ -94,6 +94,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			omcplog.V(0).Info("[OpenMCP DNS Endpoint Controller] : ", err)
 		}
 
+		FillStatus(instanceIngressRecord)
+
 		domains := []string{}
 		for _, rule := range instanceOpenMCPIngress.Spec.Template.Spec.Rules {
 			domains = append(domains, rule.Host)

@@ -317,11 +317,11 @@ func (sched *OpenMCPScheduler) ScheduleOne(newPod *ketiresource.Pod, replicas in
 		return "", fmt.Errorf("There is no cluster")
 	}
 	elapsedTime := time.Since(startTime)
-	omcplog.V(0).Infof("    => filter Time [%v]", elapsedTime)
-	omcplog.V(0).Infof("    => FilteredResultMap [%v]", filterdResult)
+	omcplog.V(5).Infof("    => filter Time [%v]", elapsedTime)
+	omcplog.V(5).Infof("    => FilteredResultMap [%v]", filterdResult)
 	selectedCluster := sched.Framework.RunScorePluginsOnClusters(newPod, filteredCluster, sched.ClusterInfos, replicas)
-	omcplog.V(0).Infof("    => selectedCluster [%v]", selectedCluster)
-	omcplog.V(0).Infof("    => scoring Time [%v]", time.Since(startTime))
+	omcplog.V(5).Infof("    => selectedCluster [%v]", selectedCluster)
+	omcplog.V(5).Infof("    => scoring Time [%v]", time.Since(startTime))
 	return selectedCluster, nil
 }
 

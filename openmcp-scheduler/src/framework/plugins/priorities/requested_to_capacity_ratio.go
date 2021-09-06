@@ -78,6 +78,7 @@ func (pl *RequestedToCapacityRatio) Score(pod *ketiresource.Pod, clusterInfo *ke
 		return pl.prescoring[clusterInfo.ClusterName]
 	}
 	score := pl.prescoring[clusterInfo.ClusterName]
+	omcplog.V(4).Info("RequestedToCapacityRatio score = ", score)
 	return score
 }
 func RunRequestedToCapacityRatioScorerFunction(capacity, requested int64) int64 {

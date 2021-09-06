@@ -2,7 +2,6 @@ package predicates
 
 import (
 	"container/list"
-	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
 	"openmcp/openmcp/util/clusterManager"
 )
@@ -49,8 +48,8 @@ func (pl *PodFitsResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketire
 			node.AllocatableResource.MilliCPU -= newPod.RequestedResource.MilliCPU
 			// omcplog.V(5).Info("MilliCPU = ", node.AllocatableResource.MilliCPU)
 			node.AllocatableResource.Memory -= newPod.RequestedResource.Memory
-			omcplog.V(5).Info("RequestedResource = ", newPod.RequestedResource.MilliCPU)
-			omcplog.V(5).Info("MilliCPU = ", node.AllocatableResource.MilliCPU)
+			//omcplog.V(5).Info("RequestedResource = ", newPod.RequestedResource.MilliCPU)
+			//omcplog.V(5).Info("MilliCPU = ", node.AllocatableResource.MilliCPU)
 			return true
 		}
 	}

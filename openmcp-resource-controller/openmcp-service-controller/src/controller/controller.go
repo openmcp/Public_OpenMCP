@@ -114,22 +114,22 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 
 		//OpenMCPIngress Check
-		// ingress_list := &resourcev1alpha1.OpenMCPIngressList{}
-		// r.live.List(context.TODO(), ingress_list, &client.ListOptions{Namespace: instance.Namespace})
+		ingress_list := &resourcev1alpha1.OpenMCPIngressList{}
+		r.live.List(context.TODO(), ingress_list, &client.ListOptions{Namespace: instance.Namespace})
 
-		// for _, ingressInstance := range ingress_list.Items {
-		// 	for _, value := range ingressInstance.Spec.Template.Spec.Rules {
-		// 		for _, v := range value.HTTP.Paths {
-		// 			if v.Backend.ServiceName == instance.Name {
-		// 				ingressInstance.Status.ChangeNeed = true
-		// 				err := r.live.Status().Update(context.TODO(), &ingressInstance)
-		// 				if err != nil {
-		// 					fmt.Println(err)
-		// 				}
-		// 			}
-		// 		}
-		// 	}
-		// }
+		for _, ingressInstance := range ingress_list.Items {
+			for _, value := range ingressInstance.Spec.Template.Spec.Rules {
+				for _, v := range value.HTTP.Paths {
+					if v.Backend.ServiceName == instance.Name {
+						ingressInstance.Status.ChangeNeed = true
+						err := r.live.Status().Update(context.TODO(), &ingressInstance)
+						if err != nil {
+							fmt.Println(err)
+						}
+					}
+				}
+			}
+		}
 
 		return reconcile.Result{}, nil
 
@@ -145,30 +145,30 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		return reconcile.Result{}, nil
 
 	}
-	// if instance.Status.ChangeNeed {
-	// 	omcplog.V(3).Info("Receive notify from OpenMCP Deployment ")
+	if instance.Status.ChangeNeed {
+		omcplog.V(3).Info("Receive notify from OpenMCP Deployment ")
 
-	// 	instance.Status.ChangeNeed = false
-	// 	r.updateService(req, cm, instance)
-	// }
+		instance.Status.ChangeNeed = false
+		r.updateService(req, cm, instance)
+	}
 
-	//OpenMCPIngress Check
-	// ingress_list := &resourcev1alpha1.OpenMCPIngressList{}
-	// r.live.List(context.TODO(), ingress_list, &client.ListOptions{Namespace: instance.Namespace})
+	// OpenMCPIngress Check
+	ingress_list := &resourcev1alpha1.OpenMCPIngressList{}
+	r.live.List(context.TODO(), ingress_list, &client.ListOptions{Namespace: instance.Namespace})
 
-	// for _, ingressInstance := range ingress_list.Items {
-	// 	for _, value := range ingressInstance.Spec.Template.Spec.Rules {
-	// 		for _, v := range value.HTTP.Paths {
-	// 			if v.Backend.ServiceName == instance.Name {
-	// 				ingressInstance.Status.ChangeNeed = true
-	// 				err := r.live.Status().Update(context.TODO(), &ingressInstance)
-	// 				if err != nil {
-	// 					fmt.Println(err)
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
+	for _, ingressInstance := range ingress_list.Items {
+		for _, value := range ingressInstance.Spec.Template.Spec.Rules {
+			for _, v := range value.HTTP.Paths {
+				if v.Backend.ServiceName == instance.Name {
+					ingressInstance.Status.ChangeNeed = true
+					err := r.live.Status().Update(context.TODO(), &ingressInstance)
+					if err != nil {
+						fmt.Println(err)
+					}
+				}
+			}
+		}
+	}
 
 	// Check Service in cluster
 	if instance.Status.BlockSubResource == false {
@@ -348,11 +348,12 @@ func (r *reconciler) createService(req reconcile.Request, cm *clusterManager.Clu
 		cluster_map[cluster.Name] = 0
 	}
 
-	//label_include_cluster_list := r.getClusterIncludeLabel(instance.Spec.LabelSelector, instance.Namespace)
-	clusterList := cm.Cluster_list
+	label_include_cluster_list := r.getClusterIncludeLabel(instance.Spec.LabelSelector, instance.Namespace)
+	//clusterList := cm.Cluster_list
 
-	for _, cluster := range clusterList.Items {
-		cluster_name := cluster.Name
+	//for _, cluster := range clusterList.Items {
+	//	cluster_name := cluster.Name
+	for _, cluster_name := range label_include_cluster_list {
 		omcplog.V(5).Info("cluster_name: ", cluster_name)
 		found := &corev1.Service{}
 		cluster_client := cm.Cluster_genClients[cluster_name]
@@ -394,11 +395,11 @@ func contains(slice []string, item string) bool {
 }
 func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.ClusterManager, instance *resourcev1alpha1.OpenMCPService) error {
 	omcplog.V(4).Info("Function Called updateService")
-	// cluster_map := make(map[string]int32)
+	cluster_map := make(map[string]int32)
 
-	// for _, cluster := range cm.Cluster_list.Items {
-	// 	cluster_map[cluster.Name] = 0
-	// }
+	for _, cluster := range cm.Cluster_list.Items {
+		cluster_map[cluster.Name] = 0
+	}
 	for _, cluster := range cm.Cluster_list.Items {
 
 		omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
@@ -409,61 +410,61 @@ func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.Clu
 			return err
 		}
 	}
-	// label_include_cluster_list := r.getClusterIncludeLabel(instance.Spec.LabelSelector, instance.Namespace)
+	label_include_cluster_list := r.getClusterIncludeLabel(instance.Spec.LabelSelector, instance.Namespace)
 
-	// for _, cluster := range cm.Cluster_list.Items {
-	// 	cluster_client := cm.Cluster_genClients[cluster.Name]
+	for _, cluster := range cm.Cluster_list.Items {
+		cluster_client := cm.Cluster_genClients[cluster.Name]
 
-	// 	found := &corev1.Service{}
-	// 	err := cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+		found := &corev1.Service{}
+		err := cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 
-	// 	//if contains(label_include_cluster_list, cluster.Name) {
-	// 	if err != nil && errors.IsNotFound(err) {
-	// 		svc := r.serviceForOpenMCPService(req, instance, cluster.Name)
-	// 		cluster_map[cluster.Name] = 1
-	// 		command := "create"
-	// 		omcplog.V(3).Info("Create Service")
-	// 		_, err = r.sendSync(svc, command, cluster.Name)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	} else if err == nil {
-	// 		svc := r.serviceForOpenMCPService(req, instance, cluster.Name)
+		if contains(label_include_cluster_list, cluster.Name) {
+			if err != nil && errors.IsNotFound(err) {
+				svc := r.serviceForOpenMCPService(req, instance, cluster.Name)
+				cluster_map[cluster.Name] = 1
+				command := "create"
+				omcplog.V(3).Info("Create Service")
+				_, err = r.sendSync(svc, command, cluster.Name)
+				if err != nil {
+					return err
+				}
+			} else if err == nil {
+				svc := r.serviceForOpenMCPService(req, instance, cluster.Name)
 
-	// 		svc.Spec.ClusterIP = found.Spec.ClusterIP
-	// 		svc.ResourceVersion = found.ResourceVersion
+				svc.Spec.ClusterIP = found.Spec.ClusterIP
+				svc.ResourceVersion = found.ResourceVersion
 
-	// 		cluster_map[cluster.Name] = 1
-	// 		command := "update"
-	// 		omcplog.V(3).Info("Update Service")
-	// 		_, err = r.sendSync(svc, command, cluster.Name)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// } else {
-	// 	if err != nil && errors.IsNotFound(err) {
-	// 		continue
-	// 	} else if err == nil {
-	// 		svc := &corev1.Service{
-	// 			TypeMeta: metav1.TypeMeta{
-	// 				Kind:       "Service",
-	// 				APIVersion: "v1",
-	// 			},
-	// 			ObjectMeta: metav1.ObjectMeta{
-	// 				Name:      instance.Name,
-	// 				Namespace: instance.Namespace,
-	// 			},
-	// 		}
-	// 		command := "delete"
-	// 		omcplog.V(3).Info("Delete Service")
-	// 		_, err = r.sendSync(svc, command, cluster.Name)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
-	//}
+				cluster_map[cluster.Name] = 1
+				command := "update"
+				omcplog.V(3).Info("Update Service")
+				_, err = r.sendSync(svc, command, cluster.Name)
+				if err != nil {
+					return err
+				}
+			}
+		} else {
+			if err != nil && errors.IsNotFound(err) {
+				continue
+			} else if err == nil {
+				svc := &corev1.Service{
+					TypeMeta: metav1.TypeMeta{
+						Kind:       "Service",
+						APIVersion: "v1",
+					},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      instance.Name,
+						Namespace: instance.Namespace,
+					},
+				}
+				command := "delete"
+				omcplog.V(3).Info("Delete Service")
+				_, err = r.sendSync(svc, command, cluster.Name)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
 	instance.Status.LastSpec = instance.Spec
 	err := r.live.Status().Update(context.TODO(), instance)
 	return err

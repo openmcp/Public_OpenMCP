@@ -1,6 +1,7 @@
 package priorities
 
 import (
+	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
 )
 
@@ -47,6 +48,7 @@ func (pl *MostRequested) Score(pod *ketiresource.Pod, clusterInfo *ketiresource.
 		return pl.prescoring[clusterInfo.ClusterName]
 	}
 	score := pl.prescoring[clusterInfo.ClusterName]
+	omcplog.V(4).Info("MostRequested score = ", score)
 	return score
 }
 

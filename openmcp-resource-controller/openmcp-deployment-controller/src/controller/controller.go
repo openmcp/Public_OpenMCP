@@ -198,8 +198,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 				}
 			}
-			// omcplog.V(2).Info("Service Notify Send")
-			// r.ServiceNotify(instance.Spec.Labels, instance.Namespace)
+			omcplog.V(2).Info("Service Notify Send")
+			r.ServiceNotify(instance.Spec.Labels, instance.Namespace)
 
 			instance.Status.LastSpec = instance.Spec
 			instance.Status.CreateSyncRequestComplete = true
@@ -238,12 +238,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 		}
 		if !reflect.DeepEqual(instance.Status.LastSpec.Labels, instance.Spec.Labels) {
-			// last_label := instance.Status.LastSpec.Labels
-			// current_label := instance.Spec.Labels
-			// omcplog.V(2).Info("Label Changed")
-			// omcplog.V(2).Info("Service Notify")
-			// r.ServiceNotify(last_label, instance.Namespace)
-			// r.ServiceNotify(current_label, instance.Namespace)
+			last_label := instance.Status.LastSpec.Labels
+			current_label := instance.Spec.Labels
+			omcplog.V(2).Info("Label Changed")
+			omcplog.V(2).Info("Service Notify")
+			r.ServiceNotify(last_label, instance.Namespace)
+			r.ServiceNotify(current_label, instance.Namespace)
 		}
 
 		instance.Status.LastSpec = instance.Spec

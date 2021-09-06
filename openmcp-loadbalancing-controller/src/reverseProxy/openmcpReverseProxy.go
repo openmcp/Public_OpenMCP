@@ -48,7 +48,9 @@ func ReverseProxy(myClusterManager *clusterManager.ClusterManager) {
 		req.URL.Scheme = "http"
 		req.URL.Host = origin.Host
 
-		// fmt.Println(req)
+		fmt.Println("New req --------")
+		fmt.Println(req)
+		fmt.Println("-------")
 		clientIP, _ := ExtractIP(req.RemoteAddr)
 		//clientIP = "14.128.128.5"
 		ip := net.ParseIP(clientIP)
@@ -148,6 +150,9 @@ func ReverseProxy(myClusterManager *clusterManager.ClusterManager) {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("RemoteAddr: ", r.RemoteAddr)
+		fmt.Println("Old req --------")
+		fmt.Println(r)
+		fmt.Println("--------")
 		proxy.ServeHTTP(w, r)
 
 	})

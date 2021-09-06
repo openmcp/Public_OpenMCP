@@ -11,7 +11,7 @@ import (
 )
 
 func CreateSubResourceAll(clusterName string, cm *clusterManager.ClusterManager) error {
-	_ = createSubResourceDeployment(clusterName, cm)
+	_ = createSubResourceDeployment(clusterName, cm) // 클러스터 조인시 Deployment는 나눔기술에서 직접 마이그레이션 하려면 주석처리 하면됨
 	_ = createSubResourceService(clusterName, cm)
 	_ = createSubResourceIngress(clusterName, cm)
 	_ = createSubResourceConfigMap(clusterName, cm)

@@ -2,6 +2,7 @@ package priorities
 
 import (
 	"math"
+	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
 )
 
@@ -60,6 +61,7 @@ func (pl *DominantResource) Score(pod *ketiresource.Pod, clusterInfo *ketiresour
 		return pl.prescoring[clusterInfo.ClusterName]
 	}
 	score := pl.prescoring[clusterInfo.ClusterName]
+	omcplog.V(4).Info("DominantResource score = ", score)
 	return score
 }
 

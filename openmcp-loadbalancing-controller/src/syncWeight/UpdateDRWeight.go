@@ -3,6 +3,7 @@ package syncWeight
 import (
 	//"fmt"
 
+	"fmt"
 	"os"
 
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -141,7 +142,7 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 						target_node_list[region_zone] = append(target_node_list[region_zone], tmp_pod_list...)
 					}
 				}
-
+				fmt.Println("target_node_list : ",target_node_list)
 				if len(target_node_list) > 0 {
 					tmp_rz := map[string][]DRWeight{}
 					for rz, _ := range node_list_all { //from

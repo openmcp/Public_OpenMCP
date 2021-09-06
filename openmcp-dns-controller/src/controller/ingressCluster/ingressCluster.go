@@ -77,7 +77,7 @@ var i int = 0
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	omcplog.V(4).Info("Function Called Reconcile")
 	i += 1
-	omcplog.V(5).Info("********* [ OpenMCP Domain", i, "] *********")
+	omcplog.V(5).Info("********* [ OpenMCP Ingress", i, "] *********")
 	omcplog.V(5).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
 
 	instanceIngressRecord := &dnsv1alpha1.OpenMCPIngressDNSRecord{}
