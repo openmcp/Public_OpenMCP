@@ -160,7 +160,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 
 	// Check Ingress in cluster
-	if instance.Status.BlockSubResource == false {
+	if instance.Status.CheckSubResource == true {
 		omcplog.V(3).Info("Member Cluster Check Ingress")
 		for k, v := range instance.Status.ClusterMaps {
 			if v == 0 {
