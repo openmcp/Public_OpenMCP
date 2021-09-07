@@ -178,11 +178,8 @@ type OpenMCPIngressSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	Template extv1b1.Ingress `json:"template" protobuf:"bytes,3,opt,name=template"`
-	//Replicas int32 `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
-
-	//Placement
-
+	IngressForClientFrom string          `json:"ingressForClientFrom" protobuf:"bytes,1,opt,name=ingressForClientFrom"`
+	Template             extv1b1.Ingress `json:"template" protobuf:"bytes,3,opt,name=template"`
 }
 
 // OpenMCPIngressStatus defines the observed state of OpenMCPIngress
@@ -191,7 +188,6 @@ type OpenMCPIngressStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	// Replicas int32 `json:"replicas"`
 	ClusterMaps      map[string]int32   `json:"clusterMaps"`
 	ChangeNeed       bool               `json:"changeNeed"`
 	LastSpec         OpenMCPIngressSpec `json:"lastSpec"`
@@ -228,10 +224,6 @@ type OpenMCPServiceSpec struct {
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	LabelSelector map[string]string `json:"labelselector" protobuf:"bytes,1,opt,name=labelselector"`
 	Template      corev1.Service    `json:"template" protobuf:"bytes,2,opt,name=template"`
-	//Replicas int32 `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
-
-	//Placement
-
 }
 
 // OpenMCPServiceStatus defines the observed state of OpenMCPService
@@ -240,7 +232,6 @@ type OpenMCPServiceStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	//Replicas int32 `json:"replicas"`
 	ClusterMaps      map[string]int32   `json:"clusterMaps"`
 	LastSpec         OpenMCPServiceSpec `json:"lastSpec"`
 	ChangeNeed       bool               `json:"changeNeed"`

@@ -2,7 +2,7 @@ default:
   installType: debug # learning or debug
   docker:
     imagePullSecretName: regcred
-    imagePullPolicy: Always # Alyways or IfNotPresent
+    imagePullPolicy: Always # Always or IfNotPresent
 master:
   ServerIP:
     internal: 10.0.3.20
@@ -14,7 +14,7 @@ master:
     # LoadBalancingController 이외에는 모든 모듈의 IP가 같아도 상관없음
     # 위의 MetalLB의 IP 대역 범위 내에 모듈의 LoadBalancerIP 입력
     # MetricCollector는 멤버클러스터 gke, eks, aks의 접근이 가능해야 하므로 외부 IP 포트포워딩 필요
-    # MetricCollector의 포트포워딩 설정 Exapmple (119.65.195.180:3212 -> 10.0.3.20:30002)
+    # MetricCollector의 포트포워딩 설정 Example (119.65.195.180:3212 -> 10.0.3.20:30002)
     APIServer:
       NodePort: 30000
       AppKey: openmcp-apiserver
@@ -28,6 +28,7 @@ master:
     InfluxDB:
       NodePort: 30003
     LoadBalancingController:
+      external: 115.94.141.62
       NodePort: 30004
 externalServer:
   ServerIP:
