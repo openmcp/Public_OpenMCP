@@ -113,7 +113,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err := r.DeleteDeploys(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
 
 			omcplog.V(2).Info("Service Notify Send")
-			//r.ServiceNotifyAll(req.Namespace)
+			//r.NotifyServiceAll(req.Namespace)
 
 			return reconcile.Result{}, err
 		}
@@ -198,8 +198,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 				}
 			}
-			omcplog.V(2).Info("Service Notify Send")
-			r.ServiceNotify(instance.Spec.Labels, instance.Namespace)
+			omcplog.V(2).Info("Notify Service Controller")
+			r.NotifyService(instance.Spec.Labels, instance.Namespace)
+
+			omcplog.V(2).Info("Notify HybridAutoScaler Controller")
+			r.NotifyHAS(instance.Name, instance.Namespace)
 
 			instance.Status.LastSpec = instance.Spec
 			instance.Status.CreateSyncRequestComplete = true
@@ -242,8 +245,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			current_label := instance.Spec.Labels
 			omcplog.V(2).Info("Label Changed")
 			omcplog.V(2).Info("Service Notify")
-			r.ServiceNotify(last_label, instance.Namespace)
-			r.ServiceNotify(current_label, instance.Namespace)
+			r.NotifyService(last_label, instance.Namespace)
+			r.NotifyService(current_label, instance.Namespace)
 		}
 
 		instance.Status.LastSpec = instance.Spec
@@ -270,7 +273,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 
 	// Check Deployment in cluster
-	if instance.Status.BlockSubResource == false {
+	if instance.Status.CheckSubResource == true {
 		omcplog.V(2).Info("[Member Cluster Check Deployment]")
 		sync_req_name := ""
 		for k, v := range instance.Status.ClusterMaps {
@@ -369,26 +372,26 @@ func (r *reconciler) sendSync(dep *appsv1.Deployment, command string, clusterNam
 	return s.Name, err
 
 }
-func (r *reconciler) ServiceNotify(label_map map[string]string, namespace string) error {
-	omcplog.V(4).Info("[OpenMCP Deployment] Function Called ServiceNotify")
+func (r *reconciler) NotifyService(label_map map[string]string, namespace string) error {
+	omcplog.V(4).Info("[OpenMCP Deployment] Function Called NotifyService")
 	omcplog.V(4).Info("[OpenMCP Deployment] label_map : ", label_map)
 
 	osvc_list := &resourcev1alpha1.OpenMCPServiceList{}
 	listOptions := &client.ListOptions{Namespace: namespace}
 
-	omcplog.V(2).Info("[OpenMCP Deployment] find Notify Target Service")
+	omcplog.V(2).Info("[OpenMCP Deployment] Find Target Service")
 	r.live.List(context.TODO(), osvc_list, listOptions)
 	for _, osvc := range osvc_list.Items {
 		for k, v := range osvc.Spec.LabelSelector {
-			omcplog.V(4).Info("[OpenMCP Deployment] find Notify Target Label : ", k, " / ", v)
+			omcplog.V(4).Info("[OpenMCP Deployment] Find Target Label : ", k, " / ", v)
 			if label_map[k] == v {
-				omcplog.V(2).Info("[OpenMCP Deployment] Service '", osvc.Name, "' Will Notify!")
+				omcplog.V(2).Info("[OpenMCP Deployment] Notify Service Controller [", osvc.Name, "]")
 				osvc.Status.ChangeNeed = true
 				err := r.live.Status().Update(context.TODO(), &osvc)
 				if err != nil {
 					return err
 				}
-				omcplog.V(2).Info("[OpenMCP Deployment] Service '", osvc.Name, "' Notify Success!")
+				omcplog.V(2).Info("[OpenMCP Deployment] Success to Notify Service Controller [", osvc.Name, "]")
 
 			}
 		}
@@ -396,8 +399,33 @@ func (r *reconciler) ServiceNotify(label_map map[string]string, namespace string
 
 	return nil
 }
-func (r *reconciler) ServiceNotifyAll(namespace string) error {
-	omcplog.V(4).Info("[OpenMCP Deployment] Function Called ServiceNotifyAll")
+
+func (r *reconciler) NotifyHAS(deployname string, namespace string) error {
+	omcplog.V(4).Info("[OpenMCP Deployment] Function Called NotifyHAS")
+
+	ohas_list := &resourcev1alpha1.OpenMCPHybridAutoScalerList{}
+	listOptions := &client.ListOptions{Namespace: namespace}
+
+	omcplog.V(2).Info("[OpenMCP Deployment] Find Target HAS")
+	r.live.List(context.TODO(), ohas_list, listOptions)
+	for _, ohas := range ohas_list.Items {
+		if ohas.Spec.ScalingOptions.CpaTemplate.ScaleTargetRef.Name == deployname {
+			omcplog.V(2).Info("[OpenMCP Deployment] Notify HAS Controller [", ohas.Name, "]")
+			ohas.Status.ChangeNeed = true
+			err := r.live.Status().Update(context.TODO(), &ohas)
+			if err != nil {
+				return err
+			}
+			omcplog.V(2).Info("[OpenMCP Deployment] Success to Notify HAS Controller [", ohas.Name, "]")
+
+		}
+	}
+
+	return nil
+}
+
+/*func (r *reconciler) NotifyServiceAll(namespace string) error {
+	omcplog.V(4).Info("[OpenMCP Deployment] Function Called NotifyServiceAll")
 
 	osvc_list := &resourcev1alpha1.OpenMCPServiceList{}
 	listOptions := &client.ListOptions{Namespace: namespace}
@@ -414,7 +442,7 @@ func (r *reconciler) ServiceNotifyAll(namespace string) error {
 	}
 
 	return nil
-}
+}*/
 func (r *reconciler) deploymentForOpenMCPDeployment(req reconcile.Request, m *resourcev1alpha1.OpenMCPDeployment, replica int32, clusterName string) *appsv1.Deployment {
 	omcplog.V(4).Info("[OpenMCP Deployment] Function Called deploymentForOpenMCPDeployment")
 

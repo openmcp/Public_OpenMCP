@@ -164,7 +164,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	//
 	//return reconcile.Result{}, nil // err
 	// Check Job in cluster
-	if instance.Status.BlockSubResource == false {
+	if instance.Status.CheckSubResource == true {
 		omcplog.V(2).Info("[Member Cluster Check Job]")
 		for k, v := range instance.Status.ClusterMaps {
 			cluster_name := k

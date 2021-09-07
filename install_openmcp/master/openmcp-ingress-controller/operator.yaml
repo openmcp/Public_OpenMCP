@@ -35,6 +35,8 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "openmcp-ingress-controller"
+            - name: LB_EXTERNAL_IP
+              value: "115.94.141.62"
       tolerations:
         - key: node.kubernetes.io/not-ready
           effect: NoExecute

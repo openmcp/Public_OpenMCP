@@ -16,6 +16,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/types"
 	"openmcp/openmcp/omcplog"
 	"os"
 	"reflect"
@@ -27,8 +28,6 @@ import (
 
 	"admiralty.io/multicluster-controller/pkg/reference"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
-
 	"openmcp/openmcp/apis"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 
@@ -100,36 +99,41 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	instance := &resourcev1alpha1.OpenMCPIngress{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 
-	omcplog.V(3).Info("instance Name: ", instance.Name)
-	omcplog.V(3).Info("instance Namespace : ", instance.Namespace)
+	omcplog.V(3).Info("OpenMCPIngress Name: ", instance.Name)
+	omcplog.V(3).Info("OpenMCPIngress Namespace : ", instance.Namespace)
 
 	if err != nil {
 		if errors.IsNotFound(err) {
-			omcplog.V(3).Info("Delete Ingress ..Cluster")
-			err := r.DeleteIngress(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
-			return reconcile.Result{}, err
-		}
-		omcplog.V(1).Info(err)
-		return reconcile.Result{}, err
-	}
-	if instance.Status.ClusterMaps == nil /*|| instance.Status.ChangeNeed == true */ {
-		omcplog.V(3).Info("Ingress Create Start")
-		r.createIngress(req, cm, instance)
-
-		if err != nil {
+			omcplog.V(3).Info("Delete OpenMCPIngress Resource")
+			err_delete := r.DeleteIngress(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
+			if err_delete != nil {
+				return reconcile.Result{}, err_delete
+			} else {
+				return reconcile.Result{}, nil
+			}
+		} else {
 			omcplog.V(1).Info(err)
 			return reconcile.Result{}, err
 		}
+	}
+	if instance.Status.ClusterMaps == nil /*|| instance.Status.ChangeNeed == true */ {
+		omcplog.V(3).Info("Ingress Create Start")
+		err_create := r.createIngress(req, cm, instance)
+		if err_create != nil {
+			omcplog.V(0).Info(err_create)
+			return reconcile.Result{}, err_create
+		}
+
 		return reconcile.Result{}, nil
 
 	}
 	if !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec) {
-		omcplog.V(3).Info("Job Update Start")
+		omcplog.V(3).Info("Ingress Update Start")
 
-		err := r.updateIngress(req, cm, instance)
-		if err != nil {
-			omcplog.V(0).Info(err)
-			return reconcile.Result{}, err
+		err_update := r.updateIngress(req, cm, instance)
+		if err_update != nil {
+			omcplog.V(0).Info(err_update)
+			return reconcile.Result{}, err_update
 		}
 		return reconcile.Result{}, nil
 
@@ -140,49 +144,23 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	foundIngress := &extv1b1.Ingress{}
 	err = cm.Host_client.Get(context.TODO(), foundIngress, instance.Namespace, instance.Name)
 
-	if err == nil {
-		if foundIngress.Name[len(foundIngress.Name)-4:] == "-out" {
-			externalIP := os.Getenv("LB_EXTERNAL_IP")
-			lbIngress := corev1.LoadBalancerIngress{IP: externalIP}
+	if errors.IsNotFound(err) {
 
-			lbIngs := []corev1.LoadBalancerIngress{}
-			lbIngs = append(lbIngs, lbIngress)
-			foundIngress.Status.LoadBalancer.Ingress = lbIngs
-			err = cm.Host_client.UpdateStatus(context.Background(), foundIngress)
-			if err != nil {
-				return reconcile.Result{}, err
-			}
-		} else {
-			foundService := &corev1.Service{}
-			nsn := types.NamespacedName{
-				Namespace: "openmcp",
-				Name:      "openmcp-loadbalancing-controller",
-			}
-			err = r.live.Get(context.TODO(), nsn, foundService)
-			if err != nil && errors.IsNotFound(err) {
-				omcplog.V(0).Info("LoadBalancing-controller Service Not Found")
-				return reconcile.Result{}, err
-			}
-			omcplog.V(3).Info("Update Ingress Status")
-			foundIngress.Status.LoadBalancer = foundService.Status.LoadBalancer
-			err = cm.Host_client.UpdateStatus(context.Background(), foundIngress)
-			if err != nil {
-				return reconcile.Result{}, err
-			}
-
-		}
-
-	} else if errors.IsNotFound(err) {
 		omcplog.V(3).Info("Create Ingress")
 		host_ing, _ := r.ingressForOpenMCPIngress(req, instance)
+		fmt.Println("C : ", host_ing)
 		err = cm.Host_client.Create(context.Background(), host_ing)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+		err = cm.Host_client.UpdateStatus(context.Background(), foundIngress)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
 	}
 
 	// Check Ingress in cluster
-	if instance.Status.BlockSubResource == false {
+	if instance.Status.CheckSubResource == true {
 		omcplog.V(3).Info("Member Cluster Check Ingress")
 		for k, v := range instance.Status.ClusterMaps {
 			if v == 0 {
@@ -260,9 +238,14 @@ func (r *reconciler) createIngress(req reconcile.Request, cm *clusterManager.Clu
 
 	found := &extv1b1.Ingress{}
 	err := cm.Host_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+
 	if err != nil && errors.IsNotFound(err) {
 		err = cm.Host_client.Create(context.Background(), host_ing)
 
+		if err != nil {
+			return err
+		}
+		err = cm.Host_client.UpdateStatus(context.Background(), host_ing)
 		if err != nil {
 			return err
 		}
@@ -283,11 +266,10 @@ func (r *reconciler) createIngress(req reconcile.Request, cm *clusterManager.Clu
 			for i, rule := range cluster_ing.Spec.Rules {
 				for _, paths := range rule.HTTP.Paths {
 					serviceName := paths.Backend.ServiceName
-					omcplog.V(5).Info("service name")
-					omcplog.V(5).Info(serviceName)
+					omcplog.V(5).Info("Service Name : ", serviceName)
 					serviceErr := cluster_client.Get(context.TODO(), serviceFound, instance.Namespace, serviceName)
 					if serviceErr != nil && errors.IsNotFound(serviceErr) {
-						omcplog.V(0).Info("service not found")
+						omcplog.V(0).Info("Service Not Found in ", cluster.Name)
 						isService = false
 					}
 				}
@@ -296,7 +278,7 @@ func (r *reconciler) createIngress(req reconcile.Request, cm *clusterManager.Clu
 
 			}
 			if isService == true {
-				omcplog.V(3).Info("Create Ingress Resource - ", cluster.Name)
+				omcplog.V(3).Info("Create Ingress Resource in ", cluster.Name)
 				command := "create"
 				_, err = r.sendSync(cluster_ing, command, cluster.Name)
 				cluster_map[cluster.Name] = 1
@@ -332,6 +314,7 @@ func (r *reconciler) updateIngress(req reconcile.Request, cm *clusterManager.Clu
 }
 func (r *reconciler) ingressForOpenMCPIngress(req reconcile.Request, m *resourcev1alpha1.OpenMCPIngress) (*extv1b1.Ingress, *extv1b1.Ingress) {
 	omcplog.V(4).Info("[OpenMCP Ingress Controller] Function Called ingressForOpenMCPIngress")
+
 	host_ing := &extv1b1.Ingress{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Ingress",
@@ -350,6 +333,28 @@ func (r *reconciler) ingressForOpenMCPIngress(req reconcile.Request, m *resource
 		for j, _ := range host_ing.Spec.Rules[i].HTTP.Paths {
 			host_ing.Spec.Rules[i].HTTP.Paths[j].Backend.ServiceName = "openmcp-loadbalancing-controller"
 			host_ing.Spec.Rules[i].HTTP.Paths[j].Backend.ServicePort.IntVal = 80
+		}
+	}
+
+	if m.Spec.IngressForClientFrom == "external" {
+		externalIP := os.Getenv("LB_EXTERNAL_IP")
+		lbIngress := corev1.LoadBalancerIngress{IP: externalIP}
+
+		lbIngs := []corev1.LoadBalancerIngress{}
+		lbIngs = append(lbIngs, lbIngress)
+		host_ing.Status.LoadBalancer.Ingress = lbIngs
+
+	} else if m.Spec.IngressForClientFrom == "internal" {
+		foundService := &corev1.Service{}
+		nsn := types.NamespacedName{
+			Namespace: "openmcp",
+			Name:      "openmcp-loadbalancing-controller",
+		}
+		err := r.live.Get(context.TODO(), nsn, foundService)
+		if err != nil && errors.IsNotFound(err) {
+			omcplog.V(0).Info("LoadBalancing-controller Service Not Found")
+		} else {
+			host_ing.Status.LoadBalancer = foundService.Status.LoadBalancer
 		}
 	}
 
@@ -386,33 +391,23 @@ func (r *reconciler) DeleteIngress(cm *clusterManager.ClusterManager, name strin
 		},
 	}
 
-	err := cm.Host_client.Get(context.Background(), ing, namespace, name)
-	if err != nil && errors.IsNotFound(err) {
-		omcplog.V(0).Info("Not Found")
-	} else if err != nil && !errors.IsNotFound(err) {
-		return err
-	}
-	omcplog.V(3).Info("OpenMCP Delete Start")
-	err = cm.Host_client.Delete(context.Background(), ing, namespace, name)
+	omcplog.V(3).Info("Delete Ingress Resource")
+	err := cm.Host_client.Delete(context.Background(), ing, namespace, name)
 
-	if err != nil {
+	if err != nil && !errors.IsNotFound(err) {
 		return err
 	}
-	omcplog.V(3).Info("OpenMCP Delete Complete")
 
 	for _, cluster := range cm.Cluster_list.Items {
 		cluster_client := cm.Cluster_genClients[cluster.Name]
-		omcplog.V(0).Info(namespace, name)
 		ing := &extv1b1.Ingress{}
 		err := cluster_client.Get(context.Background(), ing, namespace, name)
 		if err != nil && errors.IsNotFound(err) {
-			omcplog.V(0).Info("Not Found")
+			omcplog.V(0).Info("Ingress Not Found in ", cluster.Name)
 			continue
 		}
 		omcplog.V(3).Info(cluster.Name, " Delete Start")
 		command := "delete"
-		omcplog.V(0).Info(name)
-		omcplog.V(0).Info(namespace)
 
 		ing = &extv1b1.Ingress{
 			TypeMeta: metav1.TypeMeta{
@@ -452,7 +447,7 @@ func (r *reconciler) sendSync(ingress *extv1b1.Ingress, command string, clusterN
 			Template:    *ingress,
 		},
 	}
-	omcplog.V(5).Info("Delete Check ", s.Spec.Template.(extv1b1.Ingress).Name, s.Spec.Template.(extv1b1.Ingress).Namespace)
+	omcplog.V(5).Info("Delete Check ", s.Spec.Template.(extv1b1.Ingress).Name, "/", s.Spec.Template.(extv1b1.Ingress).Namespace)
 
 	err := r.live.Create(context.TODO(), s)
 

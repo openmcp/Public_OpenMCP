@@ -122,7 +122,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 		return reconcile.Result{}, nil
 	}
-	if instance.Status.BlockSubResource == false {
+	if instance.Status.CheckSubResource == true {
 		omcplog.V(2).Info("[Member Cluster Check ConfigMap]")
 		sync_req_name := ""
 		for k, v := range instance.Status.ClusterMaps {
