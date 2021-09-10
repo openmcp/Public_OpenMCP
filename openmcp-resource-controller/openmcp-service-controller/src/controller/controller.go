@@ -155,7 +155,6 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		omcplog.V(3).Info("***********************")
 		omcplog.V(3).Info("Receive notify from OpenMCP Deployment ")
 
-		instance.Status.ChangeNeed = false
 		r.updateService(req, cm, instance)
 
 		// OpenMCPIngress Check
@@ -165,7 +164,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 
 	// Check Service in cluster
-	if instance.Status.BlockSubResource == false {
+	if instance.Status.CheckSubResource == true {
 		omcplog.V(2).Info("[Member Cluster Check Service]")
 		sync_req_name := ""
 		for k, v := range instance.Status.ClusterMaps {

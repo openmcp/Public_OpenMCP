@@ -144,7 +144,7 @@ type OpenMCPDeploymentStatus struct {
 	SchedulingComplete        bool                  `json:"schedulingComplete"`
 	CreateSyncRequestComplete bool                  `json:"createSyncRequestComplete"`
 	SyncRequestName           string                `json:"syncRequestName"`
-	BlockSubResource          bool                  `json:"blockSubResource" protobuf:"bytes,3,opt,name=blockSubResource"`
+	CheckSubResource          bool                  `json:"checkSubResource" protobuf:"bytes,3,opt,name=checkSubResource"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -178,11 +178,8 @@ type OpenMCPIngressSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	Template extv1b1.Ingress `json:"template" protobuf:"bytes,3,opt,name=template"`
-	//Replicas int32 `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
-
-	//Placement
-
+	IngressForClientFrom string          `json:"ingressForClientFrom" protobuf:"bytes,1,opt,name=ingressForClientFrom"`
+	Template             extv1b1.Ingress `json:"template" protobuf:"bytes,3,opt,name=template"`
 }
 
 // OpenMCPIngressStatus defines the observed state of OpenMCPIngress
@@ -191,11 +188,10 @@ type OpenMCPIngressStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	// Replicas int32 `json:"replicas"`
 	ClusterMaps      map[string]int32   `json:"clusterMaps"`
 	ChangeNeed       bool               `json:"changeNeed"`
 	LastSpec         OpenMCPIngressSpec `json:"lastSpec"`
-	BlockSubResource bool               `json:"blockSubResource" protobuf:"bytes,3,opt,name=blockSubResource"`
+	CheckSubResource bool               `json:"checkSubResource" protobuf:"bytes,3,opt,name=checkSubResource"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -228,10 +224,6 @@ type OpenMCPServiceSpec struct {
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	LabelSelector map[string]string `json:"labelselector" protobuf:"bytes,1,opt,name=labelselector"`
 	Template      corev1.Service    `json:"template" protobuf:"bytes,2,opt,name=template"`
-	//Replicas int32 `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
-
-	//Placement
-
 }
 
 // OpenMCPServiceStatus defines the observed state of OpenMCPService
@@ -240,11 +232,10 @@ type OpenMCPServiceStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	//Replicas int32 `json:"replicas"`
 	ClusterMaps      map[string]int32   `json:"clusterMaps"`
 	LastSpec         OpenMCPServiceSpec `json:"lastSpec"`
 	ChangeNeed       bool               `json:"changeNeed"`
-	BlockSubResource bool               `json:"blockSubResource" protobuf:"bytes,3,opt,name=blockSubResource"`
+	CheckSubResource bool               `json:"checkSubResource" protobuf:"bytes,3,opt,name=checkSubResource"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -285,16 +276,16 @@ type ScalingOptions struct {
 }
 
 type CpaTemplate struct {
-	ScaleTargetRef ScaleTargetRef `json:"scaleTargetRef" protobuf:"bytes,1,opt,name=scaletargetref"`
-	MinReplicas    int32          `json:"minReplicas" protobuf:"varint,2,opt,name=minreplicas"`
-	MaxReplicas    int32          `json:"maxReplicas" protobuf:"varint,3,opt,name=maxreplicas"`
+	ScaleTargetRef ScaleTargetRef `json:"scaleTargetRef,omitempty" protobuf:"bytes,1,opt,name=scaletargetref"`
+	MinReplicas    int32          `json:"minReplicas,omitempty" protobuf:"varint,2,opt,name=minreplicas"`
+	MaxReplicas    int32          `json:"maxReplicas,omitempty" protobuf:"varint,3,opt,name=maxreplicas"`
 }
 
 type ScaleTargetRef struct {
 	// Kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"
-	Kind string `json:"kind" protobuf:"bytes,1,opt,name=kind"`
+	Kind string `json:"kind,omitempty" protobuf:"bytes,1,opt,name=kind"`
 	// Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names
-	Name string `json:"name" protobuf:"bytes,2,opt,name=name"`
+	Name string `json:"name,omitempty" protobuf:"bytes,2,opt,name=name"`
 	// API version of the referent
 	// +optional
 	APIVersion string `json:"apiVersion,omitempty" protobuf:"bytes,3,opt,name=apiVersion"`
@@ -311,6 +302,10 @@ type OpenMCPHybridAutoScalerStatus struct {
 	Policies         []policyv1alpha1.OpenMCPPolicies `json:"policies"`
 	RebalancingCount map[string]int32                 `json:"rebalancingCount"`
 	SyncRequestName  string                           `json:"syncRequestName"`
+	ChangeNeed       bool                             `json:"changeNeed"`
+	CheckSubResource bool                             `json:"checkSubResource"`
+	ClusterMinMaps   map[string]int32                 `json:"clusterMinMaps"`
+	ClusterMaxMaps   map[string]int32                 `json:"clusterMaxMaps"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -353,7 +348,7 @@ type OpenMCPConfigMapStatus struct {
 	ClusterMaps      map[string]int32     `json:"clusterMaps"`
 	SyncRequestName  string               `json:"syncRequestName"`
 	LastSpec         OpenMCPConfigMapSpec `json:"lastSpec"`
-	BlockSubResource bool                 `json:"blockSubResource" protobuf:"bytes,3,opt,name=blockSubResource"`
+	CheckSubResource bool                 `json:"checkSubResource" protobuf:"bytes,3,opt,name=checkSubResource"`
 }
 
 // OpenMCPConfigMap is the Schema for the openmcpconfigmaps API
@@ -389,7 +384,7 @@ type OpenMCPSecretStatus struct {
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	ClusterMaps      map[string]int32  `json:"clusterMaps"`
 	LastSpec         OpenMCPSecretSpec `json:"lastSpec"`
-	BlockSubResource bool              `json:"blockSubResource" protobuf:"bytes,3,opt,name=blockSubResource"`
+	CheckSubResource bool              `json:"checkSubResource" protobuf:"bytes,3,opt,name=checkSubResource"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -429,7 +424,7 @@ type OpenMCPJobStatus struct {
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	ClusterMaps      map[string]int32 `json:"clusterMaps"`
 	LastSpec         OpenMCPJobSpec   `json:"lastSpec"`
-	BlockSubResource bool             `json:"blockSubResource" protobuf:"bytes,3,opt,name=blockSubResource"`
+	CheckSubResource bool             `json:"checkSubResource" protobuf:"bytes,3,opt,name=checkSubResource"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -470,7 +465,7 @@ type OpenMCPNamespaceStatus struct {
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	ClusterMaps      map[string]int32     `json:"clusterMaps"`
 	LastSpec         OpenMCPNamespaceSpec `json:"lastSpec"`
-	BlockSubResource bool                 `json:"blockSubResource" protobuf:"bytes,3,opt,name=blockSubResource"`
+	CheckSubResource bool                 `json:"checkSubResource" protobuf:"bytes,3,opt,name=checkSubResource"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

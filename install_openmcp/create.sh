@@ -61,6 +61,7 @@ OME_EXTERNAL_PORT=`yq -r .master.Moudules.MetricCollector.externalPort $CONFFILE
 
 INFLUXDB_NODE_PORT=`yq -r .master.Moudules.InfluxDB.NodePort $CONFFILE`
 
+LB_EXTERNAL_IP=`yq -r .master.Moudules.LoadBalancingController.external $CONFFILE`
 LB_NODE_PORT=`yq -r .master.Moudules.LoadBalancingController.NodePort $CONFFILE`
 
 PDNS_IP=`yq -r .externalServer.ServerIP.internal $CONFFILE`
@@ -201,6 +202,7 @@ sed -i 's|REPLACE_API_KEY|'\"$API_APP_KEY\"'|g' master/openmcp-apiserver/operato
 sed -i 's|REPLACE_API_USER_NAME|'\"$API_USER_NAME\"'|g' master/openmcp-apiserver/operator.yaml
 sed -i 's|REPLACE_API_USER_PW|'\"$API_USER_PW\"'|g' master/openmcp-apiserver/operator.yaml
 
+sed -i 's|REPLACE_EXTERNAL_IP|'\"$LB_EXTERNAL_IP\"'|g' master/openmcp-ingress-controller/operator.yaml
 sed -i 's|REPLACE_PORT|'$LB_NODE_PORT'|g' master/openmcp-loadbalancing-controller/service.yaml
 
 sed -i 's|REPLACE_NFSIP|'\"$OMCP_IP\"'|g' master/influxdb/pv.yaml

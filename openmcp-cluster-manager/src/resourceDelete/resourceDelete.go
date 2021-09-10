@@ -18,8 +18,8 @@ import (
 
 func DeleteSubResourceAll(clusterName string, cm *clusterManager.ClusterManager) error {
 	_ = deleteSubResourceDeployment(clusterName, cm)
-	//_ = deleteSubResourceService(clusterName, cm)
-	//_ = deleteSubResourceIngress(clusterName, cm)
+	//	_ = deleteSubResourceService(clusterName, cm)
+	//	_ = deleteSubResourceIngress(clusterName, cm)
 	_ = deleteSubResourceConfigMap(clusterName, cm)
 	_ = deleteSubResourceJob(clusterName, cm)
 	_ = deleteSubResourceSecret(clusterName, cm)
@@ -48,8 +48,8 @@ func deleteSubResourceDeployment(clusterName string, cm *clusterManager.ClusterM
 
 			} else if err3 == nil {
 
-				omcplog.V(2).Info("[Resource Clean] Found Deployment '" + odep.Name + "' in Cluster. Update BlockSubResource = true")
-				odep.Status.BlockSubResource = true
+				omcplog.V(2).Info("[Resource Clean] Found Deployment '" + odep.Name + "' in Cluster. Update CheckSubResource = false")
+				odep.Status.CheckSubResource = false
 				_, err2 := cm.Crd_client.OpenMCPDeployment(odep.Namespace).UpdateStatus(&odep)
 				if err2 != nil {
 					return err2
@@ -70,8 +70,8 @@ func deleteSubResourceDeployment(clusterName string, cm *clusterManager.ClusterM
 				changed_odep.Status.ClusterMaps[clusterName] -= *dep.Spec.Replicas
 				changed_odep.Status.SchedulingNeed = true
 				changed_odep.Status.SchedulingComplete = false
-				changed_odep.Status.BlockSubResource = false
-				omcplog.V(2).Info("[Resource Clean] ReSchduling And BlockSubResource = false")
+				changed_odep.Status.CheckSubResource = true
+				omcplog.V(2).Info("[Resource Clean] ReSchduling And CheckSubResource = true")
 				_, err6 := cm.Crd_client.OpenMCPDeployment(changed_odep.Namespace).UpdateStatus(changed_odep)
 				if err6 != nil {
 					omcplog.V(0).Info(err6)
@@ -87,7 +87,7 @@ func deleteSubResourceDeployment(clusterName string, cm *clusterManager.ClusterM
 		// if err5 != nil {
 		// 	omcplog.V(0).Info("[Resource Clean] Error: ", err5)
 		// }
-		// changed_odep.Status.BlockSubResource = false
+		// changed_odep.Status.CheckSubResource = true
 
 	}
 	return nil
@@ -113,8 +113,8 @@ func deleteSubResourceService(clusterName string, cm *clusterManager.ClusterMana
 
 			} else if err3 == nil {
 
-				omcplog.V(2).Info("[Resource Clean] Found Service '" + osvc.Name + "' in Cluster. Update BlockSubResource = true")
-				osvc.Status.BlockSubResource = true
+				omcplog.V(2).Info("[Resource Clean] Found Service '" + osvc.Name + "' in Cluster. Update CheckSubResource = false")
+				osvc.Status.CheckSubResource = false
 				_, err2 := cm.Crd_client.OpenMCPService(osvc.Namespace).UpdateStatus(&osvc)
 				if err2 != nil {
 					fmt.Println(err2)
@@ -135,8 +135,8 @@ func deleteSubResourceService(clusterName string, cm *clusterManager.ClusterMana
 
 				// changed_osvc.Status.ClusterMaps[clusterName] -= 1
 				changed_osvc.Status.ClusterMaps = syncResource.SyncResource(cm)
-				changed_osvc.Status.BlockSubResource = false
-				omcplog.V(2).Info("[Resource Clean] ReSchduling And BlockSubResource = false")
+				changed_osvc.Status.CheckSubResource = true
+				omcplog.V(2).Info("[Resource Clean] ReSchduling And CheckSubResource = true")
 				_, err6 := cm.Crd_client.OpenMCPService(changed_osvc.Namespace).UpdateStatus(changed_osvc)
 				if err6 != nil {
 					omcplog.V(0).Info(err6)
@@ -171,8 +171,8 @@ func deleteSubResourceIngress(clusterName string, cm *clusterManager.ClusterMana
 
 			} else if err3 == nil {
 
-				omcplog.V(2).Info("[Resource Clean] Found Ingress '" + oing.Name + "' in Cluster. Update BlockSubResource = true")
-				oing.Status.BlockSubResource = true
+				omcplog.V(2).Info("[Resource Clean] Found Ingress '" + oing.Name + "' in Cluster. Update CheckSubResource = false")
+				oing.Status.CheckSubResource = false
 				_, err2 := cm.Crd_client.OpenMCPIngress(oing.Namespace).UpdateStatus(&oing)
 				if err2 != nil {
 					fmt.Println(err2)
@@ -193,9 +193,9 @@ func deleteSubResourceIngress(clusterName string, cm *clusterManager.ClusterMana
 
 				// changed_oing.Status.ClusterMaps[clusterName] -= 1
 				changed_oing.Status.ClusterMaps = syncResource.SyncResource(cm)
-				changed_oing.Status.BlockSubResource = false
+				changed_oing.Status.CheckSubResource = true
 
-				omcplog.V(2).Info("[Resource Clean] ReSchduling And BlockSubResource = false")
+				omcplog.V(2).Info("[Resource Clean] ReSchduling And CheckSubResource = true")
 				_, err6 := cm.Crd_client.OpenMCPIngress(changed_oing.Namespace).UpdateStatus(changed_oing)
 				if err6 != nil {
 					omcplog.V(0).Info(err6)
@@ -230,8 +230,8 @@ func deleteSubResourceConfigMap(clusterName string, cm *clusterManager.ClusterMa
 
 			} else if err3 == nil {
 
-				omcplog.V(2).Info("[Resource Clean] Found ConfigMap '" + oConfigmap.Name + "' in Cluster. Update BlockSubResource = true")
-				oConfigmap.Status.BlockSubResource = true
+				omcplog.V(2).Info("[Resource Clean] Found ConfigMap '" + oConfigmap.Name + "' in Cluster. Update CheckSubResource = false")
+				oConfigmap.Status.CheckSubResource = false
 				_, err2 := cm.Crd_client.OpenMCPConfigMap(oConfigmap.Namespace).UpdateStatus(&oConfigmap)
 				if err2 != nil {
 					fmt.Println(err2)
@@ -252,9 +252,9 @@ func deleteSubResourceConfigMap(clusterName string, cm *clusterManager.ClusterMa
 
 				// changed_oConfigmap.Status.ClusterMaps[clusterName] -= 1
 				changed_oConfigmap.Status.ClusterMaps = syncResource.SyncResource(cm)
-				changed_oConfigmap.Status.BlockSubResource = false
+				changed_oConfigmap.Status.CheckSubResource = true
 
-				omcplog.V(2).Info("[Resource Clean] ReSchduling And BlockSubResource = false")
+				omcplog.V(2).Info("[Resource Clean] ReSchduling And CheckSubResource = true")
 				_, err6 := cm.Crd_client.OpenMCPConfigMap(changed_oConfigmap.Namespace).UpdateStatus(changed_oConfigmap)
 				if err6 != nil {
 					omcplog.V(0).Info(err6)
@@ -289,8 +289,8 @@ func deleteSubResourceJob(clusterName string, cm *clusterManager.ClusterManager)
 
 			} else if err3 == nil {
 
-				omcplog.V(2).Info("[Resource Clean] Found Job '" + oJob.Name + "' in Cluster. Update BlockSubResource = true")
-				oJob.Status.BlockSubResource = true
+				omcplog.V(2).Info("[Resource Clean] Found Job '" + oJob.Name + "' in Cluster. Update CheckSubResource = false")
+				oJob.Status.CheckSubResource = false
 				_, err2 := cm.Crd_client.OpenMCPJob(oJob.Namespace).UpdateStatus(&oJob)
 				if err2 != nil {
 					fmt.Println(err2)
@@ -311,9 +311,9 @@ func deleteSubResourceJob(clusterName string, cm *clusterManager.ClusterManager)
 
 				// changed_oJob.Status.ClusterMaps[clusterName] -= 1
 				changed_oJob.Status.ClusterMaps = syncResource.SyncResource(cm)
-				changed_oJob.Status.BlockSubResource = false
+				changed_oJob.Status.CheckSubResource = true
 
-				omcplog.V(2).Info("[Resource Clean] ReSchduling And BlockSubResource = false")
+				omcplog.V(2).Info("[Resource Clean] ReSchduling And CheckSubResource = true")
 				_, err6 := cm.Crd_client.OpenMCPJob(changed_oJob.Namespace).UpdateStatus(changed_oJob)
 				if err6 != nil {
 					omcplog.V(0).Info(err6)
@@ -348,8 +348,8 @@ func deleteSubResourceNamespace(clusterName string, cm *clusterManager.ClusterMa
 
 			} else if err3 == nil {
 
-				omcplog.V(2).Info("[Resource Clean] Found Namespace '" + ons.Name + "' in Cluster. Update BlockSubResource = true")
-				ons.Status.BlockSubResource = true
+				omcplog.V(2).Info("[Resource Clean] Found Namespace '" + ons.Name + "' in Cluster. Update CheckSubResource = false")
+				ons.Status.CheckSubResource = false
 				_, err2 := cm.Crd_client.OpenMCPNamespace(ons.Namespace).UpdateStatus(&ons)
 				if err2 != nil {
 					fmt.Println(err2)
@@ -370,9 +370,9 @@ func deleteSubResourceNamespace(clusterName string, cm *clusterManager.ClusterMa
 
 				// changed_ons.Status.ClusterMaps[clusterName] -= 1
 				changed_ons.Status.ClusterMaps = syncResource.SyncResource(cm)
-				changed_ons.Status.BlockSubResource = false
+				changed_ons.Status.CheckSubResource = true
 
-				omcplog.V(2).Info("[Resource Clean] ReSchduling And BlockSubResource = false")
+				omcplog.V(2).Info("[Resource Clean] ReSchduling And CheckSubResource = true")
 				_, err6 := cm.Crd_client.OpenMCPNamespace(changed_ons.Namespace).UpdateStatus(changed_ons)
 				if err6 != nil {
 					omcplog.V(0).Info(err6)
@@ -407,8 +407,8 @@ func deleteSubResourceSecret(clusterName string, cm *clusterManager.ClusterManag
 
 			} else if err3 == nil {
 
-				omcplog.V(2).Info("[Resource Clean] Found Secret '" + osec.Name + "' in Cluster. Update BlockSubResource = true")
-				osec.Status.BlockSubResource = true
+				omcplog.V(2).Info("[Resource Clean] Found Secret '" + osec.Name + "' in Cluster. Update CheckSubResource = false")
+				osec.Status.CheckSubResource = false
 				_, err2 := cm.Crd_client.OpenMCPSecret(osec.Namespace).UpdateStatus(&osec)
 				if err2 != nil {
 					fmt.Println(err2)
@@ -429,9 +429,9 @@ func deleteSubResourceSecret(clusterName string, cm *clusterManager.ClusterManag
 
 				// changed_osec.Status.ClusterMaps[clusterName] -= 1
 				changed_osec.Status.ClusterMaps = syncResource.SyncResource(cm)
-				changed_osec.Status.BlockSubResource = false
+				changed_osec.Status.CheckSubResource = true
 
-				omcplog.V(2).Info("[Resource Clean] ReSchduling And BlockSubResource = false")
+				omcplog.V(2).Info("[Resource Clean] ReSchduling And CheckSubResource = true")
 				_, err6 := cm.Crd_client.OpenMCPSecret(changed_osec.Namespace).UpdateStatus(changed_osec)
 				if err6 != nil {
 					omcplog.V(0).Info(err6)

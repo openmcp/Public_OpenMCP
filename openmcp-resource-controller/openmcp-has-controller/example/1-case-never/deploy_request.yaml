@@ -1,12 +1,12 @@
 apiVersion: openmcp.k8s.io/v1alpha1
 kind: OpenMCPDeployment
 metadata:
-  name: openmcp-pod-test
-  namespace: test
+  name: test-pod
+#  namespace: keti
 spec:
   replicas: 5
   labels:
-      app: openmcp-pod-test
+      app: test-pod
   template:
     spec:
       template:
@@ -16,3 +16,7 @@ spec:
             ports:
             - containerPort: 80
             name: php-apache
+            resources:
+              requests:
+                memory: 10Mi
+                cpu: 100m

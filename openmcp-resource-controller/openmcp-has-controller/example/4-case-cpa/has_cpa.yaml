@@ -1,0 +1,14 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPHybridAutoScaler
+metadata:
+  name: test-has
+#  namespace: openmcp
+spec:
+  mainController: OpenMCP
+  scalingOptions:
+    cpaTemplate:
+      scaleTargetRef:
+        kind: OpenMCPDeployment
+        name: test-pod
+      minReplicas: 2
+      maxReplicas: 10
