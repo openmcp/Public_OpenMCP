@@ -116,7 +116,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			return reconcile.Result{}, err
 		}
 	}
-	if instance.Status.ClusterMaps == nil /*|| instance.Status.ChangeNeed == true */ {
+	if instance.Status.ClusterMaps == nil || instance.Status.ChangeNeed == true {
 		omcplog.V(3).Info("Ingress Create Start")
 		err_create := r.createIngress(req, cm, instance)
 		if err_create != nil {
@@ -290,6 +290,8 @@ func (r *reconciler) createIngress(req reconcile.Request, cm *clusterManager.Clu
 	}
 	instance.Status.ClusterMaps = cluster_map
 	instance.Status.LastSpec = instance.Spec
+	instance.Status.ChangeNeed = false
+
 	err = r.live.Status().Update(context.TODO(), instance)
 	return err
 }

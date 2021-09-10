@@ -1,12 +1,12 @@
 apiVersion: openmcp.k8s.io/v1alpha1
 kind: OpenMCPDeployment
 metadata:
-  name: openmcp-pod
-  namespace: keti
+  name: test-pod
+#  namespace: keti
 spec:
-  replicas: 8
+  replicas: 5
   labels:
-      app: openmcp-pod
+      app: test-pod
   template:
     spec:
       template:

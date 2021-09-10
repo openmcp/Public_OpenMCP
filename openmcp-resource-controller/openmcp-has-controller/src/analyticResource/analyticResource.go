@@ -30,7 +30,7 @@ type CPAKey struct {
 var CPAInfoList = make(map[CPAKey]CPAValue)
 
 func CalcPodMetrics(cm *clusterManager.ClusterManager, live *cluster.Cluster) {
-	fmt.Println("Start CPA ...")
+	fmt.Println("Start CPA ... CPAList_ClusterNum -> [", len(CPAInfoList), "]")
 	SERVER_IP := os.Getenv("GRPC_SERVER")
 	SERVER_PORT := os.Getenv("GRPC_PORT")
 Exit:
@@ -40,6 +40,13 @@ Exit:
 			for _, v := range CPAInfoList {
 				v.OmcpdeployInfo.ReplicasNum = v.ReplicasAfterScaling
 				CPADeployList.CPADeployInfo = append(CPADeployList.CPADeployInfo, v.OmcpdeployInfo)
+
+				//구현
+				/*if v.ReplicasAfterScaling > v.CpaMax {
+					//pod 줄이기
+				}else if v.ReplicasAfterScaling < v.CpaMin {
+					//pod 늘리기
+				}*/
 			}
 			grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 			grpcResponse, gRPC_err := grpcClient.SendCPAAnalysis(context.TODO(), &CPADeployList)
