@@ -113,7 +113,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err := r.DeleteDeploys(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
 
 			omcplog.V(2).Info("Service Notify Send")
-			//r.ServiceNotifyAll(req.Namespace)
+			r.ServiceNotifyAll(req.Namespace)
 
 			return reconcile.Result{}, err
 		}

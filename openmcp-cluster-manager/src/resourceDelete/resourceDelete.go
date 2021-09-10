@@ -18,8 +18,8 @@ import (
 
 func DeleteSubResourceAll(clusterName string, cm *clusterManager.ClusterManager) error {
 	_ = deleteSubResourceDeployment(clusterName, cm)
-	_ = deleteSubResourceService(clusterName, cm)
-	_ = deleteSubResourceIngress(clusterName, cm)
+	//_ = deleteSubResourceService(clusterName, cm)
+	//_ = deleteSubResourceIngress(clusterName, cm)
 	_ = deleteSubResourceConfigMap(clusterName, cm)
 	_ = deleteSubResourceJob(clusterName, cm)
 	_ = deleteSubResourceSecret(clusterName, cm)

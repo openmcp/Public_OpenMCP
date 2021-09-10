@@ -97,15 +97,27 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	if err != nil {
 		if errors.IsNotFound(err) {
+			omcplog.V(3).Info("***********************")
+			omcplog.V(3).Info("*Osvc Delete Detection*")
+			omcplog.V(3).Info("***********************")
 			omcplog.V(3).Info("Delete Services ..Cluster")
 
 			err := r.DeleteServices(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
+
+			// OpenMCPIngress Check
+			r.IngressNotify(req.NamespacedName.Name, req.NamespacedName.Namespace)
+
+			return reconcile.Result{}, err
+		} else {
+			omcplog.V(0).Info(err)
 			return reconcile.Result{}, err
 		}
-		omcplog.V(0).Info(err)
-		return reconcile.Result{}, err
+
 	}
 	if instance.Status.ClusterMaps == nil {
+		omcplog.V(3).Info("***********************")
+		omcplog.V(3).Info("*Osvc Create Detection*")
+		omcplog.V(3).Info("***********************")
 		omcplog.V(3).Info("Service Create Start")
 		err := r.createService(req, cm, instance)
 		if err != nil {
@@ -114,27 +126,15 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 
 		//OpenMCPIngress Check
-		ingress_list := &resourcev1alpha1.OpenMCPIngressList{}
-		r.live.List(context.TODO(), ingress_list, &client.ListOptions{Namespace: instance.Namespace})
-
-		for _, ingressInstance := range ingress_list.Items {
-			for _, value := range ingressInstance.Spec.Template.Spec.Rules {
-				for _, v := range value.HTTP.Paths {
-					if v.Backend.ServiceName == instance.Name {
-						ingressInstance.Status.ChangeNeed = true
-						err := r.live.Status().Update(context.TODO(), &ingressInstance)
-						if err != nil {
-							fmt.Println(err)
-						}
-					}
-				}
-			}
-		}
+		r.IngressNotify(instance.Name, instance.Namespace)
 
 		return reconcile.Result{}, nil
 
 	}
 	if !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec) {
+		omcplog.V(3).Info("***********************")
+		omcplog.V(3).Info("*Osvc Update Detection*")
+		omcplog.V(3).Info("***********************")
 		omcplog.V(3).Info("Service Update Start")
 
 		err := r.updateService(req, cm, instance)
@@ -142,32 +142,26 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			omcplog.V(0).Info(err)
 			return reconcile.Result{}, err
 		}
+
+		// OpenMCPIngress Check
+		r.IngressNotify(instance.Name, instance.Namespace)
+
 		return reconcile.Result{}, nil
 
 	}
 	if instance.Status.ChangeNeed {
+		omcplog.V(3).Info("***********************")
+		omcplog.V(3).Info("*Odep Change Detection*")
+		omcplog.V(3).Info("***********************")
 		omcplog.V(3).Info("Receive notify from OpenMCP Deployment ")
 
 		instance.Status.ChangeNeed = false
 		r.updateService(req, cm, instance)
-	}
 
-	// OpenMCPIngress Check
-	ingress_list := &resourcev1alpha1.OpenMCPIngressList{}
-	r.live.List(context.TODO(), ingress_list, &client.ListOptions{Namespace: instance.Namespace})
+		// OpenMCPIngress Check
+		r.IngressNotify(instance.Name, instance.Namespace)
+		return reconcile.Result{}, nil
 
-	for _, ingressInstance := range ingress_list.Items {
-		for _, value := range ingressInstance.Spec.Template.Spec.Rules {
-			for _, v := range value.HTTP.Paths {
-				if v.Backend.ServiceName == instance.Name {
-					ingressInstance.Status.ChangeNeed = true
-					err := r.live.Status().Update(context.TODO(), &ingressInstance)
-					if err != nil {
-						fmt.Println(err)
-					}
-				}
-			}
-		}
 	}
 
 	// Check Service in cluster
@@ -196,6 +190,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				command := "create"
 				omcplog.V(3).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+command+", Replicas :", replica, ")")
 				sync_req_name, err = r.sendSync(svc, command, cluster_name)
+
+				r.IngressNotify(instance.Name, instance.Namespace)
 
 				if err != nil {
 					return reconcile.Result{}, err
@@ -400,16 +396,16 @@ func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.Clu
 	for _, cluster := range cm.Cluster_list.Items {
 		cluster_map[cluster.Name] = 0
 	}
-	for _, cluster := range cm.Cluster_list.Items {
+	// for _, cluster := range cm.Cluster_list.Items {
 
-		omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
-		dep := r.serviceForOpenMCPService(req, instance, cluster.Name)
-		command := "update"
-		_, err := r.sendSync(dep, command, cluster.Name)
-		if err != nil {
-			return err
-		}
-	}
+	// 	omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
+	// 	dep := r.serviceForOpenMCPService(req, instance, cluster.Name)
+	// 	command := "update"
+	// 	_, err := r.sendSync(dep, command, cluster.Name)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 	label_include_cluster_list := r.getClusterIncludeLabel(instance.Spec.LabelSelector, instance.Namespace)
 
 	for _, cluster := range cm.Cluster_list.Items {
@@ -466,6 +462,7 @@ func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.Clu
 		}
 	}
 	instance.Status.LastSpec = instance.Spec
+	instance.Status.ClusterMaps = cluster_map
 	err := r.live.Status().Update(context.TODO(), instance)
 	return err
 
@@ -498,4 +495,26 @@ func (r *reconciler) sendSync(service *corev1.Service, command string, clusterNa
 
 	omcplog.V(0).Info(s.Name)
 	return s.Name, err
+}
+
+func (r *reconciler) IngressNotify(osvcName, osvcNamespace string) {
+	ingress_list := &resourcev1alpha1.OpenMCPIngressList{}
+	r.live.List(context.TODO(), ingress_list, &client.ListOptions{Namespace: osvcNamespace})
+
+	for _, ingressInstance := range ingress_list.Items {
+		fmt.Println("Ingress:", ingressInstance.Name)
+		for _, value := range ingressInstance.Spec.Template.Spec.Rules {
+			for _, v := range value.HTTP.Paths {
+				fmt.Println("Service In Ingress : ", v.Backend.ServiceName)
+				fmt.Println("OpenMCP Service Name : ", osvcName)
+				if v.Backend.ServiceName == osvcName {
+					ingressInstance.Status.ChangeNeed = true
+					err := r.live.Status().Update(context.TODO(), &ingressInstance)
+					if err != nil {
+						fmt.Println(err)
+					}
+				}
+			}
+		}
+	}
 }
