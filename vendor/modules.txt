@@ -302,7 +302,7 @@ google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
 # google.golang.org/genproto v0.0.0-20201110150050-8816d57aaa9a
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.35.0 => google.golang.org/grpc v1.26.0
+# google.golang.org/grpc v1.36.0 => google.golang.org/grpc v1.27.0
 ## explicit
 google.golang.org/grpc
 google.golang.org/grpc/attributes
@@ -769,4 +769,4 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml
 # github.com/pkg/errors => github.com/pkg/errors v0.9.1
-# google.golang.org/grpc => google.golang.org/grpc v1.26.0
+# google.golang.org/grpc => google.golang.org/grpc v1.27.0

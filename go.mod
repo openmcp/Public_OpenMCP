@@ -34,7 +34,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489
 	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6 // indirect
-	google.golang.org/grpc v1.35.0
+	google.golang.org/grpc v1.36.0
 	google.golang.org/grpc/examples v0.0.0-20200902210233-8630cac324bf // indirect
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -60,7 +60,8 @@ replace (
 	//github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible // Required by OLM
 	//github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.10.0
 	github.com/pkg/errors => github.com/pkg/errors v0.9.1
-	google.golang.org/grpc => google.golang.org/grpc v1.26.0
+	//google.golang.org/grpc => google.golang.org/grpc v1.27.0
+	google.golang.org/grpc => google.golang.org/grpc v1.27.0
 //k8s.io/apimachinery => k8s.io/apimachinery v0.19.2
 //k8s.io/client-go => k8s.io/client-go v0.18.2
 //k8s.io/client-go => k8s.io/client-go v0.17.3
