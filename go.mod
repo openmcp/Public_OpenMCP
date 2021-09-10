@@ -60,7 +60,7 @@ replace (
 	//github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.3.2+incompatible // Required by OLM
 	//github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.10.0
 	github.com/pkg/errors => github.com/pkg/errors v0.9.1
-	google.golang.org/grpc => google.golang.org/grpc v1.27.0
+	google.golang.org/grpc => google.golang.org/grpc v1.26.0
 //k8s.io/apimachinery => k8s.io/apimachinery v0.19.2
 //k8s.io/client-go => k8s.io/client-go v0.18.2
 //k8s.io/client-go => k8s.io/client-go v0.17.3
