@@ -1,0 +1,44 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPHybridAutoScaler
+metadata:
+  name: test-has
+#  namespace: openmcp
+spec:
+  mainController: MemberCluster
+  scalingOptions:
+    hpaTemplate:
+      spec:
+        scaleTargetRef:
+          kind: OpenMCPDeployment
+          name: test-pod
+        minReplicas: 1
+        maxReplicas: 10
+        metrics:
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                type: Utilization
+                averageUtilization: 50
+          - type: Object
+            object:
+              metric:
+                name: NetworkTxUsage #or network_receive_packets_total
+              describedObject:
+                apiVersion: v1
+                kind: Pod
+                name: test-pod
+              target:
+                type: Value
+                value: 100
+    #          - type: Resource
+    #            resource:
+    #              name: memory
+    #              target:
+    #                type: Utilization
+    #                averageUtilization: 50
+    #            - type: Resource
+    #              resource:
+    #                name: memory
+    #                targetAverageUtilization: 50
+    vpaTemplate: Auto

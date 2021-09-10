@@ -145,11 +145,16 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		return reconcile.Result{}, nil
 
 	}
-	if instance.Status.ChangeNeed {
-		omcplog.V(3).Info("Receive notify from OpenMCP Deployment ")
+	if instance.Status.ChangeNeed == true {
+		omcplog.V(3).Info("Receive notification from OpenMCP Deployment ")
+
+		r.updateService(req, cm, instance)
 
 		instance.Status.ChangeNeed = false
-		r.updateService(req, cm, instance)
+		err := r.live.Status().Update(context.TODO(), instance)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 
 	// OpenMCPIngress Check
@@ -402,7 +407,7 @@ func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.Clu
 	}
 	for _, cluster := range cm.Cluster_list.Items {
 
-		omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
+		omcplog.V(3).Info("Service Deployed in ", cluster.Name)
 		dep := r.serviceForOpenMCPService(req, instance, cluster.Name)
 		command := "update"
 		_, err := r.sendSync(dep, command, cluster.Name)

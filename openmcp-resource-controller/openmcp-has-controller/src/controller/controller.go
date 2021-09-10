@@ -210,8 +210,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		}
 	}
 
-	if !reflect.DeepEqual(hasInstance.Status.LastSpec, hasInstance.Spec) {
-
+	if !reflect.DeepEqual(hasInstance.Status.LastSpec, hasInstance.Spec) || hasInstance.Status.ChangeNeed == true {
+		omcplog.V(3).Info("hasInstance.Status.ChangeNeed : ", hasInstance.Status.ChangeNeed)
 		//Apply "has-target-cluster" Policy
 		clusterListItems, hasInstance := r.UpdateTargetClusterPolicy(cm, hasInstance)
 
@@ -265,46 +265,50 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 					}
 				}
 
-				if openmcpDep_err == nil {
-					cpaCluster := make([]string, 0)
-					var totalReplicas int32
-					totalReplicas = 0
-
-					//어느 클러스터에 배포되어있는지 확인
-					for _, cluster := range cm.Cluster_list.Items {
-						dep := &appsv1.Deployment{}
-						cluster_client := cm.Cluster_genClients[cluster.Name]
-						dep_err := cluster_client.Get(context.TODO(), dep, hasInstance.Namespace, hasInstance.Spec.ScalingOptions.CpaTemplate.ScaleTargetRef.Name)
-						if dep_err == nil {
-							totalReplicas = totalReplicas + *dep.Spec.Replicas
-							cpaCluster = append(cpaCluster, cluster.Name)
-						}
-					}
-					deployInfo := &protobuf.CPADeployInfo{
-						Name:        openmcpDep.Name,
-						Namespace:   openmcpDep.Namespace,
-						ReplicasNum: totalReplicas,
-						CPAName:     hasInstance.Name,
-						Clusters:    cpaCluster,
-						//containers total Request 계산해서 put
-						CpuRequest: totalCpuRequest,
-						MemRequest: totalMemRequest,
-					}
-
-					cpaValue := analyticResource.CPAValue{}
-
-					cpaValue.OmcpdeployInfo = deployInfo
-					//cpaValue.InitReplicas = openmcpDep.Spec.Replicas
-					cpaValue.ReplicasAfterScaling = totalReplicas
-					cpaValue.CpaMin = hasInstance.Spec.ScalingOptions.CpaTemplate.MinReplicas
-					cpaValue.CpaMax = hasInstance.Spec.ScalingOptions.CpaTemplate.MaxReplicas
-
-					analyticResource.CPAInfoList[cpaKey] = cpaValue
-
-					fmt.Println("Success to Put CPA ", cpaKey)
-
+				if totalCpuRequest == 0 || totalMemRequest == 0 {
+					omcplog.V(0).Info("!![error] Fail to CPA - There is no request on Deployment")
 				} else {
-					fmt.Println(openmcpDep_err)
+					if openmcpDep_err == nil {
+						cpaCluster := make([]string, 0)
+						var totalReplicas int32
+						totalReplicas = 0
+
+						//어느 클러스터에 배포되어있는지 확인
+						for _, cluster := range cm.Cluster_list.Items {
+							dep := &appsv1.Deployment{}
+							cluster_client := cm.Cluster_genClients[cluster.Name]
+							dep_err := cluster_client.Get(context.TODO(), dep, hasInstance.Namespace, hasInstance.Spec.ScalingOptions.CpaTemplate.ScaleTargetRef.Name)
+							if dep_err == nil {
+								totalReplicas = totalReplicas + *dep.Spec.Replicas
+								cpaCluster = append(cpaCluster, cluster.Name)
+							}
+						}
+						deployInfo := &protobuf.CPADeployInfo{
+							Name:        openmcpDep.Name,
+							Namespace:   openmcpDep.Namespace,
+							ReplicasNum: totalReplicas,
+							CPAName:     hasInstance.Name,
+							Clusters:    cpaCluster,
+							//containers total Request 계산해서 put
+							CpuRequest: totalCpuRequest,
+							MemRequest: totalMemRequest,
+						}
+
+						cpaValue := analyticResource.CPAValue{}
+
+						cpaValue.OmcpdeployInfo = deployInfo
+						//cpaValue.InitReplicas = openmcpDep.Spec.Replicas
+						cpaValue.ReplicasAfterScaling = totalReplicas
+						cpaValue.CpaMin = hasInstance.Spec.ScalingOptions.CpaTemplate.MinReplicas
+						cpaValue.CpaMax = hasInstance.Spec.ScalingOptions.CpaTemplate.MaxReplicas
+
+						analyticResource.CPAInfoList[cpaKey] = cpaValue
+
+						fmt.Println("Success to Put CPA ", cpaKey)
+
+					} else {
+						fmt.Println(openmcpDep_err)
+					}
 				}
 			}
 
@@ -429,6 +433,10 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 								hasInstance.Status.LastSpec = hasInstance.Spec
 								tmpMap[clustername] = 0
 								hasInstance.Status.RebalancingCount = tmpMap
+								hasInstance.Status.ChangeNeed = false
+								hasInstance.Status.CheckSubResource = true
+								hasInstance.Status.ClusterMinMaps = cluster_min_map
+								hasInstance.Status.ClusterMaxMaps = cluster_max_map
 
 								err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 								if err_openmcp != nil {
@@ -500,6 +508,10 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 								hasInstance.Status.LastSpec = hasInstance.Spec
 								tmpMap[clustername] = 0
 								hasInstance.Status.RebalancingCount = tmpMap
+								hasInstance.Status.ChangeNeed = false
+								hasInstance.Status.CheckSubResource = true
+								hasInstance.Status.ClusterMinMaps = cluster_min_map
+								hasInstance.Status.ClusterMaxMaps = cluster_max_map
 
 								err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 								if err_openmcp != nil {
@@ -582,6 +594,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 					//Check for Changes to OpenMCPHPA resource
 					hasInstance.Status.LastSpec = hasInstance.Spec
+					hasInstance.Status.ChangeNeed = false
 
 					err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
 					if err_openmcp != nil {
@@ -592,12 +605,24 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 					}
 				}
 
-			} else if err != nil && errors.IsNotFound(err) {
+			} else if openmcpDep_err != nil && errors.IsNotFound(openmcpDep_err) {
 				omcplog.V(0).Info("!![error] Can't find OpenmcpDeployment")
-				return reconcile.Result{}, err
+				for _, cluster := range clusterListItems {
+					_ = r.DeleteHPAVPA(cm, cluster.Name, request.Namespace, request.Name)
+
+					err_openmcp := r.live.Status().Update(context.TODO(), hasInstance)
+					if err_openmcp != nil {
+						omcplog.V(0).Info("!! Fail to Update instance status", err_openmcp)
+						return reconcile.Result{}, err_openmcp
+					} else {
+						omcplog.V(3).Info(">>> OpenMCPHPA LastSpec Update (HPA Create)")
+					}
+				}
+				return reconcile.Result{}, openmcpDep_err
 			} else {
-				omcplog.V(0).Info("!![error] Fail to Get OpenMCPDeployment")
-				return reconcile.Result{}, err
+				omcplog.V(0).Info("!![error] Fail to Get OpenMCPDeployment - ", openmcpDep_err)
+
+				return reconcile.Result{}, openmcpDep_err
 			}
 		}
 
@@ -615,11 +640,11 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	openmcpDep_err := r.live.Get(context.TODO(), ObjectKey{Namespace: hasInstance.Namespace, Name: hasInstance.Spec.ScalingOptions.HpaTemplate.Spec.ScaleTargetRef.Name}, openmcpDep)
 
 	var dep_list_for_hpa []string
-	var cluster_dep_replicas map[string]int32
+	//var cluster_dep_replicas map[string]int32
 	var cluster_dep_request map[string]bool
 
 	if openmcpDep_err == nil {
-		cluster_dep_replicas = make(map[string]int32)
+		//cluster_dep_replicas = make(map[string]int32)
 		cluster_dep_request = make(map[string]bool)
 
 		for _, cluster := range cm.Cluster_list.Items {
@@ -637,7 +662,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 					}
 				}
 
-				cluster_dep_replicas[cluster.Name] = *dep.Spec.Replicas
+				//cluster_dep_replicas[cluster.Name] = *dep.Spec.Replicas
 				dep_list_for_hpa = append(dep_list_for_hpa, cluster.Name)
 			}
 		}
@@ -693,6 +718,45 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			}
 
 		}
+	}
+	//멤버 클러스터의 hpa, vpa가 삭제되었을 때 다시 재생성
+	if hasInstance.Status.CheckSubResource == true {
+		omcplog.V(2).Info("[Member Cluster Check Service]")
+		sync_req_name := ""
+		for k, v := range hasInstance.Status.ClusterMinMaps {
+			cluster_name := k
+			min_replicas := v
+			max_replicas := hasInstance.Status.ClusterMaxMaps[cluster_name]
+
+			if v == 0 {
+				continue
+			}
+
+			found := &hpav2beta2.HorizontalPodAutoscaler{}
+			cluster_client := cm.Cluster_genClients[cluster_name]
+			err = cluster_client.Get(context.TODO(), found, hasInstance.Namespace, hasInstance.Name)
+
+			if err != nil && errors.IsNotFound(err) {
+				omcplog.V(2).Info("HPA resource ReDeployed in [", cluster_name, "]")
+
+				//Re-Create HPA Object
+				hpa := r.UpdateHorizontalPodAutoscaler(request, hasInstance, min_replicas, max_replicas)
+				//Create Sync resource (Sync Controller Watching)
+				command := "create"
+				sync_name, err := r.sendSyncHPA(hpa, command, cluster_name)
+
+				hasInstance.Status.SyncRequestName = sync_name
+
+				if err != nil {
+					omcplog.V(0).Info("!![error] Fail to ReDeploy new HPA", "HPA.Namespace", hpa.Namespace, "HPA.Name", hpa.Name)
+					return reconcile.Result{}, err
+				}
+				omcplog.V(2).Info(">>> "+cluster_name+" ReDeploy HPA [ min:", *hpa.Spec.MinReplicas, " / max:", hpa.Spec.MaxReplicas, " ]")
+
+			}
+
+		}
+		omcplog.V(3).Info("sync_req_name : ", sync_req_name)
 	}
 
 	return reconcile.Result{}, nil

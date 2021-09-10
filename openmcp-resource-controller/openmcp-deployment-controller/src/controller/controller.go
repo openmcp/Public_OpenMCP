@@ -109,11 +109,14 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 		if errors.IsNotFound(err) {
 			omcplog.V(2).Info("[Delete Detect]")
-			omcplog.V(2).Info("Delete Deployment of All Cluster")
+			omcplog.V(2).Info("Delete Deployment")
 			err := r.DeleteDeploys(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
 
-			omcplog.V(2).Info("Service Notify Send")
-			//r.NotifyServiceAll(req.Namespace)
+			omcplog.V(2).Info("Notify Service Controller")
+			r.NotifyService(instance.Spec.Labels, instance.Namespace)
+
+			omcplog.V(2).Info("Notify HybridAutoScaler Controller")
+			r.NotifyHAS(instance.Name, instance.Namespace)
 
 			return reconcile.Result{}, err
 		}
@@ -313,6 +316,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					return reconcile.Result{}, err
 				}
 
+				omcplog.V(2).Info("Notify Service Controller")
+				r.NotifyService(instance.Spec.Labels, instance.Namespace)
+
+				omcplog.V(2).Info("Notify HybridAutoScaler Controller")
+				r.NotifyHAS(instance.Name, instance.Namespace)
+
 			}
 
 		}
@@ -342,7 +351,7 @@ func (r *reconciler) DeleteDeploys(cm *clusterManager.ClusterManager, name strin
 		},
 		Spec: appsv1.DeploymentSpec{},
 	}
-	omcplog.V(2).Info("Delete Check ", dep.Name, dep.Namespace)
+	omcplog.V(2).Info("Delete Check ", dep.Name, "/", dep.Namespace)
 	for _, cluster := range cm.Cluster_list.Items {
 		command := "delete"
 		_, err := r.sendSync(dep, command, cluster.Name)
@@ -407,18 +416,23 @@ func (r *reconciler) NotifyHAS(deployname string, namespace string) error {
 	listOptions := &client.ListOptions{Namespace: namespace}
 
 	omcplog.V(2).Info("[OpenMCP Deployment] Find Target HAS")
-	r.live.List(context.TODO(), ohas_list, listOptions)
-	for _, ohas := range ohas_list.Items {
-		if ohas.Spec.ScalingOptions.CpaTemplate.ScaleTargetRef.Name == deployname {
-			omcplog.V(2).Info("[OpenMCP Deployment] Notify HAS Controller [", ohas.Name, "]")
-			ohas.Status.ChangeNeed = true
-			err := r.live.Status().Update(context.TODO(), &ohas)
-			if err != nil {
-				return err
-			}
-			omcplog.V(2).Info("[OpenMCP Deployment] Success to Notify HAS Controller [", ohas.Name, "]")
+	err := r.live.List(context.TODO(), ohas_list, listOptions)
 
+	if err == nil {
+		for _, ohas := range ohas_list.Items {
+			if ohas.Spec.ScalingOptions.CpaTemplate.ScaleTargetRef.Name == deployname || ohas.Namespace == namespace && ohas.Spec.ScalingOptions.HpaTemplate.Spec.ScaleTargetRef.Name == deployname {
+				omcplog.V(2).Info("[OpenMCP Deployment] Notify HAS Controller [", ohas.Name, "]")
+				ohas.Status.ChangeNeed = true
+				err := r.live.Status().Update(context.TODO(), &ohas)
+				if err != nil {
+					return err
+				}
+				omcplog.V(2).Info("[OpenMCP Deployment] Success to Notify HAS Controller [", ohas.Name, "]")
+
+			}
 		}
+	} else {
+		omcplog.V(2).Info("err : ", err)
 	}
 
 	return nil

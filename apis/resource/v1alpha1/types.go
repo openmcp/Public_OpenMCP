@@ -276,16 +276,16 @@ type ScalingOptions struct {
 }
 
 type CpaTemplate struct {
-	ScaleTargetRef ScaleTargetRef `json:"scaleTargetRef" protobuf:"bytes,1,opt,name=scaletargetref"`
-	MinReplicas    int32          `json:"minReplicas" protobuf:"varint,2,opt,name=minreplicas"`
-	MaxReplicas    int32          `json:"maxReplicas" protobuf:"varint,3,opt,name=maxreplicas"`
+	ScaleTargetRef ScaleTargetRef `json:"scaleTargetRef,omitempty" protobuf:"bytes,1,opt,name=scaletargetref"`
+	MinReplicas    int32          `json:"minReplicas,omitempty" protobuf:"varint,2,opt,name=minreplicas"`
+	MaxReplicas    int32          `json:"maxReplicas,omitempty" protobuf:"varint,3,opt,name=maxreplicas"`
 }
 
 type ScaleTargetRef struct {
 	// Kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"
-	Kind string `json:"kind" protobuf:"bytes,1,opt,name=kind"`
+	Kind string `json:"kind,omitempty" protobuf:"bytes,1,opt,name=kind"`
 	// Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names
-	Name string `json:"name" protobuf:"bytes,2,opt,name=name"`
+	Name string `json:"name,omitempty" protobuf:"bytes,2,opt,name=name"`
 	// API version of the referent
 	// +optional
 	APIVersion string `json:"apiVersion,omitempty" protobuf:"bytes,3,opt,name=apiVersion"`
@@ -303,6 +303,9 @@ type OpenMCPHybridAutoScalerStatus struct {
 	RebalancingCount map[string]int32                 `json:"rebalancingCount"`
 	SyncRequestName  string                           `json:"syncRequestName"`
 	ChangeNeed       bool                             `json:"changeNeed"`
+	CheckSubResource bool                             `json:"checkSubResource"`
+	ClusterMinMaps   map[string]int32                 `json:"clusterMinMaps"`
+	ClusterMaxMaps   map[string]int32                 `json:"clusterMaxMaps"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
