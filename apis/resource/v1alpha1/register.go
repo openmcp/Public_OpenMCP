@@ -50,6 +50,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&OpenMCPNamespaceList{},
 		&OpenMCPVirtualService{},
 		&OpenMCPVirtualServiceList{},
+		&OpenMCPPersistentVolumeClaimList{},
+		&OpenMCPPersistentVolumeList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
