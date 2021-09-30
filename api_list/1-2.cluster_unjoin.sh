@@ -21,8 +21,15 @@ TOKEN_JSON=`curl -XPOST \
 TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
-curl -X PATCH --cacert server.crt -H "Content-Type: application/strategic-merge-patch+json" -H "Authorization: Bearer $TOKEN" \
---data '{"spec":{"joinStatus":"UNJOIN"}' https://$IP:$PORT/$URL?clustername=$CONTEXT
+
+curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
+--data '[{"op": "replace", "path": "/spec/metalLBRange/addressFrom", "value": ""}]' https://$IP:$PORT/$URL?clustername=$CONTEXT
+
+curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
+--data '[{"op": "replace", "path": "/spec/metalLBRange/addressTo", "value": ""}]' https://$IP:$PORT/$URL?clustername=$CONTEXT
+
+curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
+--data '[{"op": "replace", "path": "/spec/joinStatus", "value": "UNJOIN"}]' https://$IP:$PORT/$URL?clustername=$CONTEXT
 
 
 rm server.crt
