@@ -5,9 +5,11 @@ IP="openmcp-apiserver.openmcp.default-domain.svc.openmcp.example.org"
 PORT="8080"
 
 POD="test-namespace"
-URL="apis/openmcp.k8s.io/v1alpha1/namespaces/default/openmcpnamespaces/$POD"
-#k8s namespace 생성 시
-#URL="api/v1/namespaces/$POD"
+
+#openmcpnamespace 생성 시
+#URL="apis/openmcp.k8s.io/v1alpha1/namespaces/default/openmcpnamespaces/$POD"
+
+URL="api/v1/namespaces/$POD"
 CONTEXT="openmcp"
 
 
