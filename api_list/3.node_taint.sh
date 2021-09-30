@@ -21,10 +21,13 @@ TOKEN_JSON=`curl -XPOST \
 TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
-#curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
-#--data '[{"op": "replace", "path": "/metadata/labels/node-role.kubernetes.io~0master", "value": NONE}]' https://$IP:$PORT/$URL?clustername=$CONTEXT
 
+# 마스터에 포드 할당 허용
+curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
+--data '[{"op": "remove", "path": "/spec/taints/0"}]' https://$IP:$PORT/$URL?clustername=$CONTEXT
+
+# 마스터에 포드 할당 불가
 curl -X PATCH --cacert server.crt -H "Content-Type: application/strategic-merge-patch+json" -H "Authorization: Bearer $TOKEN" \
---data '{"metadata":{"labels":{"node-role.kubernetes.io/master":""}}}' https://$IP:$PORT/$URL?clustername=$CONTEXT
+--data '{"spec":{"taints":[{"effect":"NoSchedule", "key":"node-role.kubernetes.io/master"}]}}' https://$IP:$PORT/$URL?clustername=$CONTEXT
 
 rm server.crt
