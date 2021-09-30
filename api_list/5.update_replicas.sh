@@ -6,7 +6,7 @@ PORT="8080"
 
 NS="default"
 PODNAME="test-deploy"
-REPLICAS="4"
+REPLICAS="2"
 
 URL="apis/apps/v1/namespaces/$NS/deployments/$PODNAME"
 CONTEXT="openmcp"
@@ -23,8 +23,12 @@ TOKEN_JSON=`curl -XPOST \
 TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
-curl -X PATCH --cacert server.crt -H "Content-Type: application/merge-patch+json" -H "Authorization: Bearer $TOKEN" \
---data '{"spec":{"replicas":"4"}' https://$IP:$PORT/$URL?clustername=$CONTEXT
+
+curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
+--data "[{\"op\": \"replace\", \"path\": \"/spec/replicas\", \"value\": $REPLICAS}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
+
+#curl -X PATCH --cacert server.crt -H "Content-Type: application/strategic-merge-patch+json" -H "Authorization: Bearer $TOKEN" \
+#--data "{\"spec\":{\"replicas\":$REPLICAS}}" https://$IP:$PORT/$URL?clustername=$CONTEXT
 
 
 rm server.crt
