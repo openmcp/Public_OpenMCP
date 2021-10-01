@@ -25,13 +25,7 @@ TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
 curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
---data '[{"op": "replace", "path": "/spec/joinStatus", "value": "JOINING"}]' https://$IP:$PORT/$URL?clustername=$CONTEXT
-
-curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
---data "[{\"op\": \"replace\", \"path\": \"/spec/metalLBRange/addressFrom\", \"value\": \"$ADDRESSFROM\"}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
-
-curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
---data "[{\"op\": \"replace\", \"path\": \"/spec/metalLBRange/addressTo\", \"value\": \"$ADDRESSTO\"}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
+--data "[{\"op\": \"replace\", \"path\": \"/spec/joinStatus\", \"value\": \"JOINING\"},{\"op\": \"replace\", \"path\": \"/spec/metalLBRange/addressFrom\", \"value\": \"$ADDRESSFROM\"},{\"op\": \"replace\", \"path\": \"/spec/metalLBRange/addressTo\", \"value\": \"$ADDRESSTO\"}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
 
 
 rm server.crt
