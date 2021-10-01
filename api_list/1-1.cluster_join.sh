@@ -34,6 +34,4 @@ curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json"
 --data "[{\"op\": \"replace\", \"path\": \"/spec/metalLBRange/addressTo\", \"value\": \"$ADDRESSTO\"}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
 
 
-
-
 rm server.crt
