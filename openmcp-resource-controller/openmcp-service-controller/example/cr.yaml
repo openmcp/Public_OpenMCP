@@ -1,0 +1,13 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPService
+metadata:
+  name: example-openmcpservice
+spec:
+  template:
+    spec:
+      type: NodePort
+      ports:
+      - name: http
+        port: 80
+  labelselector:
+    app: openmcp-nginx

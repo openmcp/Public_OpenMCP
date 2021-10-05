@@ -1,36 +1,43 @@
 default:
-  # learning or debug
-  installType: debug
+  installType: debug # learning or debug
   docker:
     imagePullSecretName: regcred
-    imagePullPolicy: Always
-
+    imagePullPolicy: Always # Always or IfNotPresent
 master:
-  internal:
-    ip: 10.0.3.20
-    ports:
-      apiServerPort: 30000
-      clusterManagerPort: 30001
-      analyticEnginePort: 30002
-      metricCollectorPort: 30003
-      influxDBPort: 30004
-  public:
-    ip: 119.65.195.180
-    ports:
-      metricCollectorPort: 3212
+  ServerIP:
+    internal: 10.0.3.20
+    external: 106.251.64.250
   metalLB:
-    rangeStartIP: 10.0.3.190
+    rangeStartIP: 10.0.3.191
     rangeEndIP: 10.0.3.200
+  Moudules:
+    # LoadBalancingController 이외에는 모든 모듈의 IP가 같아도 상관없음
+    # 위의 MetalLB의 IP 대역 범위 내에 모듈의 LoadBalancerIP 입력
+    # MetricCollector는 멤버클러스터 gke, eks, aks의 접근이 가능해야 하므로 외부 IP 포트포워딩 필요
+    # MetricCollector의 포트포워딩 설정 Example (119.65.195.180:3212 -> 10.0.3.20:30002)
+    APIServer:
+      NodePort: 30000
+      AppKey: openmcp-apiserver
+      UserName: openmcp
+      UserPW: keti
+    AnalyticEngine:
+      NodePort: 30001
+    MetricCollector:
+      NodePort: 30002
+      externalPort: 3212 # 119.65.195.180:3212 (MetricCollector는 멤버클러스터 gke, eks, aks의 접근이 가능해야 하므로 외부 IP 가 필요)
+    InfluxDB:
+      NodePort: 30003
+    LoadBalancingController:
+      external: 115.94.141.62
+      NodePort: 30004
+externalServer:
+  ServerIP:
+    internal: 10.0.3.12
+    external: 106.251.64.250
+  powerDNS:
+    apiKey: 1234
+    externalPort: 5353 # Member클러스터의 접근을위해 DNS PORT 53을 포트포워딩 (119.65.195.180:5353 -> 10.0.3.12:53)
 
-powerDNS:
-  apiKey: 1234
-  internal:
-    ip: 10.0.3.12
-    ports:
-      pdnsPort: 53
-  public:
-    ip: 119.65.195.180
-    ports:
-      pdnsPort: 5353
+
       
     

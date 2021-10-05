@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmcp-ingress-controller
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openmcp-ingress-controller
+  template:
+    metadata:
+      labels:
+        name: openmcp-ingress-controller
+    spec:
+      serviceAccountName: openmcp-ingress-controller
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: openmcp-ingress-controller
+          # Replace this with the built image name
+          image: ketidevit/openmcp-ingress-controller:v0.0.1
+          command:
+          - openmcp-ingress-controller
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              #value: ""
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "openmcp-ingress-controller"
+            - name: LB_EXTERNAL_IP
+              value: "115.94.141.62"
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0

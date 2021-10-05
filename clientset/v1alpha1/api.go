@@ -1,11 +1,14 @@
 package v1alpha1
 
 import (
+	clusterv1alpha1 "openmcp/openmcp/apis/cluster/v1alpha1"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+
+	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 )
 
 type ExampleV1Alpha1Interface interface {
@@ -15,6 +18,12 @@ type ExampleV1Alpha1Interface interface {
 	OpenMCPService(namespace string) OpenMCPServiceInterface
 	OpenMCPIngress(namespace string) OpenMCPIngressInterface
 	OpenMCPNamespace(namespace string) OpenMCPNamespaceInterface
+	OpenMCPConfigMap(namespace string) OpenMCPConfigMapInterface
+	OpenMCPJob(namespace string) OpenMCPJobInterface
+	OpenMCPSecret(namespace string) OpenMCPSecretInterface
+	OpenMCPVirtualService(namespace string) VirtualServiceInterface
+	VirtualService(namespace string) VirtualServiceInterface
+	DestinationRule(namespace string) DestinationRuleInterface
 }
 
 type ExampleV1Alpha1Client struct {
@@ -30,7 +39,39 @@ func NewForConfig(c *rest.Config) (*ExampleV1Alpha1Client, error) {
 	//config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
 	config.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
 	config.UserAgent = rest.DefaultKubernetesUserAgent()
+	client, err := rest.RESTClientFor(&config)
+	if err != nil {
+		return nil, err
+	}
 
+	return &ExampleV1Alpha1Client{restClient: client}, nil
+}
+func NewClusterForConfig(c *rest.Config) (*ExampleV1Alpha1Client, error) {
+	//apis.AddToScheme(scheme.Scheme)
+
+	config := *c
+	config.ContentConfig.GroupVersion = &schema.GroupVersion{Group: clusterv1alpha1.GroupName, Version: clusterv1alpha1.GroupVersion}
+	config.APIPath = "/apis"
+	//config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
+	config.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
+	config.UserAgent = rest.DefaultKubernetesUserAgent()
+	client, err := rest.RESTClientFor(&config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ExampleV1Alpha1Client{restClient: client}, nil
+}
+
+func NewIstioForConfig(c *rest.Config) (*ExampleV1Alpha1Client, error) {
+	//apis.AddToScheme(scheme.Scheme)
+
+	config := *c
+	config.ContentConfig.GroupVersion = &schema.GroupVersion{Group: v1alpha3.GroupName, Version: "v1alpha3"}
+	config.APIPath = "/apis"
+	//config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
+	config.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
+	config.UserAgent = rest.DefaultKubernetesUserAgent()
 	client, err := rest.RESTClientFor(&config)
 	if err != nil {
 		return nil, err
@@ -71,6 +112,48 @@ func (c *ExampleV1Alpha1Client) OpenMCPIngress(namespace string) OpenMCPIngressI
 }
 func (c *ExampleV1Alpha1Client) OpenMCPNamespace(namespace string) OpenMCPNamespaceInterface {
 	return &OpenMCPNamespaceClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPConfigMap(namespace string) OpenMCPConfigMapInterface {
+	return &OpenMCPConfigMapClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPJob(namespace string) OpenMCPJobInterface {
+	return &OpenMCPJobClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPSecret(namespace string) OpenMCPSecretInterface {
+	return &OpenMCPSecretClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPCluster(namespace string) OpenMCPClusterInterface {
+	return &OpenMCPClusterClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPVirtualService(namespace string) OpenMCPVirtualServiceInterface {
+	return &OpenMCPVirtualServiceClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) VirtualService(namespace string) VirtualServiceInterface {
+	return &VirtualServiceClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) DestinationRule(namespace string) DestinationRuleInterface {
+	return &DestinationRuleClient{
 		restClient: c.restClient,
 		ns:         namespace,
 	}

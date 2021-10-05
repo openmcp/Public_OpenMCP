@@ -39,6 +39,15 @@ spec:
               mountPath: /mnt
             - name: initmodule
               mountPath: /init
+          env:
+          - name: INFLUX_IP
+            value: REPLACE_INFLUXDBIP
+          - name: INFLUX_PORT
+            value: REPLACE_INFLUXDBPORT
+          - name: INFLUX_USERNAME
+            value: "root"
+          - name: INFLUX_PASSWORD
+            value: "root"
       volumes:
         - name: kubeconfig
           persistentVolumeClaim:
@@ -53,5 +62,8 @@ spec:
         - key: node.kubernetes.io/unreachable
           effect: NoExecute
           tolerationSeconds: 0
-
+      #dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+          - 8.8.8.8
 

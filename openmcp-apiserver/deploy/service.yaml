@@ -3,11 +3,14 @@ kind: Service
 metadata:
   name: openmcp-apiserver
   namespace: openmcp
+  annotations:
+    metallb.universe.tf/allow-shared-ip: openmcp
 spec:
   selector:
     name: openmcp-apiserver
   ports:
   - port: 8080
     targetPort: 8080
-    nodePort: 31635
+    nodePort: 30000
   type: LoadBalancer
+

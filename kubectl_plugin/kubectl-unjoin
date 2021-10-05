@@ -2,9 +2,13 @@
 
 if [ "$1" == "" ]; then
   echo "Please Input Cluster Name"
-  echo "ex) kubectl join cluster1 JOIN"
+  echo "ex) kubectl unjoin cluster1"
   exit 1
 else
-  kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"UNJOIN"}]'
+  kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressFrom","value": ""}]'
+  sleep 2
+  kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressTo","value": ""}]'
+  sleep 2
+  kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"UNJOINING"}]'
 #  kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/JOIN/UNJOIN/g" | kubectl replace -f -
 fi

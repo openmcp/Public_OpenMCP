@@ -1,0 +1,54 @@
+syntax = 'proto3';
+
+package protobuf;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = ".;protobuf";
+
+service SendMetrics {
+	rpc SendMetrics (Collection) returns (ReturnValue) {}
+}
+
+message Collection {
+    repeated MetricsBatch Metricsbatchs = 1;
+    string ClusterName = 2;
+}
+
+message MetricsBatch {
+    string IP = 1;
+	NodeMetricsPoint Node = 2;
+	repeated PodMetricsPoint Pods = 3;
+}
+message NodeMetricsPoint {
+	string Name = 1;
+	MetricsPoint MP = 2;
+}
+message PodMetricsPoint {
+	string Name = 1;
+	string Namespace = 2;
+	MetricsPoint MP = 3;
+	repeated ContainerMetricsPoint Containers = 4;
+}
+message ContainerMetricsPoint {
+    string Name = 1;
+    MetricsPoint MP = 2;
+}
+message MetricsPoint {
+    google.protobuf.Timestamp Timestamp = 1;
+    string CPUUsageNanoCores = 2;
+    string MemoryUsageBytes = 3;
+    string MemoryAvailableBytes = 4;
+    string MemoryWorkingSetBytes = 5;
+    string NetworkRxBytes = 6;
+    string NetworkTxBytes = 7;
+    string FsAvailableBytes = 8;
+    string FsCapacityBytes = 9;
+    string FsUsedBytes = 10;
+    string NetworkLatency = 11;
+}
+message ReturnValue {
+	int64 Tick = 1;
+	string ClusterName = 2;
+	double ProcessingTime = 3;
+}

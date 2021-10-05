@@ -14,6 +14,8 @@ type OpenMCPDeploymentInterface interface {
 	List(opts metav1.ListOptions) (*resourcev1alpha1.OpenMCPDeploymentList, error)
 	Get(name string, options metav1.GetOptions) (*resourcev1alpha1.OpenMCPDeployment, error)
 	Create(deployment *resourcev1alpha1.OpenMCPDeployment) (*resourcev1alpha1.OpenMCPDeployment, error)
+	Update(deployment *resourcev1alpha1.OpenMCPDeployment) (*resourcev1alpha1.OpenMCPDeployment, error)
+	UpdateStatus(deployment *resourcev1alpha1.OpenMCPDeployment) (*resourcev1alpha1.OpenMCPDeployment, error)
 	Watch(opts metav1.ListOptions) (watch.Interface, error)
 	// ...
 }
@@ -25,6 +27,7 @@ type OpenMCPDeploymentClient struct {
 
 func (c *OpenMCPDeploymentClient) List(opts metav1.ListOptions) (*resourcev1alpha1.OpenMCPDeploymentList, error) {
 	result := resourcev1alpha1.OpenMCPDeploymentList{}
+	//c.restClient.Get().Namespace(c.ns).Resource()
 	err := c.restClient.
 		Get().
 		Namespace(c.ns).
@@ -62,13 +65,40 @@ func (c *OpenMCPDeploymentClient) Create(deployment *resourcev1alpha1.OpenMCPDep
 
 	return &result, err
 }
+func (c *OpenMCPDeploymentClient) Update(deployment *resourcev1alpha1.OpenMCPDeployment) (*resourcev1alpha1.OpenMCPDeployment, error) {
+	result := resourcev1alpha1.OpenMCPDeployment{}
+	err := c.restClient.
+		Put().
+		Name(deployment.Name).
+		Namespace(c.ns).
+		Resource("openmcpdeployments").
+		Body(deployment).
+		Do(context.TODO()).
+		Into(&result)
+
+	return &result, err
+}
+func (c *OpenMCPDeploymentClient) UpdateStatus(deployment *resourcev1alpha1.OpenMCPDeployment) (*resourcev1alpha1.OpenMCPDeployment, error) {
+	result := resourcev1alpha1.OpenMCPDeployment{}
+	err := c.restClient.
+		Put().
+		Name(deployment.Name).
+		Namespace(c.ns).
+		Resource("openmcpdeployments").
+		SubResource("status").
+		Body(deployment).
+		Do(context.TODO()).
+		Into(&result)
+
+	return &result, err
+}
 
 func (c *OpenMCPDeploymentClient) Watch(opts metav1.ListOptions) (watch.Interface, error) {
 	opts.Watch = true
 	return c.restClient.
 		Get().
 		Namespace(c.ns).
-		Resource("openmcpdeployment").
+		Resource("openmcpdeployments").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Watch(context.TODO())
 }

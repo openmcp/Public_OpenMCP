@@ -7,7 +7,7 @@ spec:
   template:
     spec:
       targetController:
-        kind: OpenMCPHybridAutoScaler
+        kind: OpenMCPControler
       policies:
         - type: Target
           value:

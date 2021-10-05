@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: influxdb
   namespace: openmcp
+  annotations:
+    metallb.universe.tf/allow-shared-ip: openmcp
 spec:
   ports:
   - port: 8086

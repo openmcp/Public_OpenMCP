@@ -1,0 +1,3171 @@
+Continent,Contry,City
+AF,NG,Niger
+AF,SH,St. Helena
+AF,KM,Grande Comore
+AF,KE,Uasin Gishu
+AF,SD,Red Sea
+AF,SD,Blue Nile
+AF,SD,Al Jazīrah
+AF,KE,Nyamira
+AF,KE,Lamu
+AF,KE,Busia
+AF,KE,Nandi
+AF,KE,Nakuru
+AF,KE,Makueni
+AF,KE,Isiolo
+AF,KE,Samburu
+AF,KE,Kitui
+AF,KE,Garissa
+AF,KE,Baringo
+AF,KE,Kisumu
+AF,KE,Marsabit
+AF,KE,Nairobi Area
+AF,KE,Turkana
+AF,KE,Tharaka - Nithi
+AF,KE,Nyandarua
+AF,KE,Taita Taveta
+AF,KE,Bungoma
+AF,KE,Kericho
+AF,KE,Kisii
+AF,KE,Kirinyaga
+AF,KE,Laikipia
+AF,KE,Machakos
+AF,KE,Elegeyo-Marakwet
+AF,KE,Nyeri
+AF,KE,Embu
+AF,KE,Tana River
+AF,KE,Mombasa
+AF,ZW,Matabeleland South
+AF,ZW,Midlands
+AF,ZW,Mashonaland East
+AF,ZW,Mashonaland Central
+AF,ZW,Masvingo
+AF,ZW,Matabeleland North
+AF,ZW,Manicaland
+AF,ZW,Bulawayo
+AF,SD,Khartoum
+AF,SD,Central Darfur
+AF,SD,Sinnār
+AF,SD,Kassala
+AF,SD,Southern Kordofan
+AF,SD,Southern Darfur
+AF,SD,River Nile
+AF,SD,Northern Darfur
+AF,SD,Al Qaḑārif
+AF,SD,Northern
+AF,SD,White Nile
+AF,KE,Siaya
+AF,KE,Meru
+AF,KE,Vihiga
+AF,KE,Kakamega
+AF,KE,Kajiado
+AF,KE,Kilifi
+AF,KE,Murang'A
+AF,KE,Kiambu
+AF,KE,Migori
+AF,KE,Trans Nzoia
+AF,KE,Narok
+AF,AO,Bengo
+AF,AO,Namibe
+AF,AO,Cuando Cobango
+AF,AO,Huíla
+AF,AO,Luanda
+AF,AO,Huambo
+AF,AO,Zaire
+AF,AO,Malanje
+AF,AO,Uíge
+AF,AO,Cabinda
+AF,NG,FCT
+AF,ZW,Harare
+AF,ZW,Mashonaland West
+AF,ZM,North-Western
+AF,ZM,Southern
+AF,ZM,Lusaka
+AF,ZM,Central
+AF,ZM,Luapula
+AF,ZM,Copperbelt
+AF,ZA,Eastern Cape
+AF,ZA,Limpopo
+AF,ZA,Orange Free State
+AF,ZA,Gauteng
+AF,ZA,KwaZulu-Natal
+AF,ZA,Northern Cape
+AF,ZA,Mpumalanga
+AF,ZA,Western Cape
+AF,ZA,North-West
+AF,YT,Mamoudzou
+AF,KE,Kwale
+AF,KE,Homa Bay
+AF,KE,Bomet
+AF,LY,Sabhā
+AF,LR,Bomi
+AF,LR,Montserrado
+AF,LS,Maseru
+AF,SD,Western Darfur
+AF,SD,North Kordofan
+AF,SD,Eastern Darfur
+AF,SD,West Kordofan
+AF,SC,Anse Boileau
+AF,SC,Beau Vallon
+AF,SC,La Digue
+AF,SC,Grand Anse Mahe
+AF,SC,English River
+AF,LS,Leribe
+AF,LS,Mokhotlong
+AF,LY,Az Zāwiyah
+AF,LY,Surt
+AF,LY,Murzuq
+AF,LY,An Nuqāţ al Khams
+AF,LY,Al Buţnān
+AF,LY,Jabal al Gharbi
+AF,LY,Darnah
+AF,LY,Al Jabal al Akhḑar
+AF,SC,Cascade
+AF,SC,Bel Ombre
+AF,LY,Al Jufrah
+AF,LY,Al Marj
+AF,LY,Mişrātah
+AF,LY,Al Marqab
+AF,LY,Banghāzī
+AF,LY,Al Wāḩāt
+AF,LY,Wādī al Ḩayāt
+AF,LY,Tripoli
+AF,MA,Tanger-Tetouan-Al Hoceima
+AF,MA,Souss-Massa
+AF,MA,Guelmim-Oued Noun
+AF,MA,Laâyoune-Sakia El Hamra
+AF,MA,
+AF,MA,Oriental
+AF,MA,Fès-Meknès
+AF,MA,Marrakesh-Safi
+AF,MA,Drâa-Tafilalet
+AF,MA,Casablanca-Settat
+AF,MA,Rabat-Salé-Kénitra
+AF,MA,Dakhla-Oued Ed-Dahab
+AF,MA,Béni Mellal-Khénifra
+AF,MG,Atsinanana
+AF,MG,Vatovavy Fitovinany
+AF,MG,Vakinankaratra
+AF,MG,Amoron'i Mania
+AF,MG,Analanjirofo
+AF,MG,Boeny
+AF,MG,Diana
+AF,MG,Sava
+AF,MG,Bongolava
+AF,MG,Upper Matsiatra
+AF,MG,Betsiboka
+AF,MG,Analamanga
+AF,ML,Tombouctou
+AF,ML,Mopti
+AF,ML,Koulikoro
+AF,ML,Ménaka
+AF,ML,Bamako
+AF,ML,Kayes
+AF,TN,Al Qaşrayn
+AF,TN,Manouba
+AF,TN,Zaghwān
+AF,GW,Bissau
+AF,TN,Madanīn
+AF,TN,Kairouan
+AF,TN,Jundūbah
+AF,TN,Kef
+AF,TN,Sīdī Bū Zayd
+AF,TN,Nābul
+AF,CD,Lualaba
+AF,TN,Sūsah
+AF,TN,Al Munastīr
+AF,TN,Silyānah
+AF,TN,Al Mahdīyah
+AF,TN,Ariana
+AF,TN,Bājah
+AF,TN,Şafāqis
+AF,TN,Qābis
+AF,TN,Tūnis
+AF,TN,Banzart
+AF,BF,Centre-Nord
+AF,BF,Hauts-Bassins
+AF,BF,Centre
+AF,BF,Nord
+AF,BF,Centre-Ouest
+AF,BF,Centre-Sud
+AF,BF,Boucle du Mouhoun
+AF,BF,Plateau-Central
+AF,BF,Est
+AF,BF,Sahel
+AF,BF,Sud-Ouest
+AF,BF,Cascades
+AF,BF,Centre-Est
+AF,TN,Tawzar
+AF,TN,Bin ‘Arūs
+AF,TN,Gafsa
+AF,TN,Qibilī
+AF,TN,Tataouine
+AF,RW,Kigali
+AF,RW,Southern Province
+AF,RW,Western Province
+AF,RW,Northern Province
+AF,RE,Réunion
+AF,NG,Plateau
+AF,MR,Nouakchott Ouest
+AF,GQ,Bioko Norte
+AF,GQ,Kié-Ntem
+AF,GN,Conakry
+AF,GN,Nzerekore
+AF,GN,Kindia
+AF,GN,Mamou
+AF,GN,Kankan
+AF,GM,Western
+AF,GM,Banjul
+AF,MR,Nouakchott Sud
+AF,GH,Greater Accra
+AF,GH,Bono
+AF,GH,Volta
+AF,GH,Central
+AF,GH,Western
+AF,GH,Northern
+AF,GH,Eastern
+AF,GH,Ashanti
+AF,GH,Upper East
+AF,MR,Inchiri
+AF,BI,Bujumbura Mairie
+AF,BI,Gitega
+AF,BJ,Borgou
+AF,BJ,Mono
+AF,BJ,Zou
+AF,BJ,Atlantique
+AF,BJ,Ouémé
+AF,BJ,Littoral
+AF,MR,Nouakchott Nord
+AF,MR,
+AF,MR,Trarza
+AF,MR,Dakhlet-Nouadhibou
+AF,MU,Plaines Wilhems
+AF,MU,Flacq
+AF,MU,Moka
+AF,MU,Grand Port
+AF,MU,Rivière du Rempart
+AF,MU,Savanne
+AF,MU,Pamplemousses
+AF,GA,Ogooué-Maritime
+AF,GA,Haut-Ogooué
+AF,GA,Estuaire
+AF,MU,Black River
+AF,MU,Port Louis
+AF,MU,Rodrigues
+AF,MW,Southern Region
+AF,MW,Central Region
+AF,TG,Kara
+AF,TG,Maritime
+AF,TG,Savanes
+AF,TG,Plateaux
+AF,TG,Centrale
+AF,TD,N'Djamena
+AF,ET,Amhara
+AF,ET,Tigray
+AF,ET,Somali
+AF,ET,Āfar
+AF,ET,SNNPR
+AF,ET,Addis Ababa
+AF,ET,Bīnshangul Gumuz
+AF,ET,Harari
+AF,ET,Oromiya
+AF,MZ,Sofala
+AF,MZ,Gaza
+AF,MZ,Zambézia
+AF,MZ,Maputo Province
+AF,MZ,Inhambane
+AF,MZ,Nampula
+AF,MZ,Tete
+AF,MZ,Cabo Delgado
+AF,MZ,Maputo
+AF,ER,Maekel
+AF,EG,Dakahlia
+AF,EG,Aswan
+AF,EG,Sharqia
+AF,EG,Matruh
+AF,EG,Giza
+AF,EG,Cairo
+AF,EG,Luxor
+AF,EG,Asyut
+AF,EG,Qalyubia
+AF,EG,Al Sharqia Governorate
+AF,EG,North Sinai
+AF,EG,New Valley
+AF,EG,Gharbia
+AF,BW,Lobatse
+AF,BW,North-West
+AF,BW,Kgalagadi
+AF,BW,City of Francistown
+AF,BW,
+AF,BW,Ngwaketsi
+AF,BW,Gaborone
+AF,BW,South-East
+AF,BW,Ghanzi
+AF,BW,Central
+AF,BW,Kweneng
+AF,BW,Chobe
+AF,BW,Kgatleng
+AF,EG,Ismailia
+AF,EG,Port Said
+AF,EG,Minya
+AF,EG,Monufia
+AF,EG,Faiyum
+AF,EG,Kafr el-Sheikh
+AF,EG,Qena
+AF,EG,South Sinai
+AF,EG,Red Sea
+AF,EG,Suez
+AF,EG,Sohag
+AF,EG,Alexandria
+AF,EG,Beni Suweif
+AF,EG,Damietta
+AF,EG,Beheira
+AF,MZ,Manica
+AF,MZ,Maputo City
+AF,NA,Oshana
+AF,NA,Oshikoto
+AF,NA,Ohangwena
+AF,NA,Kunene
+AF,NA,Khomas
+AF,NA,Hardap
+AF,NA,Erongo
+AF,NA,Zambezi
+AF,NA,Kavango East
+AF,NA,Omaheke
+AF,CD,Kasai-Central
+AF,CD,Haut-Uele
+AF,CD,Sankuru
+AF,CD,Sud-Kivu
+AF,CD,Maniema
+AF,CD,Nord-Kivu
+AF,CD,Mai-Ndombe
+AF,CD,Kasai-Oriental
+AF,CD,Kinshasa
+AF,CD,Tshopo
+AF,CD,Haut-Katanga
+AF,NA,Otjozondjupa
+AF,CF,Bangui
+AF,CG,Pointe-Noire
+AF,CG,Pool
+AF,CG,Brazzaville
+AF,NA,Kavango West
+AF,NA,Karas
+AF,DZ,Guelma
+AF,DZ,Boumerdes
+AF,DZ,Jijel
+AF,DZ,El Oued
+AF,DZ,Ain Defla
+AF,DZ,Ain Temouchent
+AF,SL,Eastern Province
+AF,SL,Southern Province
+AF,SL,Western Area
+AF,SL,Northern Province
+AF,SN,Kolda
+AF,SN,Saint-Louis
+AF,SN,Matam
+AF,SN,Diourbel
+AF,SN,Thiès
+AF,SN,Kédougou
+AF,SN,Dakar
+AF,SN,Tambacounda
+AF,SN,Louga
+AF,SN,Kaolack
+AF,SN,Ziguinchor
+AF,DZ,Biskra
+AF,DZ,Naama
+AF,DZ,El Mghair
+AF,CI,Montagnes
+AF,CI,Denguélé
+AF,CI,Lacs
+AF,CI,Bas-Sassandra
+AF,CI,Woroba
+AF,CI,Lagunes
+AF,CI,Vallée du Bandama
+AF,CI,Gôh-Djiboua
+AF,CI,Sassandra-Marahoué
+AF,CI,Zanzan
+AF,CI,Yamoussoukro
+AF,CI,Comoé
+AF,CI,Savanes
+AF,CI,Abidjan
+AF,DZ,Ouargla
+AF,DZ,Ghardaia
+AF,DZ,Relizane
+AF,DZ,Chlef
+AF,DZ,Illizi
+AF,DZ,Tebessa
+AF,DZ,El Tarf
+AF,DZ,Ouled Djellal
+AF,DZ,El Bayadh
+AF,DZ,Laghouat
+AF,DZ,Oum el Bouaghi
+AF,UG,Eastern Region
+AF,UG,Central Region
+AF,UG,Northern Region
+AF,UG,Western Region
+AF,DZ,In Salah
+AF,DZ,Msila
+AF,DZ,Sétif
+AF,DZ,Mostaganem
+AF,CM,North-West
+AF,CM,West
+AF,CM,Adamaoua
+AF,CM,Centre
+AF,CM,South-West
+AF,CM,North
+AF,CM,Littoral
+AF,CM,Far North
+AF,DZ,Touggourt
+AF,DZ,Tamanrasset
+AF,DZ,Saida
+AF,DZ,Blida
+AF,DZ,Medea
+AF,DZ,Annaba
+AF,DZ,Tiaret
+AF,DZ,Mascara
+AF,DZ,Constantine
+AF,DZ,Bejaia
+AF,DZ,Tlemcen
+AF,DZ,Tizi Ouzou
+AF,DZ,Djelfa
+AF,DZ,Bechar
+AF,DZ,Bordj Bou Arreridj
+AF,DZ,Tissemsilt
+AF,DZ,Tipaza
+AF,DZ,Skikda
+AF,DZ,Mila
+AF,DZ,Khenchela
+AF,DZ,Algiers
+AF,DZ,Batna
+AF,DZ,Setif
+AF,DZ,Souk Ahras
+AF,DZ,Oran
+AF,DZ,Adrar
+AF,DZ,Sidi Bel Abbes
+AF,DZ,Tindouf
+AF,DZ,Tébessa
+AF,DZ,Bouira
+AF,SZ,Hhohho
+AF,SZ,Manzini
+AF,NE,Niamey
+AF,NE,Maradi
+AF,SO,Awdal
+AF,SO,Lower Shabeelle
+AF,SO,Banaadir
+AF,SO,Mudug
+AF,SO,Bari
+AF,SO,Nugaal
+AF,SO,Sool
+AF,SO,Togdheer
+AF,SO,Woqooyi Galbeed
+AF,SS,Unity
+AF,SS,Juba
+AF,SS,Central Equatoria
+AF,SS,Western Equatoria
+AF,ST,São Tomé Island
+AF,NE,Agadez
+AF,DJ,Djibouti
+AF,SZ,Lubombo
+AF,NG,Oyo
+AF,NG,Kano
+AF,NG,Sokoto
+AF,NG,Katsina
+AF,NG,Cross River
+AF,NG,Bayelsa
+AF,NG,Adamawa
+AF,NG,Yobe
+AF,NG,Delta
+AF,NG,Borno
+AF,NG,Osun
+AF,NG,Kwara
+AF,NG,Nassarawa
+AF,NG,Bauchi
+AF,NG,Lagos
+AF,NG,Ebonyi
+AF,NG,Kaduna
+AF,NG,Edo
+AF,TZ,Morogoro
+AF,TZ,Dodoma
+AF,TZ,Zanzibar North
+AF,TZ,Mwanza
+AF,TZ,Dar es Salaam
+AF,TZ,Katavi
+AF,TZ,Kagera
+AF,TZ,Mara
+AF,TZ,Tabora
+AF,TZ,Lindi
+AF,TZ,Simiyu
+AF,TZ,Geita
+AF,TZ,Kilimanjaro
+AF,TZ,Kigoma
+AF,TZ,Arusha
+AF,TZ,Zanzibar Central/South
+AF,TZ,Mbeya
+AF,CV,Porto Novo
+AF,CV,Praia
+AF,CV,Maio
+AF,CV,Boa Vista
+AF,CV,Sao Filipe
+AF,TZ,Tanga
+AF,TZ,Zanzibar Urban/West
+AF,NG,Ondo
+AF,NG,Enugu
+AF,NG,Anambra
+AF,NG,Imo
+AF,NG,Kebbi
+AF,NG,Ogun
+AF,NG,Ekiti
+AF,NG,Rivers
+AF,NG,Gombe
+AN,GS,
+AN,AQ,
+AS,BD,Mymensingh Division
+AS,SY,Daraa
+AS,SY,Idlib
+AS,SY,Tartus
+AS,SY,Aleppo
+AS,SY,Quneitra
+AS,SY,Rif-dimashq
+AS,SY,Al-Hasakah
+AS,SY,As-Suwayda
+AS,NP,Province 5
+AS,NP,Mid Western
+AS,NP,Province 1
+AS,NP,Bagmati Province
+AS,NP,Province 2
+AS,NP,Gandaki Pradesh
+AS,NP,Central Region
+AS,NP,Western Region
+AS,NP,Sudurpashchim Pradesh
+AS,NP,Karnali Pradesh
+AS,NP,Province 3
+AS,NP,Lumbini Province
+AS,SY,Homs
+AS,SY,Latakia
+AS,SY,Ar-Raqqah
+AS,SY,Dimashq
+AS,SY,Hama
+AS,SY,Deir ez-Zor
+AS,OM,Al Buraimi
+AS,OM,Southeastern Governorate
+AS,OM,Al Batinah South
+AS,CN,Yunnan
+AS,TW,Taipei
+AS,TW,Fukien
+AS,TW,Kaohsiung
+AS,TW,Taiwan
+AS,TR,Karaman
+AS,TR,İzmir
+AS,TR,Kütahya
+AS,TR,Kırıkkale
+AS,TR,Tunceli
+AS,TR,Kırşehir
+AS,TR,Şırnak
+AS,TR,Şanlıurfa
+AS,TR,Konya
+AS,TR,Sivas
+AS,TR,Düzce
+AS,TR,Kocaeli
+AS,TR,Adana
+AS,TR,Kilis
+AS,TR,Adıyaman
+AS,TR,Afyonkarahisar
+AS,TR,Sinop
+AS,TR,Aksaray
+AS,TR,Çorum
+AS,TR,Diyarbakır
+AS,TR,Çankırı
+AS,TR,Edirne
+AS,TR,Elazığ
+AS,TR,Rize
+AS,TR,Zonguldak
+AS,TR,Erzincan
+AS,TR,Erzurum
+AS,CN,Anhui
+AS,CN,Tibet
+AS,CN,Jiangsu
+AS,CN,Hebei
+AS,CN,Heilongjiang
+AS,CN,Shandong
+AS,CN,Henan
+AS,CN,Guangdong
+AS,CN,Guizhou
+AS,CN,Qinghai
+AS,CN,Shanxi
+AS,CN,Guangxi
+AS,CN,Zhejiang
+AS,CN,Ningxia Hui Autonomous Region
+AS,CN,Beijing
+AS,CN,Hainan
+AS,CN,Jiangxi
+AS,CN,Gansu
+AS,CN,Fujian
+AS,CN,Shaanxi
+AS,CN,Sichuan
+AS,CN,Liaoning
+AS,CN,Inner Mongolia
+AS,CN,Tianjin
+AS,CN,Jilin
+AS,CN,Xinjiang
+AS,CN,Hunan
+AS,CN,Chongqing
+AS,CN,Hubei
+AS,CN,Shanghai
+AS,OM,Al Wusţá
+AS,OM,Musandam
+AS,OM,Muscat
+AS,OM,Northeastern Governorate
+AS,UZ,Tashkent
+AS,UZ,Jizzax
+AS,UZ,Xorazm
+AS,OM,Ad Dakhiliyah
+AS,UZ,Toshkent
+AS,UZ,Navoiy
+AS,UZ,Fergana
+AS,UZ,Sirdaryo Region
+AS,UZ,Karakalpakstan
+AS,UZ,Andijon
+AS,UZ,Surxondaryo
+AS,OM,Dhofar
+AS,OM,Az̧ Z̧āhirah
+AS,OM,Al Batinah North
+AS,PH,Davao
+AS,PH,National Capital Region
+AS,PH,Eastern Visayas
+AS,PH,Caraga
+AS,PH,Central Luzon
+AS,PH,Soccsksargen
+AS,TR,Eskişehir
+AS,TR,Siirt
+AS,TR,Kayseri
+AS,TR,Kastamonu
+AS,TR,Kars
+AS,TR,Karabük
+AS,TR,Amasya
+AS,TR,Malatya
+AS,TR,Ankara
+AS,TR,Kahramanmaraş
+AS,TR,Denizli
+AS,TR,Yozgat
+AS,TR,Antalya
+AS,TR,Trabzon
+AS,TR,Mardin
+AS,TR,Ardahan
+AS,TR,Artvin
+AS,TR,Yalova
+AS,TR,Iğdır
+AS,TR,Aydın
+AS,TR,Uşak
+AS,TR,Ağrı
+AS,TR,Samsun
+AS,TR,Isparta
+AS,PH,Cagayan Valley
+AS,PH,Bicol
+AS,LA,Khammouan
+AS,CC,
+AS,UZ,Namangan
+AS,UZ,Toshkent Shahri
+AS,UZ,Samarqand
+AS,UZ,Bukhara
+AS,UZ,Qashqadaryo
+AS,PH,Western Visayas
+AS,PH,Northern Mindanao
+AS,VN,Kiến Giang
+AS,VN,Đồng Tháp
+AS,VN,Bắc Giang
+AS,VN,Bắc Kạn
+AS,VN,Bắc Ninh
+AS,VN,Thái Bình
+AS,VN,Quảng Bình
+AS,VN,Da Nang
+AS,VN,Quảng Nam
+AS,VN,Cà Mau
+AS,VN,Sơn La
+AS,VN,Tây Ninh Province
+AS,PH,Ilocos
+AS,PH,Calabarzon
+AS,PH,Autonomous Region in Muslim Mindanao
+AS,PH,Cordillera
+AS,PH,Zamboanga Peninsula
+AS,PH,Mimaropa
+AS,PH,Central Visayas
+AS,BT,Geylegphug
+AS,BT,Chukha
+AS,BT,Tongsa
+AS,BT,Thimphu
+AS,BT,Wangdi Phodrang
+AS,VN,Sóc Trăng
+AS,VN,Thái Nguyên
+AS,VN,Bạc Liêu
+AS,VN,Đồng Nai
+AS,VN,Haiphong
+AS,VN,Bình Định
+AS,VN,Tuyên Quang
+AS,VN,Đắk Lắk
+AS,VN,Can Tho
+AS,VN,Thừa Thiên-Huế
+AS,VN,Bình Thuận
+AS,VN,Yên Bái
+AS,VN,Kon Tum
+AS,VN,An Giang
+AS,VN,Cao Bằng
+AS,VN,Bình Phước
+AS,VN,Bình Dương
+AS,VN,Lạng Sơn
+AS,MY,Putrajaya
+AS,MY,Kelantan
+AS,MY,Melaka
+AS,MY,Negeri Sembilan
+AS,MY,Pahang
+AS,MY,Terengganu
+AS,MY,Perlis
+AS,MY,Penang
+AS,MY,Sabah
+AS,MY,Labuan
+AS,VN,Bà Rịa-Vũng Tàu
+AS,VN,Lâm Đồng
+AS,VN,Trà Vinh
+AS,VN,Thanh Hóa
+AS,VN,Hanoi
+AS,VN,Ðắk Nông
+AS,VN,Nam Định
+AS,VN,Vĩnh Long
+AS,VN,Phú Yên
+AS,MY,Perak
+AS,MY,Kedah
+AS,MY,Kuala Lumpur
+AS,MY,Sarawak
+AS,MY,Selangor
+AS,MY,Johor
+AS,VN,Quảng Ngãi Province
+AS,VN,Quảng Ninh
+AS,VN,Long An
+AS,VN,Vĩnh Phúc
+AS,VN,Hậu Giang
+AS,VN,Phú Thọ
+AS,TH,Trat
+AS,TH,Kamphaeng Phet
+AS,TH,Chai Nat
+AS,TH,Sukhothai
+AS,TH,Phra Nakhon Si Ayutthaya
+AS,TH,Bueng Kan
+AS,TH,Lampang
+AS,TH,Suphanburi
+AS,TH,Surat Thani
+AS,TH,Surin
+AS,TH,Mae Hong Son
+AS,TH,Amnat Charoen
+AS,TH,Maha Sarakham
+AS,TH,Rayong
+AS,TR,Balıkesir
+AS,TR,Van
+AS,TR,Niğde
+AS,TR,Kırklareli
+AS,TR,Bartın
+AS,TR,Nevşehir
+AS,TR,Gaziantep
+AS,TR,Batman
+AS,TH,Phitsanulok
+AS,TH,Songkhla
+AS,TH,Si Sa Ket
+AS,TH,Samut Songkhram
+AS,TH,Phichit
+AS,TH,Phetchaburi
+AS,TH,Kanchanaburi
+AS,TH,Phrae
+AS,TH,Kalasin
+AS,TH,Phuket
+AS,TH,Lamphun
+AS,TH,Uthai Thani
+AS,TH,Roi Et
+AS,VN,Lào Cai
+AS,VN,Hải Dương
+AS,MV,Haa Dhaalu Atholhu
+AS,MV,Baa Atholhu
+AS,MV,Raa Atoll
+AS,MV,Gaafu Dhaalu Atoll
+AS,MV,Seenu
+AS,MV,Gaafu Alifu Atholhu
+AS,MV,Gaafu Alif Atoll
+AS,MV,Kaafu Atoll
+AS,VN,Hưng Yên
+AS,VN,Hòa Bình
+AS,VN,Ðiện Biên
+AS,TR,Tokat
+AS,VN,Gia Lai
+AS,VN,Khánh Hòa
+AS,VN,Ninh Thuận
+AS,VN,Ninh Bình
+AS,VN,Hà Tĩnh
+AS,VN,Quảng Trị
+AS,VN,Tiền Giang
+AS,TR,Bayburt
+AS,TR,Osmaniye
+AS,GE,Mtskheta-Mtianeti
+AS,GE,Imereti
+AS,GE,Racha-Lechkhumi and Kvemo Svaneti
+AS,GE,Shida Kartli
+AS,GE,Abkhazia
+AS,GE,Samtskhe-Javakheti
+AS,GE,Kvemo Kartli
+AS,GE,Achara
+AS,GE,Kakheti
+AS,GE,Samegrelo and Zemo Svaneti
+AS,GE,Guria
+AS,GE,T'bilisi
+AS,GE,Ajaria
+AS,TR,Bilecik
+AS,BN,Brunei-Muara
+AS,BN,Belait
+AS,VN,Hà Nam
+AS,TH,Loei
+AS,TH,Trang
+AS,VN,
+AS,VN,Nghệ An
+AS,VN,Ho Chi Minh
+AS,VN,Lai Châu
+AS,BH,Northern Governorate
+AS,BH,Muharraq
+AS,BH,Manama
+AS,BH,Southern Governorate
+AS,PK,Punjab
+AS,PK,Islamabad
+AS,PK,Azad Kashmir
+AS,PK,Sindh
+AS,PK,Balochistan
+AS,PK,Khyber Pakhtunkhwa
+AS,PK,Gilgit-Baltistan
+AS,TR,Bingöl
+AS,TR,Giresun
+AS,TR,Bitlis
+AS,PS,Gaza Strip
+AS,PS,West Bank
+AS,PS,
+AS,QA,Madīnat ash Shamāl
+AS,QA,Baladīyat ad Dawḩah
+AS,QA,Al Khor
+AS,QA,Baladīyat az̧ Z̧a‘āyin
+AS,TR,Mersin
+AS,TR,Muş
+AS,QA,Al-Shahaniya
+AS,QA,Baladīyat ar Rayyān
+AS,QA,Al Wakrah
+AS,TH,Phetchabun
+AS,TH,Nakhon Si Thammarat
+AS,MO,
+AS,MO,Sé
+AS,MO,Cotai
+AS,MN,Hövsgöl
+AS,MN,Hovd
+AS,MN,Ulaanbaatar
+AS,MN,Central
+AS,MN,East Govĭ
+AS,MN,Eastern
+AS,MN,Orhon
+AS,MM,Shan
+AS,QA,Baladīyat Umm Şalāl
+AS,TR,Ordu
+AS,TR,Muğla
+AS,TR,Tekirdağ
+AS,TR,Bolu
+AS,TR,Istanbul
+AS,TR,Hatay
+AS,TR,Burdur
+AS,TR,Bursa
+AS,TR,Hakkâri
+AS,TR,Gümüşhane
+AS,TR,Canakkale
+AS,TR,Sakarya
+AS,TR,Manisa
+AS,SA,'Asir
+AS,SA,Northern Borders Region
+AS,SA,Al Madīnah al Munawwarah
+AS,SA,Najran Region
+AS,SA,Eastern Province
+AS,SA,Riyadh Region
+AS,SA,Al Jawf Region
+AS,SA,Al Bahah Region
+AS,BD,Rajshahi Division
+AS,BD,Sylhet
+AS,BD,Barisāl
+AS,BD,Rangpur Division
+AS,BD,Khulna
+AS,BD,Chittagong
+AS,BD,Dhaka
+AS,VN,Hà Giang
+AS,VN,Bến Tre
+AS,SA,Makkah
+AS,SA,Al-Qassim
+AS,SA,Al-Qassim Region
+AS,SA,Ar Riyāḑ
+AS,SA,Ha'il Region
+AS,SA,Jazan Region
+AS,SA,Medina Region
+AS,YE,Aden
+AS,TM,Daşoguz
+AS,HK,North
+AS,HK,Sai Kung
+AS,HK,New Territories
+AS,HK,Yau Tsim Mong
+AS,HK,Central and Western
+AS,HK,Kwun Tong
+AS,HK,Wong Tai Sin
+AS,HK,Eastern
+AS,HK,Tai Po
+AS,HK,Wan Chai
+AS,HK,Kwai Tsing
+AS,HK,Islands
+AS,HK,Yuen Long
+AS,HK,Tuen Mun
+AS,HK,Sha Tin
+AS,HK,Southern
+AS,HK,Kowloon City
+AS,HK,Sham Shui Po
+AS,HK,Tsuen Wan
+AS,TM,Lebap
+AS,TM,Ahal
+AS,TM,Ashgabat
+AS,TM,Mary
+AS,TJ,Sughd
+AS,TJ,Republican Subordination
+AS,TJ,Gorno-Badakhshan
+AS,TJ,Dushanbe
+AS,TJ,Khatlon
+AS,TH,Khon Kaen
+AS,TH,Yasothon
+AS,TH,Ranong
+AS,TH,Pattani
+AS,TH,Nakhon Pathom
+AS,TH,Nong Bua Lam Phu
+AS,TH,Ubon Ratchathani
+AS,MM,Kayin
+AS,MM,Rangoon
+AS,MM,Nay Pyi Taw
+AS,MM,Magway
+AS,MM,Chin
+AS,MM,Tanintharyi
+AS,MM,Mon
+AS,MM,Rakhine
+AS,MM,Kayah
+AS,MM,Bago
+AS,MM,Kachin
+AS,MM,Sagain
+AS,MM,Mandalay
+AS,SA,Mecca Region
+AS,SA,'Asir Region
+AS,SA,Tabuk Region
+AS,AZ,Balakǝn
+AS,AZ,Shirvan
+AS,AZ,Qǝbǝlǝ
+AS,TH,Ang Thong
+AS,TH,Uttaradit
+AS,TH,Chon Buri
+AS,TH,Prachin Buri
+AS,TH,Saraburi
+AS,TH,Chiang Rai
+AS,AZ,Goygol Rayon
+AS,AZ,Astara
+AS,AZ,Baki
+AS,AZ,Saatlı
+AS,AZ,Şǝmkir
+AS,AZ,Nakhichevan
+AS,AZ,Qusar
+AS,AZ,Şamaxı
+AS,AZ,Naftalan
+AS,AZ,Samux
+AS,AZ,Mingǝcevir
+AS,AZ,Quba
+AS,TH,Chachoengsao
+AS,TH,Buriram
+AS,AZ,Qobustan
+AS,AZ,Barda
+AS,AZ,İsmayıllı
+AS,AZ,İmişli
+AS,AZ,Salyan
+AS,AZ,Zaqatala
+AS,AZ,Jalilabad
+AS,ID,West Nusa Tenggara
+AS,ID,East Nusa Tenggara
+AS,ID,South Sulawesi
+AS,ID,Riau
+AS,ID,North Sumatra
+AS,ID,Riau Islands
+AS,ID,Aceh
+AS,ID,North Maluku
+AS,ID,South Kalimantan
+AS,ID,Lampung
+AS,ID,North Sulawesi
+AS,ID,Maluku
+AS,ID,Central Java
+AS,ID,East Java
+AS,ID,South Sumatra
+AS,ID,North Kalimantan
+AS,ID,Gorontalo
+AS,ID,Bali
+AS,ID,Yogyakarta
+AS,ID,Jambi
+AS,ID,Central Sulawesi
+AS,ID,Jakarta
+AS,ID,Bangka–Belitung Islands
+AS,ID,Bengkulu
+AS,ID,West Sulawesi
+AS,ID,Banten
+AS,ID,Southeast Sulawesi
+AS,ID,East Kalimantan
+AS,ID,West Java
+AS,ID,West Sumatra
+AS,ID,West Kalimantan
+AS,ID,Central Kalimantan
+AS,ID,West Papua
+AS,ID,Papua
+AS,AZ,Beyləqan
+AS,AZ,Xaçmaz
+AS,AZ,Sumqayit
+AS,AZ,Abşeron
+AS,IL,Southern District
+AS,IL,Northern District
+AS,IL,
+AS,IL,Judea and Samaria Area
+AS,IL,Haifa
+AS,IL,Central District
+AS,IL,Jerusalem
+AS,IL,Tel Aviv
+AS,AZ,Füzuli
+AS,AZ,Hacıqabul
+AS,LA,Louangphabang
+AS,AZ,Qax
+AS,AZ,Daşkǝsǝn
+AS,AZ,Shabran
+AS,AZ,Gǝncǝ
+AS,AZ,Masally
+AS,AZ,Tovuz
+AS,AZ,Göyçay
+AS,AZ,Xızı
+AS,YE,Amanat Alasimah
+AS,YE,Al Bayda
+AS,YE,Hadramaout
+AS,YE,Ibb
+AS,YE,Shabwah
+AS,YE,Omran
+AS,YE,Ḩajjah
+AS,IN,Dadra and Nagar Haveli
+AS,IN,Jharkhand
+AS,IN,Delhi
+AS,IN,Arunachal Pradesh
+AS,IN,Haryana
+AS,IN,Gujarat
+AS,IN,Uttar Pradesh
+AS,IN,Jammu and Kashmir
+AS,IN,Andaman and Nicobar
+AS,IN,Sikkim
+AS,IN,Tamil Nadu
+AS,IN,West Bengal
+AS,IN,Karnataka
+AS,IN,Andhra Pradesh
+AS,IN,Nagaland
+AS,IN,Assam
+AS,IN,Uttarakhand
+AS,IN,Bihar
+AS,IN,Chandigarh
+AS,IN,Mizoram
+AS,IN,Dadra and Nagar Haveli and Daman and Diu
+AS,IN,Maharashtra
+AS,IN,Lakshadweep
+AS,IN,Madhya Pradesh
+AS,IN,Ladakh
+AS,IN,Tripura
+AS,IN,Odisha
+AS,IN,Telangana
+AS,IN,Punjab
+AS,IN,Goa
+AS,IN,Meghalaya
+AS,IN,Rajasthan
+AS,IN,Manipur
+AS,IN,Himachal Pradesh
+AS,IN,Chhattisgarh
+AS,IN,Kerala
+AS,IN,Puducherry
+AS,IO,
+AS,IQ,Baghdad
+AS,IQ,Kirkuk
+AS,IQ,Maysan
+AS,IQ,Dhi Qar
+AS,IQ,Al Anbar
+AS,IQ,Nineveh
+AS,IQ,Al Qādisīyah
+AS,IQ,As Sulaymānīyah
+AS,IQ,Wāsiţ
+AS,IQ,Salah ad Din
+AS,IQ,An Najaf
+AS,IQ,Sulaymaniyah
+AS,IQ,Basra
+AS,IQ,Karbalāʼ
+AS,IQ,Duhok
+AS,IQ,Arbīl
+AS,IQ,Dahūk
+AS,IQ,Bābil
+AS,IQ,Al Muthanná
+AS,IQ,Diyālá
+AS,IR,West Azerbaijan
+AS,IR,Razavi Khorasan
+AS,IR,Markazi
+AS,IR,East Azerbaijan
+AS,IR,Kordestān
+AS,IR,Khorāsān-e Jonūbī
+AS,IR,Qazvīn
+AS,IR,Tehran
+AS,IR,Lorestān
+AS,IR,Lorestan Province
+AS,IR,Chaharmahal and Bakhtiari
+AS,IR,South Khorasan Province
+AS,IR,Hormozgan
+AS,IR,Khuzestan
+AS,IR,Sistan and Baluchestan
+AS,IR,Golestan
+AS,IR,Qom
+AS,IR,Tehrān
+AS,IR,Gīlān
+AS,IR,Māzandarān
+AS,IR,Kermānshāh
+AS,IR,Semnan
+AS,IR,Zanjan
+AS,IR,Alborz
+AS,IR,Alborz Province
+AS,IR,Yazd
+AS,IR,Ilam Province
+AS,IR,Ardabīl
+AS,IR,Fars
+AS,IR,Bushehr
+AS,IR,Kohgiluyeh and Boyer-Ahmad
+AS,IR,Isfahan
+AS,IR,North Khorasan
+AS,IR,Hamadān
+AS,IR,Kerman
+AS,YE,Abyan
+AS,YE,Dhamār
+AS,YE,Sanaa
+AS,YE,Ta‘izz
+AS,YE,Şa‘dah
+AS,YE,Aḑ Ḑāli‘
+AS,LK,Sabaragamuwa
+AS,LK,Northern Province
+AS,LK,Southern
+AS,LK,Uva
+AS,LK,Eastern Province
+AS,LK,Western
+AS,LK,North Central
+AS,LK,Central
+AS,LK,North Western
+AS,TH,Mukdahan
+AS,TH,Nong Khai
+AS,TH,Krabi
+AS,TH,
+AS,TH,Nonthaburi
+AS,TH,Chaiyaphum
+AS,TH,Satun
+AS,TH,Phayao
+AS,LB,Béqaa
+AS,LB,Nabatîyé
+AS,LB,Baalbek-Hermel
+AS,LB,Liban-Nord
+AS,LB,Beyrouth
+AS,LB,Aakkâr
+AS,LB,South Governorate
+AS,LB,Mont-Liban
+AS,LA,Xiangkhoang
+AS,LA,Attapu
+AS,TH,Sakon Nakhon
+AS,TH,Chumphon
+AS,TH,Chiang Mai
+AS,TH,Prachuap Khiri Khan
+AS,TH,Bangkok
+AS,TH,Samut Sakhon
+AS,TH,Sing Buri
+AS,TH,Nan
+AS,TH,Chanthaburi
+AS,TH,Ratchaburi
+AS,TH,Nakhon Ratchasima
+AS,TH,Nakhon Phanom
+AS,TH,Samut Prakan
+AS,TH,Nakhon Sawan
+AS,JO,Ma’an
+AS,JO,Aqaba
+AS,JO,Madaba
+AS,JO,Amman
+AS,JO,Irbid
+AS,JO,Zarqa
+AS,JO,Jerash
+AS,JO,Balqa
+AS,JO,Ajloun
+AS,JO,Mafraq
+AS,JO,Karak
+AS,JP,Gunma
+AS,JP,Gifu
+AS,JP,Kochi
+AS,JP,Nagasaki
+AS,JP,Kumamoto
+AS,YE,Al Hudaydah
+AS,JP,Kagawa
+AS,JP,Chiba
+AS,JP,Nagano
+AS,JP,Ehime
+AS,JP,Okinawa
+AS,JP,Shiga
+AS,JP,Fukushima
+AS,JP,Fukuoka
+AS,JP,Yamagata
+AS,JP,Yamaguchi
+AS,JP,Nara
+AS,JP,Shimane
+AS,JP,Oita
+AS,JP,Ishikawa
+AS,JP,Yamanashi
+AS,JP,Shizuoka
+AS,JP,Fukui
+AS,JP,Hyōgo
+AS,JP,Wakayama
+AS,JP,Mie
+AS,JP,Aichi
+AS,JP,Kagoshima
+AS,JP,Tokyo
+AS,JP,Miyagi
+AS,JP,Kyoto
+AS,JP,Miyazaki
+AS,JP,Akita
+AS,JP,Iwate
+AS,JP,Toyama
+AS,JP,Ibaraki
+AS,JP,Niigata
+AS,JP,Hokkaido
+AS,JP,Ōsaka
+AS,JP,Saga
+AS,JP,Hiroshima
+AS,JP,Aomori
+AS,JP,Tokushima
+AS,JP,Tottori
+AS,JP,Okayama
+AS,JP,Saitama
+AS,JP,Tochigi
+AS,YE,Ma’rib
+AS,YE,Laḩij
+AS,YE,Raymah
+AS,AM,Gegharkunik
+AS,AM,Vayots Dzor
+AS,AM,Tavush
+AS,AM,Yerevan
+AS,AM,Shirak
+AS,AM,Armavir
+AS,AM,Syunik
+AS,AM,Kotayk
+AS,AM,Ararat
+AS,AM,Aragatsotn
+AS,AM,Lori
+AS,AF,Helmand
+AS,AF,Takhar
+AS,AF,Parwan
+AS,AF,Ghowr
+AS,AF,Herat
+AS,AF,Oruzgan
+AS,AF,Paktia
+AS,AF,Badakhshan
+AS,AF,Balkh
+AS,AF,Bamyan
+AS,AF,Kandahar
+AS,AF,Zabul
+AS,AF,Farah
+AS,AF,Kunduz
+AS,AF,Ghazni
+AS,AF,Faryab
+AS,AF,Nimroz
+AS,AF,Khost
+AS,AF,Baghlan
+AS,AF,Nangarhar
+AS,AF,Kabul
+AS,AF,Daykundi
+AS,AE,Raʼs al Khaymah
+AS,AE,Ajman
+AS,AE,Imārat Umm al Qaywayn
+AS,AE,Abu Dhabi
+AS,AE,Fujairah
+AS,AE,Dubai
+AS,AE,Sharjah
+AS,SG,Singapore
+AS,KG,Chüy
+AS,KG,Batken
+AS,KG,Osh
+AS,KG,Naryn
+AS,KG,Bishkek
+AS,KG,Jalal-Abad
+AS,KG,Issyk-Kul
+AS,KH,Phnom Penh
+AS,KH,Stung Treng
+AS,KH,Ŏtâr Méanchey
+AS,KH,Preah Sihanouk
+AS,KH,Pailin
+AS,KH,Preah Vihear
+AS,KH,Kampong Cham
+AS,KH,Takeo
+AS,KH,Siem Reap
+AS,KH,Koh Kong
+AS,KH,Ratanakiri
+AS,KH,Kandal
+AS,KH,Kampong Speu
+AS,KH,Battambang
+AS,KH,Svay Rieng
+AS,KH,Kampot
+AS,KH,Banteay Meanchey
+AS,TH,Sa Kaeo
+AS,TH,Udon Thani
+AS,SG,
+AS,TH,Narathiwat
+AS,TH,Lopburi
+AS,TH,Tak
+AS,TH,Yala
+AS,TH,Nakhon Nayok
+AS,KP,Pyongyang
+AS,KR,Chungcheongnam-do
+AS,KR,Ulsan
+AS,KR,Daejeon
+AS,KR,Gwangju
+AS,KR,Gyeongsangnam-do
+AS,KR,Busan
+AS,KR,Seoul
+AS,KR,Jeju-do
+AS,KR,Jeollabuk-do
+AS,KR,Gyeonggi-do
+AS,KR,Jeollanam-do
+AS,KR,Sejong-si
+AS,KR,Gangwon-do
+AS,KR,Incheon
+AS,KR,North Chungcheong
+AS,KR,Gyeongsangbuk-do
+AS,KR,Daegu
+AS,KW,Al Aḩmadī
+AS,KW,Al Farwaniyah
+AS,KW,Mubārak al Kabīr
+AS,KW,Al Asimah
+AS,KW,Hawalli
+AS,KW,Al Jahrāʼ
+AS,TH,Pathum Thani
+AS,TH,Phang Nga
+AS,TH,Phatthalung
+AS,KZ,Soltüstik Qazaqstan
+AS,KZ,Atyraū
+AS,KZ,Qyzylorda
+AS,KZ,Almaty Oblysy
+AS,KZ,Karaganda
+AS,KZ,Aqmola
+AS,KZ,Aqtöbe
+AS,KZ,North Kazakhstan
+AS,KZ,Zhambyl
+AS,KZ,Baikonur
+AS,KZ,Batys Qazaqstan
+AS,KZ,
+AS,KZ,Qostanay
+AS,KZ,Almaty
+AS,KZ,Nur-Sultan
+AS,KZ,Pavlodar Region
+AS,KZ,East Kazakhstan
+AS,KZ,Turkistan
+AS,KZ,Mangghystaū
+AS,KZ,Shymkent
+AS,LA,Salavan
+AS,LA,Xiagnabouli
+AS,LA,Vientiane
+AS,LA,Champasak
+AS,LA,Bolikhamsai
+AS,LA,Savannahkhét
+AS,LA,Vientiane Prefecture
+AS,JP,Kanagawa
+EU,FR,Collectivity of Saint Martin
+EU,JE,Jersey
+EU,JE,St Saviour
+EU,JE,St Mary
+EU,JE,St Helier
+EU,JE,St Clement
+EU,IT,Basilicate
+EU,IT,Lombardy
+EU,IT,Campania
+EU,IT,Aosta Valley
+EU,IT,Tuscany
+EU,IT,Friuli Venezia Giulia
+EU,IT,Abruzzo
+EU,IT,Sardinia
+EU,IT,Apulia
+EU,IT,Liguria
+EU,IT,Veneto
+EU,IT,Calabria
+EU,IT,The Marches
+EU,LI,Schaan
+EU,LI,Eschen
+EU,LI,Gamprin
+EU,LI,Balzers
+EU,LI,Triesenberg
+EU,LI,Mauren
+EU,LI,Vaduz
+EU,IT,Molise
+EU,IT,Emilia-Romagna
+EU,IT,Trentino-Alto Adige
+EU,IT,Sicily
+EU,IT,Umbria
+EU,IT,Lazio
+EU,IT,Piedmont
+EU,IS,Southern Peninsula
+EU,IS,Northwest
+EU,IS,West
+EU,IS,South
+EU,IS,Westfjords
+EU,IS,Northeast
+EU,IS,Capital Region
+EU,LT,Vilnius
+EU,LT,Klaipėda County
+EU,LT,Panevėžys
+EU,LT,Tauragė County
+EU,LT,Kaunas
+EU,LT,Utena
+EU,LT,Marijampolė County
+EU,LT,Telsiai
+EU,LT,Alytus
+EU,LT,Siauliai
+EU,LU,Clervaux
+EU,LU,Echternach
+EU,LU,Diekirch
+EU,LU,Mersch
+EU,LU,Remich
+EU,LU,Wiltz
+EU,LU,Capellen
+EU,LU,Esch-sur-Alzette
+EU,LU,Redange
+EU,LU,Luxembourg
+EU,LU,Grevenmacher
+EU,LV,Kandava
+EU,LV,Alūksnes Novads
+EU,LV,Mālpils
+EU,LV,Mārupe
+EU,LV,Rēzekne
+EU,LV,Rucavas
+EU,LV,Saldus Rajons
+EU,LV,Ropažu
+EU,LV,Auces
+EU,LV,Rojas
+EU,LV,Brocēni
+EU,LV,Amatas
+EU,LV,Vecumnieki
+EU,LV,Bauskas Rajons
+EU,LV,Olaine
+EU,LV,Vilanu
+EU,LV,Saulkrastu
+EU,LV,Līvāni
+EU,LV,Ventspils Rajons
+EU,LV,Engure
+EU,LV,Salaspils
+EU,LV,Ogre
+EU,LV,Jelgavas novads
+EU,LV,Gulbenes novads
+EU,LV,Ventspils
+EU,LV,Jelgava
+EU,LV,Jēkabpils Municipality
+EU,LV,Krimulda
+EU,LV,Dobeles novads
+EU,LV,Babīte
+EU,LV,Ilūkste
+EU,LV,Daugavpils municipality
+EU,LV,Vecpiebalga
+EU,LV,Ķekava
+EU,LV,Jaunpils
+EU,LV,Lubāna
+EU,LV,Koknese
+EU,LV,Jaunpiebalga
+EU,LV,Jaunjelgava
+EU,LV,Nīca
+EU,LV,Kocēni
+EU,LV,Grobiņa
+EU,LV,Zilupes
+EU,LV,Tērvete
+EU,LV,Skrīveri
+EU,LV,Pļaviņu
+EU,LV,Salas
+EU,LV,Varakļāni
+EU,LV,Inčukalns
+EU,LV,Madona Municipality
+EU,LV,Nereta
+EU,LV,Jūrmala
+EU,LV,Riga
+EU,LV,Naukšēni
+EU,LV,Lecava
+EU,LV,Stopiņi
+EU,LV,Ozolnieku
+EU,LV,Valmiera
+EU,LV,Tukuma novads
+EU,LV,Baldone
+EU,LV,Aknīste
+EU,LV,Cēsu Rajons
+EU,LV,Apes
+EU,LV,Talsi Municipality
+EU,LV,Ikšķile
+EU,LV,Carnikava
+EU,LV,Kuldīgas novads
+EU,LV,Durbe
+EU,LV,Lielvārde
+EU,LV,Liepāja
+EU,LV,Preiļu novads
+EU,LV,Aizpute
+EU,LV,Aizkraukles novads
+EU,LV,Dagda
+EU,LV,Vaiņode
+EU,LV,Krāslavas novads
+EU,LV,Dundaga
+EU,LV,Ādaži
+EU,LV,Priekule
+EU,LV,Raunas
+EU,LV,Priekuļi
+EU,LV,Sigulda
+EU,LV,Vārkava
+EU,LV,Strenči
+EU,IS,East
+EU,IM,Port Erin
+EU,IM,Ballaugh
+EU,IM,Andreas
+EU,IM,Maughold
+EU,IM,Bride
+EU,IM,Douglas
+EU,IM,Michael
+EU,IM,Patrick
+EU,IM,Laxey
+EU,IM,Braddan
+EU,IM,Ramsey
+EU,IM,Arbory
+EU,IM,Castletown
+EU,IM,Marown
+EU,IM,Onchan
+EU,IM,Port St Mary
+EU,IM,Malew
+EU,IM,Peel
+EU,IE,Connaught
+EU,IE,Munster
+EU,IE,Ulster
+EU,IE,Leinster
+EU,HU,Bekes
+EU,HU,Zala
+EU,HU,Hajdú-Bihar
+EU,HU,Somogy
+EU,HU,Győr-Moson-Sopron
+EU,HU,Heves
+EU,HU,Tolna
+EU,MC,Municipality of Monaco
+EU,MC,Commune de Monaco
+EU,MD,Orhei
+EU,MD,Bălţi
+EU,MD,Raionul Edineţ
+EU,MD,Cahul
+EU,MD,Raionul Ocniţa
+EU,MD,Ungheni
+EU,MD,Raionul Soroca
+EU,MD,Cimişlia
+EU,MD,Criuleni
+EU,MD,Transnistria
+EU,MD,Făleşti
+EU,MD,Ştefan-Vodă
+EU,MD,Bender Municipality
+EU,MD,Anenii Noi
+EU,MD,Călăraşi
+EU,MD,Glodeni
+EU,MD,Teleneşti
+EU,MD,Taraclia
+EU,MD,Chișinău Municipality
+EU,MD,Căuşeni
+EU,MD,Basarabeasca
+EU,MD,Briceni
+EU,MD,Rîşcani
+EU,MD,Cantemir
+EU,MD,Strășeni
+EU,MD,Ialoveni
+EU,MD,Sîngerei
+EU,MD,Hînceşti
+EU,MD,Donduşeni
+EU,MD,Drochia
+EU,SI,Veržej
+EU,MD,Nisporeni
+EU,MD,Floreşti
+EU,MD,Găgăuzia
+EU,MD,Rezina
+EU,ME,Berane
+EU,ME,Kotor
+EU,ME,Andrijevica
+EU,ME,Cetinje
+EU,ME,Pljevlja
+EU,ME,Opština Nikšić
+EU,ME,Budva
+EU,ME,Tivat
+EU,ME,Ulcinj
+EU,ME,Herceg Novi
+EU,ME,Podgorica
+EU,ME,Bar
+EU,HU,Komárom-Esztergom
+EU,HU,Bács-Kiskun
+EU,HU,Nógrád
+EU,HU,Csongrád
+EU,HU,Borsod-Abaúj-Zemplén
+EU,HU,Budapest
+EU,HU,Fejér
+EU,HU,Bekes County
+EU,HU,Jász-Nagykun-Szolnok
+EU,HU,Baranya
+EU,HU,Pest
+EU,HU,Vas
+EU,HU,Veszprém
+EU,HU,Szabolcs-Szatmár-Bereg
+EU,HR,Osječko-Baranjska
+EU,HR,Zagrebačka
+EU,MK,Radovish
+EU,MK,Kavadarci
+EU,MK,Struga
+EU,MK,Prilep
+EU,MK,Sopište
+EU,MK,Berovo
+EU,MK,Karpoš
+EU,MK,Probishtip
+EU,MK,Karposh
+EU,MK,Makedonski Brod
+EU,MK,Veles
+EU,MK,Ohrid
+EU,MK,Novo Selo
+EU,MK,Grad Skopje
+EU,MK,Tearce
+EU,MK,Bitola
+EU,MK,Kumanovo
+EU,MK,Tetovo
+EU,MK,Gostivar
+EU,MK,Lipkovo
+EU,MK,Aerodrom
+EU,MK,
+EU,MK,Kichevo
+EU,MK,Jegunovce
+EU,MK,Dolneni
+EU,MK,Ilinden
+EU,MK,Sveti Nikole
+EU,MK,Shtip
+EU,MK,Strumica
+EU,MK,Bosilovo
+EU,MK,Petrovec
+EU,MK,Arachinovo
+EU,MK,Krushevo
+EU,MK,Brvenica
+EU,MK,Kisela Voda
+EU,MK,Negotino
+EU,MK,Kriva Palanka
+EU,MK,Kochani
+EU,MK,Gevgelija
+EU,MK,Štip
+EU,MK,Centar
+EU,MK,Bogovinje
+EU,HR,Zadarska
+EU,HR,Karlovačka
+EU,HR,Koprivničko-Križevačka
+EU,HR,Virovitičk-Podravska
+EU,HR,Vukovar-Sirmium
+EU,HR,Požeško-Slavonska
+EU,HR,Krapinsko-Zagorska
+EU,HR,Ličko-Senjska
+EU,HR,Međimurska
+EU,HR,Dubrovačko-Neretvanska
+EU,HR,Varaždinska
+EU,HR,Istria
+EU,HR,City of Zagreb
+EU,HR,Split-Dalmatia
+EU,HR,Šibensko-Kniniska
+EU,HR,Bjelovarsko-Bilogorska
+EU,HR,Primorsko-Goranska
+EU,HR,Slavonski Brod-Posavina
+EU,HR,Sisačko-Moslavačka
+EU,GR,Epirus
+EU,GR,Attica
+EU,GR,South Aegean
+EU,GR,Ionian Islands
+EU,GR,Central Greece
+EU,GR,Central Macedonia
+EU,GR,West Macedonia
+EU,GR,Thessaly
+EU,GR,East Macedonia and Thrace
+EU,GR,Mount Athos
+EU,GR,Crete
+EU,GR,North Aegean
+EU,GR,West Greece
+EU,GR,Peloponnese
+EU,GI,
+EU,GG,St Martin
+EU,GG,
+EU,GG,Alderney
+EU,GG,St Sampson
+EU,GG,Torteval
+EU,GG,Castel
+EU,GG,St Peter Port
+EU,MT,St. Julian
+EU,MT,Ħal Għaxaq
+EU,MT,Il-Ħamrun
+EU,MT,Il-Qala
+EU,MT,Iż-Żejtun
+EU,MT,Ħaż-Żabbar
+EU,MT,Bormla
+EU,MT,L-Imsida
+EU,MT,Saint John
+EU,MT,Iż-Żurrieq
+EU,MT,Ix-Xgħajra
+EU,MT,Qormi
+EU,MT,Saint Julian
+EU,MT,Valletta
+EU,MT,Tarxien
+EU,MT,In-Naxxar
+EU,MT,Tas-Sliema
+EU,MT,In-Nadur
+EU,MT,St Lawrence
+EU,MT,Attard
+EU,MT,Luqa
+EU,MT,Il-Munxar
+EU,MT,Tal-Pietà
+EU,MT,Il-Belt Valletta
+EU,MT,Is-Siġġiewi
+EU,MT,Birżebbuġa
+EU,MT,Il-Fgura
+EU,MT,Sannat
+EU,MT,Il-Gżira
+EU,MT,Lija
+EU,MT,Saint Paul’s Bay
+EU,MT,St. Venera
+EU,MT,Ta’ Xbiex
+EU,MT,St. John
+EU,MT,Marsaskala
+EU,MT,Il-Marsa
+EU,MT,Il-Mellieħa
+EU,MT,Marsaxlokk
+EU,MT,Paola
+EU,MT,Dingli
+EU,MT,Il-Mosta
+EU,MT,Floriana
+EU,MT,Is-Swieqi
+EU,MT,Birkirkara
+EU,MT,St. Paul’s Bay
+EU,MT,Senglea
+EU,MT,Ħal Għargħur
+EU,GG,Guernsey
+EU,GG,St Andrew
+EU,GG,St. Saviour
+EU,GB,England
+EU,GB,Northern Ireland
+EU,GB,Wales
+EU,GB,Scotland
+EU,FR,Pays de la Loire
+EU,FR,Hauts-de-France
+EU,FR,Grande-terre
+EU,FR,Occitanie
+EU,FR,Pointe-à-pitre
+EU,FR,Brittany
+EU,FR,Grand Est
+EU,FR,Nouvelle-Aquitaine
+EU,FR,Fort-de-france
+EU,FR,Bourgogne-Franche-Comté
+EU,FR,Basse-terre
+EU,FR,Saint Denis
+EU,FR,Auvergne-Rhône-Alpes
+EU,FR,Corsica
+EU,FR,Normandy
+EU,FR,Saint Benoit
+EU,FR,Saint-paul
+EU,FR,Provence-Alpes-Côte d'Azur
+EU,FR,Centre-Val de Loire
+EU,FR,Île-de-France
+EU,FR,Sint Maarten
+EU,FR,Saint-denis
+EU,FO,Eysturoy
+EU,FO,Streymoy
+EU,FO,Suðuroy
+EU,FO,Norðoyar
+EU,FI,Southwest Finland
+EU,FI,Satakunta
+EU,FI,Tampere
+EU,FI,Lapland
+EU,FI,Newland
+EU,FI,Kymenlaakso
+EU,FI,Finland Proper
+EU,FI,South Karelia
+EU,FI,Central Ostrobothnia
+EU,FI,Northern Savonia
+EU,FI,Northern Ostrobothnia
+EU,FI,Ostrobothnia
+EU,FI,Pirkanmaa
+EU,FI,Central Finland
+EU,FI,Southern Savonia
+EU,FI,Southern Ostrobothnia
+EU,FI,Kanta-Häme
+EU,FI,North Karelia
+EU,FI,Kanta-Hame
+EU,FI,Paijat-Hame
+EU,FI,Kainuu
+EU,FI,South Savo
+EU,FI,South Ostrobothnia
+EU,FI,North Ostrobothnia
+EU,FI,North Savo
+EU,FI,Uusimaa
+EU,ES,Castille and León
+EU,ES,Asturias
+EU,ES,Navarre
+EU,ES,Extremadura
+EU,ES,Castille-La Mancha
+EU,ES,Andalusia
+EU,ES,Ceuta
+EU,ES,Cantabria
+EU,ES,Aragon
+EU,ES,Catalonia
+EU,ES,Balearic Islands
+EU,ES,Galicia
+EU,ES,Madrid
+EU,ES,Canary Islands
+EU,ES,Melilla
+EU,ES,Murcia
+EU,ES,La Rioja
+EU,ES,Valencia
+EU,ES,Basque Country
+EU,EE,Järvamaa
+EU,EE,Pärnumaa
+EU,EE,Tartu
+EU,EE,Ida-Virumaa
+EU,EE,Võrumaa
+EU,EE,Jõgevamaa
+EU,EE,Valgamaa
+EU,EE,Saare
+EU,EE,Lääne-Virumaa
+EU,EE,Lääne
+EU,EE,Raplamaa
+EU,EE,Põlvamaa
+EU,EE,Viljandimaa
+EU,EE,Harjumaa
+EU,EE,Hiiumaa
+EU,DK,Central Jutland
+EU,DK,Capital Region
+EU,DK,South Denmark
+EU,DK,North Denmark
+EU,DK,Zealand
+EU,DE,Saarland
+EU,DE,Brandenburg
+EU,DE,Mecklenburg-Vorpommern
+EU,DE,Baden-Württemberg
+EU,DE,Hamburg
+EU,DE,Hesse
+EU,DE,Schleswig-Holstein
+EU,DE,Saxony
+EU,DE,Lower Saxony
+EU,DE,Berlin
+EU,DE,Saxony-Anhalt
+EU,DE,North Rhine-Westphalia
+EU,DE,Rheinland-Pfalz
+EU,DE,Bavaria
+EU,DE,Bremen
+EU,DE,Thuringia
+EU,CZ,Pardubický
+EU,CZ,Ústecký kraj
+EU,CZ,Karlovarský kraj
+EU,CZ,Plzeňský kraj
+EU,CZ,Moravskoslezský
+EU,CZ,Hlavní město Praha
+EU,CZ,Central Bohemia
+EU,CZ,Jihočeský kraj
+EU,CZ,Liberecký kraj
+EU,CZ,South Moravian
+EU,CZ,Vysočina
+EU,CZ,Zlín
+EU,CZ,Olomoucký
+EU,CZ,Královéhradecký kraj
+EU,CY,Pafos
+EU,CY,Ammochostos
+EU,CY,Nicosia
+EU,CY,Larnaka
+EU,CY,Keryneia
+EU,CY,Lemesos
+EU,UA,Zaporizhia
+EU,UA,Lviv
+EU,UA,Sumy
+EU,UA,Mykolaiv
+EU,NL,Limburg
+EU,NL,Flevoland
+EU,NL,North Holland
+EU,NL,South Holland
+EU,NL,Groningen
+EU,NL,Friesland
+EU,NL,Drenthe
+EU,NL,Utrecht
+EU,NL,Zeeland
+EU,NL,North Brabant
+EU,NL,Overijssel
+EU,NL,Gelderland
+EU,NO,Vest-Agder
+EU,NO,Akershus
+EU,NO,Trøndelag
+EU,NO,Vestfold
+EU,NO,Troms
+EU,NO,Nordland
+EU,NO,Oppland
+EU,NO,Agder
+EU,NO,Møre og Romsdal
+EU,NO,Sogn og Fjordane
+EU,NO,Oslo
+EU,NO,Rogaland
+EU,NO,Innlandet
+EU,NO,Finnmark
+EU,NO,Vestfold og Telemark
+EU,NO,Vestland
+EU,NO,Buskerud
+EU,NO,Hedmark
+EU,NO,Troms og Finnmark
+EU,NO,Hordaland
+EU,NO,Telemark
+EU,NO,Aust-Agder
+EU,NO,Viken
+EU,NO,Østfold
+EU,UA,Luhansk
+EU,UA,Transcarpathia
+EU,UA,Kharkiv
+EU,UA,Rivne
+EU,UA,Mykolayiv Oblast
+EU,UA,Kherson
+EU,UA,Zhytomyr
+EU,UA,Autonomous Republic of Crimea
+EU,UA,Crimea
+EU,UA,Kherson Oblast
+EU,UA,Ivano-Frankivsk Oblast
+EU,UA,Ivano-Frankivsk
+EU,UA,Sebastopol City
+EU,UA,Khmelnytskyi
+EU,UA,Poltava
+EU,UA,Khmelnytskyy Oblast
+EU,UA,Chernihiv
+EU,UA,Dnipropetrovsk
+EU,UA,Poltava Oblast
+EU,UA,Dnipropetrovsk Oblast
+EU,UA,Kirovohrad
+EU,UA,Kirovohrad Oblast
+EU,UA,Odessa
+EU,UA,Kyiv
+EU,UA,Chernivtsi Oblast'
+EU,UA,Chernivtsi Oblast
+EU,UA,Kyiv City
+EU,UA,Cherkasy Oblast
+EU,UA,Ternopil
+EU,UA,Cherkasy
+EU,UA,Ternopil Oblast
+EU,UA,Zaporizhzhya Oblast
+EU,UA,Odesa
+EU,UA,Volyn
+EU,UA,Vinnytsya Oblast
+EU,UA,Vinnitsa
+EU,UA,Odesa region
+EU,UA,Donetsk
+EU,AD,Andorra la Vella
+EU,CH,Valais
+EU,CH,Obwalden
+EU,CH,Solothurn
+EU,CH,Thurgau
+EU,CH,Appenzell Innerrhoden
+EU,CH,Fribourg
+EU,CH,Basel-City
+EU,CH,Basel-Landschaft
+EU,CH,Glarus
+EU,CH,Geneva
+EU,CH,Nidwalden
+EU,CH,Aargau
+EU,CH,Appenzell Ausserrhoden
+EU,CH,Zug
+EU,SM,Acquaviva
+EU,SM,Fiorentino
+EU,SM,Chiesanuova
+EU,SM,San Marino
+EU,SM,
+EU,SM,Borgo Maggiore
+EU,SM,Serravalle
+EU,CH,Bern
+EU,CH,Lucerne
+EU,CH,Zurich
+EU,CH,Uri
+EU,SK,Zilina
+EU,SK,Presov
+EU,SK,Nitra
+EU,SK,Trencin
+EU,SK,Banska Bystrica
+EU,SK,Bratislava
+EU,SK,Trnava
+EU,SK,Kosice
+EU,SJ,Svalbard
+EU,SI,Videm
+EU,SI,Polzela
+EU,SI,Oplotnica
+EU,SI,Radeče
+EU,SI,Kungota
+EU,SI,Krško
+EU,SI,Bovec
+EU,SI,Križevci
+EU,SI,Radovljica
+EU,SI,Radenci
+EU,SI,Žužemberk
+EU,SI,Kranjska Gora
+EU,SI,Kranj
+EU,SI,Ivančna Gorica
+EU,SI,Kočevje
+EU,SI,Kozje
+EU,SI,Žirovnica
+EU,SI,Laško
+EU,SI,Brda
+EU,SI,Kostanjevica na Krki
+EU,CH,Neuchâtel
+EU,CH,Schwyz
+EU,CH,Vaud
+EU,CH,Schaffhausen
+EU,CH,Jura
+EU,CH,Grisons
+EU,CH,Ticino
+EU,CH,Saint Gall
+EU,VA,
+EU,VA,Lazio
+EU,BY,Brest
+EU,BY,Grodnenskaya
+EU,BY,Minsk
+EU,BY,Mogilev
+EU,BY,Vitebsk
+EU,BY,Homyel’ Voblasc’
+EU,BY,Minsk City
+EU,BG,Sliven
+EU,BG,Veliko Tarnovo
+EU,BG,Dobrich
+EU,BG,Pazardzhik
+EU,BG,Haskovo
+EU,BG,Plovdiv
+EU,BG,Targovishte
+EU,PL,Podlasie
+EU,PL,West Pomerania
+EU,PL,Greater Poland
+EU,PL,Łódź Voivodeship
+EU,PL,Kujawsko-Pomorskie
+EU,PL,Subcarpathia
+EU,PL,Subcarpathian
+EU,PL,Lubusz
+EU,PL,Lublin
+EU,PL,Świętokrzyskie
+EU,PL,Silesia
+EU,PL,Lower Silesia
+EU,PL,Lesser Poland
+EU,PL,Opole Voivodeship
+EU,PL,Mazovia
+EU,PL,Warmia-Masuria
+EU,PL,Pomerania
+EU,SI,Lendava-Lendva
+EU,SI,Sodražica
+EU,SI,Žiri
+EU,SI,Brezovica
+EU,SI,Žetale
+EU,SI,Železniki
+EU,SI,Slovenska Konjice
+EU,SI,Slovenska Bistrica
+EU,SI,Slovenj Gradec
+EU,SI,Koper-Capodistria
+EU,SI,Žalec
+EU,SI,Brežice
+EU,SI,Litija
+EU,SI,Ljubljana
+EU,SI,Štore
+EU,SI,Ljubno
+EU,SI,Ljutomer
+EU,SI,Šoštanj
+EU,SI,Komenda
+EU,SI,Kobilje
+EU,SI,Kobarid
+EU,SI,Šmarješke Toplice
+EU,SI,Logatec
+EU,SI,Šmarje pri Jelšah
+EU,SI,Kidričevo
+EU,SI,Odranci
+EU,SI,Bled
+EU,SI,Novo Mesto
+EU,SI,Ormož
+EU,SI,Škofljica
+EU,SI,Puconci
+EU,SI,Škofja Loka
+EU,SI,Ptuj
+EU,SI,Lovrenc na Pohorju
+EU,SI,Starše
+EU,SI,Loška Dolina
+EU,SI,Ravne na Koroškem
+EU,SI,Loški Potok
+EU,SI,Nova Gorica
+EU,SI,Škocjan
+EU,SI,Straža
+EU,SI,Lukovica
+EU,SI,Vuzenica
+EU,SI,Šenčur
+EU,SI,Šentrupert
+EU,SI,Kanal
+EU,SI,Kamnik
+EU,SI,Razkrižje
+EU,SI,Šentjernej
+EU,SI,Šempeter-Vrtojba
+EU,SI,Vrhnika
+EU,SI,Beltinci
+EU,SI,Prevalje
+EU,SI,Majšperk
+EU,SI,Vransko
+EU,SI,Kuzma
+EU,SI,Sveta Ana
+EU,SI,Sveti Andraž v Slovenskih Goricah
+EU,SI,Sveti Jurij
+EU,SI,Sveti Jurij v Slovenskih Goricah
+EU,SI,Preddvor
+EU,SI,Sveti Tomaž
+EU,SI,Prebold
+EU,SI,Vojnik
+EU,SI,Vodice
+EU,SI,Pesnica
+EU,SI,Maribor
+EU,SI,Vipava
+EU,SI,Sežana
+EU,SI,Sevnica
+EU,SI,Rečica ob Savinji
+EU,BG,Vratsa
+EU,BG,Pleven
+EU,BG,Blagoevgrad
+EU,PT,Leiria
+EU,PT,Beja
+EU,PT,Portalegre
+EU,PT,District of Setúbal
+EU,PT,Azores
+EU,PT,Évora
+EU,PT,Faro
+EU,PT,Lisbon
+EU,PT,Castelo Branco
+EU,PT,Bragança
+EU,PT,Madeira
+EU,PT,Guarda
+EU,PT,Aveiro
+EU,PT,Santarém
+EU,PT,Viana do Castelo
+EU,PT,Setúbal
+EU,PT,Vila Real
+EU,PT,Viseu
+EU,PT,Coimbra
+EU,PT,Braga
+EU,PT,Porto
+EU,SI,Markovci
+EU,SI,Tabor
+EU,SI,Celje
+EU,SI,Jesenice
+EU,SI,Apače
+EU,SI,Sentjur
+EU,SI,Ruše
+EU,SI,Izola-Isola
+EU,SI,Semič
+EU,SI,Selnica ob Dravi
+EU,SI,Radlje ob Dravi
+EU,SI,Črnomelj
+EU,SI,Postojna
+EU,SI,Črna na Koroškem
+EU,SI,Ribnica
+EU,SI,Cerklje na Gorenjskem
+EU,SI,Ilirska Bistrica
+EU,BG,Yambol
+EU,BG,Silistra
+EU,BG,Kardzhali
+EU,BG,Montana
+EU,BG,Sofia
+EU,BG,Kyustendil
+EU,BG,Sofia-grad
+EU,BG,Burgas
+EU,BG,Smolyan
+EU,RO,Galaţi
+EU,RO,Hunedoara
+EU,RO,Cluj
+EU,RO,Sălaj
+EU,RO,Bihor
+EU,RO,Ilfov
+EU,RO,Buzău
+EU,RO,Satu Mare
+EU,RO,Bistriţa-Năsăud
+EU,RO,Vâlcea
+EU,RO,Teleorman
+EU,RO,Neamţ
+EU,RO,Vaslui
+EU,RO,Bucureşti
+EU,RO,Dolj
+EU,RO,Brăila
+EU,RO,Timiş
+EU,RO,Arad
+EU,RO,Vrancea
+EU,RO,Alba
+EU,RO,Caraş-Severin
+EU,RO,Călăraşi
+EU,RO,Arges
+EU,RO,Mureş
+EU,RO,Maramureş
+EU,RO,Gorj
+EU,RO,Bacău
+EU,RO,Sibiu
+EU,RO,Covasna
+EU,RO,Prahova
+EU,RO,Braşov
+EU,RO,Tulcea
+EU,RO,Ialomiţa
+EU,RO,Iaşi
+EU,RO,Botoşani
+EU,RO,Giurgiu
+EU,RO,Olt
+EU,RO,Suceava
+EU,RO,Mehedinţi
+EU,RO,Constanța
+EU,RO,Harghita
+EU,RO,Dâmboviţa
+EU,RS,Central Serbia
+EU,RS,Vojvodina
+EU,RU,Omsk
+EU,RU,Krasnoyarsk Krai
+EU,RU,Krasnodarskiy
+EU,RU,Kostroma Oblast
+EU,RU,Leningradskaya Oblast'
+EU,RU,Smolenskaya Oblast’
+EU,RU,Smolensk
+EU,RU,Lipetsk Oblast
+EU,RU,Buryatiya Republic
+EU,RU,Komi
+EU,RU,Kirov
+EU,RU,Kursk
+EU,RU,Khanty-Mansia
+EU,RU,St.-Petersburg
+EU,RU,Khakasiya Republic
+EU,RU,Khabarovsk
+EU,RU,Stavropol’ Kray
+EU,RU,Kemerovo Oblast
+EU,RU,Karelia
+EU,RU,Pskov Oblast
+EU,RU,Karachayevo-Cherkesiya Republic
+EU,RU,Kamchatka
+EU,RU,Kaluga
+EU,RU,Kalmykiya Republic
+EU,RU,Magadan Oblast
+EU,RU,Primorskiy (Maritime) Kray
+EU,RU,Kaliningrad Oblast
+EU,RU,Sverdlovsk
+EU,RU,Kaliningrad
+EU,RU,
+EU,RU,Kabardino-Balkariya Republic
+EU,RU,Jewish Autonomous Oblast
+EU,RU,Mariy-El Republic
+EU,RU,Jaroslavl
+EU,RU,Ivanovo
+EU,RU,Tambov
+EU,RU,Irkutsk Oblast
+EU,RU,Sebastopol City
+EU,RU,Adygeya Republic
+EU,RU,Ingushetiya Republic
+EU,RU,Bashkortostan Republic
+EU,RU,Tatarstan Republic
+EU,RU,Saratovskaya Oblast
+EU,RU,Mordoviya Republic
+EU,RU,Moscow
+EU,RU,Moscow Oblast
+EU,RU,Murmansk
+EU,RU,Tomsk Oblast
+EU,RU,Transbaikal Territory
+EU,RU,Tula
+EU,RU,Tver’ Oblast
+EU,RU,Tyumen’ Oblast
+EU,RU,Tyva Republic
+EU,RU,Udmurtiya Republic
+EU,RU,Ulyanovsk
+EU,RU,Dagestan
+EU,RU,Crimea
+EU,RU,Nenets
+EU,RU,Samara Oblast
+EU,RU,Chuvashia
+EU,RU,Chukotka
+EU,RU,Altai
+EU,RU,Altay Kray
+EU,RU,Rostov
+EU,RU,Chelyabinsk
+EU,RU,Amur Oblast
+EU,RU,Chechnya
+EU,RU,Krasnoyarskiy
+EU,RU,Ryazan Oblast
+EU,RU,Sakhalin Oblast
+EU,RU,Sakha
+EU,RU,Nizhny Novgorod Oblast
+EU,RU,Arkhangelsk Oblast
+EU,RU,Arkhangelskaya
+EU,RU,Yamalo-Nenets
+EU,RU,Astrakhan
+EU,RU,Vladimir
+EU,RU,Perm
+EU,RU,Penza
+EU,RU,Kurgan Oblast
+EU,RU,Novosibirsk Oblast
+EU,RU,Volgograd Oblast
+EU,RU,North Ossetia
+EU,RU,Vologda
+EU,RU,Voronezj
+EU,RU,Belgorod Oblast
+EU,RU,Orel Oblast
+EU,RU,Novgorod Oblast
+EU,RU,Orenburg Oblast
+EU,RU,Bryansk Oblast
+EU,BG,Lovech
+EU,BG,Stara Zagora
+EU,BG,Gabrovo
+EU,BG,Pernik
+EU,BG,Ruse
+EU,BG,Varna
+EU,BG,Vidin
+EU,BG,Shumen
+EU,BG,Razgrad
+EU,BE,Wallonia
+EU,BE,Brussels Capital
+EU,BE,Flanders
+EU,XK,Pristina
+EU,XK,Gjilan
+EU,XK,Mitrovica
+EU,XK,Ferizaj
+EU,XK,Gjakova
+EU,XK,Prizren
+EU,XK,Pec
+EU,BA,Srpska
+EU,BA,Brčko
+EU,BA,Federation of B&H
+EU,SI,Ig
+EU,SI,Idrija
+EU,AX,Mariehamns stad
+EU,AX,Ålands landsbygd
+EU,AT,Tyrol
+EU,AT,Styria
+EU,AT,Burgenland
+EU,AT,Carinthia
+EU,AT,Lower Austria
+EU,AT,Salzburg
+EU,AT,Vorarlberg
+EU,AT,Vienna
+EU,AT,Upper Austria
+EU,AL,Durrës
+EU,AL,Vlorë
+EU,AL,Berat
+EU,AL,Tirana
+EU,AL,Dibër
+EU,AL,Korçë
+EU,AL,Shkodër
+EU,AL,Elbasan
+EU,AL,Fier
+EU,AL,Gjirokastër
+EU,AL,Kukës
+EU,AD,Encamp
+EU,AD,Sant Julià de Loria
+EU,AD,Canillo
+EU,SE,Västra Götaland
+EU,SE,Örebro
+EU,SE,Värmland
+EU,SE,Östergötland
+EU,SE,Halland
+EU,SE,Västernorrland
+EU,SE,Gävleborg
+EU,SE,Västmanland
+EU,SE,Västerbotten
+EU,SE,Kronoberg
+EU,SE,Jämtland
+EU,SE,Gotland
+EU,SE,Stockholm
+EU,SE,Blekinge
+EU,SE,Skåne
+EU,SE,Jönköping
+EU,SE,Dalarna
+EU,SI,Cerknica
+EU,SE,Södermanland
+EU,SE,Norrbotten
+EU,SE,Uppsala
+EU,AD,Ordino
+EU,AD,Escaldes-Engordany
+EU,AD,La Massana
+EU,SI,Bohinj
+EU,SI,Dol pri Ljubljani
+EU,SI,Naklo
+EU,SI,Dobrova-Horjul-Polhov Gradec
+EU,SI,Dolenjske Toplice
+EU,SI,Zreče
+EU,SI,Domžale
+EU,SI,Turnišče
+EU,SI,Dravograd
+EU,SI,Podlehnik
+EU,SI,Dobrepolje
+EU,SI,Divača
+EU,SI,Tržič
+EU,SI,Destrnik
+EU,SI,Trzin
+EU,SI,Nazarje
+EU,SI,Trebnje
+EU,SI,Trbovlje
+EU,SI,Podvelka
+EU,SI,Piran-Pirano
+EU,SI,Tolmin
+EU,SI,Gorenja Vas-Poljane
+EU,SI,Tišina
+EU,SI,Muta
+EU,SI,Gorišnica
+EU,SI,Murska Sobota
+EU,SI,Rogaška Slatina
+EU,SI,Gorje
+EU,SI,Gornja Radgona
+EU,SI,Gornji Grad
+EU,SI,Mozirje
+EU,SI,Podčetrtek
+EU,SI,Rogašovci
+EU,SI,Gornji Petrovci
+EU,SI,Poljčane
+EU,SI,Moravče
+EU,SI,Moravske Toplice
+EU,SI,Cirkulane
+EU,SI,Grad
+EU,SI,Zavrč
+EU,SI,Grosuplje
+EU,SI,Velenje
+EU,SI,Velika Polana
+EU,SI,Mislinja
+EU,SI,Velike Lašče
+EU,SI,Ajdovščina
+EU,SI,Mirna Peč
+EU,SI,Zagorje ob Savi
+EU,SI,Hodoš-Hodos
+EU,SI,Miklavž na Dravskem Polju
+EU,SI,Ankaran
+EU,SI,Horjul
+EU,SI,Hoče-Slivnica
+EU,SI,Mežica
+EU,SI,Metlika
+EU,SI,Hrastnik
+EU,SI,Hrpelje-Kozina
+EU,SI,Mengeš
+EU,SI,Medvode
+EU,MD,Stînga Nistrului
+EU,SI,Cerkno
+EU,SE,Kalmar
+NA,US,Hawaii
+NA,US,Maine
+NA,AG,Saint Peter
+NA,AG,Saint Mary
+NA,AG,Saint John
+NA,AG,Saint George
+NA,AI,George Hill
+NA,AI,The Quarter
+NA,AI,The Valley
+NA,US,Kansas
+NA,US,Alaska
+NA,US,Alabama
+NA,US,Rhode Island
+NA,US,Missouri
+NA,US,Ohio
+NA,US,Kentucky
+NA,US,Delaware
+NA,US,Utah
+NA,US,Montana
+NA,PR,San Juan
+NA,PR,Barranquitas
+NA,PR,Moca
+NA,PR,Vega Alta
+NA,PR,Corozal
+NA,PR,Cabo Rojo
+NA,PR,Lajas
+NA,PR,Salinas
+NA,PR,Toa Alta
+NA,PR,Manatí
+NA,PR,Jayuya
+NA,PR,Canóvanas
+NA,PR,Añasco
+NA,PR,Orocovis
+NA,PR,Naguabo
+NA,PR,Yabucoa
+NA,PR,Comerío
+NA,PR,Luquillo
+NA,PR,Santa Isabel
+NA,PR,Camuy
+NA,PR,Culebra
+NA,PR,Las Piedras
+NA,PR,Morovis
+NA,PR,Guánica
+NA,PR,Adjuntas
+NA,PR,Gurabo
+NA,PR,Isabela
+NA,PR,Mayagüez
+NA,PR,Aibonito
+NA,PR,Hatillo
+NA,PR,Guaynabo
+NA,PR,Guayama
+NA,PR,Coamo
+NA,PR,Humacao
+NA,PR,Villalba
+NA,PR,Carolina
+NA,PR,Vega Baja
+NA,PR,Toa Baja
+NA,PR,Utuado
+NA,PR,Ponce
+NA,PR,Aguas Buenas
+NA,PR,Río Grande
+NA,PR,Arecibo
+NA,PR,Yauco
+NA,PR,Quebradillas
+NA,PR,Peñuelas
+NA,PR,Caguas
+NA,PR,San Lorenzo
+NA,PR,Juana Díaz
+NA,PR,Aguadilla
+NA,PR,Maunabo
+NA,PR,Aguada
+NA,PR,Cataño
+NA,PR,Naranjito
+NA,PR,Hormigueros
+NA,PR,Cayey
+NA,PR,Ceiba
+NA,PR,Trujillo Alto
+NA,PR,Barceloneta
+NA,PR,Dorado
+NA,PR,Vieques
+NA,PR,Lares
+NA,PR,Cidra
+NA,PR,Bayamón
+NA,PR,San Germán
+NA,PR,San Sebastián
+NA,PR,Ciales
+NA,PR,Fajardo
+NA,US,Washington
+NA,PM,Saint-Pierre
+NA,PM,Miquelon-Langlade
+NA,NI,Rivas
+NA,US,Louisiana
+NA,US,Oregon
+NA,US,Oklahoma
+NA,US,Arkansas
+NA,US,Tennessee
+NA,US,California
+NA,US,West Virginia
+NA,US,Puerto Rico
+NA,US,Arizona
+NA,US,South Carolina
+NA,US,Virgin Islands
+NA,US,Virginia
+NA,US,Vermont
+NA,US,Maryland
+NA,US,New Hampshire
+NA,US,Mississippi
+NA,US,District of Columbia
+NA,US,Florida
+NA,AW,
+NA,BB,Saint Michael
+NA,BB,Saint Peter
+NA,BB,Saint Joseph
+NA,BB,Saint Andrew
+NA,BB,Saint John
+NA,BB,Saint James
+NA,BB,Saint Philip
+NA,BB,Christ Church
+NA,US,Idaho
+NA,US,North Carolina
+NA,US,North Dakota
+NA,US,South Dakota
+NA,US,Massachusetts
+NA,US,New York
+NA,BB,Saint Lucy
+NA,BB,Saint Thomas
+NA,BL,
+NA,BM,Hamilton
+NA,BM,Saint George
+NA,BM,Hamilton city
+NA,BM,Pembroke
+NA,BQ,Sint Eustatius
+NA,PA,Panamá
+NA,PA,Chiriquí
+NA,PA,Colón
+NA,PA,Veraguas
+NA,PA,Panamá Oeste
+NA,PA,Bocas del Toro
+NA,PA,Coclé
+NA,PA,Los Santos
+NA,PA,Herrera
+NA,US,Nebraska
+NA,US,New Jersey
+NA,US,Connecticut
+NA,US,Wyoming
+NA,US,Colorado
+NA,US,Iowa
+NA,US,Wisconsin
+NA,US,Michigan
+NA,US,New Mexico
+NA,BQ,Saba
+NA,BQ,Bonaire
+NA,BS,N.p.
+NA,US,Pennsylvania
+NA,US,Indiana
+NA,US,Illinois
+NA,US,Texas
+NA,US,Minnesota
+NA,SV,San Miguel
+NA,SV,Sonsonate
+NA,SV,La Paz
+NA,SV,La Libertad
+NA,SV,Ahuachapán
+NA,SV,Santa Ana
+NA,SV,La Unión
+NA,SV,Chalatenango
+NA,SV,San Salvador
+NA,SV,Usulután
+NA,SV,Cuscatlán
+NA,SX,Sint Maarten
+NA,SX,
+NA,US,Georgia
+NA,AG,Barbuda
+NA,CA,British Columbia
+NA,CR,Cartago
+NA,CR,San José
+NA,NI,Chontales
+NA,NI,León
+NA,NI,Estelí
+NA,NI,Carazo
+NA,CR,Limón
+NA,NI,Managua
+NA,NI,South Caribbean Coast
+NA,NI,Granada
+NA,CR,Alajuela
+NA,CR,Puntarenas
+NA,CR,Guanacaste
+NA,GT,Alta Verapaz
+NA,TC,Turks and Caicos Islands
+NA,TC,
+NA,TC,Caicos Islands
+NA,MX,Hidalgo
+NA,MX,Guanajuato
+NA,MX,Aguascalientes
+NA,MX,San Luis Potosí
+NA,MX,State of Mexico
+NA,MX,Tamaulipas
+NA,MX,Zacatecas
+NA,MX,Coahuila
+NA,MX,Yucatán
+NA,MX,Puebla
+NA,MX,Morelos
+NA,MX,Baja California
+NA,MX,Sinaloa
+NA,MX,México
+NA,MX,Tabasco
+NA,MX,Colima
+NA,MX,Durango
+NA,MX,Nayarit
+NA,MX,Chiapas
+NA,MX,Quintana Roo
+NA,MX,Oaxaca
+NA,MX,Veracruz
+NA,MX,Querétaro
+NA,MX,Nuevo León
+NA,MX,Chihuahua
+NA,MX,Campeche
+NA,MX,Jalisco
+NA,MX,Michoacán
+NA,MX,Guerrero
+NA,MX,Sonora
+NA,MX,Mexico City
+NA,MX,Baja California Sur
+NA,MX,Tlaxcala
+NA,MS,Saint Peter
+NA,MS,Saint Anthony
+NA,MQ,Martinique
+NA,CR,Heredia
+NA,CU,Guantánamo
+NA,CU,Granma
+NA,MF,
+NA,MF,Collectivity of Saint Martin
+NA,LC,Micoud
+NA,LC,Dennery
+NA,LC,Choiseul
+NA,LC,Gros-Islet
+NA,LC,Soufrière
+NA,LC,Laborie
+NA,LC,Castries
+NA,LC,Vieux-Fort
+NA,KY,West Bay
+NA,KY,Sister Island
+NA,KY,George Town
+NA,KN,Saint Mary Cayon
+NA,KN,Saint Thomas Lowland
+NA,KN,Saint George Gingerland
+NA,KN,Saint George Basseterre
+NA,KN,Saint Paul Charlestown
+NA,CU,Pinar del Río
+NA,TT,Couva-Tabaquite-Talparo
+NA,JM,Kingston
+NA,JM,Portland
+NA,JM,St. Elizabeth
+NA,JM,Clarendon
+NA,JM,St. Andrew
+NA,JM,St. James
+NA,JM,Saint Catherine
+NA,JM,St. Mary
+NA,JM,St. Thomas
+NA,JM,Hanover
+NA,JM,Trelawny
+NA,JM,Westmoreland
+NA,JM,St Ann
+NA,JM,Manchester
+NA,HT,Nord
+NA,HT,Centre
+NA,HT,Sud
+NA,HT,Ouest
+NA,HN,Comayagua
+NA,HN,Valle
+NA,HN,El Paraíso
+NA,HN,Atlántida
+NA,HN,Santa Bárbara
+NA,HN,Choluteca
+NA,HN,Cortés
+NA,HN,Olancho
+NA,HN,Intibucá
+NA,HN,Colón
+NA,HN,Copán
+NA,HN,La Paz
+NA,CU,Holguín
+NA,CU,Havana
+NA,CU,Ciego de Ávila
+NA,CU,Sancti Spíritus
+NA,HN,Lempira
+NA,HN,Bay Islands
+NA,HN,Francisco Morazán
+NA,HN,Yoro
+NA,BS,Freeport
+NA,BS,Exuma
+NA,BS,Central Eleuthera
+NA,BS,Central Abaco
+NA,CU,Cienfuegos
+NA,CU,Artemisa
+NA,CU,Isla de la Juventud
+NA,CU,Matanzas
+NA,CU,Santiago de Cuba
+NA,CU,Camagüey
+NA,CU,Mayabeque
+NA,CU,Villa Clara
+NA,CU,Las Tunas
+NA,CW,
+NA,CW,Curaçao
+NA,DM,Saint Paul
+NA,DM,Saint George
+NA,GT,Chimaltenango
+NA,GT,Sololá
+NA,GT,El Progreso
+NA,GT,Quiché
+NA,GT,Sacatepéquez
+NA,GT,Quetzaltenango
+NA,DM,Saint John
+NA,GT,Izabal
+NA,DM,Saint Patrick
+NA,GT,Santa Rosa
+NA,GT,Jalapa
+NA,GT,Escuintla
+NA,GT,San Marcos
+NA,GT,Zacapa
+NA,GT,Huehuetenango
+NA,GT,Suchitepeque
+NA,GT,Baja Verapaz
+NA,GT,Petén
+NA,GT,Guatemala
+NA,GT,Chiquimula
+NA,GT,Retalhuleu
+NA,GT,Jutiapa
+NA,GP,Guadeloupe
+NA,GP,Collectivity of Saint Martin
+NA,GL,Sermersooq
+NA,GL,Avannaata
+NA,GL,Qeqqata
+NA,BS,New Providence
+NA,GD,Saint George
+NA,GD,Saint John
+NA,BZ,Belize
+NA,TT,Mayaro
+NA,TT,Point Fortin
+NA,BZ,Toledo
+NA,BZ,Stann Creek
+NA,TT,Diego Martin
+NA,TT,Port of Spain
+NA,TT,Chaguanas
+NA,TT,Sangre Grande
+NA,BZ,Orange Walk
+NA,BZ,Corozal
+NA,BZ,Cayo
+NA,CA,Saskatchewan
+NA,CA,Yukon
+NA,CA,Prince Edward Island
+NA,CA,Quebec
+NA,CA,Nunavut
+NA,CA,Newfoundland and Labrador
+NA,VI,Saint Thomas Island
+NA,VI,Saint Croix Island
+NA,VG,
+NA,VG,Tortola
+NA,VC,Charlotte
+NA,VC,Saint George
+NA,VC,Saint Andrew
+NA,VC,Grenadines
+NA,CA,Ontario
+NA,TT,Borough of Arima
+NA,CA,New Brunswick
+NA,CA,Manitoba
+NA,CA,Nova Scotia
+NA,CA,Alberta
+NA,CA,Northwest Territories
+NA,DO,Sánchez Ramírez
+NA,DO,Santiago
+NA,DO,Hermanas Mirabal
+NA,DO,Nacional
+NA,DO,La Altagracia
+NA,DO,Dajabón
+NA,DO,San Cristóbal
+NA,DO,La Romana
+NA,DO,Santiago Rodríguez
+NA,DO,Espaillat
+NA,DO,María Trinidad Sánchez
+NA,DO,El Seíbo
+NA,DO,Barahona
+NA,DO,Monte Cristi
+NA,DO,San José de Ocoa
+NA,DO,Monseñor Nouel
+NA,DO,San Pedro de Macorís
+NA,DO,Valverde
+NA,DO,Hato Mayor
+NA,DO,Puerto Plata
+NA,DO,Duarte
+NA,DO,Azua
+NA,DO,La Vega
+NA,DO,Peravia
+NA,DO,Samaná
+NA,DO,Santo Domingo
+NA,DM,Saint David
+NA,TT,San Fernando
+NA,TT,Penal/Debe
+NA,TT,Tobago
+NA,TT,San Juan/Laventille
+NA,TT,Tunapuna/Piarco
+NA,TT,Princes Town
+NA,US,Nevada
+NA,TT,Siparia
+OC,PG,East New Britain
+OC,FJ,Central
+OC,FJ,Northern
+OC,FJ,Rotuma
+OC,FJ,Western
+OC,FM,Yap
+OC,FM,Pohnpei
+OC,TV,Vaitupu
+OC,TV,Funafuti
+OC,TO,Tongatapu
+OC,KI,Gilbert Islands
+OC,GU,Mongmong-Toto-Maite
+OC,GU,Yona
+OC,GU,Tamuning
+OC,GU,Barrigada
+OC,GU,Talofofo
+OC,GU,Agana Heights
+OC,GU,Sinajana
+OC,GU,Mangilao
+OC,GU,Yigo
+OC,GU,Piti
+OC,GU,Dededo
+OC,GU,Santa Rita
+OC,GU,Hagatna
+OC,TL,Baucau
+OC,TL,Díli
+OC,TK,Fakaofo
+OC,TK,Nukunonu
+OC,KI,Line Islands
+OC,MH,Majuro Atoll
+OC,MH,Kwajalein Atoll
+OC,MP,Saipan
+OC,NC,North Province
+OC,NF,
+OC,NF,Norfolk Island
+OC,SB,Guadalcanal
+OC,NR,Uaboe
+OC,NR,Yaren
+OC,NU,Alofi
+OC,CK,Mangaia
+OC,CK,Penrhyn
+OC,CK,Rarotonga
+OC,NZ,Taranaki
+OC,NZ,Waikato
+OC,NZ,Southland
+OC,NZ,Nelson
+OC,NZ,West Coast
+OC,NZ,Marlborough
+OC,NZ,Otago
+OC,NZ,Northland
+OC,NZ,Auckland
+OC,NZ,Wellington
+OC,NZ,Tasman
+OC,NZ,Canterbury
+OC,NZ,Gisborne
+OC,NZ,Manawatu-Wanganui
+OC,NZ,Bay of Plenty
+OC,NZ,Hawke's Bay
+OC,VU,Shefa
+OC,WF,Alo
+OC,WF,Uvea
+OC,WS,Fa‘asaleleaga
+OC,WS,Tuamasaga
+OC,WS,A'ana
+OC,AU,Victoria
+OC,AU,Tasmania
+OC,AU,Northern Territory
+OC,PF,Îles du Vent
+OC,PF,Îles Marquises
+OC,PF,Leeward Islands
+OC,PF,Îles Tuamotu-Gambier
+OC,PG,Morobe
+OC,PG,Bougainville
+OC,PG,New Ireland
+OC,PG,Manus
+OC,PG,Eastern Highlands
+OC,PG,Western Province
+OC,PG,Madang
+OC,PG,East Sepik
+OC,PG,West New Britain
+OC,PG,Sandaun
+OC,PG,National Capital
+OC,PN,
+OC,PW,Melekeok
+OC,PW,Koror
+OC,PW,Airai
+OC,AU,New South Wales
+OC,AU,ACT
+OC,AU,South Australia
+OC,AU,Australian Capital Territory
+OC,AU,Western Australia
+OC,AU,Queensland
+OC,AS,Eastern District
+OC,SB,Honiara
+OC,NC,South Province
+SA,EC,Santa Elena
+SA,CL,Tarapacá
+SA,CL,Atacama
+SA,CL,Los Lagos Region
+SA,CL,Maule Region
+SA,CL,Arica y Parinacota
+SA,CL,Valparaíso
+SA,CL,Los Ríos Region
+SA,CL,Biobío
+SA,CO,Huila
+SA,CO,Bogota D.C.
+SA,CO,Tolima
+SA,CO,Amazonas
+SA,CO,Cauca
+SA,CO,Bolívar
+SA,CO,Arauca
+SA,CO,Antioquia
+SA,CO,La Guajira
+SA,CO,Vichada
+SA,CO,Nariño
+SA,CO,San Andres y Providencia
+SA,CO,Casanare
+SA,CO,Santander
+SA,CO,Cesar
+SA,CO,Risaralda
+SA,CO,Caquetá
+SA,CO,Guaviare
+SA,CO,Quindío
+SA,CO,Magdalena
+SA,CO,Norte de Santander
+SA,CO,Atlántico
+SA,CO,Meta
+SA,CO,Departamento de Arauca
+SA,CO,Valle del Cauca
+SA,CO,Caldas
+SA,CO,Chocó
+SA,UY,San José
+SA,UY,Treinta y Tres
+SA,UY,Paysandú
+SA,UY,Artigas
+SA,UY,Salto
+SA,UY,Tacuarembó
+SA,UY,Florida
+SA,UY,Río Negro
+SA,UY,Durazno
+SA,CO,Putumayo
+SA,UY,Canelones
+SA,UY,Flores
+SA,UY,Montevideo
+SA,UY,Cerro Largo
+SA,UY,Rocha
+SA,UY,Rivera
+SA,UY,Soriano
+SA,UY,Colonia
+SA,UY,Lavalleja
+SA,CL,Araucanía
+SA,CL,Region of Magallanes
+SA,CL,O'Higgins Region
+SA,CL,Coquimbo Region
+SA,CL,Santiago Metropolitan
+SA,CL,Aysén
+SA,CL,Ñuble
+SA,CO,Boyacá
+SA,CO,Cundinamarca
+SA,CO,Sucre
+SA,CO,Córdoba
+SA,EC,Azuay
+SA,EC,Guayas
+SA,EC,El Oro
+SA,EC,Manabí
+SA,EC,Sucumbios
+SA,EC,Morona-Santiago
+SA,EC,Esmeraldas
+SA,EC,Los Ríos
+SA,EC,Cotopaxi
+SA,EC,Carchi
+SA,VE,Mérida
+SA,VE,Guárico
+SA,VE,Sucre
+SA,VE,Delta Amacuro
+SA,VE,Barinas
+SA,VE,Estado La Guaira
+SA,VE,Cojedes
+SA,VE,Carabobo
+SA,VE,Nueva Esparta
+SA,VE,Amazonas
+SA,VE,Monagas
+SA,VE,Falcón
+SA,VE,Trujillo
+SA,VE,Miranda
+SA,VE,Portuguesa
+SA,VE,Yaracuy
+SA,VE,Distrito Federal
+SA,VE,Lara
+SA,VE,Aragua
+SA,VE,Táchira
+SA,VE,Anzoátegui
+SA,VE,Zulia
+SA,VE,Bolívar
+SA,VE,Apure
+SA,EC,Pastaza
+SA,EC,Imbabura
+SA,EC,Loja
+SA,EC,Napo
+SA,EC,Pichincha
+SA,EC,Orellana
+SA,EC,Cañar
+SA,EC,Galápagos
+SA,EC,Zamora-Chinchipe
+SA,EC,Bolívar
+SA,EC,Tungurahua
+SA,EC,Santo Domingo de los Tsáchilas
+SA,EC,Chimborazo
+SA,FK,East Falkland
+SA,FK,
+SA,CL,Antofagasta
+SA,GF,Guyane
+SA,GY,Essequibo Islands-West Demerara
+SA,GY,Mahaica-Berbice
+SA,GY,Demerara-Mahaica
+SA,GY,East Berbice-Corentyne
+SA,SR,Paramaribo
+SA,BR,Acre
+SA,BR,Amapá
+SA,BR,Piauí
+SA,BR,Rio Grande do Sul
+SA,BR,Rio de Janeiro
+SA,BR,Rio Grande do Norte
+SA,BR,Pernambuco
+SA,BR,Goiás
+SA,BR,Paraná
+SA,BR,Minas Gerais
+SA,BR,Federal District
+SA,BR,Ceará
+SA,BR,Espírito Santo
+SA,BR,São Paulo
+SA,BR,Amazonas
+SA,BR,Tocantins
+SA,BR,Bahia
+SA,BR,Pará
+SA,BR,Alagoas
+SA,BR,Paraíba
+SA,BR,Roraima
+SA,BR,Mato Grosso do Sul
+SA,BR,Maranhão
+SA,BR,Mato Grosso
+SA,BR,Sergipe
+SA,BR,Rondônia
+SA,BR,Santa Catarina
+SA,SR,Sipaliwini
+SA,SR,Wanica
+SA,PE,Tacna
+SA,BO,La Paz
+SA,BO,El Beni
+SA,BO,Oruro
+SA,BO,Tarija
+SA,BO,Potosí
+SA,BO,Chuquisaca
+SA,BO,Santa Cruz
+SA,BO,Cochabamba
+SA,BO,Pando
+SA,PE,Moquegua
+SA,PE,Lima
+SA,PE,Lima region
+SA,PE,Cajamarca
+SA,PE,Piura
+SA,PE,Ica
+SA,PE,Puno
+SA,PE,Cusco
+SA,PE,Madre de Dios
+SA,PE,Tumbes
+SA,PE,Loreto
+SA,PE,Ucayali
+SA,PE,San Martín
+SA,PE,Apurímac
+SA,PE,Arequipa
+SA,PE,Callao
+SA,PE,Huanuco
+SA,PE,Pasco
+SA,PE,Amazonas
+SA,PE,Ayacucho
+SA,PE,Junin
+SA,PE,Ancash
+SA,PE,Huancavelica
+SA,PE,La Libertad
+SA,PE,Lambayeque
+SA,PY,Alto Paraná
+SA,PY,Canindeyú
+SA,PY,Caazapá
+SA,PY,Cordillera
+SA,PY,Caaguazú
+SA,PY,Boquerón
+SA,PY,Misiones
+SA,AR,Santa Cruz
+SA,AR,Chaco
+SA,AR,Misiones
+SA,AR,Salta
+SA,AR,San Juan
+SA,AR,Rio Negro
+SA,AR,Santa Fe
+SA,AR,La Pampa
+SA,AR,Tucuman
+SA,AR,San Luis
+SA,AR,Mendoza
+SA,AR,Chubut
+SA,AR,Buenos Aires F.D.
+SA,AR,Formosa
+SA,AR,Entre Rios
+SA,AR,Catamarca
+SA,AR,Santiago del Estero
+SA,AR,Corrientes
+SA,AR,Cordoba
+SA,AR,La Rioja
+SA,AR,Jujuy
+SA,AR,Neuquen
+SA,AR,Tierra del Fuego
+SA,AR,Buenos Aires
+SA,PY,Itapúa
+SA,PY,Asunción
+SA,PY,Concepción
+SA,PY,Amambay
+SA,PY,Guairá
+SA,PY,Central
+SA,PY,San Pedro
+SA,UY,Maldonado
+ZZ,ZZ,

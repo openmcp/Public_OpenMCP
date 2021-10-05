@@ -1,18 +1,27 @@
 #!/bin/bash
 
 if [ "$1" == "" ]; then
-  echo "Please Input Cluster Name"
+  echo "Please Input cluster name"
   echo "ex) kubectl join cluster1"
   exit 1
 else
-  read -p "Input MetalLB IP Address Range (FROM) : " address_from
-  read -p "Input MetalLB IP Address Range (TO) : " address_to
+  platform=$(kubectl get openmcpcluster $1 -n openmcp --context=openmcp -o jsonpath='{.spec.clusterPlatformType}')
 
-  kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"JOIN"}]'
-  kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressFrom","value": '$address_from'}]'
-  kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressTo","value": '$address_to'}]'
+  if [ "$platform" == "" ]; then
+    echo "Please Input cluster name correctly"
+    exit
+  else
+    if [[ "$platform" == "GKE" ]] || [[ "$platform" == "EKS" ]] || [[ "$platform" == "AKS" ]]; then
+      kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"JOINING"}]'
+    elif [ "$platform" == "On-Premise" ]; then
+      read -p "Input MetalLB IP Address Range (FROM) : " address_from
+      read -p "Input MetalLB IP Address Range (TO) : " address_to
 
-  #kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/IP_ADDRESS_FROM/$address_from/g" | kubectl replace -f -
-  #kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/IP_ADDRESS_TO/$address_to/g" | kubectl replace -f -
-  #kubectl get openmcpcluster $1 -n openmcp -o yaml | sed "s/UNJOIN/JOIN/g" | kubectl replace -f -
+      kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"JOINING"}]'
+      sleep 2
+      kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressFrom","value": '$address_from'}]'
+      sleep 2
+      kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressTo","value": '$address_to'}]'
+    fi
+  fi
 fi

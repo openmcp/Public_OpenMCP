@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmcp-deployment-controller
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openmcp-deployment-controller
+  template:
+    metadata:
+      labels:
+        name: openmcp-deployment-controller
+    spec:
+      serviceAccountName: openmcp-deployment-controller
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: openmcp-deployment-controller
+          image: ketidevit/openmcp-deployment-controller:v0.0.1
+          command:
+          - openmcp-deployment-controller
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              #value: ""
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "openmcp-deployment-controller"
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0

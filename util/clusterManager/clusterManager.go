@@ -3,12 +3,13 @@ package clusterManager
 import (
 	"context"
 	"fmt"
+	clientV1alpha1 "openmcp/openmcp/clientset/v1alpha1"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	clientV1alpha1 "openmcp/openmcp/clientset/v1alpha1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
@@ -22,6 +23,8 @@ type ClusterManager struct {
 	Host_client         genericclient.Client
 	Host_kubeClient     *kubernetes.Clientset
 	Crd_client          *clientV1alpha1.ExampleV1Alpha1Client
+	Crd_cluster_client  *clientV1alpha1.ExampleV1Alpha1Client
+	Crd_istio_client    *clientV1alpha1.ExampleV1Alpha1Client
 	Cluster_list        *fedv1b1.KubeFedClusterList
 	Node_list           *corev1.NodeList
 	Cluster_configs     map[string]*rest.Config
@@ -111,6 +114,8 @@ func NewClusterManager() *ClusterManager {
 	host_client := genericclient.NewForConfigOrDie(host_config)
 	host_kubeClient := kubernetes.NewForConfigOrDie(host_config)
 	crd_client, _ := clientV1alpha1.NewForConfig(host_config)
+	crd_cluster_client, _ := clientV1alpha1.NewClusterForConfig(host_config)
+	crd_istio_client, _ := clientV1alpha1.NewIstioForConfig(host_config)
 
 	cluster_list := ListKubeFedClusters(host_client, fed_namespace)
 	node_list, _ := GetNodeList(host_kubeClient)
@@ -126,6 +131,8 @@ func NewClusterManager() *ClusterManager {
 		Host_client:         host_client,
 		Host_kubeClient:     host_kubeClient,
 		Crd_client:          crd_client,
+		Crd_cluster_client:  crd_cluster_client,
+		Crd_istio_client:    crd_istio_client,
 		Cluster_list:        cluster_list,
 		Node_list:           node_list,
 		Cluster_configs:     cluster_configs,
