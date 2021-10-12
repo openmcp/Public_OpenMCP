@@ -1,0 +1,9 @@
+[
+  {
+    "name": "cluster3",
+    "endpoint": "https://10.0.6.1420:6443",
+    "platform": "",
+    "region": "KR",
+    "zone": "Seoul"
+  }
+]

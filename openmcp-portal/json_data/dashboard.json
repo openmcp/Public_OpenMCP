@@ -1,0 +1,445 @@
+{
+    "clusters": {
+        "counts": 2,
+        "status": [
+            {
+                "name": "Healthy",
+                "value": 2
+            },
+            {
+                "name": "Unhealthy",
+                "value": 0
+            },
+            {
+                "name": "Unknown",
+                "value": 0
+            }
+        ]
+    },
+    "nodes": {
+        "counts": 6,
+        "status": [
+            {
+                "name": "Healthy",
+                "value": 6
+            },
+            {
+                "name": "Unhealthy",
+                "value": 0
+            },
+            {
+                "name": "Unknown",
+                "value": 0
+            }
+        ]
+    },
+    "pods": {
+        "counts": 90,
+        "status": [
+            {
+                "name": "Running",
+                "value": 90
+            },
+            {
+                "name": "Pending",
+                "value": 0
+            },
+            {
+                "name": "Failed",
+                "value": 0
+            },
+            {
+                "name": "Unknown",
+                "value": 0
+            }
+        ]
+    },
+    "projects": {
+        "counts": 22,
+        "status": [
+            {
+                "name": "Active",
+                "value": 22
+            },
+            {
+                "name": "Terminating",
+                "value": 0
+            }
+        ]
+    },
+    "regions": [
+        {
+            "name": "Seoul",
+            "attributes": {
+                "status": "Healthy",
+                "region": "Seoul",
+                "zone": "KR"
+            },
+            "children": [
+                {
+                    "name": "cluster1",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "",
+                        "zone": ""
+                    }
+                },
+                {
+                    "name": "cluster2",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "",
+                        "zone": ""
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Gyeonggi",
+            "attributes": {
+                "status": "Healthy",
+                "region": "Gyeonggi",
+                "zone": "KR"
+            },
+            "children": [
+                {
+                    "name": "cluster1",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Gyeonggi",
+                        "zone": ""
+                    }
+                },
+                {
+                    "name": "cluster2",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Gyeonggi",
+                        "zone": ""
+                    }
+                },
+                {
+                    "name": "cluster3",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Gyeonggi",
+                        "zone": ""
+                    }
+                },
+                {
+                    "name": "cluster4",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Gyeonggi",
+                        "zone": ""
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Daejeon",
+            "attributes": {
+                "status": "Healthy",
+                "region": "Daejeon",
+                "zone": "KR"
+            },
+            "children": [
+                {
+                    "name": "cluster1",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Daejeon",
+                        "zone": ""
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Busan",
+            "attributes": {
+                "status": "Healthy",
+                "region": "Busan",
+                "zone": "KR"
+            },
+            "children": [
+                {
+                    "name": "cluster1",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Busan",
+                        "zone": ""
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Tokyo",
+            "attributes": {
+                "status": "Healthy",
+                "region": "Tokyo",
+                "zone": "JP"
+            },
+            "children": [
+                {
+                    "name": "cluster1",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Tokyo",
+                        "zone": ""
+                    }
+                },
+                {
+                    "name": "cluster2",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Tokyo",
+                        "zone": ""
+                    }
+                },
+                {
+                    "name": "cluster3",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Tokyo",
+                        "zone": ""
+                    }
+                },
+                {
+                    "name": "cluster4",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Tokyo",
+                        "zone": ""
+                    }
+                }
+                
+            ]
+        },
+        {
+            "name": "US",
+            "attributes": {
+                "status": "Healthy",
+                "region": "US",
+                "zone": "US"
+            },
+            "children": [
+                {
+                    "name": "cluster1",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "US",
+                        "zone": "US"
+                    }
+                },
+                {
+                    "name": "cluster2",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "US",
+                        "zone": "US"
+                    }
+                },
+                {
+                    "name": "cluster3",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "US",
+                        "zone": "US"
+                    }
+                },
+                {
+                    "name": "cluster4",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "US",
+                        "zone": "US"
+                    }
+                },
+                {
+                    "name": "cluster5",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "US",
+                        "zone": "US"
+                    }
+                }
+                
+            ]
+        }
+    ],
+    "joined_clusters": [
+        
+        {
+            "name": "OMCP-Master",
+            "attributes": {
+                "status": "",
+                "region": "",
+                "zone": ""
+            },
+            "children": [
+                {
+                    "name": "cluster1",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Seoul",
+                        "zone": "KR"
+                    }
+                },
+                {
+                    "name": "cluster2",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Seoul",
+                        "zone": "KR"
+                    }
+                },
+                {
+                    "name": "cluster1",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Gyeonggi",
+                        "zone": "KR"
+                    }
+                },
+                {
+                    "name": "cluster2",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Gyeonggi",
+                        "zone": "KR"
+                    }
+                },
+                {
+                    "name": "cluster3",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Gyeonggi",
+                        "zone": "KR"
+                    }
+                },
+                {
+                    "name": "cluster4",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Gyeonggi",
+                        "zone": "KR"
+                    }
+                },
+                {
+                    "name": "cluster1",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Daejeon",
+                        "zone": "KR"
+                    }
+                },
+                {
+                    "name": "cluster1",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Busan",
+                        "zone": "KR"
+                    }
+                },
+                {
+                    "name": "cluster1",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Tokyo",
+                        "zone": "JP"
+                    }
+                },
+                {
+                    "name": "cluster2",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Tokyo",
+                        "zone": "JP"
+                    }
+                },
+                {
+                    "name": "cluster3",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Tokyo",
+                        "zone": "JP"
+                    }
+                },
+                {
+                    "name": "cluster4",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "Tokyo",
+                        "zone": "JP"
+                    }
+                },
+                {
+                    "name": "cluster1",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "US",
+                        "zone": "US"
+                    }
+                },
+                {
+                    "name": "cluster2",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "US",
+                        "zone": "US"
+                    }
+                },
+                {
+                    "name": "cluster3",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "US",
+                        "zone": "US"
+                    }
+                },
+                {
+                    "name": "cluster4",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "US",
+                        "zone": "US"
+                    }
+                },
+                {
+                    "name": "cluster5",
+                    "attributes": {
+                        "status": "Healthy",
+                        "region": "US",
+                        "zone": "US"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "UnJoined",
+            "attributes": {
+                "status": "",
+                "region": "",
+                "zone": ""
+            },
+            "children": [
+                {
+                    "name": "cluster3",
+                    "attributes": {
+                        "status": "Joinable",
+                        "region": "Seoul",
+                        "zone": "KR"
+                    }
+                },
+                {
+                    "name": "cluster4",
+                    "attributes": {
+                        "status": "Joinable",
+                        "region": "Seoul",
+                        "zone": "KR"
+                    }
+                }
+            ]
+        }
+    ]
+}

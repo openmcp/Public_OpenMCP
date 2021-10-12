@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import "../../css/style.css";
 
 class LeftSlideMenu extends Component {
   render() {
@@ -24,7 +23,7 @@ class LeftSlideMenu extends Component {
           <ul className="sidebar-menu tree" data-widget="tree">
             <li className="header">USER ACTIONS</li>
             <li className="active">
-              <a href="/dashboard/">
+              <a href="/dashboard">
                 <i className="fa fa-dashboard"></i> <span>Dashboard</span>
               </a>
             </li>

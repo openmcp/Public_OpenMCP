@@ -1,0 +1,137 @@
+[
+  {
+    "namespace": "default",
+    "name": "ingress-openmcp-ingress-keti",
+    "domain": "openmcp.keti.org",
+    "ip": "10.0.3.242"
+  },
+  {
+    "namespace": "default",
+    "name": "ingress-openmcp-ingress-keti",
+    "domain": "cluster1.openmcp.keti.org",
+    "ip": "10.0.6.171"
+  },
+  {
+    "namespace": "default",
+    "name": "ingress-openmcp-ingress-keti",
+    "domain": "eks-cluster1.openmcp.keti.org",
+    "ip": "35.176.180.3"
+  },
+  {
+    "namespace": "default",
+    "name": "ingress-openmcp-ingress-keti",
+    "domain": "gke-cluster1.openmcp.keti.org",
+    "ip": "34.120.205.10"
+  },
+  {
+    "namespace": "default",
+    "name": "service-iot-gateway-svc",
+    "domain": "iot-gateway-svc.default.openmcp-keti-domain.svc.KR.openmcp.keti.org",
+    "ip": "10.0.6.173"
+  },
+  {
+    "namespace": "default",
+    "name": "service-iot-gateway-svc",
+    "domain": "iot-gateway-svc.default.openmcp-keti-domain.svc.Seoul.KR.openmcp.keti.org",
+    "ip": "10.0.6.173"
+  },
+  {
+    "namespace": "default",
+    "name": "service-iot-gateway-svc",
+    "domain": "iot-gateway-svc.default.openmcp-keti-domain.svc.us-central1.openmcp.keti.org",
+    "ip": "34.66.45.182"
+  },
+  {
+    "namespace": "default",
+    "name": "service-iot-gateway-svc",
+    "domain": "iot-gateway-svc.default.openmcp-keti-domain.svc.us-central1-c.us-central1.openmcp.keti.org",
+    "ip": "34.66.45.182"
+  },
+  {
+    "namespace": "default",
+    "name": "service-iot-gateway-svc",
+    "domain": "iot-gateway-svc.default.openmcp-keti-domain.svc.openmcp.keti.org",
+    "ip": "10.0.6.173"
+  },
+  {
+    "namespace": "default",
+    "name": "service-iot-gateway-svc",
+    "domain": "iot-gateway-svc.default.openmcp-keti-domain.svc.openmcp.keti.org",
+    "ip": "34.66.45.182"
+  },
+
+  {
+    "namespace": "default",
+    "name": "service-influxdb",
+    "domain": "influxdb.default.openmcp-keti-domain.svc.KR.openmcp.keti.org",
+    "ip": "10.0.6.212"
+  },
+  {
+    "namespace": "default",
+    "name": "service-influxdb",
+    "domain": "influxdb.default.openmcp-keti-domain.svc.Gyeonggi-do.KR.openmcp.keti.org",
+    "ip": "10.0.6.212"
+  },
+  {
+    "namespace": "default",
+    "name": "service-influxdb",
+    "domain": "influxdb.default.openmcp-keti-domain.svc.openmcp.keti.org",
+    "ip": "10.0.6.212"
+  },
+  {
+    "namespace": "default",
+    "name": "service-kafka-svc",
+    "domain": "kafka-svc.default.openmcp-keti-domain.svc.KR.openmcp.keti.org",
+    "ip": "10.0.6.172"
+  },
+  {
+    "namespace": "default",
+    "name": "service-kafka-svc",
+    "domain": "kafka-svc.default.openmcp-keti-domain.svc.Seoul.KR.openmcp.keti.org",
+    "ip": "10.0.6.172"
+  },
+  {
+    "namespace": "default",
+    "name": "service-kafka-svc",
+    "domain": "kafka-svc.default.openmcp-keti-domain.svc.openmcp.keti.org",
+    "ip": "10.0.6.172"
+  },
+  {
+    "namespace": "default",
+    "name": "service-mu-rabbit-rabbitmq",
+    "domain": "mu-rabbit-rabbitmq.default.openmcp-keti-domain.svc.KR.openmcp.keti.org",
+    "ip": "10.0.6.213"
+  },
+  {
+    "namespace": "default",
+    "name": "service-mu-rabbit-rabbitmq",
+    "domain": "mu-rabbit-rabbitmq.default.openmcp-keti-domain.svc.Gyeonggi-do.KR.openmcp.keti.org",
+    "ip": "10.0.6.213"
+  },
+  {
+    "namespace": "default",
+    "name": "service-mu-rabbit-rabbitmq",
+    "domain": "mu-rabbit-rabbitmq.default.openmcp-keti-domain.svc.openmcp.keti.org",
+    "ip": "10.0.6.213"
+  },
+  {
+    "namespace": "default",
+    "name": "service-zk-cs",
+    "domain": "zk-cs.default.openmcp-keti-domain.svc.KR.openmcp.keti.org",
+    "ip": "10.0.6.191"
+  },
+  {
+    "namespace": "default",
+    "name": "service-zk-cs",
+    "domain": "zk-cs.default.openmcp-keti-domain.svc.Gyeonggi-do.KR.openmcp.keti.org",
+    "ip": "10.0.6.191"
+  },
+  {
+    "namespace": "default",
+    "name": "service-zk-cs",
+    "domain": "zk-cs.default.openmcp-keti-domain.svc.openmcp.keti.org",
+    "ip": "10.0.6.191"
+  }
+
+  
+]

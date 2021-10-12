@@ -1,0 +1,262 @@
+{
+  "basic_info": {
+    "name": "cluster1",
+    "provider": "Amazon EC2",
+    "kubernetes_version": "v1.17.3",
+    "status" : "Healthy"
+  },
+
+  "project_usage_top5": {
+    "cpu": [
+      {
+        "name": "project1",
+        "usage": "3%"
+      },
+      {
+        "name": "project2",
+        "usage": "2%"
+      },
+      {
+        "name": "project3",
+        "usage": "1%"
+      },
+      {
+        "name": "project4",
+        "usage": "2%"
+      },
+      {
+        "name": "project5",
+        "usage": "10%"
+      }
+    ],
+    "memory": [
+      {
+        "name": "projects1",
+        "usage": "3m"
+      },
+      {
+        "name": "projects2",
+        "usage": "2m"
+      },
+      {
+        "name": "projects3",
+        "usage": "1m"
+      },
+      {
+        "name": "projects4",
+        "usage": "2m"
+      },
+      {
+        "name": "projects5",
+        "usage": "11m"
+      }
+    ]
+  },
+
+  "node_usage_top5": {
+    "cpu": [
+      {
+        "name": "node1",
+        "usage": "3m"
+      },
+      {
+        "name": "node2",
+        "usage": "2m"
+      },
+      {
+        "name": "node3",
+        "usage": "1m"
+      },
+      {
+        "name": "node4",
+        "usage": "2m"
+      },
+      {
+        "name": "node5",
+        "usage": "10m"
+      }
+    ],
+    "memory": [
+      {
+        "name": "node1",
+        "usage": "3%"
+      },
+      {
+        "name": "node2",
+        "usage": "2%"
+      },
+      {
+        "name": "node3",
+        "usage": "1%"
+      },
+      {
+        "name": "node4",
+        "usage": "2%"
+      },
+      {
+        "name": "node5",
+        "usage": "11%"
+      }
+    ]
+  },
+
+  "cluster_resource_usage": {
+    "cpu": {
+      "counts": 3,
+      "unit": "core",
+      "status": [
+        { "name": "Used", "value": 8 },
+        { "name": "Total", "value": 16 }
+      ]
+    },
+    "memory": {
+      "counts": 3,
+      "unit": "Gi",
+      "status": [
+        { "name": "Used", "value": 8 },
+        { "name": "Total", "value": 16 }
+      ]
+    },
+    "storage": {
+      "counts": 3,
+      "unit": "GB",
+      "status": [
+        { "name": "Used", "value": 8 },
+        { "name": "Total", "value": 16 }
+      ]
+    }
+  },
+
+  "kubernetes_status": [
+    {
+      "name": "etcd",
+      "status": "healthy"
+    },
+    {
+      "name": "Controller Manger",
+      "status": "unhealthy"
+    },
+    {
+      "name": "Scheduler",
+      "status": "healthy"
+    },
+    {
+      "name": "Nodes",
+      "status": "healthy"
+    }
+  ],
+  "events": [
+    {
+      "project": "project1",
+      "type":"Warning",
+      "reason" : "Back-off",
+      "object" : "hello-c-1-96d766647-wwh6w",
+      "message" : "Back-off restarting failed container",
+      "time" : "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project2",
+      "type":"Warning",
+      "reason" : "Back-off",
+      "object" : "hello-c-1-96d766647-wwh6w",
+      "message" : "Back-off restarting failed container",
+      "time" : "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project3",
+      "type":"Warning",
+      "reason" : "Back-off",
+      "object" : "hello-c-1-96d766647-wwh6w",
+      "message" : "Back-off restarting failed container",
+      "time" : "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project4",
+      "type":"Warning",
+      "reason" : "Back-off",
+      "object" : "hello-c-1-96d766647-wwh6w",
+      "message" : "Back-off restarting failed container",
+      "time" : "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project5",
+      "type":"Warning",
+      "reason" : "Back-off",
+      "object" : "hello-c-1-96d766647-wwh6w",
+      "message" : "Back-off restarting failed container",
+      "time" : "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project6",
+      "type":"Warning",
+      "reason" : "Back-off",
+      "object" : "hello-c-1-96d766647-wwh6w",
+      "message" : "Back-off restarting failed container",
+      "time" : "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project7",
+      "type":"Warning",
+      "reason" : "Back-off",
+      "object" : "hello-c-1-96d766647-wwh6w",
+      "message" : "Back-off restarting failed container",
+      "time" : "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project8",
+      "type":"Warning",
+      "reason" : "Back-off",
+      "object" : "hello-c-1-96d766647-wwh6w",
+      "message" : "Back-off restarting failed container",
+      "time" : "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project9",
+      "type":"Warning",
+      "reason" : "Back-off",
+      "object" : "hello-c-1-96d766647-wwh6w",
+      "message" : "Back-off restarting failed container",
+      "time" : "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project10",
+      "type":"Warning",
+      "reason" : "Back-off",
+      "object" : "hello-c-1-96d766647-wwh6w",
+      "message" : "Back-off restarting failed container",
+      "time" : "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project11",
+      "type":"Warning",
+      "reason" : "Back-off",
+      "object" : "hello-c-1-96d766647-wwh6w",
+      "message" : "Back-off restarting failed container",
+      "time" : "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project12",
+      "type":"Warning",
+      "reason" : "Back-off",
+      "object" : "hello-c-1-96d766647-wwh6w",
+      "message" : "Back-off restarting failed container",
+      "time" : "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project13",
+      "type":"Warning",
+      "reason" : "Back-off",
+      "object" : "hello-c-1-96d766647-wwh6w",
+      "message" : "Back-off restarting failed container",
+      "time" : "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project14",
+      "type":"Warning",
+      "reason" : "Back-off",
+      "object" : "hello-c-1-96d766647-wwh6w",
+      "message" : "Back-off restarting failed container",
+      "time" : "2020/07/16 11:44:45"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "cluster": "cluster1",
+    "accessKey": "AKIAJGFO6OXHRN2H6DSA",
+    "secretKey": "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"
+  },
+  {
+    "cluster": "cluster2",
+    "accessKey": "AKIAJGFO6OXHRN2H6DSA",
+    "secretKey": "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"
+  }
+]

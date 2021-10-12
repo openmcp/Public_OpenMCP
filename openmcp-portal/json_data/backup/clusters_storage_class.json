@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Qwe",
+    "provisioner": "kubernetes.io/no-provisioner",
+    "volume_count": "8",
+    "default": "Yes"
+  },
+  {
+    "name": "Qqq",
+    "provisioner": "kubernetes.io/aws-ecs",
+    "volume_count": "7",
+    "default": "-"
+  },
+  {
+    "name": "Qrt",
+    "provisioner": "",
+    "volume_count": "6",
+    "default": "-"
+  },
+  {
+    "name": "Qww",
+    "provisioner": "",
+    "volume_count": "5",
+    "default": "-"
+  }
+]

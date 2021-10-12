@@ -1,0 +1,12 @@
+[
+  {
+    "cluster": "aks-cluster-01",
+    "pool": "agentpool",
+    "desired": 1
+  },
+  {
+    "cluster": "aks-cluster-01",
+    "pool": "np01",
+    "desired": 1
+  }
+]

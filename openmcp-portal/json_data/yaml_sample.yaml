@@ -1,0 +1,55 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: openmcp-deployment2
+  namespace: openmcp
+spec:
+  replicas: 8
+  labels:
+      app: openmcp-nginx
+  template:
+    spec:
+      template:
+        spec:
+          containers:
+          - image: nginx
+            name: nginx
+      placement:
+        clusters:
+        - name: cluster2
+        - name: cluster1
+---
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPService
+metadata:
+  name: openmcp-service
+  namespace: openmcp
+spec:
+  template:
+    spec:
+      type: LoadBalancer
+      ports:
+      - name: http
+        port: 80
+  labelselector:
+    app: openmcp-nginx
+---
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: Migration
+metadata:
+  name: migrations1434
+spec:
+  MigrationServiceSource:
+  - SourceCluster: cluster1
+    TargetCluster: cluster2
+    NameSpace: testmig
+    ServiceName: testim
+    MigrationSource:
+    - ResourceName: testim-dp
+      ResourceType: Deployment
+    - ResourceName: testim-sv
+      ResourceType: Service
+    - ResourceName: testim-pv
+      ResourceType: PersistentVolume
+    - ResourceName: testim-pvc
+      ResourceType: PersistentVolumeClaim

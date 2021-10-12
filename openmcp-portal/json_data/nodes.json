@@ -1,0 +1,152 @@
+[
+  {
+    "name": "openmcp-master1",
+    "cluster": "openmcp",
+    "status": "Healthy",
+    "role": "master",
+    "system_version": "Ubuntu 16.04.3 LTS|(docker://17.3.2)",
+    "cpu": "0.0%|0n / 40 Core",
+    "memory": "0.0%|0Ki / 131.7 GIB",
+    "pods": "6.4%|7 / 110 pods"
+  },
+  {
+    "name": "openmcp-master2",
+    "cluster": "openmcp",
+    "status": "Healthy",
+    "role": "master",
+    "system_version": "Ubuntu 16.04.6 LTS|(docker://17.3.2)",
+    "cpu": "0.0%|0n / 24 Core",
+    "memory": "0.0%|0Ki / 16.3 GIB",
+    "pods": "7.3%|8 / 110 pods"
+  },
+  {
+    "name": "openmcp-master3",
+    "cluster": "openmcp",
+    "status": "Healthy",
+    "role": "master",
+    "system_version": "Ubuntu 16.04.5 LTS|(docker://17.3.2)",
+    "cpu": "0.0%|0n / 32 Core",
+    "memory": "0.0%|0Ki / 65.6 GIB",
+    "pods": "8.2%|9 / 110 pods"
+  },
+  {
+    "name": "openmcp-worker1",
+    "cluster": "openmcp",
+    "status": "Healthy",
+    "role": "worker",
+    "system_version": "Ubuntu 16.04.6 LTS|(docker://19.3.9)",
+    "cpu": "0.0%|0n / 40 Core",
+    "memory": "0.0%|0Ki / 131.7 GIB",
+    "pods": "19.1%|21 / 110 pods"
+  },
+  {
+    "name": "openmcp-worker2",
+    "cluster": "openmcp",
+    "status": "Healthy",
+    "role": "worker",
+    "system_version": "Ubuntu 16.04.6 LTS|(docker://18.6.3)",
+    "cpu": "0.0%|0n / 4 Core",
+    "memory": "0.0%|0Ki / 18.5 GIB",
+    "pods": "10.0%|11 / 110 pods"
+  },
+  {
+    "name": "kube1-master",
+    "cluster": "cluster1",
+    "status": "Healthy",
+    "role": "master",
+    "system_version": "Ubuntu 16.04.6 LTS|(docker://19.3.5)",
+    "cpu": "1.6%|0.5 / 32 Core",
+    "memory": "21.2%|13.9 / 65.6 GIB",
+    "pods": "8.2%|9 / 110 pods"
+  },
+  {
+    "name": "kube1-worker3",
+    "cluster": "cluster1",
+    "status": "Healthy",
+    "role": "worker",
+    "system_version": "Ubuntu 16.04.6 LTS|(docker://19.3.9)",
+    "cpu": "1.2%|0.5 / 40 Core",
+    "memory": "20.4%|26.9 / 131.7 GIB",
+    "pods": "17.3%|19 / 110 pods"
+  },
+  {
+    "name": "kube2-master",
+    "cluster": "cluster2",
+    "status": "Healthy",
+    "role": "master",
+    "system_version": "Ubuntu 16.04.6 LTS|(docker://19.3.9)",
+    "cpu": "1.2%|0.5 / 40 Core",
+    "memory": "5.9%|7.8 / 131.7 GIB",
+    "pods": "8.2%|9 / 110 pods"
+  },
+  {
+    "name": "kube2-worker1",
+    "cluster": "cluster2",
+    "status": "Healthy",
+    "role": "worker",
+    "system_version": "Ubuntu 16.04.6 LTS|(docker://17.3.2)",
+    "cpu": "2.2%|0.9 / 40 Core",
+    "memory": "16.6%|21.9 / 131.7 GIB",
+    "pods": "16.4%|18 / 110 pods"
+  },
+  {
+    "name": "member-cluster030",
+    "cluster": "cluster3",
+    "status": "Healthy",
+    "role": "master",
+    "system_version": "Ubuntu 16.04.5 LTS|(docker://19.3.13)",
+    "cpu": "3.8%|0.3 / 8 Core",
+    "memory": "69.5%|5.7 / 8.2 GIB",
+    "pods": "20.0%|22 / 110 pods"
+  },
+  {
+    "name": "ip-172-31-20-237.eu-west-2.compute.internal",
+    "cluster": "eks-cluster1",
+    "status": "Healthy",
+    "role": "worker",
+    "system_version": "Amazon Linux 2|(docker://19.3.6)",
+    "cpu": "0.0%|0n / 2 Core",
+    "memory": "0.0%|0Ki / 8.1 GIB",
+    "pods": "20.0%|7 / 35 pods"
+  },
+  {
+    "name": "ip-172-31-39-97.eu-west-2.compute.internal",
+    "cluster": "eks-cluster1",
+    "status": "Healthy",
+    "role": "worker",
+    "system_version": "Amazon Linux 2|(docker://19.3.6)",
+    "cpu": "0.0%|0n / 2 Core",
+    "memory": "0.0%|0Ki / 8.1 GIB",
+    "pods": "31.4%|11 / 35 pods"
+  },
+  {
+    "name": "ip-172-31-9-152.eu-west-2.compute.internal",
+    "cluster": "eks-cluster1",
+    "status": "Healthy",
+    "role": "worker",
+    "system_version": "Amazon Linux 2|(docker://19.3.6)",
+    "cpu": "0.0%|0n / 2 Core",
+    "memory": "0.0%|0Ki / 8.1 GIB",
+    "pods": "28.6%|10 / 35 pods"
+  },
+  {
+    "name": "gke-gke-cluster1-default-pool-69efd100-5wgx",
+    "cluster": "gke-cluster1",
+    "status": "Healthy",
+    "role": "worker",
+    "system_version": "Container-Optimized OS from Google|(docker://19.3.9)",
+    "cpu": "0.0%|0n / 4 Core",
+    "memory": "0.0%|0Ki / 15.4 GIB",
+    "pods": "16.4%|18 / 110 pods"
+  },
+  {
+    "name": "gke-gke-cluster1-default-pool-69efd100-9v6m",
+    "cluster": "gke-cluster1",
+    "status": "Healthy",
+    "role": "worker",
+    "system_version": "Container-Optimized OS from Google|(docker://19.3.9)",
+    "cpu": "0.0%|0n / 4 Core",
+    "memory": "0.0%|0Ki / 15.4 GIB",
+    "pods": "14.5%|16 / 110 pods"
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "mysql",
+    "ready" : "1/1"
+    "image": "mysql:5.6",
+    "updated_time": "2020-11-18T03:37:12Z"
+  },
+  {
+    "name": "nginx-deploy",
+    "ready" : "6/6"
+    "image": "nginx",
+    "updated_time": "2020-11-18T03:06:00Z"
+  }
+]

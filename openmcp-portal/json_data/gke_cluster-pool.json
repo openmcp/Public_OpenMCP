@@ -1,0 +1,20 @@
+[
+  {
+      "clusterName": "gke-cluster-1",
+      "location": "asia-northeast3-c",
+      "zone": "asia-northeast3-c",
+      "nodePools": [
+          {
+              "nodePoolName": "default-pool",
+              "machineType": "g1-small",
+              "initialNodeCount": "1"
+          },
+          {
+              "nodePoolName": "pool-1",
+              "machineType": "n1-standard-1",
+              "initialNodeCount": "2"
+          }
+      ],
+      "nodeCount": "2"
+  }
+]

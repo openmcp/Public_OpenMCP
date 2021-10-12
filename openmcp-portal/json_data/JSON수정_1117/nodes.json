@@ -1,0 +1,69 @@
+[
+  {
+    "name": "cluster1-master.dev.gmd.life",
+    "cluster": "cluster1",
+    "status": "Healty",
+    "role": "master",
+    "region": "KR",
+    "system_version": " Ubuntu 16.04.7 LTS | (docker 18.6.2)",
+    "cpu": "4% | 0.221/4.0 | core",
+    "memory": "38% | 3.0/7.8 | GIB",
+    "pods": "9% | 10/110"
+  },
+  {
+    "name": "cluster1-worker1.dev.gmd.life",
+    "cluster": "cluster1",
+    "status": "Healty",
+    "role": "worker",
+    "region": "KR",
+    "system_version": " Ubuntu 16.04.7 LTS | (docker 18.6.2)",
+    "cpu": "3% | 0.087/4.0 | core",
+    "memory": "40% | 3.2/7.8 | GIB",
+    "pods": "14% | 16/110"
+  },
+  {
+    "name": "cluster1-worker2.dev.gmd.life",
+    "cluster": "cluster1",
+    "status": "Healty",
+    "role": "worker",
+    "region": "KR",
+    "system_version": " Ubuntu 16.04.7 LTS | (docker 18.6.2)",
+    "cpu": "1% | 0.067/4.0 | core",
+    "memory": "24% | 1.9/7.8 | GIB",
+    "pods": "15% | 17/110"
+  },
+  {
+    "name": "cluster2-master.dev.gmd.life",
+    "cluster": "cluster2",
+    "status": "Healty",
+    "role": "master",
+    "region": "KR",
+    "system_version": " Ubuntu 16.04.7 LTS | (docker 18.6.2)",
+    "cpu": "5% | 0.203/4.0 | core",
+    "memory": "35% | 2.8/7.8 | GIB",
+    "pods": "9% | 10/110"
+  },
+  {
+    "name": "cluster2-worker1.dev.gmd.life",
+    "cluster": "cluster2",
+    "status": "Healty",
+    "role": "worker",
+    "region": "KR",
+    "system_version": " Ubuntu 16.04.7 LTS | (docker 18.6.2)",
+    "cpu": "3% | 0.148/4.0 | core",
+    "memory": "59% | 4.7/7.8 | GIB",
+    "pods": "13% | 15/110"
+  },
+  {
+    "name": "cluster2-worker2.dev.gmd.life",
+    "cluster": "cluster2",
+    "status": "Healty",
+    "role": "worker",
+    "region": "KR",
+    "system_version": " Ubuntu 16.04.7 LTS | (docker 18.6.2)",
+    "cpu": "2% | 0.114/4.0 | core",
+    "memory": "61% | 4.8/7.8 | GIB",
+    "pods": "13% | 15/110"
+  },
+
+]

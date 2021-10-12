@@ -1,0 +1,38 @@
+[
+  {
+    "namespace": "Ns1",
+    "name": "service1",
+    "type": "ClusterIP",
+    "selector": "department=kubernetes|greeting=hello",
+    "port": "8080:30269/TCP"
+  },
+  {
+    "namespace": "Ns2",
+    "name": "service2",
+    "type": "ClusterIP",
+    "selector": "department=kubernetes|greeting=hello",
+    "port": "80/TCP"
+  },
+  {
+    "namespace": "Ns2",
+    "name": "service3",
+    "type": "NodePort",
+    "selector": "department=kubernetes|greeting=hello",
+    "port": ""
+  },
+  {
+    "namespace": "Ns2",
+    "name": "service4",
+    "type": "NodePort",
+    "selector": "project1",
+    "port": ""
+  },
+  {
+    "namespace": "Ns3",
+    "name": "service5",
+    "type": "NodePort",
+    "selector": "project1",
+    "port": ""
+  }
+  
+]

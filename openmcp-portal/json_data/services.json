@@ -1,0 +1,587 @@
+[
+  {
+      "name": "kubernetes",
+      "cluster": "openmcp",
+      "project": "default",
+      "type": "ClusterIP",
+      "selector": "-",
+      "port": "{ name : https },  { protocol : TCP },  { port : 443 },  { targetPort : 6443 }",
+      "created_time": "2020-09-29T05:44:16Z"
+  },
+  {
+      "name": "kubefed-admission-webhook",
+      "cluster": "openmcp",
+      "project": "kube-federation-system",
+      "type": "ClusterIP",
+      "selector": "kubefed-admission-webhook : true",
+      "port": "{ protocol : TCP },  { port : 443 },  { targetPort : 8443 }",
+      "created_time": "2020-09-29T07:22:48Z"
+  },
+  {
+      "name": "kube-dns",
+      "cluster": "openmcp",
+      "project": "kube-system",
+      "type": "ClusterIP",
+      "selector": "k8s-app : kube-dns",
+      "port": "{ name : dns },  { protocol : UDP },  { port : 53 },  { targetPort : 53 }|{ name : dns-tcp },  { protocol : TCP },  { port : 53 },  { targetPort : 53 }|{ name : metrics },  { protocol : TCP },  { port : 9153 },  { targetPort : 9153 }",
+      "created_time": "2020-09-29T05:44:17Z"
+  },
+  {
+      "name": "kubelet",
+      "cluster": "openmcp",
+      "project": "kube-system",
+      "type": "ClusterIP",
+      "selector": "-",
+      "port": "{ name : https-metrics },  { protocol : TCP },  { port : 10250 },  { targetPort : 10250 }|{ name : http-metrics },  { protocol : TCP },  { port : 10255 },  { targetPort : 10255 }|{ name : cadvisor },  { protocol : TCP },  { port : 4194 },  { targetPort : 4194 }",
+      "created_time": "2020-10-22T05:29:46Z"
+  },
+  {
+      "name": "prom-op-prometheus-operato-kubelet",
+      "cluster": "openmcp",
+      "project": "kube-system",
+      "type": "ClusterIP",
+      "selector": "-",
+      "port": "{ name : https-metrics },  { protocol : TCP },  { port : 10250 },  { targetPort : 10250 }|{ name : http-metrics },  { protocol : TCP },  { port : 10255 },  { targetPort : 10255 }|{ port : 4194 },  { targetPort : 4194 },  { name : cadvisor },  { protocol : TCP }",
+      "created_time": "2020-10-23T08:49:39Z"
+  },
+  {
+      "name": "tiller-deploy",
+      "cluster": "openmcp",
+      "project": "kube-system",
+      "type": "ClusterIP",
+      "selector": "app : helm|name : tiller",
+      "port": "{ name : tiller },  { protocol : TCP },  { port : 44134 },  { targetPort : tiller }",
+      "created_time": "2020-09-29T07:14:09Z"
+  },
+  {
+      "name": "alertmanager-main",
+      "cluster": "openmcp",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "alertmanager : main|app : alertmanager",
+      "port": "{ targetPort : web },  { name : web },  { protocol : TCP },  { port : 9093 }",
+      "created_time": "2020-10-23T09:24:02Z"
+  },
+  {
+      "name": "alertmanager-operated",
+      "cluster": "openmcp",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app : alertmanager",
+      "port": "{ port : 9093 },  { targetPort : web },  { name : web },  { protocol : TCP }|{ name : tcp-mesh },  { protocol : TCP },  { port : 9094 },  { targetPort : 9094 }|{ name : udp-mesh },  { protocol : UDP },  { port : 9094 },  { targetPort : 9094 }",
+      "created_time": "2020-10-23T09:24:02Z"
+  },
+  {
+      "name": "grafana",
+      "cluster": "openmcp",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app : grafana",
+      "port": "{ name : http },  { protocol : TCP },  { port : 3000 },  { targetPort : http }",
+      "created_time": "2020-10-23T09:24:02Z"
+  },
+  {
+      "name": "kube-state-metrics",
+      "cluster": "openmcp",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app.kubernetes.io/name : kube-state-metrics",
+      "port": "{ name : https-main },  { protocol : TCP },  { port : 8443 },  { targetPort : https-main }|{ protocol : TCP },  { port : 9443 },  { targetPort : https-self },  { name : https-self }",
+      "created_time": "2020-10-23T09:24:02Z"
+  },
+  {
+      "name": "node-exporter",
+      "cluster": "openmcp",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app.kubernetes.io/name : node-exporter",
+      "port": "{ targetPort : https },  { name : https },  { protocol : TCP },  { port : 9100 }",
+      "created_time": "2020-10-23T09:24:02Z"
+  },
+  {
+      "name": "prometheus-adapter",
+      "cluster": "openmcp",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "name : prometheus-adapter",
+      "port": "{ name : https },  { protocol : TCP },  { port : 443 },  { targetPort : 6443 }",
+      "created_time": "2020-10-23T09:24:02Z"
+  },
+  {
+      "name": "prometheus-k8s",
+      "cluster": "openmcp",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app : prometheus|prometheus : k8s",
+      "port": "{ name : web },  { protocol : TCP },  { port : 9090 },  { targetPort : web }",
+      "created_time": "2020-10-23T09:24:02Z"
+  },
+  {
+      "name": "prometheus-operated",
+      "cluster": "openmcp",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app : prometheus",
+      "port": "{ targetPort : web },  { name : web },  { protocol : TCP },  { port : 9090 }",
+      "created_time": "2020-10-23T09:24:02Z"
+  },
+  {
+      "name": "prometheus-operator",
+      "cluster": "openmcp",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app.kubernetes.io/component : controller|app.kubernetes.io/name : prometheus-operator",
+      "port": "{ name : https },  { protocol : TCP },  { port : 8443 },  { targetPort : https }",
+      "created_time": "2020-10-23T09:23:47Z"
+  },
+  {
+      "name": "prometheus-server-lb",
+      "cluster": "openmcp",
+      "project": "monitoring",
+      "type": "LoadBalancer",
+      "selector": "app : prometheus|prometheus : k8s",
+      "port": "{ protocol : TCP },  { port : 9090 },  { targetPort : 9090 },  { nodePort : 31756 }",
+      "created_time": "2020-10-23T09:25:23Z"
+  },
+  {
+      "name": "influxdb",
+      "cluster": "openmcp",
+      "project": "openmcp",
+      "type": "LoadBalancer",
+      "selector": "app : influxdb",
+      "port": "{ port : 8086 },  { targetPort : 8086 },  { nodePort : 31051 },  { protocol : TCP }",
+      "created_time": "2020-10-15T01:55:33Z"
+  },
+  {
+      "name": "openmcp-analytic-engine",
+      "cluster": "openmcp",
+      "project": "openmcp",
+      "type": "LoadBalancer",
+      "selector": "name : openmcp-analytic-engine",
+      "port": "{ port : 2050 },  { targetPort : 2050 },  { nodePort : 32050 },  { protocol : TCP }",
+      "created_time": "2020-10-14T02:25:40Z"
+  },
+  {
+      "name": "openmcp-apiserver",
+      "cluster": "openmcp",
+      "project": "openmcp",
+      "type": "LoadBalancer",
+      "selector": "name : openmcp-apiserver",
+      "port": "{ targetPort : 8080 },  { nodePort : 31635 },  { protocol : TCP },  { port : 8080 }",
+      "created_time": "2020-10-14T02:25:46Z"
+  },
+  {
+      "name": "openmcp-loadbalancing-controller",
+      "cluster": "openmcp",
+      "project": "openmcp",
+      "type": "LoadBalancer",
+      "selector": "name : openmcp-loadbalancing-controller",
+      "port": "{ protocol : TCP },  { port : 80 },  { targetPort : 80 },  { nodePort : 31898 }",
+      "created_time": "2020-10-14T02:29:26Z"
+  },
+  {
+      "name": "openmcp-metric-collector",
+      "cluster": "openmcp",
+      "project": "openmcp",
+      "type": "LoadBalancer",
+      "selector": "name : openmcp-metric-collector",
+      "port": "{ port : 2051 },  { targetPort : 2051 },  { nodePort : 32051 },  { protocol : TCP }",
+      "created_time": "2020-10-14T02:27:47Z"
+  },
+  {
+      "name": "custom-metrics-apiserver",
+      "cluster": "cluster1",
+      "project": "custom-metrics",
+      "type": "ClusterIP",
+      "selector": "app : custom-metrics-apiserver",
+      "port": "{ protocol : TCP },  { port : 443 },  { targetPort : 6443 },  { name : https }|{ name : http },  { protocol : TCP },  { port : 80 },  { targetPort : 8080 }",
+      "created_time": "2020-10-14T05:19:37Z"
+  },
+  {
+      "name": "kubernetes",
+      "cluster": "cluster1",
+      "project": "default",
+      "type": "ClusterIP",
+      "selector": "-",
+      "port": "{ name : https },  { protocol : TCP },  { port : 443 },  { targetPort : 6443 }",
+      "created_time": "2020-09-29T05:44:23Z"
+  },
+  {
+      "name": "php-apache",
+      "cluster": "cluster1",
+      "project": "default",
+      "type": "ClusterIP",
+      "selector": "run : php-apache",
+      "port": "{ protocol : TCP },  { port : 80 },  { targetPort : 80 }",
+      "created_time": "2020-01-27T01:54:18Z"
+  },
+  {
+      "name": "ingress-nginx",
+      "cluster": "cluster1",
+      "project": "ingress-nginx",
+      "type": "LoadBalancer",
+      "selector": "app.kubernetes.io/name : ingress-nginx|app.kubernetes.io/part-of : ingress-nginx",
+      "port": "{ targetPort : http },  { nodePort : 32517 },  { name : http },  { protocol : TCP },  { port : 80 }|{ port : 443 },  { targetPort : https },  { nodePort : 31106 },  { name : https },  { protocol : TCP }",
+      "created_time": "2020-10-14T05:19:38Z"
+  },
+  {
+      "name": "ingress-nginx-controller",
+      "cluster": "cluster1",
+      "project": "ingress-nginx",
+      "type": "NodePort",
+      "selector": "app.kubernetes.io/component : controller|app.kubernetes.io/instance : ingress-nginx|app.kubernetes.io/name : ingress-nginx",
+      "port": "{ port : 80 },  { targetPort : http },  { nodePort : 31940 },  { name : http },  { protocol : TCP }|{ protocol : TCP },  { port : 443 },  { targetPort : https },  { nodePort : 32305 },  { name : https }",
+      "created_time": "2020-11-18T09:31:38Z"
+  },
+  {
+      "name": "ingress-nginx-controller-admission",
+      "cluster": "cluster1",
+      "project": "ingress-nginx",
+      "type": "ClusterIP",
+      "selector": "app.kubernetes.io/component : controller|app.kubernetes.io/instance : ingress-nginx|app.kubernetes.io/name : ingress-nginx",
+      "port": "{ name : https-webhook },  { protocol : TCP },  { port : 443 },  { targetPort : webhook }",
+      "created_time": "2020-11-18T09:31:38Z"
+  },
+  {
+      "name": "kube-dns",
+      "cluster": "cluster1",
+      "project": "kube-system",
+      "type": "ClusterIP",
+      "selector": "k8s-app : kube-dns",
+      "port": "{ name : dns },  { protocol : UDP },  { port : 53 },  { targetPort : 53 }|{ name : dns-tcp },  { protocol : TCP },  { port : 53 },  { targetPort : 53 }|{ protocol : TCP },  { port : 9153 },  { targetPort : 9153 },  { name : metrics }",
+      "created_time": "2020-09-29T05:44:24Z"
+  },
+  {
+      "name": "kubelet",
+      "cluster": "cluster1",
+      "project": "kube-system",
+      "type": "ClusterIP",
+      "selector": "-",
+      "port": "{ name : https-metrics },  { protocol : TCP },  { port : 10250 },  { targetPort : 10250 }|{ name : http-metrics },  { protocol : TCP },  { port : 10255 },  { targetPort : 10255 }|{ targetPort : 4194 },  { name : cadvisor },  { protocol : TCP },  { port : 4194 }",
+      "created_time": "2020-10-23T02:09:11Z"
+  },
+  {
+      "name": "metrics-server",
+      "cluster": "cluster1",
+      "project": "kube-system",
+      "type": "ClusterIP",
+      "selector": "k8s-app : metrics-server",
+      "port": "{ protocol : TCP },  { port : 443 },  { targetPort : 443 }",
+      "created_time": "2020-10-14T05:19:38Z"
+  },
+  {
+      "name": "tiller-deploy",
+      "cluster": "cluster1",
+      "project": "kube-system",
+      "type": "ClusterIP",
+      "selector": "app : helm|name : tiller",
+      "port": "{ port : 44134 },  { targetPort : tiller },  { name : tiller },  { protocol : TCP }",
+      "created_time": "2020-09-29T07:50:17Z"
+  },
+  {
+      "name": "vpa-webhook",
+      "cluster": "cluster1",
+      "project": "kube-system",
+      "type": "ClusterIP",
+      "selector": "app : vpa-admission-controller",
+      "port": "{ protocol : TCP },  { port : 443 },  { targetPort : 8000 }",
+      "created_time": "2020-10-14T05:19:40Z"
+  },
+  {
+      "name": "alertmanager-main",
+      "cluster": "cluster1",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "alertmanager : main|app : alertmanager",
+      "port": "{ name : web },  { protocol : TCP },  { port : 9093 },  { targetPort : web }",
+      "created_time": "2020-10-23T02:09:24Z"
+  },
+  {
+      "name": "alertmanager-operated",
+      "cluster": "cluster1",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app : alertmanager",
+      "port": "{ name : web },  { protocol : TCP },  { port : 9093 },  { targetPort : web }|{ port : 9094 },  { targetPort : 9094 },  { name : tcp-mesh },  { protocol : TCP }|{ name : udp-mesh },  { protocol : UDP },  { port : 9094 },  { targetPort : 9094 }",
+      "created_time": "2020-10-23T02:09:24Z"
+  },
+  {
+      "name": "grafana",
+      "cluster": "cluster1",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app : grafana",
+      "port": "{ name : http },  { protocol : TCP },  { port : 3000 },  { targetPort : http }",
+      "created_time": "2020-10-23T02:09:24Z"
+  },
+  {
+      "name": "kube-state-metrics",
+      "cluster": "cluster1",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app.kubernetes.io/name : kube-state-metrics",
+      "port": "{ targetPort : https-main },  { name : https-main },  { protocol : TCP },  { port : 8443 }|{ name : https-self },  { protocol : TCP },  { port : 9443 },  { targetPort : https-self }",
+      "created_time": "2020-10-23T02:09:24Z"
+  },
+  {
+      "name": "node-exporter",
+      "cluster": "cluster1",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app.kubernetes.io/name : node-exporter",
+      "port": "{ port : 9100 },  { targetPort : https },  { name : https },  { protocol : TCP }",
+      "created_time": "2020-10-23T02:09:24Z"
+  },
+  {
+      "name": "prometheus-adapter",
+      "cluster": "cluster1",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "name : prometheus-adapter",
+      "port": "{ name : https },  { protocol : TCP },  { port : 443 },  { targetPort : 6443 }",
+      "created_time": "2020-10-23T02:09:24Z"
+  },
+  {
+      "name": "prometheus-k8s",
+      "cluster": "cluster1",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app : prometheus|prometheus : k8s",
+      "port": "{ port : 9090 },  { targetPort : web },  { name : web },  { protocol : TCP }",
+      "created_time": "2020-10-23T02:09:25Z"
+  },
+  {
+      "name": "prometheus-operated",
+      "cluster": "cluster1",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app : prometheus",
+      "port": "{ name : web },  { protocol : TCP },  { port : 9090 },  { targetPort : web }",
+      "created_time": "2020-10-23T02:09:25Z"
+  },
+  {
+      "name": "prometheus-operator",
+      "cluster": "cluster1",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app.kubernetes.io/component : controller|app.kubernetes.io/name : prometheus-operator",
+      "port": "{ protocol : TCP },  { port : 8443 },  { targetPort : https },  { name : https }",
+      "created_time": "2020-10-23T02:09:00Z"
+  },
+  {
+      "name": "cluster-metric-collector",
+      "cluster": "cluster1",
+      "project": "openmcp",
+      "type": "LoadBalancer",
+      "selector": "name : cluster-metric-collector",
+      "port": "{ nodePort : 32052 },  { protocol : TCP },  { port : 2052 },  { targetPort : 2052 }",
+      "created_time": "2020-10-14T05:19:38Z"
+  },
+  {
+      "name": "mysql",
+      "cluster": "cluster1",
+      "project": "webproject",
+      "type": "ClusterIP",
+      "selector": "app : mysql",
+      "port": "{ protocol : TCP },  { port : 3306 },  { targetPort : 3306 }",
+      "created_time": "2020-11-18T03:36:49Z"
+  },
+  {
+      "name": "custom-metrics-apiserver",
+      "cluster": "cluster2",
+      "project": "custom-metrics",
+      "type": "ClusterIP",
+      "selector": "app : custom-metrics-apiserver",
+      "port": "{ name : https },  { protocol : TCP },  { port : 443 },  { targetPort : 6443 }|{ protocol : TCP },  { port : 80 },  { targetPort : 8080 },  { name : http }",
+      "created_time": "2020-10-14T06:37:43Z"
+  },
+  {
+      "name": "kubernetes",
+      "cluster": "cluster2",
+      "project": "default",
+      "type": "ClusterIP",
+      "selector": "-",
+      "port": "{ name : https },  { protocol : TCP },  { port : 443 },  { targetPort : 6443 }",
+      "created_time": "2020-09-29T05:44:10Z"
+  },
+  {
+      "name": "php-apache",
+      "cluster": "cluster2",
+      "project": "default",
+      "type": "ClusterIP",
+      "selector": "run : php-apache",
+      "port": "{ protocol : TCP },  { port : 80 },  { targetPort : 80 }",
+      "created_time": "2020-11-27T06:29:03Z"
+  },
+  {
+      "name": "ingress-nginx",
+      "cluster": "cluster2",
+      "project": "ingress-nginx",
+      "type": "LoadBalancer",
+      "selector": "app.kubernetes.io/name : ingress-nginx|app.kubernetes.io/part-of : ingress-nginx",
+      "port": "{ nodePort : 32047 },  { name : http },  { protocol : TCP },  { port : 80 },  { targetPort : http }|{ name : https },  { protocol : TCP },  { port : 443 },  { targetPort : https },  { nodePort : 31125 }",
+      "created_time": "2020-10-14T06:37:44Z"
+  },
+  {
+      "name": "kube-dns",
+      "cluster": "cluster2",
+      "project": "kube-system",
+      "type": "ClusterIP",
+      "selector": "k8s-app : kube-dns",
+      "port": "{ name : dns },  { protocol : UDP },  { port : 53 },  { targetPort : 53 }|{ name : dns-tcp },  { protocol : TCP },  { port : 53 },  { targetPort : 53 }|{ protocol : TCP },  { port : 9153 },  { targetPort : 9153 },  { name : metrics }",
+      "created_time": "2020-09-29T05:44:12Z"
+  },
+  {
+      "name": "kube-scheduler-svc",
+      "cluster": "cluster2",
+      "project": "kube-system",
+      "type": "ClusterIP",
+      "selector": "component : kube-scheduler",
+      "port": "{ targetPort : 10251 },  { name : http-metrics },  { protocol : TCP },  { port : 10251 }",
+      "created_time": "2020-11-19T06:36:31Z"
+  },
+  {
+      "name": "kubelet",
+      "cluster": "cluster2",
+      "project": "kube-system",
+      "type": "ClusterIP",
+      "selector": "-",
+      "port": "{ name : https-metrics },  { protocol : TCP },  { port : 10250 },  { targetPort : 10250 }|{ name : http-metrics },  { protocol : TCP },  { port : 10255 },  { targetPort : 10255 }|{ name : cadvisor },  { protocol : TCP },  { port : 4194 },  { targetPort : 4194 }",
+      "created_time": "2020-10-23T02:09:12Z"
+  },
+  {
+      "name": "metrics-server",
+      "cluster": "cluster2",
+      "project": "kube-system",
+      "type": "ClusterIP",
+      "selector": "k8s-app : metrics-server",
+      "port": "{ protocol : TCP },  { port : 443 },  { targetPort : 443 }",
+      "created_time": "2020-10-14T06:37:44Z"
+  },
+  {
+      "name": "tiller-deploy",
+      "cluster": "cluster2",
+      "project": "kube-system",
+      "type": "ClusterIP",
+      "selector": "app : helm|name : tiller",
+      "port": "{ name : tiller },  { protocol : TCP },  { port : 44134 },  { targetPort : tiller }",
+      "created_time": "2020-09-29T07:50:18Z"
+  },
+  {
+      "name": "vpa-webhook",
+      "cluster": "cluster2",
+      "project": "kube-system",
+      "type": "ClusterIP",
+      "selector": "app : vpa-admission-controller",
+      "port": "{ protocol : TCP },  { port : 443 },  { targetPort : 8000 }",
+      "created_time": "2020-10-14T06:37:46Z"
+  },
+  {
+      "name": "alertmanager-main",
+      "cluster": "cluster2",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "alertmanager : main|app : alertmanager",
+      "port": "{ name : web },  { protocol : TCP },  { port : 9093 },  { targetPort : web }",
+      "created_time": "2020-10-23T02:09:46Z"
+  },
+  {
+      "name": "alertmanager-operated",
+      "cluster": "cluster2",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app : alertmanager",
+      "port": "{ targetPort : web },  { name : web },  { protocol : TCP },  { port : 9093 }|{ name : tcp-mesh },  { protocol : TCP },  { port : 9094 },  { targetPort : 9094 }|{ targetPort : 9094 },  { name : udp-mesh },  { protocol : UDP },  { port : 9094 }",
+      "created_time": "2020-10-23T02:09:46Z"
+  },
+  {
+      "name": "grafana",
+      "cluster": "cluster2",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app : grafana",
+      "port": "{ targetPort : http },  { name : http },  { protocol : TCP },  { port : 3000 }",
+      "created_time": "2020-10-23T02:09:47Z"
+  },
+  {
+      "name": "kube-state-metrics",
+      "cluster": "cluster2",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app.kubernetes.io/name : kube-state-metrics",
+      "port": "{ name : https-main },  { protocol : TCP },  { port : 8443 },  { targetPort : https-main }|{ targetPort : https-self },  { name : https-self },  { protocol : TCP },  { port : 9443 }",
+      "created_time": "2020-10-23T02:09:47Z"
+  },
+  {
+      "name": "node-exporter",
+      "cluster": "cluster2",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app.kubernetes.io/name : node-exporter",
+      "port": "{ protocol : TCP },  { port : 9100 },  { targetPort : https },  { name : https }",
+      "created_time": "2020-10-23T02:09:47Z"
+  },
+  {
+      "name": "prometheus-adapter",
+      "cluster": "cluster2",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "name : prometheus-adapter",
+      "port": "{ name : https },  { protocol : TCP },  { port : 443 },  { targetPort : 6443 }",
+      "created_time": "2020-10-23T02:09:47Z"
+  },
+  {
+      "name": "prometheus-k8s",
+      "cluster": "cluster2",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app : prometheus|prometheus : k8s",
+      "port": "{ targetPort : web },  { name : web },  { protocol : TCP },  { port : 9090 }",
+      "created_time": "2020-10-23T02:09:47Z"
+  },
+  {
+      "name": "prometheus-operated",
+      "cluster": "cluster2",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app : prometheus",
+      "port": "{ name : web },  { protocol : TCP },  { port : 9090 },  { targetPort : web }",
+      "created_time": "2020-10-23T02:09:47Z"
+  },
+  {
+      "name": "prometheus-operator",
+      "cluster": "cluster2",
+      "project": "monitoring",
+      "type": "ClusterIP",
+      "selector": "app.kubernetes.io/component : controller|app.kubernetes.io/name : prometheus-operator",
+      "port": "{ protocol : TCP },  { port : 8443 },  { targetPort : https },  { name : https }",
+      "created_time": "2020-10-23T02:09:02Z"
+  },
+  {
+      "name": "prometheus-server-lb",
+      "cluster": "cluster2",
+      "project": "monitoring",
+      "type": "LoadBalancer",
+      "selector": "prometheus : k8s|app : prometheus",
+      "port": "{ nodePort : 32607 },  { protocol : TCP },  { port : 9090 },  { targetPort : 9090 }",
+      "created_time": "2020-11-19T04:05:17Z"
+  },
+  {
+      "name": "cluster-metric-collector",
+      "cluster": "cluster2",
+      "project": "openmcp",
+      "type": "LoadBalancer",
+      "selector": "name : cluster-metric-collector",
+      "port": "{ protocol : TCP },  { port : 2052 },  { targetPort : 2052 },  { nodePort : 32052 }",
+      "created_time": "2020-10-14T06:37:44Z"
+  },
+  {
+      "name": "testim-sv",
+      "cluster": "cluster2",
+      "project": "testmig",
+      "type": "NodePort",
+      "selector": "app : testim",
+      "port": "{ name : testim-web },  { protocol : TCP },  { port : 31327 },  { targetPort : 8080 },  { nodePort : 31327 }",
+      "created_time": "2020-11-25T12:53:05Z"
+  }
+]

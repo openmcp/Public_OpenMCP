@@ -1,0 +1,62 @@
+[
+  {
+    "name": "cluster1",
+    "region": "KR",
+    "zone": "Seoul",
+    "status": "Healthy",
+    "provider": "-",
+    "nodes": 2,
+    "cpu": "1.2/72 Core",
+    "ram": "42.3/197.3 Gi",
+    "disk": "4.1%",
+    "network": "6.5 byte/s"
+  },
+  {
+    "name": "cluster2",
+    "region": "KR",
+    "zone": "Gyeonggi-do",
+    "status": "Healthy",
+    "provider": "-",
+    "nodes": 2,
+    "cpu": "1.9/80 Core",
+    "ram": "25.3/263.4 Gi",
+    "disk": "3.3%",
+    "network": "5.3 byte/s"
+  },
+  {
+    "name": "cluster3",
+    "region": "KR",
+    "zone": "Gyeonggi-do",
+    "status": "Healthy",
+    "provider": "-",
+    "nodes": 1,
+    "cpu": "0.6/8 Core",
+    "ram": "5.2/8.2 Gi",
+    "disk": "72.3%",
+    "network": "3.3 byte/s"
+  },
+  {
+    "name": "eks-cluster1",
+    "region": "eu-west-2",
+    "zone": "eu-west-2a",
+    "status": "Healthy",
+    "provider": "-",
+    "nodes": 3,
+    "cpu": "3.5/6 Core",
+    "ram": "13.4/24.2 Gi",
+    "disk": "7.5%",
+    "network": "5.8 byte/s"
+  },
+  {
+    "name": "gke-cluster1",
+    "region": "us-central1",
+    "zone": "us-central1-c",
+    "status": "Healthy",
+    "provider": "-",
+    "nodes": 2,
+    "cpu": "0.7/8 Core",
+    "ram": "14.6/30.7 Gi",
+    "disk": "7.3%",
+    "network": "0.3 byte/s"
+  }
+]

@@ -2,16 +2,19 @@ import React, { Component } from "react";
 import Head from "./components/layout/Head";
 import Contents from "./components/layout/Contents";
 import { Redirect } from "react-router-dom";
-import LeftMenu from './components/layout/LeftMenu';
+import { AsyncStorage } from 'AsyncStorage';
+import MainLeftMenu2 from './components/layout/MainLeftMenu2';
 
 class Main extends Component {
   constructor(props) {
     super(props);
-    // const token = localStorage.getItem("token");
-    const token = sessionStorage.getItem("token");
+    let token = null;
+    AsyncStorage.getItem("token", (err, result) => { 
+      token = result;
+    })
 
     let loggedIn = true;
-    if (token == null) {
+    if (token === null || token === "null" || token==="") {
       loggedIn = false;
     }
 
@@ -44,13 +47,15 @@ class Main extends Component {
   }
 
   render() {
+
     if (!this.state.loggedIn) {
       return <Redirect to="/login"></Redirect>;
     }
     return (
       <div className="wrapper" style={{minHeight:this.state.windowHeight}}>
-        <Head onSelectMenu={this.onLeftMenu} />
-        {/* <LeftMenu /> */}
+        <Head onSelectMenu={this.onLeftMenu} path={this.props.location.pathname}/>
+        <MainLeftMenu2 info={this.props}/>
+
         <Contents path={this.props.location.pathname} onSelectMenu={this.onLeftMenu} info={this.props}/>
       </div>
     );

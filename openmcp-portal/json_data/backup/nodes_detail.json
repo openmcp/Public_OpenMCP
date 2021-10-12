@@ -1,0 +1,183 @@
+{
+  "basic_info": {
+    "name": "node1",
+    "status": "Running",
+    "role": "etcd,worker,control,plane",
+    "kubernetes": "v1.17.3",
+    "kubernetes_proxy": "v1.17.3",
+    "ip": "192.168.0.108",
+    "os": "Centos Linux 7",
+    "docker": "v19.3.4",
+    "created_time": "2020/07/16 19:20:58",
+    "taint": {
+      "key": "",
+      "value": "",
+      "taint": "ddd"
+    }
+  },
+  "kubernetes_node_status": [
+    {
+      "name": "Kubelet",
+      "status": "healthy"
+    },
+    {
+      "name": "Disk Pressure",
+      "status": "unhealthy"
+    },
+    {
+      "name": "Memory Pressure",
+      "status": "healthy"
+    },
+    {
+      "name": "PID Pressure",
+      "status": "healthy"
+    }
+  ],
+  "node_resource_usage": {
+    "cpu": {
+      "counts": 3,
+      "unit": "core",
+      "status": [
+        { "name": "Used", "value": 8 },
+        { "name": "Total", "value": 16 }
+      ]
+    },
+    "memory": {
+      "counts": 3,
+      "unit": "Gi",
+      "status": [
+        { "name": "Used", "value": 8 },
+        { "name": "Total", "value": 16 }
+      ]
+    },
+    "storage": {
+      "unit": "GB",
+      "status": [
+        { "name": "Used", "value": 8 },
+        { "name": "Total", "value": 16 }
+      ]
+    },
+    "pods": {
+      "unit": "",
+      "status": [
+        { "name": "Used", "value": 50 },
+        { "name": "Capacity", "value": 110 }
+      ]
+    }
+  },
+
+  "events": [
+    {
+      "project": "project1",
+      "type": "Warning",
+      "reason": "Back-off",
+      "object": "hello-c-1-96d766647-wwh6w",
+      "message": "Back-off restarting failed container",
+      "time": "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project2",
+      "type": "Warning",
+      "reason": "Back-off",
+      "object": "hello-c-1-96d766647-wwh6w",
+      "message": "Back-off restarting failed container",
+      "time": "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project3",
+      "type": "Warning",
+      "reason": "Back-off",
+      "object": "hello-c-1-96d766647-wwh6w",
+      "message": "Back-off restarting failed container",
+      "time": "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project4",
+      "type": "Warning",
+      "reason": "Back-off",
+      "object": "hello-c-1-96d766647-wwh6w",
+      "message": "Back-off restarting failed container",
+      "time": "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project5",
+      "type": "Warning",
+      "reason": "Back-off",
+      "object": "hello-c-1-96d766647-wwh6w",
+      "message": "Back-off restarting failed container",
+      "time": "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project6",
+      "type": "Warning",
+      "reason": "Back-off",
+      "object": "hello-c-1-96d766647-wwh6w",
+      "message": "Back-off restarting failed container",
+      "time": "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project7",
+      "type": "Warning",
+      "reason": "Back-off",
+      "object": "hello-c-1-96d766647-wwh6w",
+      "message": "Back-off restarting failed container",
+      "time": "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project8",
+      "type": "Warning",
+      "reason": "Back-off",
+      "object": "hello-c-1-96d766647-wwh6w",
+      "message": "Back-off restarting failed container",
+      "time": "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project9",
+      "type": "Warning",
+      "reason": "Back-off",
+      "object": "hello-c-1-96d766647-wwh6w",
+      "message": "Back-off restarting failed container",
+      "time": "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project10",
+      "type": "Warning",
+      "reason": "Back-off",
+      "object": "hello-c-1-96d766647-wwh6w",
+      "message": "Back-off restarting failed container",
+      "time": "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project11",
+      "type": "Warning",
+      "reason": "Back-off",
+      "object": "hello-c-1-96d766647-wwh6w",
+      "message": "Back-off restarting failed container",
+      "time": "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project12",
+      "type": "Warning",
+      "reason": "Back-off",
+      "object": "hello-c-1-96d766647-wwh6w",
+      "message": "Back-off restarting failed container",
+      "time": "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project13",
+      "type": "Warning",
+      "reason": "Back-off",
+      "object": "hello-c-1-96d766647-wwh6w",
+      "message": "Back-off restarting failed container",
+      "time": "2020/07/16 11:44:45"
+    },
+    {
+      "project": "project14",
+      "type": "Warning",
+      "reason": "Back-off",
+      "object": "hello-c-1-96d766647-wwh6w",
+      "message": "Back-off restarting failed container",
+      "time": "2020/07/16 11:44:45"
+    }
+  ]
+}

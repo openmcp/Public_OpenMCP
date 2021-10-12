@@ -1,0 +1,98 @@
+[
+  {
+    "name": "cluster1",
+    "status": "Provisioning",
+    "provider": "Imported",
+    "nodes": "5",
+    "cpu": "6.3/8core",
+    "ram" : "6.7/15.5GIB"
+  },
+  {
+    "name": "cluster2",
+    "status": "Unhealthy",
+    "provider": "AWS EC2",
+    "nodes": "5",
+    "cpu": "6.3/8core",
+    "ram" : "6.7/15.5GIB"
+  },
+  {
+    "name": "cluster3",
+    "status": "Active",
+    "provider": "Imported",
+    "nodes": "5",
+    "cpu": "6.3/8core",
+    "ram" : "6.7/15.5GIB"
+  },
+  {
+    "name": "cluster4",
+    "status": "Active",
+    "provider": "KVM",
+    "nodes": "5",
+    "cpu": "6.3/8core",
+    "ram" : "6.7/15.5GIB"
+  },
+  {
+    "name": "cluster5",
+    "status": "Active",
+    "provider": "Imported",
+    "nodes": "5",
+    "cpu": "6.3/8core",
+    "ram" : "6.7/15.5GIB"
+  },
+  {
+    "name": "cluster6",
+    "status": "Unhealthy",
+    "provider": "AWS EC2",
+    "nodes": "5",
+    "cpu": "6.3/8core",
+    "ram" : "6.7/15.5GIB"
+  },
+  {
+    "name": "cluster7",
+    "status": "Active",
+    "provider": "AWS EC2",
+    "nodes": "5",
+    "cpu": "6.3/8core",
+    "ram" : "6.7/15.5GIB"
+  },
+  {
+    "name": "cluster8",
+    "status": "Active",
+    "provider": "Imported",
+    "nodes": "5",
+    "cpu": "6.3/8core",
+    "ram" : "6.7/15.5GIB"
+  },
+  {
+    "name": "cluster9",
+    "status": "Active",
+    "provider": "PM2",
+    "nodes": "5",
+    "cpu": "6.3/8core",
+    "ram" : "6.7/15.5GIB"
+  },
+  {
+    "name": "cluster10",
+    "status": "Active",
+    "provider": "Imported",
+    "nodes": "5",
+    "cpu": "6.3/8core",
+    "ram" : "6.7/15.5GIB"
+  },
+  {
+    "name": "cluster11",
+    "status": "Unhealthy",
+    "provider": "PM2",
+    "nodes": "5",
+    "cpu": "6.3/8core",
+    "ram" : "6.7/15.5GIB"
+  },
+  {
+    "name": "cluster12",
+    "status": "Active",
+    "provider": "Imported",
+    "nodes": "5",
+    "cpu": "6.3/8core",
+    "ram" : "6.7/15.5GIB"
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "namespace": "webproject",
+    "name": "ingress-controller-leader-nginx",
+    "keys": "",
+    "created_time": "2020-08-05 15:56:17"
+  },
+  {
+    "namespace": "webproject",
+    "name": "ingress-nginx-controller",
+    "keys": "config",
+    "created_time": "2020-08-05 15:56:17"
+  },
+  {
+    "namespace": "webproject",
+    "name": "nginx-configuration",
+    "keys": "",
+    "created_time": "2020-08-05 15:56:17"
+  },
+  {
+    "namespace": "webproject",
+    "name": "tcp-services",
+    "keys": "",
+    "created_time": "2020-08-05 15:56:17"
+  },
+  {
+    "namespace": "webproject",
+    "name": "udp-services",
+    "keys": "",
+    "created_time": "2020-08-05 15:56:17"
+  }
+]
