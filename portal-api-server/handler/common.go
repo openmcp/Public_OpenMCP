@@ -38,13 +38,9 @@ type Account struct {
 }
 
 func GetOpenMCPToken() string {
-	// var client http.Client
 
 	client := &http.Client{
 		Transport: &http.Transport{
-			// TLSClientConfig: &tls.Config{
-			// 	RootCAs: caCertPool,
-			// },
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},
 	}
@@ -54,7 +50,6 @@ func GetOpenMCPToken() string {
 	pbytes, _ := json.Marshal(account)
 	buff := bytes.NewBuffer(pbytes)
 
-	// resp, err := client.Get("https://" + openmcpURL + "/token?username=openmcp&password=keti")
 	resp, err := client.Post("https://"+openmcpURL+"/token", "application/json", buff)
 
 	if err != nil {
@@ -96,7 +91,6 @@ func CallAPI(token string, url string, ch chan<- Resultmap) {
 	resp, err := client.Do(req)
 
 	if err != nil {
-		// log.Fatal(err)
 		fmt.Print(err)
 	}
 	var data map[string]interface{}
@@ -105,22 +99,17 @@ func CallAPI(token string, url string, ch chan<- Resultmap) {
 
 	defer resp.Body.Close() // 리소스 누출 방지
 	if err != nil {
-		// ch <- fmt.Sprintf("while reading %s: %v", url, err)
-		// return
 		fmt.Print(err)
 	}
 	json.Unmarshal([]byte(bodyBytes), &data)
 
 	secs := time.Since(start).Seconds()
 
-	// ch <- fmt.Sprintf("%.2fs %s %v", secs, url, data)
-
 	ch <- Resultmap{secs, url, data}
 }
 
 func PostYaml(url string, yaml io.Reader) ([]byte, error) {
 	token := GetOpenMCPToken()
-	// fmt.Println("yaml   :", yaml)
 	var bearer = "Bearer " + token
 	req, err := http.NewRequest("POST", url, yaml)
 
@@ -155,7 +144,6 @@ func PostYaml(url string, yaml io.Reader) ([]byte, error) {
 
 func CallPostAPI(url string, headtype string, body interface{}) ([]byte, error) {
 	token := GetOpenMCPToken()
-	// fmt.Println("yaml   :", yaml)
 	var bearer = "Bearer " + token
 
 	payloadBuf := new(bytes.Buffer)
@@ -193,7 +181,6 @@ func CallPostAPI(url string, headtype string, body interface{}) ([]byte, error) 
 
 func CallPatchAPI(url string, headtype string, body []interface{}, bodyIsArray bool) ([]byte, error) {
 	token := GetOpenMCPToken()
-	// fmt.Println("yaml   :", yaml)
 	var bearer = "Bearer " + token
 
 	payloadBuf := new(bytes.Buffer)
@@ -248,14 +235,8 @@ func ClusterHealthCheck(condType string) string {
 
 func GetInfluxPodsMetric(clusterName string, in *Influx) []client.Result {
 	q := client.Query{}
-	// q = client.NewQuery("SELECT last(*) FROM Pods WHERE cluster = '"+clusterName+"' ORDER BY DESC LIMIT 1", "Metrics", "")
-	// select last(*) from Pods where time > now() - 5m and cluster='cluster1' group by namespace,pod order by desc limit 1
 	q = client.NewQuery("select last(*) from Pods where time > now() - 5m and cluster='"+clusterName+"' group by namespace,pod order by desc limit 1", "Metrics", "")
-
-	//select last(*) from Pods where time > now() -1m and cluster='cluster1' group by namespace,pod,time(1m)
 	response, err := in.inClient.Query(q)
-	// fmt.Println(response)
-
 	if err == nil && response.Error() == nil {
 
 		return response.Results
@@ -264,22 +245,16 @@ func GetInfluxPodsMetric(clusterName string, in *Influx) []client.Result {
 	return nil
 }
 
-// func GetInfluxPod10mMetric(clusterName string, namespace string, pod string, in *Influx) []client.Result {
 func GetInfluxPod10mMetric(clusterName string, namespace string, pod string) PhysicalResources {
 	nowTime := time.Now().UTC() //.Add(time.Duration(offset) * time.Second)
-	// startTime := nowTime.Add(time.Duration(-10) * time.Minute)
 	endTime := nowTime
 	startTime := nowTime.Add(time.Duration(-11) * time.Minute)
-	// endTime := nowTime.Add(time.Duration(-1) * time.Minute)
 	_, offset := time.Now().Zone()
 	start := startTime.Format("2006-01-02_15:04") + ":00"
 	end := endTime.Format("2006-01-02_15:04") + ":00"
-	// fmt.Println(start, "///", end)
 
 	ch := make(chan Resultmap)
 	token := GetOpenMCPToken()
-	// http://192.168.0.152:31635/metrics/namespaces/kube-system/pods/kube-flannel-ds-nn5p5?clustername=cluster1&timeStart=2020-09-03_09:00:00&timeEnd=2020-09-03_09:00:15
-
 	podMetricURL := "https://" + openmcpURL + "/metrics/namespaces/" + namespace + "/pods/" + pod + "?clustername=" + clusterName + "&timeStart=" + start + "&timeEnd=" + end
 
 	go CallAPI(token, podMetricURL, ch)
@@ -301,15 +276,10 @@ func GetInfluxPod10mMetric(clusterName string, namespace string, pod string) Phy
 			t1 = t1.Add(time.Duration(offset) * time.Second)
 			timeHM = t1.Format("15:04:05")
 
-			// fmt.Println(timeHM)
-
 			metricsPerMin[timeHM] = append(metricsPerMin[timeHM], m)
 		}
 
 		for k, m := range metricsPerMin {
-			// fmt.Println(k)
-			// fmt.Println(m)
-			// fmt.Println()
 			cpuSum := 0
 			memorySum := 0
 			oldNtTxUseInt := 0
@@ -344,11 +314,8 @@ func GetInfluxPod10mMetric(clusterName string, namespace string, pod string) Phy
 					ntRxUse := v.(map[string]interface{})["network"].(map[string]interface{})["NetworkRxBytes"].(string)
 					ntRxUseInt, _ = strconv.Atoi(ntRxUse)
 				}
-				// fmt.Println(v.(map[string]interface{})["time"], ntTxUseInt, ntRxUseInt)
 
 				if index == 0 {
-					// fmt.Println()
-					// fmt.Println("index0:", index, ntTxUseInt, oldNtTxUseInt)
 					oldNtTxUseInt = ntTxUseInt
 					oldNtRxUseInt = ntRxUseInt
 					minTxUseInt = ntTxUseInt
@@ -356,7 +323,6 @@ func GetInfluxPod10mMetric(clusterName string, namespace string, pod string) Phy
 					maxTxUseInt = ntTxUseInt
 					maxRxUseInt = ntRxUseInt
 				} else {
-					// fmt.Println("indexN:", ntTxUseInt, oldNtTxUseInt)
 					if oldNtTxUseInt <= ntTxUseInt {
 						maxTxUseInt = ntTxUseInt
 					}
@@ -371,11 +337,8 @@ func GetInfluxPod10mMetric(clusterName string, namespace string, pod string) Phy
 
 			cpuAvg := float64(cpuSum) / float64(len(m)) / 1000 / 1000 / 1000
 			memoryAvg := float64(memorySum) / float64(len(m)) / 1000
-			// fmt.Println(maxTxUseInt, minTxUseInt)
-			// fmt.Println(maxRxUseInt, minRxUseInt)
 			inBps := (maxTxUseInt - minTxUseInt) / 60
 			outBps := (maxRxUseInt - minRxUseInt) / 60
-			//fmt.Println(k, "cpu: ", cpuAvg)
 			podCPUUsageMins = append(podCPUUsageMins, PodCPUUsageMin{math.Ceil(cpuAvg*1000) / 1000, k})
 			podMemoryUsageMins = append(podMemoryUsageMins, PodMemoryUsageMin{math.Ceil(memoryAvg*10) / 10, k})
 			podNetworkUsageMins = append(podNetworkUsageMins, PodNetworkUsageMin{"Bps", inBps, outBps, k})
@@ -417,23 +380,13 @@ func GetInfluxDBPod10mMetric(clusterName string, projectName string) PhysicalRes
 	InitInfluxConfig()
 	inf := NewInflux(InfluxConfig.Influx.Ip, InfluxConfig.Influx.Port, InfluxConfig.Influx.Username, InfluxConfig.Influx.Username)
 
-	nowTime := time.Now().UTC() //.Add(time.Duration(offset) * time.Second)
+	nowTime := time.Now().UTC()
 	endTime := nowTime
 	startTime := nowTime.Add(time.Duration(-12) * time.Minute)
 	start := startTime.Format("2006-01-02T15:04") + ":00.0Z"
 	end := endTime.Format("2006-01-02T15:04") + ":00.0Z"
-	// start = "2020-12-16T10:21:00.0Z"
-	// end = "2020-12-16T10:32:00.0Z"
-
-	// client := &http.Client{
-	// 	Transport: &http.Transport{
-	// 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	// 	},
-	// }
 
 	q := client.Query{}
-	// t := time.Now().Format(time.RFC3339)
-	// select time, CPUUsageNanoCores as cpuUsage, MemoryUsageBytes as memoryUsage, NetworkRxBytes as Rx, NetworkTxBytes as Tx, pod  from Pods where time < '2020-12-16T10:31:00.0Z' and time > '2020-12-16T10:21:00.0Z' and cluster='cluster2' and namespace='ingress-nginx'
 	query := "select time, CPUUsageNanoCores as cpuUsage, MemoryUsageBytes as memoryUsage, NetworkRxBytes as Rx, NetworkTxBytes as Tx, pod from Pods where time < '" + end + "' and time > '" + start + "' and cluster='" + clusterName + "' and namespace='" + projectName + "' order by time asc"
 
 	q = client.NewQuery(query, "Metrics", "")
@@ -443,7 +396,6 @@ func GetInfluxDBPod10mMetric(clusterName string, projectName string) PhysicalRes
 		fmt.Println("ERR : ", err)
 	}
 
-	// var queryResult []client.Result
 	queryResult := response.Results[0]
 
 	if len(queryResult.Series) == 0 {
@@ -481,15 +433,6 @@ func GetInfluxDBPod10mMetric(clusterName string, projectName string) PhysicalRes
 	preTimeHM := ""
 	podlist := []string{}
 	for i, value := range ser.Values {
-		// 	[
-		// 		"2020-12-16T04:22:02.112243605Z", [0][0]
-		// 		"1177304n",  [0][1] cpuUsage
-		// 		"170028Ki",  [0][2] memoryUsage
-		// 		"926886456", [0][3] Rx
-		// 		"279574980"  [0][4] Tx
-		//		"pods-1"		 [0][5] pod
-		//  ],
-		// value := ser.Values[r][c].(string)
 		timeValue := value[0].(string)
 		ind := strings.Index(timeValue, ":")
 		timeHM := timeValue[ind-2 : ind+3]
@@ -567,8 +510,7 @@ func GetInfluxDBPod10mMetric(clusterName string, projectName string) PhysicalRes
 
 func GetInfluxPodTop5(clusterName string, projectName string) UsageTop5 {
 
-	nowTime := time.Now().UTC() //.Add(time.Duration(offset) * time.Second)
-	// startTime := nowTime.Add(time.Duration(-10) * time.Minute)
+	nowTime := time.Now().UTC()
 	startTime := nowTime.Add(time.Duration(-5) * time.Minute)
 	start := startTime.Format("2006-01-02T15:04") + ":00.0Z"
 
@@ -585,8 +527,6 @@ func GetInfluxPodTop5(clusterName string, projectName string) UsageTop5 {
 	q = client.NewQuery(query, "Metrics", "")
 	response, _ := inf.inClient.Query(q)
 
-	// var queryResult []client.Result
-	// fmt.Println(response)
 	if response == nil {
 		usageTop5.CPU = []UsageType{}
 		usageTop5.Memory = []UsageType{}
@@ -612,21 +552,17 @@ func GetInfluxPodTop5(clusterName string, projectName string) UsageTop5 {
 				memUsage := UsageType{}
 				podName := ser.Tags["pod"]
 				cpuUsage.Name = podName
-				// cpuUsage.Type = podName
 
 				intCpu, _ := strconv.Atoi(strings.Split(value[1].(string), "n")[0])
 				floatCpu := float64(intCpu) / 1000 / 1000 / 1000
 				strCpu := fmt.Sprintf("%.5g", floatCpu) + " core"
 				cpuUsage.Usage = strCpu
-				// cpuUsage.Usage = strings.Split(value[1].(string), "n")[0]
 
 				memUsage.Name = podName
-				// memUsage.Type = podName
 				intMem, _ := strconv.Atoi(strings.Split(value[2].(string), "Ki")[0])
 				floatMem := float64(intMem) / 1000 / 1000 //Gi
 				strMem := fmt.Sprintf("%.5g", floatMem) + " Gi"
 				memUsage.Usage = strMem
-				// memUsage.Usage = strings.Split(value[2].(string), "Ki")[0]
 
 				usageTop5.CPU = append(usageTop5.CPU, cpuUsage)
 				usageTop5.Memory = append(usageTop5.Memory, memUsage)

@@ -56,12 +56,9 @@ func InfluxDBClient(INFLUX_IP, INFLUX_PORT, username, password string) client.Cl
 		Addr:     "http://" + INFLUX_IP + ":" + INFLUX_PORT,
 		Username: username,
 		Password: password,
-		// InsecureSkipVerify: true,
 	})
 	if err != nil {
 		fmt.Println(err)
 	}
 	return c
 }
-
-//Influx Configration

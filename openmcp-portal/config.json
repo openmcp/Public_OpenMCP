@@ -1,12 +1,12 @@
 {
     "api" : {
-        "url" : "http://192.168.0.48:4885"
+        "url" : "http://0.0.0.0:1111"
     },
     "db" : {
-        "host":"192.168.0.4",
-        "user":"scshin",
-        "password":"Rnalek19!",
+        "host":"0.0.0.0",
+        "user":"user-id",
+        "password":"password",
         "port":"5432",
-        "database":"portal-controller"
+        "database":"database-name"
     }
 }

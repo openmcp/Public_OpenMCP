@@ -7,14 +7,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Persistent Volume Claim (PVC)
-// name : items ("metadata","name") string
-// status : items ("status","phase") string
-// namespace : items ("metatdata","namespace") string
-// capacity : items ("status","capacity" storage") string
-// createdTime items ("metadata","creationTimestamp")
-
-// persistent volume claim (PVC)
 func GetVolumes(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan Resultmap)
 	token := GetOpenMCPToken()
@@ -67,7 +59,6 @@ func GetVolumeOverview(w http.ResponseWriter, r *http.Request) {
 	volume := VolumeInfo{}
 	volumeURL := "https://" + openmcpURL + "/api/v1/namespaces/" + projectName + "/persistentvolumeclaims/" + volumeName + "?clustername=" + clusterName
 
-	// fmt.Println(volumeURL)
 	go CallAPI(token, volumeURL, ch)
 
 	volumeResult := <-ch
@@ -106,10 +97,7 @@ func GetVolumeOverview(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//MountedBy
-	// http://192.168.0.152:31635/api/v1/namespaces/webproject/pods?clustername=cluster1
 	resPod := PodRes{}
-
-	// http: //192.168.0.152:31635/api/v1/namespaces/kube-system/pods?clustername=cluster2
 	podURL := "https://" + openmcpURL + "/api/v1/namespaces/" + projectName + "/pods?clustername=" + clusterName
 	go CallAPI(token, podURL, ch)
 	podResult := <-ch
@@ -142,26 +130,19 @@ func GetVolumeOverview(w http.ResponseWriter, r *http.Request) {
 
 		pod := PodInfo{}
 		podName := GetStringElement(element, []string{"metadata", "name"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
 		project := GetStringElement(element, []string{"metadata", "namespace"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["namespace"].(string)
 		status := GetStringElement(element, []string{"status", "phase"})
-		// element.(map[string]interface{})["status"].(map[string]interface{})["phase"].(string)
 		podIP := "-"
 		node := "-"
 		nodeIP := "-"
 		if status == "Running" {
 			podIP = GetStringElement(element, []string{"status", "podIP"})
-			// element.(map[string]interface{})["status"].(map[string]interface{})["podIP"].(string)
 			node = GetStringElement(element, []string{"spec", "nodeName"})
-			// element.(map[string]interface{})["spec"].(map[string]interface{})["nodeName"].(string)
 			nodeIP = GetStringElement(element, []string{"status", "hostIP"})
-			// element.(map[string]interface{})["status"].(map[string]interface{})["hostIP"].(string)
 		}
 		cpu := "cpu"
 		ram := "ram"
 		createdTime := GetStringElement(element, []string{"metadata", "creationTimestamp"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["creationTimestamp"].(string)
 
 		pod.Name = podName
 		pod.Status = status
@@ -180,7 +161,6 @@ func GetVolumeOverview(w http.ResponseWriter, r *http.Request) {
 	resVolumeOverview.MountedBy = resPod.Pods
 
 	//Events
-	// http://192.168.0.152:31635/api/v1/namespaces/ingress-nginx/events?clustername=cluster1
 	eventURL := "https://" + openmcpURL + "/api/v1/namespaces/" + projectName + "/events?clustername=" + clusterName
 
 	go CallAPI(token, eventURL, ch)
@@ -198,7 +178,6 @@ func GetVolumeOverview(w http.ResponseWriter, r *http.Request) {
 				event.Typenm = GetStringElement(element, []string{"type"})
 				event.Reason = GetStringElement(element, []string{"reason"})
 				event.Message = GetStringElement(element, []string{"message"})
-				// event.Time = GetStringElement(element, []string{"metadata", "creationTimestamp"})
 				event.Time = GetStringElement(element, []string{"lastTimestamp"})
 				event.Object = kind
 				event.Project = projectName

@@ -9,9 +9,6 @@ type Attributes struct {
 	Status string `json:"status"`
 	Region string `json:"region"`
 	Zone   string `json:"zone"`
-	// Attributes struct {
-	// 	Status string `json:"status"`
-	// } `json:"attributes"`
 }
 type ChildNode struct {
 	Name       string     `json:"name"`
@@ -57,7 +54,6 @@ type ManagedCluster struct {
 	NodeResourceGrouop string      `json:"noderesourcegroup"`
 	AgentPool          []AgentPool `json:"agentpools"`
 	Location           string      `json:"location"`
-	// VmssNames          []string `json:"vmssnames"`
 }
 
 type AgentPool struct {
@@ -83,14 +79,3 @@ type EKSCluster struct {
 	ClusterName string         `json:"name"`
 	Nodegroups  []EKSNodegroup `json:"nodegroups"`
 }
-
-// type ClusterData struct {
-// 	Name       string            `json:"name"`
-// 	attributes ClusterAttributes `json:"attributes`
-// }
-
-// type ClusterAttributes struct {
-// 	status string `json:"status"`
-// 	region string `json:"region"`
-// 	zone   string `json:"zone"`
-// }

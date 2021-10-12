@@ -24,7 +24,6 @@ func GetPods(w http.ResponseWriter, r *http.Request) {
 	//get clusters Information
 	for _, element := range clusterData["items"].([]interface{}) {
 		clusterName := GetStringElement(element, []string{"metadata", "name"})
-		//  element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
 		clusterType := GetStringElement(element, []string{"status", "conditions", "type"})
 		if clusterType == "Ready" {
 			clusterNames = append(clusterNames, clusterName)
@@ -42,27 +41,20 @@ func GetPods(w http.ResponseWriter, r *http.Request) {
 		for _, element := range podItems {
 			pod := PodInfo{}
 			podName := GetStringElement(element, []string{"metadata", "name"})
-			// element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
 			project := GetStringElement(element, []string{"metadata", "namespace"})
-			// element.(map[string]interface{})["metadata"].(map[string]interface{})["namespace"].(string)
 			status := GetStringElement(element, []string{"status", "phase"})
-			// element.(map[string]interface{})["status"].(map[string]interface{})["phase"].(string)
 			podIP := "-"
 			node := "-"
 			nodeIP := "-"
 			if status == "Running" {
 				podIP = GetStringElement(element, []string{"status", "podIP"})
-				// element.(map[string]interface{})["status"].(map[string]interface{})["podIP"].(string)
 				node = GetStringElement(element, []string{"spec", "nodeName"})
-				// element.(map[string]interface{})["spec"].(map[string]interface{})["nodeName"].(string)
 				nodeIP = GetStringElement(element, []string{"status", "hostIP"})
-				// element.(map[string]interface{})["status"].(map[string]interface{})["hostIP"].(string)
 			}
 
 			cpu := "cpu"
 			ram := "ram"
 			createdTime := GetStringElement(element, []string{"metadata", "creationTimestamp"})
-			// element.(map[string]interface{})["metadata"].(map[string]interface{})["creationTimestamp"].(string)
 
 			pod.Name = podName
 			pod.Status = status
@@ -100,26 +92,19 @@ func GetPodsInCluster(w http.ResponseWriter, r *http.Request) {
 	for _, element := range podItems {
 		pod := PodInfo{}
 		podName := GetStringElement(element, []string{"metadata", "name"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
 		project := GetStringElement(element, []string{"metadata", "namespace"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["namespace"].(string)
 		status := GetStringElement(element, []string{"status", "phase"})
-		// element.(map[string]interface{})["status"].(map[string]interface{})["phase"].(string)
 		podIP := "-"
 		node := "-"
 		nodeIP := "-"
 		if status == "Running" {
 			podIP = GetStringElement(element, []string{"status", "podIP"})
-			// element.(map[string]interface{})["status"].(map[string]interface{})["podIP"].(string)
 			node = GetStringElement(element, []string{"spec", "nodeName"})
-			// element.(map[string]interface{})["spec"].(map[string]interface{})["nodeName"].(string)
 			nodeIP = GetStringElement(element, []string{"status", "hostIP"})
-			// element.(map[string]interface{})["status"].(map[string]interface{})["hostIP"].(string)
 		}
 		cpu := "cpu"
 		ram := "ram"
 		createdTime := GetStringElement(element, []string{"metadata", "creationTimestamp"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["creationTimestamp"].(string)
 
 		pod.Name = podName
 		pod.Status = status
@@ -269,7 +254,6 @@ func GetPodsInProject(w http.ResponseWriter, r *http.Request) {
 	projectName := vars["projectName"]
 	resPod := PodRes{}
 
-	// http: //192.168.0.152:31635/api/v1/namespaces/kube-system/pods?clustername=cluster2
 	podURL := "https://" + openmcpURL + "/api/v1/namespaces/" + projectName + "/pods?clustername=" + clusterName
 	go CallAPI(token, podURL, ch)
 	podResult := <-ch
@@ -280,26 +264,19 @@ func GetPodsInProject(w http.ResponseWriter, r *http.Request) {
 	for _, element := range podItems {
 		pod := PodInfo{}
 		podName := GetStringElement(element, []string{"metadata", "name"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
 		project := GetStringElement(element, []string{"metadata", "namespace"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["namespace"].(string)
 		status := GetStringElement(element, []string{"status", "phase"})
-		// element.(map[string]interface{})["status"].(map[string]interface{})["phase"].(string)
 		podIP := "-"
 		node := "-"
 		nodeIP := "-"
 		if status == "Running" {
 			podIP = GetStringElement(element, []string{"status", "podIP"})
-			// element.(map[string]interface{})["status"].(map[string]interface{})["podIP"].(string)
 			node = GetStringElement(element, []string{"spec", "nodeName"})
-			// element.(map[string]interface{})["spec"].(map[string]interface{})["nodeName"].(string)
 			nodeIP = GetStringElement(element, []string{"status", "hostIP"})
-			// element.(map[string]interface{})["status"].(map[string]interface{})["hostIP"].(string)
 		}
 		cpu := "cpu"
 		ram := "ram"
 		createdTime := GetStringElement(element, []string{"metadata", "creationTimestamp"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["creationTimestamp"].(string)
 
 		pod.Name = podName
 		pod.Status = status
@@ -323,24 +300,20 @@ func GetPodOverview(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	clusterName := r.URL.Query().Get("cluster")
 	podName := vars["podName"]
-	// podName := r.URL.Query().Get("pod")
 	projectName := r.URL.Query().Get("project")
 
-	// fmt.Println("################", clusterName, podName, projectName)
 	if clusterName == "" || podName == "" || projectName == "" {
 		errorMSG := jsonErr{500, "failed", "need some params"}
 		json.NewEncoder(w).Encode(errorMSG)
 	} else {
 		ch := make(chan Resultmap)
 		token := GetOpenMCPToken()
-		// http://192.168.0.152:31635/api/v1/namespaces/{namespace}/pods/{podname}?clustername={clustername}
 
 		podURL := "https://" + openmcpURL + "/api/v1/namespaces/" + projectName + "/pods/" + podName + "?clustername=" + clusterName
 		go CallAPI(token, podURL, ch)
 
 		podResult := <-ch
 		podData := podResult.data
-		// fmt.Println(podData)
 		if podData["spec"] != nil {
 			podMetadata := podData["metadata"].(map[string]interface{})
 			podSpec := podData["spec"].(map[string]interface{})
@@ -422,33 +395,7 @@ func GetPodOverview(w http.ResponseWriter, r *http.Request) {
 
 			podMetric := GetInfluxPod10mMetric(clusterName, projectName, podName)
 
-			// http://192.168.0.152:31635/api/v1/namespaces/{namespace}/events?clustername={clustername}
 			podEventURL := "https://" + openmcpURL + "/api/v1/namespaces/" + projectName + "/events?clustername=" + clusterName
-
-			// go CallAPI(token, podEventURL, ch)
-
-			// eventsResult := <-ch
-			// eventsData := eventsResult.data
-			// eventsItems := eventsData["items"].([]interface{})
-			// var events []Event
-			// if eventsItems != nil {
-			// 	for _, element := range eventsItems {
-			// 		// project := element.(map[string]interface{})["metadata"].(map[string]interface{})["namespace"].(string)
-			// 		typeNm := element.(map[string]interface{})["type"].(string)
-			// 		reason := element.(map[string]interface{})["reason"].(string)
-			// 		objectKind := element.(map[string]interface{})["involvedObject"].(map[string]interface{})["kind"].(string)
-			// 		objectName := element.(map[string]interface{})["involvedObject"].(map[string]interface{})["name"].(string)
-			// 		message := element.(map[string]interface{})["message"].(string)
-			// 		time := "-"
-			// 		if element.(map[string]interface{})["lastTimestamp"] != nil {
-			// 			time = element.(map[string]interface{})["lastTimestamp"].(string)
-			// 		}
-
-			// 		if objectKind == "Pod" && objectName == podName {
-			// 			events = append(events, Event{"", typeNm, reason, "", message, time})
-			// 		}
-			// 	}
-			// }
 
 			go CallAPI(token, podEventURL, ch)
 			eventResult := <-ch
@@ -465,7 +412,6 @@ func GetPodOverview(w http.ResponseWriter, r *http.Request) {
 						event.Typenm = GetStringElement(element, []string{"type"})
 						event.Reason = GetStringElement(element, []string{"reason"})
 						event.Message = GetStringElement(element, []string{"message"})
-						// event.Time = GetStringElement(element, []string{"metadata", "creationTimestamp"})
 						event.Time = GetStringElement(element, []string{"lastTimestamp"})
 						event.Object = kind
 						event.Project = projectName

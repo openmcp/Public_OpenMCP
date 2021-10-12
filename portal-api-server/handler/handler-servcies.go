@@ -8,23 +8,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// 1. get services
-// http://192.168.0.152:31635/api/v1/services?clustername=cluster2
-// name : items > metatdata > name
-// namespace : items > metadata > namespace (project)
-// type : items > spec > type(string)
-// selector : items > spec > selector > [] (key:value output)
-// port : items > spec > ports[] > display all
-
 func Services(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan Resultmap)
 	token := GetOpenMCPToken()
 
-	// vars := mux.Vars(r)
-	// clusterName := vars["clusterName"]
-	// projectName := vars["projectName"]
-
-	// fmt.Println(clustrName, projectName)
 	clusterurl := "https://" + openmcpURL + "/apis/core.kubefed.io/v1beta1/kubefedclusters?clustername=openmcp"
 	go CallAPI(token, clusterurl, ch)
 	clusters := <-ch
@@ -37,7 +24,6 @@ func Services(w http.ResponseWriter, r *http.Request) {
 	//get clusters Information
 	for _, element := range clusterData["items"].([]interface{}) {
 		clusterName := GetStringElement(element, []string{"metadata", "name"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
 		clusterType := GetStringElement(element, []string{"status", "conditions", "type"})
 		if clusterType == "Ready" {
 			clusterNames = append(clusterNames, clusterName)
@@ -56,17 +42,13 @@ func Services(w http.ResponseWriter, r *http.Request) {
 		// get service Information
 		for _, element := range serviceItems {
 			name := GetStringElement(element, []string{"metadata", "name"})
-			// element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
 			namespace := GetStringElement(element, []string{"metadata", "namespace"})
-			// element.(map[string]interface{})["metadata"].(map[string]interface{})["namespace"].(string)
 			serviceType := GetStringElement(element, []string{"spec", "type"})
-			// element.(map[string]interface{})["spec"].(map[string]interface{})["type"].(string)
 			clusterIP := GetStringElement(element, []string{"spec", "clusterIP"})
 			externalIP := GetStringElement(element, []string{"status", "loadBalancer", "ingress", "ip"})
 
 			selector := ""
 			selectorCheck := GetInterfaceElement(element, []string{"spec", "selector"})
-			// element.(map[string]interface{})["spec"].(map[string]interface{})["selector"]
 			if selectorCheck != nil {
 				i := 0
 				for key, val := range selectorCheck.(map[string]interface{}) {
@@ -84,7 +66,6 @@ func Services(w http.ResponseWriter, r *http.Request) {
 
 			port := ""
 			portCheck := GetArrayElement(element, []string{"spec", "ports"})
-			// element.(map[string]interface{})["spec"].(map[string]interface{})["ports"].([]interface{})
 			if portCheck != nil {
 				for i, item := range portCheck {
 					j := 0
@@ -106,7 +87,6 @@ func Services(w http.ResponseWriter, r *http.Request) {
 				port = "-"
 			}
 			createdTime := GetStringElement(element, []string{"metadata", "creationTimestamp"})
-			// element.(map[string]interface{})["metadata"].(map[string]interface{})["creationTimestamp"].(string)
 
 			service.Cluster = clusterName
 			service.Name = name
@@ -144,17 +124,13 @@ func GetServicesInProject(w http.ResponseWriter, r *http.Request) {
 	// get service Information
 	for _, element := range serviceItems {
 		name := GetStringElement(element, []string{"metadata", "name"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
 		namespace := GetStringElement(element, []string{"metadata", "namespace"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["namespace"].(string)
 		serviceType := GetStringElement(element, []string{"spec", "type"})
-		// element.(map[string]interface{})["spec"].(map[string]interface{})["type"].(string)
 		clusterIP := GetStringElement(element, []string{"spec", "clusterIP"})
 		externalIP := GetStringElement(element, []string{"status", "loadBalancer", "ingress", "ip"})
 
 		selector := ""
 		selectorCheck := GetInterfaceElement(element, []string{"spec", "selector"})
-		// element.(map[string]interface{})["spec"].(map[string]interface{})["selector"]
 		if selectorCheck != nil {
 			i := 0
 			for key, val := range selectorCheck.(map[string]interface{}) {
@@ -172,7 +148,7 @@ func GetServicesInProject(w http.ResponseWriter, r *http.Request) {
 
 		port := ""
 		portCheck := GetArrayElement(element, []string{"spec", "ports"})
-		// element.(map[string]interface{})["spec"].(map[string]interface{})["ports"].([]interface{})
+
 		if portCheck != nil {
 			for i, item := range portCheck {
 				j := 0
@@ -194,7 +170,6 @@ func GetServicesInProject(w http.ResponseWriter, r *http.Request) {
 			port = "-"
 		}
 		createdTime := GetStringElement(element, []string{"metadata", "creationTimestamp"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["creationTimestamp"].(string)
 
 		service.Cluster = clusterName
 		service.Name = name
@@ -230,11 +205,8 @@ func GetServiceOverview(w http.ResponseWriter, r *http.Request) {
 
 	// get service Information
 	name := GetStringElement(serviceData, []string{"metadata", "name"})
-	// element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
 	namespace := GetStringElement(serviceData, []string{"metadata", "namespace"})
-	// element.(map[string]interface{})["metadata"].(map[string]interface{})["namespace"].(string)
 	serviceType := GetStringElement(serviceData, []string{"spec", "type"})
-	// element.(map[string]interface{})["spec"].(map[string]interface{})["type"].(string)
 	clusterIP := GetStringElement(serviceData, []string{"spec", "clusterIP"})
 	externalIP := GetStringElement(serviceData, []string{"status", "loadBalancer", "ingress", "ip"})
 	createdTime := GetStringElement(serviceData, []string{"metadata", "creationTimestamp"})
@@ -301,32 +273,6 @@ func GetServiceOverview(w http.ResponseWriter, r *http.Request) {
 			endPoint = endPoint + ", "
 		}
 	}
-	/*
-				ClusterIP :
-				 -"sessionAffinity": "None"
-				 -"sessionAffinity": "ClientIP",
-					"sessionAffinityConfig": {
-							"clientIP": {
-									"timeoutSeconds": 10800
-							}
-					}
-				NodePort :
-					"externalTrafficPolicy": "Cluster"
-				LoadBalancer :
-				 -"externalTrafficPolicy": "Cluster"
-				 	"status": {
-		                "loadBalancer": {
-		                    "ingress": [
-		                        {
-		                            "ip": "192.168.0.200"
-		                        }
-		                    ]
-		                }
-		            }
-				 -"externalTrafficPolicy": "Local",
-						"healthCheckNodePort": 32701
-				ExternalName :
-	*/
 
 	service.Name = name
 	service.Project = namespace
@@ -340,8 +286,6 @@ func GetServiceOverview(w http.ResponseWriter, r *http.Request) {
 	service.CreatedTime = createdTime
 
 	resServiceOverview.Info = service
-	// pods := "" //pods검색(namespace, clustername) selector에 service명 일치하는것들 데이터 가져와서 뿌림
-	// http: //192.168.0.152:31635/api/v1/namespaces/openmcp/pods?clustername=openmcp
 	resPod := PodRes{}
 	if len(endPointPods) > 0 {
 		podURL := "https://" + openmcpURL + "/api/v1/namespaces/" + projectName + "/pods?clustername=" + clusterName
@@ -379,7 +323,6 @@ func GetServiceOverview(w http.ResponseWriter, r *http.Request) {
 			cpu := "cpu"
 			ram := "ram"
 			createdTime := GetStringElement(element, []string{"metadata", "creationTimestamp"})
-			// element.(map[string]interface{})["metadata"].(map[string]interface{})["creationTimestamp"].(string)
 
 			pod.Name = podName
 			pod.Status = status
@@ -399,7 +342,6 @@ func GetServiceOverview(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//events
-	// http://192.168.0.152:31635/api/v1/namespaces/ingress-nginx/events?clustername=cluster1
 	eventURL := "https://" + openmcpURL + "/api/v1/namespaces/" + projectName + "/events?clustername=" + clusterName
 
 	go CallAPI(token, eventURL, ch)
@@ -417,7 +359,6 @@ func GetServiceOverview(w http.ResponseWriter, r *http.Request) {
 				event.Typenm = GetStringElement(element, []string{"type"})
 				event.Reason = GetStringElement(element, []string{"reason"})
 				event.Message = GetStringElement(element, []string{"message"})
-				// event.Time = GetStringElement(element, []string{"metadata", "creationTimestamp"})
 				event.Time = GetStringElement(element, []string{"lastTimestamp"})
 				event.Object = kind
 				event.Project = projectName

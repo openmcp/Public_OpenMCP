@@ -1,9 +1,8 @@
 portal:
-    openmcpurl: 192.168.0.152
+    openmcpurl: 0.0.0.0
     port:       30000
-    kubeconfig: config   
-    openmcpclustername : openmcp
-# 31635
+    kubeconfig: kubeconfig   
+    openmcpclustername : openmcpclustername
     
 
     

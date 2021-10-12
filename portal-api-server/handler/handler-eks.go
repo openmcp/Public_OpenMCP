@@ -18,14 +18,6 @@ func StopEKSNode(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 
-	// region := r.URL.Query().Get("region")
-	// nodename := r.URL.Query().Get("node")
-	// // nodegroup := r.URL.Query().Get("nodegroup")
-	// // desiredSizeStr := r.URL.Query().Get("nodecount")
-	// // http://192.168.0.51:4885/apis/eksinstancestop?region=ap-northeast-2&node=ip-172-31-58-160.ap-northeast-2.compute.internal
-	// akid := "AKIAJGFO6OXHRN2H6DSA"                          //
-	// secretkey := "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" //
-
 	data := GetJsonBody(r.Body)
 	defer r.Body.Close() // 리소스 누출 방지
 
@@ -33,11 +25,6 @@ func StopEKSNode(w http.ResponseWriter, r *http.Request) {
 	nodename := data["node"].(string)
 	akid := data["akid"].(string)
 	secretkey := data["secretKey"].(string)
-
-	// fmt.Println(region)
-	// fmt.Println(nodename)
-	// fmt.Println(akid)
-	// fmt.Println(secretkey)
 
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(region), //

@@ -17,31 +17,6 @@ import { SiGraphql } from "react-icons/si";
 
 
 class LeftMenu2 extends Component {
-  // constructor(props) {
-  //   super(props);
-
-  //   // this.state = {
-  //   //   params: this.props.menu,
-  //   // };
-  // }
-
-  // shouldComponentUpdate(prevProps, prevState) {
-  //   if (
-  //     this.props.menu !== prevProps.menu ||
-  //     this.props.title !== prevProps.title
-  //   ) {
-  //     return true;
-  //   } else {
-  //     if (
-  //       this.props.pathParams.hasOwnProperty("searchString") &&
-  //       this.props.pathParams.searchString !== prevProps.pathParams.searchString
-  //     ) {
-  //       return true;
-  //     }
-  //     return false;
-  //   }
-  // }
-
   render() {
     const menuList = [
       {

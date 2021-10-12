@@ -13,7 +13,6 @@ func Projects(w http.ResponseWriter, r *http.Request) {
 	token := GetOpenMCPToken()
 
 	clusterURL := "https://" + openmcpURL + "/apis/core.kubefed.io/v1beta1/kubefedclusters?clustername=openmcp"
-	// clusterURL := "https://" + openmcpURL + "/apis/openmcp.k8s.io/v1alpha1/namespaces/openmcp/openmcpclusters?clustername=openmcp"
 
 	go CallAPI(token, clusterURL, ch)
 	clusters := <-ch
@@ -22,10 +21,8 @@ func Projects(w http.ResponseWriter, r *http.Request) {
 	resProject := ProjectRes{}
 	clusterNames := []string{}
 	clusterNames = append(clusterNames, "openmcp")
-	//get clusters Information
 	for _, element := range clusterData["items"].([]interface{}) {
 		clusterName := GetStringElement(element, []string{"metadata", "name"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
 		clusterType := GetStringElement(element, []string{"status", "conditions", "type"})
 		if clusterType == "Ready" {
 			clusterNames = append(clusterNames, clusterName)
@@ -39,25 +36,19 @@ func Projects(w http.ResponseWriter, r *http.Request) {
 		projectData := projectResult.data
 		projectItems := projectData["items"].([]interface{})
 
-		// get podUsage counts by nodename groups
 		for _, element := range projectItems {
 			project := ProjectInfo{}
 			projectName := GetStringElement(element, []string{"metadata", "name"})
-			// element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
 			createdTime := GetStringElement(element, []string{"metadata", "creationTimestamp"})
-			// element.(map[string]interface{})["metadata"].(map[string]interface{})["creationTimestamp"].(string)
 			status := GetStringElement(element, []string{"status", "phase"})
-			// element.(map[string]interface{})["status"].(map[string]interface{})["phase"].(string)
 
 			labels := make(map[string]interface{})
 			labelCheck := GetInterfaceElement(element, []string{"metadata", "labels"})
-			// element.(map[string]interface{})["metadata"].(map[string]interface{})["labels"]
 			if labelCheck == nil {
 				//undefined lable
 				labels = map[string]interface{}{}
 			} else {
 				for key, val := range labelCheck.(map[string]interface{}) {
-					// fmt.Println(key, val)
 					labels[key] = val
 				}
 			}
@@ -89,7 +80,6 @@ func GetProjectOverview(w http.ResponseWriter, r *http.Request) {
 	go CallAPI(token, projectURL, ch)
 	projectResult := <-ch
 	projectData := projectResult.data
-	// projectItems := projectData["items"].([]interface{})
 
 	// get podUsage counts by nodename groups
 	project := ProjectInfo{}
@@ -224,11 +214,6 @@ func GetProjectOverview(w http.ResponseWriter, r *http.Request) {
 }
 
 func AddProject(w http.ResponseWriter, r *http.Request) {
-	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	// w.WriteHeader(http.StatusOK)
-
-	fmt.Println("AddProject")
-
 	data := GetJsonBody(r.Body)
 	defer r.Body.Close() // 리소스 누출 방지
 
@@ -244,13 +229,6 @@ func AddProject(w http.ResponseWriter, r *http.Request) {
 		Kind       string   `json:"kind"`
 		Metadata   Metadata `json:"metadata"`
 	}
-	// 	{
-	//     "apiVersion": "v1",
-	//     "kind": "Namespace",
-	//     "metadata": {
-	//         "name": "test-namespace1"
-	//     }
-	// }
 
 	body := jsonBody{}
 	metaInfo := Metadata{}
@@ -264,18 +242,13 @@ func AddProject(w http.ResponseWriter, r *http.Request) {
 	for _, element := range clusters.([]interface{}) {
 
 		clusterName := element.(map[string]interface{})["name"].(string)
-		//https://192.168.0.152:30000/api/v1/namespaces?clustername=cluster1
 		projectURL := "https://" + openmcpURL + "/api/v1/namespaces?clustername=" + clusterName
-		// fmt.Println(clusterName)
-		// fmt.Println(projectURL)
-		// fmt.Println(project)
 
 		resp, err := CallPostAPI(projectURL, "application/json", body)
 		var msg jsonErr
 
 		if err != nil {
 			msg = jsonErr{503, "failed", "request fail | " + body.Kind + " | " + metaInfo.Name}
-			// json.NewEncoder(w).Encode(msg)
 		}
 
 		var data map[string]interface{}
@@ -283,10 +256,8 @@ func AddProject(w http.ResponseWriter, r *http.Request) {
 		if data != nil {
 			if data["kind"].(string) == "Status" {
 				msg = jsonErr{501, "failed", data["message"].(string) + body.Kind + " | " + metaInfo.Name}
-				// json.NewEncoder(w).Encode(msg)
 			} else {
 				msg = jsonErr{200, "success", "Resource Created" + body.Kind + " | " + metaInfo.Name}
-				// json.NewEncoder(w).Encode(msg)
 			}
 		}
 

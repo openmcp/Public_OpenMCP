@@ -68,7 +68,6 @@ func GetIngressInProject(w http.ResponseWriter, r *http.Request) {
 
 	resIngress := IngerssRes{}
 	ingress := IngerssInfo{}
-	// "https://" + openmcpURL + "/api/v1/namespaces/" + projectName + "/services?
 	ingressURL := "https://" + openmcpURL + "/apis/networking.k8s.io/v1beta1/namespaces/" + projectName + "/ingresses?clustername=" + clusterName
 
 	go CallAPI(token, ingressURL, ch)
@@ -108,7 +107,6 @@ func GetIngressOverview(w http.ResponseWriter, r *http.Request) {
 	resIngressOverView := IngressOverView{}
 	ingress := IngerssInfo{}
 
-	// "https://" + openmcpURL + "/api/v1/namespaces/" + projectName + "/services?
 	ingressURL := "https://" + openmcpURL + "/apis/networking.k8s.io/v1beta1/namespaces/" + projectName + "/ingresses/" + ingressName + "?clustername=" + clusterName
 
 	go CallAPI(token, ingressURL, ch)
@@ -135,9 +133,6 @@ func GetIngressOverview(w http.ResponseWriter, r *http.Request) {
 					rules.Secret = rules.Secret + GetStringElement(item, []string{"secretName"}) + "|"
 				}
 			}
-			// 	hosts :[https-example.foo.com]
-			// 	secretName: testsecret-tls
-			// ]
 		} else {
 			rules.Secret = "-"
 		}
@@ -171,7 +166,6 @@ func GetIngressOverview(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//events
-	// http://192.168.0.152:31635/api/v1/namespaces/ingress-nginx/events?clustername=cluster1
 	eventURL := "https://" + openmcpURL + "/api/v1/namespaces/" + projectName + "/events?clustername=" + clusterName
 
 	go CallAPI(token, eventURL, ch)
@@ -189,7 +183,6 @@ func GetIngressOverview(w http.ResponseWriter, r *http.Request) {
 				event.Typenm = GetStringElement(element, []string{"type"})
 				event.Reason = GetStringElement(element, []string{"reason"})
 				event.Message = GetStringElement(element, []string{"message"})
-				// event.Time = GetStringElement(element, []string{"metadata", "creationTimestamp"})
 				event.Time = GetStringElement(element, []string{"lastTimestamp"})
 				event.Object = kind
 				event.Project = projectName

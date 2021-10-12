@@ -44,14 +44,6 @@ func Migration(w http.ResponseWriter, r *http.Request) {
 func GetEKSClusterInfo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	// http://192.168.0.51:4885/apis/geteksclusterinfo?region=ap-northeast-2
-	// aws test(lkh1434@gmail.com)
-
-	// region := r.URL.Query().Get("region")
-	// akid := "AKIAJGFO6OXHRN2H6DSA"
-	// secretkey := "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" //
-	// // akid := "AKIAVJTB7UPJPEMHUAJR"
-	// // secretkey := "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" //
 
 	data := GetJsonBody(r.Body)
 	defer r.Body.Close() // 리소스 누출 방지
@@ -61,7 +53,6 @@ func GetEKSClusterInfo(w http.ResponseWriter, r *http.Request) {
 	secretkey := data["secretKey"].(string)
 
 	sess, err := session.NewSession(&aws.Config{
-		// Region:      aws.String("	ap-northeast-2"), //
 		Region:      aws.String(region), //
 		Credentials: credentials.NewStaticCredentials(akid, secretkey, ""),
 	})
@@ -137,14 +128,6 @@ func ChangeEKSnode(w http.ResponseWriter, r *http.Request) {
 	desiredSizeStr := body["desiredCnt"].(string)
 	akid := body["accessKey"].(string)
 	secretkey := body["secretKey"].(string)
-
-	// http://192.168.0.51:4885/apis/changeeksnode?region=ap-northeast-2&cluster=eks-cluster1&nodegroup=ng-1&nodecount=3
-	// region := r.URL.Query().Get("region")
-	// cluster := r.URL.Query().Get("cluster")
-	// nodegroup := r.URL.Query().Get("nodegroup")
-	// desiredSizeStr := r.URL.Query().Get("nodecount")
-	// akid := "AKIAJGFO6OXHRN2H6DSA"
-	// secretkey := "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"
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(region),
 		Credentials: credentials.NewStaticCredentials(akid, secretkey, ""),
@@ -158,17 +141,9 @@ func ChangeEKSnode(w http.ResponseWriter, r *http.Request) {
 	svc := eks.New(sess)
 
 	desirecnt, err := strconv.ParseInt(desiredSizeStr, 10, 64)
-
-	// // la := make(map[string]*string)
-	// // namelabel := "newlabel01"
-	// // la["newlabel01"] = &namelabel
-
-	// labelinput := eks.UpdateLabelsPayload{la["newlabel01"]}
-
 	addResult, err := svc.UpdateNodegroupConfig(&eks.UpdateNodegroupConfigInput{
 		ClusterName:   aws.String(cluster), //
 		NodegroupName: aws.String(nodegroup),
-		// Labels:        &eks.UpdateLabelsPayload{AddOrUpdateLabels: la},
 		ScalingConfig: &eks.NodegroupScalingConfig{
 			DesiredSize: &desirecnt,
 			MaxSize:     &desirecnt,
@@ -181,7 +156,6 @@ func ChangeEKSnode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	successmsg := jsonErr{200, "success", addResult.String()}
-	// fmt.Println(addResult)
 	json.NewEncoder(w).Encode(successmsg)
 
 }
@@ -214,11 +188,6 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 	var allUrls []string
 
 	clusterurl := "https://" + openmcpURL + "/apis/core.kubefed.io/v1beta1/kubefedclusters?clustername=openmcp" //기존정보
-	// clusterurl := "https://" + openmcpURL + "/apis/openmcp.k8s.io/v1alpha1/namespaces/openmcp/openmcpclusters/cluster1?clustername=openmcp" //provider, joined 여부
-
-	//https://192.168.0.152:30000/apis/core.kubefed.io/v1beta1/namespaces/kube-federation-system/kubefedclusters/cluster1?clustername=openmcp
-	// https://192.168.0.152:30000/apis/openmcp.k8s.io/v1alpha1/namespaces/openmcp/openmcpclusters?clustername=openmcp
-	// https://192.168.0.152:30000/apis/openmcp.k8s.io/v1alpha1/namespaces/openmcp/openmcpclusters/cluster1?clustername=openmcp
 
 	go CallAPI(token, clusterurl, ch)
 	clusters := <-ch
@@ -235,20 +204,12 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 	clusterUnHealthyCnt := 0
 	clusterUnknownCnt := 0
 	for _, element := range clusterData["items"].([]interface{}) {
-		// fmt.Println("element : ", element)
 		region := GetStringElement(element, []string{"status", "zones"})
 		zone := "Seoul" //todo Zone관련 데이터 필요 (openmcp)
-		// region := element.(map[string]interface{})["status"].(map[string]interface{})["zones"].([]interface{})[0].(string)
-		// if index > 0 {
-		// 	region = "US"
-		// }
 
 		clustername := element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
-		// statusReason := element.(map[string]interface{})["status"].(map[string]interface{})["conditions"].([]interface{})[0].(map[string]interface{})["reason"].(string)
 		statusReason := GetStringElement(element, []string{"status", "conditions", "reason"})
-		// statusType := element.(map[string]interface{})["status"].(map[string]interface{})["conditions"].([]interface{})[0].(map[string]interface{})["type"].(string)
 		statusType := GetStringElement(element, []string{"status", "conditions", "type"})
-		// statusTF := element.(map[string]interface{})["status"].(map[string]interface{})["conditions"].([]interface{})[0].(map[string]interface{})["status"].(string)
 		statusTF := GetStringElement(element, []string{"status", "conditions", "status"})
 		clusterStatus := "Healthy"
 
@@ -270,8 +231,6 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 		provider := GetStringElement(clusterData["spec"], []string{"clusterPlatformType"})
 		joinStatus := GetStringElement(clusterData["spec"], []string{"joinStatus"})
 		fmt.Println(joinStatus + " : " + provider)
-		// fmt.Println("##############", clusterlist)
-		// fmt.Println("##############", clusterlist[region])
 
 		clusterlist[region] =
 			Region{
@@ -391,134 +350,3 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 	resCluster.JoinedClusters = resJoinedClusters
 	json.NewEncoder(w).Encode(resCluster)
 }
-
-// func WorkloadsDeploymentsOverviewList(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-// 	w.WriteHeader(http.StatusOK)
-// 	if err := json.NewEncoder(w).Encode(resource.ListResource()); err != nil {
-// 		panic(err)
-// 	}
-
-// }
-
-// func WorkloadsPodsOverviewList(w http.ResponseWriter, r *http.Request) {
-// 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-// 	vars := mux.Vars(r)
-
-// 	var client http.Client
-// 	resp, err := client.Get("https://" + targetURL + "/seedcontainer/api/v1/clusters/" + vars["clusterName"] + "/daemonsets/list")
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer resp.Body.Close()
-
-// 	if resp.StatusCode == http.StatusOK {
-// 		bodyBytes, err := ioutil.ReadAll(resp.Body)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-// 		w.WriteHeader(http.StatusOK)
-// 		w.Write(bodyBytes)
-// 	}
-// }
-
-// func getDeploymentList(w http.ResponseWriter, r *http.Request) {
-// 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-// 	vars := mux.Vars(r)
-
-// 	var client http.Client
-// 	resp, err := client.Get("https://" + targetURL + "/seedcontainer/api/v1/clusters/" + vars["clusterName"] + "/deployments/list")
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer resp.Body.Close()
-
-// 	if resp.StatusCode == http.StatusOK {
-// 		bodyBytes, err := ioutil.ReadAll(resp.Body)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-// 		w.WriteHeader(http.StatusOK)
-// 		w.Write(bodyBytes)
-// 	}
-// }
-
-// func getDeploymentDetail(w http.ResponseWriter, r *http.Request) {
-// 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-// 	vars := mux.Vars(r)
-
-// 	var client http.Client
-
-// 	callUrl := "https://" + targetURL + "/seedcontainer/api/v1/clusters/" + vars["clusterName"] + "/namespaces/" + vars["namespaceName"] + "/deployments/" + vars["deploymentName"] + "/detail"
-// 	//fmt.Print(callUrl)
-
-// 	resp, err := client.Get(callUrl)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer resp.Body.Close()
-
-// 	if resp.StatusCode == http.StatusOK {
-// 		bodyBytes, err := ioutil.ReadAll(resp.Body)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-// 		w.WriteHeader(http.StatusOK)
-// 		w.Write(bodyBytes)
-// 	}
-// }
-
-// func getDeploymentYaml(w http.ResponseWriter, r *http.Request) {
-// 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-// 	vars := mux.Vars(r)
-
-// 	var client http.Client
-
-// 	callUrl := "https://" + targetURL + "/seedcontainer/api/v1/clusters/" + vars["clusterName"] + "/namespaces/" + vars["namespaceName"] + "/deployments/" + vars["deploymentName"] + "/yaml"
-// 	//fmt.Print(callUrl)
-
-// 	resp, err := client.Get(callUrl)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer resp.Body.Close()
-
-// 	if resp.StatusCode == http.StatusOK {
-// 		bodyBytes, err := ioutil.ReadAll(resp.Body)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-// 		w.WriteHeader(http.StatusOK)
-// 		w.Write(bodyBytes)
-// 	}
-// }
-
-// func getDeploymentEvent(w http.ResponseWriter, r *http.Request) {
-// 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-// 	vars := mux.Vars(r)
-
-// 	var client http.Client
-
-// 	callUrl := "https://" + targetURL + "/seedcontainer/api/v1/clusters/" + vars["clusterName"] + "/namespaces/" + vars["namespaceName"] + "/deployments/" + vars["deploymentName"] + "/events"
-// 	//fmt.Print(callUrl)
-
-// 	resp, err := client.Get(callUrl)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer resp.Body.Close()
-
-// 	if resp.StatusCode == http.StatusOK {
-// 		bodyBytes, err := ioutil.ReadAll(resp.Body)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-// 		w.WriteHeader(http.StatusOK)
-// 		w.Write(bodyBytes)
-// 	}
-// }

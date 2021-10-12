@@ -15,10 +15,7 @@ app.get("/api/hello", (req, res) => {
   res.send({ messge: "Hello Express!" });
 });
 
-// const apiServer = "http://192.168.0.51:4885"; //로컬 API 서버
 const apiServer = conf.api.url; //로컬 API 서버
-// const apiServer = "http://192.168.0.4:4885"; //kvm API 서버
-// const apiServer = "http://10.0.3.40:4885";
 
 //데이터베이스 접속 설정
 const { Client } = require("pg");
@@ -34,16 +31,6 @@ const connection = new Client({
 
 //데이터베이스 접속
 connection.connect();
-
-//데이터베이스에서 데이터 가져오기
-// app.get("/api/customers", (req, res) => {
-//   // res.send()
-//   connection.query("SELECT * FROM CUSTOMER", (err, result) => {
-//     res.send(result.rows);
-//   });
-// });
-
-
 
 
 function getDateTime() {
@@ -64,10 +51,6 @@ function getDateTime() {
       ? d.getHours().toString()
       : "0" + d.getHours().toString()) +
     ":" +
-    // ((parseInt(d.getMinutes() / 5) * 5).toString().length == 2
-    //   ? (parseInt(d.getMinutes() / 5) * 5).toString()
-    //   : "0" + (parseInt(d.getMinutes() / 5) * 5).toString()) +
-    // ":00";
     (d.getMinutes().toString().length == 2
       ? d.getMinutes().toString()
       : "0" +d.getMinutes().toString()) +
@@ -75,7 +58,6 @@ function getDateTime() {
     (d.getSeconds().toString().length == 2
       ? d.getSeconds().toString()
       : "0" +d.getSeconds().toString());    
-  // console.log(date_format_str);
   return date_format_str;
 }
 
@@ -152,29 +134,25 @@ app.post("/user_login", (req, res) => {
 // Dashboard APIs 
 ///////////////////////
 app.get("/dashboard", (req, res) => {
-  let rawdata = fs.readFileSync("./json_data/dashboard.json");
-  let overview = JSON.parse(rawdata);
-  res.send(overview);
+  // let rawdata = fs.readFileSync("./json_data/dashboard.json");
+  // let overview = JSON.parse(rawdata);
+  // res.send(overview);
 
-  // var request = require("request");
-  // var options = {
-  //   uri: `${apiServer}/apis/dashboard`,
-  //   method: "GET",
-  //   // headers: {
-  //   //   Authorization:
-  //   //     "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDMxMDQ4NzcsImlhdCI6MTYwMzEwMTI3NywidXNlciI6Im9wZW5tY3AifQ.mgO5hRruyBioZLTJ5a3zwZCkNBD6Bg2T05iZF-eF2RI",
-  //   // },
-  // };
+  var request = require("request");
+  var options = {
+    uri: `${apiServer}/apis/dashboard`,
+    method: "GET",
+  };
 
-  // request(options, function (error, response, body) {
-  //   if (!error && response.statusCode == 200) {
-  //     // console.log("result", body);
-  //     res.send(body);
-  //   } else {
-  //     console.log("error", error);
-  //     return error;
-  //   }
-  // });
+  request(options, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      // console.log("result", body);
+      res.send(body);
+    } else {
+      console.log("error", error);
+      return error;
+    }
+  });
 });
 
 
@@ -189,12 +167,9 @@ let token = "";
 // Projects 리스트 가져오기
 app.get("/api/projects", (req, res) => {
   var request = require("request");
-  // var url = "http://192.168.0.152:31635/token?username=openmcp&password=keti";
-  // var uri ="http://192.168.0.152:31635/api/v1/namespaces/kube-system/pods?clustername=cluster1";
-
   var options = {
     uri:
-      "http://192.168.0.152:31635/api/v1/namespaces/kube-system/pods?clustername=cluster1",
+      `${apiServer}/api/v1/namespaces/kube-system/pods?clustername=cluster1`,
     method: "GET",
     headers: {
       Authorization:
@@ -204,7 +179,7 @@ app.get("/api/projects", (req, res) => {
 
   var options = {
     uri:
-      "http://192.168.0.152:31635/api/v1/namespaces/kube-system/pods?clustername=cluster1",
+    `${apiServer}/api/v1/namespaces/kube-system/pods?clustername=cluster1`,
     method: "GET",
     headers: {
       Authorization:
@@ -241,12 +216,6 @@ app.get("/api/projects", (req, res) => {
 
 // Prjects
 app.get("/projects", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
-  // console.log("projects")
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/projects`,
@@ -266,17 +235,11 @@ app.get("/projects", (req, res) => {
 
 // Prjects > overview
 app.get("/projects/:project/overview", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_overview.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clusters/${req.query.cluster}/projects/${req.params.project}`,
     method: "GET",
   };
-
-  // console.log(options.uri)
 
   request(options, function (error, response, body) {
     if (!error && response.statusCode == 200) {
@@ -316,21 +279,8 @@ app.post("/projects/create", (req, res) => {
   });
 });
 
-// // Prjects > get Clusters Names
-// app.get("/clusters/name", (req, res) => {
-//   let rawdata = fs.readFileSync(
-//     "./json_data/clusters_name.json"
-//   );
-//   let overview = JSON.parse(rawdata);
-//   //console.log(overview);
-//   res.send(overview);
-// });
-
 // Prjects > Resources > Workloads > Deployments
 app.get("/projects/:project/resources/workloads/deployments", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_deployments.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clsuters/${req.query.cluster}/projects/${req.params.project}/deployments`,
@@ -354,14 +304,6 @@ app.get("/projects/:project/resources/workloads/deployments", (req, res) => {
 // Prjects > Resources > Workloads > Deployments > detail
 app.get("/projects/:project/resources/workloads/deployments/:deployment",
   (req, res) => {
-    // let rawdata = fs.readFileSync(
-    //   "./json_data/projects_deployment_detail.json"
-    // );
-    // let overview = JSON.parse(rawdata);
-    // // //console.log(overview);
-    // res.send(overview);
-
-
     var request = require("request");
     var options = {
       uri: `${apiServer}/apis/clsuters/${req.query.cluster}/projects/${req.params.project}/deployments/${req.params.deployment}`,
@@ -401,44 +343,6 @@ app.get("/projects/:project/resources/workloads/deployments/:deployment/replica_
       return error;
     }
   });
-
-
-    // connection.query(
-    //   "select * from tb_replica_status order by cluster asc, created_time desc, status desc",
-    //   (err, result) => {
-    //     var result2 = result.rows.reduce(
-    //       (obj, { cluster, status, pod, created_time }, index) => {
-    //         if (!obj[cluster]) {
-    //           obj[cluster] = { cluster: cluster, pods: [] };
-    //         }
-
-    //         obj[cluster].pods.push({
-    //           status: status,
-    //           name: pod,
-    //           created_time: created_time,
-    //         });
-    //         return obj;
-    //       },
-    //       {}
-    //     );
-
-    //     var arr = [];
-    //     for (i = 0; i < Object.keys(result2).length; i++) {
-    //       arr.push(result2[Object.keys(result2)[i]]);
-    //       // console.log(result2[Object.keys(result2)[i]]);
-    //     }
-    //     // console.log(arr)
-
-    //     res.send(arr);
-    //   }
-    // );
-    // let rawdata = fs.readFileSync("./json_data/projects_deployment_detail.json");
-    // let overview = JSON.parse(rawdata);
-    // //console.log(overview);
-    // res.send(overview);
-
-
-
   }
 );
 
@@ -459,7 +363,6 @@ app.post(
 app.delete(
   "/projects/:project/resources/workloads/deployments/:deployment/replica_status/del_pod",
   (req, res) => {
-    // console.log("delete", req.body);
     connection.query(
       `delete from tb_replica_status where ctid IN (select ctid from tb_replica_status where cluster = '${req.body.cluster}' order by created_time desc limit 1)`,
       (err, result) => {
@@ -472,11 +375,6 @@ app.delete(
 // Deployments 상세부터 구현해나가야 함
 // Prjects > Resources > Workloads > Statefulsets
 app.get("/projects/:project/resources/workloads/statefulsets", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_statefulsets.json");
-  // let overview = JSON.parse(rawdata);
-  // //console.log(overview);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clsuters/${req.query.cluster}/projects/${req.params.project}/statefulsets`,
@@ -497,11 +395,6 @@ app.get("/projects/:project/resources/workloads/statefulsets", (req, res) => {
 });
 
 app.get("/projects/:project/resources/workloads/statefulsets/:statefulset", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_statefulsets.json");
-  // let overview = JSON.parse(rawdata);
-  // //console.log(overview);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clsuters/${req.query.cluster}/projects/${req.params.project}/statefulsets/${req.params.statefulset}`,
@@ -522,18 +415,11 @@ app.get("/projects/:project/resources/workloads/statefulsets/:statefulset", (req
 
 // Prjects > Resources > pods
 app.get("/projects/:project/resources/pods", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_pods.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clusters/${req.query.cluster}/projects/${req.params.project}/pods`,
     method: "GET",
   };
-
-  // console.log(options.uri)
-
   request(options, function (error, response, body) {
     if (!error && response.statusCode == 200) {
       res.send(body);
@@ -547,10 +433,6 @@ app.get("/projects/:project/resources/pods", (req, res) => {
 
 // Prjects > Resources > Pods Detail
 app.get("/projects/:project/resources/pods/:pod", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_pod_detail.json");
-  // let overview = JSON.parse(rawdata);
-  // //console.log(overview);
-  // res.send(overview);
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/pods/${req.params.pod}?cluster=${req.query.cluster}&project=${req.query.project}`,
@@ -571,17 +453,11 @@ app.get("/projects/:project/resources/pods/:pod", (req, res) => {
 
 // Prjects > Resources > Services
 app.get("/projects/:project/resources/services", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_services.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clusters/${req.query.cluster}/projects/${req.params.project}/services`,
     method: "GET",
   };
-
-  // console.log(options.uri)
 
   request(options, function (error, response, body) {
     if (!error && response.statusCode == 200) {
@@ -595,11 +471,6 @@ app.get("/projects/:project/resources/services", (req, res) => {
 
 // Prjects > Resources > Services Detail
 app.get("/projects/:project/resources/services/:service", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_service_detail.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
-  // console.log(`${apiServer}/apis/clusters/${req.query.cluster}/projects/${req.params.project}/services/${req.params.service}`)
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clusters/${req.query.cluster}/projects/${req.params.project}/services/${req.params.service}`,
@@ -618,10 +489,6 @@ app.get("/projects/:project/resources/services/:service", (req, res) => {
 
 // Prjects > Resources > Ingress
 app.get("/projects/:project/resources/ingress", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_ingress.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clusters/${req.query.cluster}/projects/${req.params.project}/ingress`,
@@ -640,11 +507,6 @@ app.get("/projects/:project/resources/ingress", (req, res) => {
 
 // Prjects > Resources > Ingress Detail
 app.get("/projects/:project/resources/ingress/:ingress", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_ingress_detail.json");
-  // let overview = JSON.parse(rawdata);
-  // //console.log(overview);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clusters/${req.query.cluster}/projects/${req.params.project}/ingress/${req.params.ingress}`,
@@ -663,10 +525,6 @@ app.get("/projects/:project/resources/ingress/:ingress", (req, res) => {
 
 // Prjects > volumes
 app.get("/projects/:project/volumes", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_volumes.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clusters/${req.query.cluster}/projects/${req.params.project}/volumes`,
@@ -685,10 +543,6 @@ app.get("/projects/:project/volumes", (req, res) => {
 
 // Prjects > volumes Detail
 app.get("/projects/:project/volumes/:volume", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_volume_detail.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clusters/${req.query.cluster}/projects/${req.params.project}/volumes/${req.params.volume}`,
@@ -707,10 +561,6 @@ app.get("/projects/:project/volumes/:volume", (req, res) => {
 
 // Prjects > Config > Secrets
 app.get("/projects/:project/config/secrets", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_secrets.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clusters/${req.query.cluster}/projects/${req.params.project}/secrets`,
@@ -729,10 +579,6 @@ app.get("/projects/:project/config/secrets", (req, res) => {
 
 // Prjects > Config > Secrets Detail
 app.get("/projects/:project/config/secrets/:secret", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_secret_detail.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clusters/${req.query.cluster}/projects/${req.params.project}/secrets/${req.params.secret}`,
@@ -752,11 +598,6 @@ app.get("/projects/:project/config/secrets/:secret", (req, res) => {
 
 // Prjects > Config > ConfigMaps
 app.get("/projects/:project/config/config_maps", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_config_maps.json");
-  // let overview = JSON.parse(rawdata);
-  // //console.log(overview);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clusters/${req.query.cluster}/projects/${req.params.project}/configmaps`,
@@ -775,10 +616,6 @@ app.get("/projects/:project/config/config_maps", (req, res) => {
 
 // Prjects > Config > ConfigMaps Detail
 app.get("/projects/:project/config/config_maps/:config_map", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_config_map_detail.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clusters/${req.query.cluster}/projects/${req.params.project}/configmaps/${req.params.config_map}`,
@@ -799,7 +636,6 @@ app.get("/projects/:project/config/config_maps/:config_map", (req, res) => {
 app.get("/projects/:project/settings/members", (req, res) => {
   let rawdata = fs.readFileSync("./json_data/projects_members.json");
   let overview = JSON.parse(rawdata);
-  //console.log(overview);
   res.send(overview);
 });
 
@@ -810,10 +646,6 @@ app.get("/projects/:project/settings/members", (req, res) => {
 
 // Deployments
 app.get("/deployments", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/projects_deployments.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-  
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/deployments`,
@@ -831,17 +663,12 @@ app.get("/deployments", (req, res) => {
 });
 
 app.get("/deployments/:deployment", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/deployment_detail.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clsuters/${req.query.cluster}/projects/${req.query.project}/deployments/${req.params.deployment}`,
     method: "GET",
   };
 
-  // console.log(`${apiServer}/apis/clsuters/${req.query.cluster}/projects/${req.query.project}/deployments/${req.params.deployment}`)
 
   request(options, function (error, response, body) {
     if (!error && response.statusCode == 200) {
@@ -855,7 +682,6 @@ app.get("/deployments/:deployment", (req, res) => {
 
 app.post("/deployments/migration", (req, res) => {
   const YAML = req.body.yaml
-  // console.log(YAML)
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/migration`,
@@ -921,17 +747,6 @@ app.get("/snapshots", (req, res) => {
 // Clusters APIs
 ///////////////////////
 app.get("/clusters", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/clusters.json");
-  // let rawdata = fs.readFileSync("./json_data/clusters2_warning.json");
-  // let rawdata = fs.readFileSync("./json_data/clusters3-1_normal.json");
-  // let rawdata = fs.readFileSync("./json_data/clusters3-1_50.json");
-  // let rawdata = fs.readFileSync("./json_data/clusters3-1_70.json");
-  // let rawdata = fs.readFileSync("./json_data/clusters3-1_80.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
-  // console.log("cluster")
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clusters`,
@@ -949,10 +764,6 @@ app.get("/clusters", (req, res) => {
 });
 
 app.get("/clusters-joinable", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/clusters_joinable.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/joinableclusters`,
@@ -971,10 +782,6 @@ app.get("/clusters-joinable", (req, res) => {
 
 // Clusters > overview
 app.get("/clusters/:cluster/overview", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/clusters_overview.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/clusters/overview?clustername=${req.params.cluster}`,
@@ -995,15 +802,11 @@ app.get("/clusters/:cluster/overview", (req, res) => {
 app.get("/clusters-joinable/:cluster/overview", (req, res) => {
   let rawdata = fs.readFileSync("./json_data/clusters_joinable_overview.json");
   let overview = JSON.parse(rawdata);
-  //console.log(overview);
   res.send(overview);
 });
 
 // Clusters > nodes
 app.get("/clusters/:cluster/nodes", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/clusters_nodes.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
   const clusterName = req.params.cluster
   var request = require("request");
   var options = {
@@ -1031,11 +834,6 @@ app.get("/clusters/:cluster/nodes", (req, res) => {
 
 // Clusters > pods
 app.get("/clusters/:cluster/pods", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/clusters_pods.json");
-  // let overview = JSON.parse(rawdata);
-  // //console.log(overview);
-  // res.send(overview);
-
   const clusterName = req.params.cluster
   var request = require("request");
   var options = {
@@ -1057,7 +855,6 @@ app.get("/clusters/:cluster/pods", (req, res) => {
 app.get("/clusters/:cluster/pods/:pod", (req, res) => {
   let rawdata = fs.readFileSync("./json_data/clusters_pod_detail.json");
   let overview = JSON.parse(rawdata);
-  //console.log(overview);
   res.send(overview);
 });
 
@@ -1065,7 +862,6 @@ app.get("/clusters/:cluster/pods/:pod", (req, res) => {
 app.get("/clusters/:cluster/storage_class", (req, res) => {
   let rawdata = fs.readFileSync("./json_data/clusters_storage_class.json");
   let overview = JSON.parse(rawdata);
-  //console.log(overview);
   res.send(overview);
 });
 
@@ -1075,7 +871,6 @@ app.get("/clusters/:cluster/storage_class/:storage_class", (req, res) => {
     "./json_data/clusters_storage_class_detail.json"
   );
   let overview = JSON.parse(rawdata);
-  //console.log(overview);
   res.send(overview);
 });
 
@@ -1090,7 +885,6 @@ app.post("/cluster/join", (req, res) => {
   var data = JSON.stringify(requestData);
   var request = require("request");
   var options = {
-    // https://192.168.0.152:30000/apis/openmcp.k8s.io/v1alpha1/namespaces/openmcp/openmcpclusters/cluster2?clustername=openmcp
     uri: `${apiServer}/apis/clusters/join`,
     method: "POST",
     body: data
@@ -1117,7 +911,6 @@ app.post("/cluster/unjoin", (req, res) => {
   var data = JSON.stringify(requestData);
   var request = require("request");
   var options = {
-    // https://192.168.0.152:30000/apis/openmcp.k8s.io/v1alpha1/namespaces/openmcp/openmcpclusters/cluster2?clustername=openmcp
     uri: `${apiServer}/apis/clusters/unjoin`,
     method: "POST",
     body: data
@@ -1140,10 +933,6 @@ app.post("/cluster/unjoin", (req, res) => {
 // Nodes
 /////////////
 app.get("/nodes", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/nodes.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/nodes`,
@@ -1163,7 +952,6 @@ app.get("/nodes", (req, res) => {
 //asdasd
 app.post("/nodes/add/eks", (req, res) => {
   connection.query(
-    // tb_auth_eks > seq,cluster,accessKey,secretKey
     `select * 
      from tb_config_eks
      where cluster='${req.body.cluster}';`,
@@ -1192,7 +980,6 @@ app.post("/nodes/add/eks", (req, res) => {
 
       var request = require("request");
       var options = {
-        // uri: `${apiServer}/apis/addeksnode`,
         uri: `${apiServer}/apis/changeeksnode`,
         method: "POST",
         body: data
@@ -1215,7 +1002,6 @@ app.post("/nodes/add/eks", (req, res) => {
 
 app.post("/nodes/add/aks", (req, res) => {
   connection.query(
-    // tb_auth_eks > seq,cluster,accessKey,secretKey
     `select * 
      from tb_config_aks
      where cluster='${req.body.cluster}';`,
@@ -1287,7 +1073,6 @@ app.post("/nodes/add/gke", (req, res) => {
         desiredCnt : req.body.desiredCnt,
       }
      
-      // console.log("gke/addnode",requestData)
       var data = JSON.stringify(requestData);
 
       var request = require("request");
@@ -1336,7 +1121,6 @@ app.post("/nodes/add/kvm", (req, res) => {
         cluster : req.body.cluster,
       }
 
-      // console.log(requestData);
 
       var data = JSON.stringify(requestData);
       var request = require("request");
@@ -1381,10 +1165,6 @@ app.post("/nodes/delete/kvm", (req, res) => {
         mastervmpwd : result.rows[0].mClusterPwd
       }
 
-      // console.log(requestData, result.rows[0])
-
-      // res.send(result.rows);
-
       var data = JSON.stringify(requestData);
       var request = require("request");
       var options = {
@@ -1411,9 +1191,6 @@ app.post("/nodes/delete/kvm", (req, res) => {
 // Nodes > datail
 //////////////////
 app.get("/nodes/:node", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/nodes_detail.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
 
   var request = require("request");
   var options = {
@@ -1433,7 +1210,6 @@ app.get("/nodes/:node", (req, res) => {
 
 app.post("/nodes/eks/start", (req, res) => {
   connection.query(
-    // tb_auth_eks > seq,cluster,accessKey,secretKey
     `select * 
      from tb_config_eks
      where cluster='${req.body.cluster}';`,
@@ -1454,9 +1230,6 @@ app.post("/nodes/eks/start", (req, res) => {
         node : req.body.node,
       }
 
-      // console.log(requestData, result.rows[0])
-
-      // res.send(result.rows);
 
       var data = JSON.stringify(requestData);
       var request = require("request");
@@ -1481,7 +1254,6 @@ app.post("/nodes/eks/start", (req, res) => {
 
 app.post("/nodes/eks/stop", (req, res) => {
   connection.query(
-    // tb_auth_eks > seq,cluster,accessKey,secretKey
     `select * 
      from tb_config_eks
      where cluster='${req.body.cluster}';`,
@@ -1502,9 +1274,6 @@ app.post("/nodes/eks/stop", (req, res) => {
         node : req.body.node,
       }
 
-      console.log(requestData)
-
-      // res.send(result.rows);
 
       var data = JSON.stringify(requestData);
       var request = require("request");
@@ -1530,7 +1299,6 @@ app.post("/nodes/eks/stop", (req, res) => {
 
 app.post("/nodes/eks/change", (req, res) => {
   connection.query(
-    // tb_auth_eks > seq,cluster,accessKey,secretKey
     `select * 
      from tb_config_eks
      where cluster='${req.body.cluster}';`,
@@ -1622,7 +1390,6 @@ app.post("/nodes/aks/start", (req, res) => {
 
 app.post("/nodes/aks/stop", (req, res) => {
   connection.query(
-    // tb_auth_eks > seq,cluster,accessKey,secretKey
     `select * 
      from tb_config_aks
      where cluster='${req.body.cluster}';`,
@@ -1901,7 +1668,6 @@ app.get("/azure/pool/:cluster", (req, res) => {
           var clusterInfo = {};
           console.log(body)
           for (let value of JSON.parse(body)){
-            // if(value.name == cluster){ //임시로 막음(일치하는 클러스터가 없음)
             if(value.name === "aks-cluster-01"){ //임시로 하드코딩함
               clusterInfo = value;
             }
@@ -1920,19 +1686,13 @@ app.get("/azure/pool/:cluster", (req, res) => {
 app.get("/eks/clusters", (req, res) => {
   let rawdata = fs.readFileSync("./json_data/eks_clusters.json");
   let overview = JSON.parse(rawdata);
-  //console.log(overview);
   res.send(overview);
 });
 
 app.get("/eks/clusters/workers", (req, res) => {
   var clusterName = req.query.clustername;
-  console.log(req.query)
-  // let rawdata = fs.readFileSync("./json_data/eks_workers.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
 
   connection.query(
-    // tb_auth_eks > seq,cluster,accessKey,secretKey
     `select * 
      from tb_config_eks
      where cluster='${clusterName}';`,
@@ -1957,7 +1717,6 @@ app.get("/eks/clusters/workers", (req, res) => {
 
       var request = require("request");
       var options = {
-        // uri: `${apiServer}/apis/addeksnode`,
         uri: `${apiServer}/apis/geteksclusterinfo`,
         method: "POST",
         body: data
@@ -1972,7 +1731,6 @@ app.get("/eks/clusters/workers", (req, res) => {
             }
           })
 
-          // res.send(body);
         } else {
           console.log("error", error);
           return error;
@@ -1993,9 +1751,6 @@ app.get("/gke/clusters", (req, res) => {
 app.get("/gke/clusters/pools", (req, res) => {
   var clusterName = req.query.clustername;
   console.log(clusterName)
-  // let rawdata = fs.readFileSync("./json_data/gke_node_pools.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
 
   connection.query(
     `select * 
@@ -2018,7 +1773,6 @@ app.get("/gke/clusters/pools", (req, res) => {
       }
      
       var data = JSON.stringify(requestData);
-      // console.log("gke/addnode",data)
 
       var request = require("request");
       var options = {
@@ -2053,12 +1807,8 @@ app.get("/aks/clusters", (req, res) => {
 
 app.get("/aks/clusters/pools", (req, res) => {
   var clusterName = req.query.clustername;
-  // let rawdata = fs.readFileSync("./json_data/aks_node_pools.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
 
   connection.query(
-    // tb_auth_eks > seq,cluster,accessKey,secretKey
     `select * 
      from tb_config_aks
      where cluster='${clusterName}';`,
@@ -2082,7 +1832,6 @@ app.get("/aks/clusters/pools", (req, res) => {
       console.log("addNodeAKS : ", requestData);
 
       var data = JSON.stringify(requestData);
-      // console.log("aks/addnode",data)
 
       var request = require("request");
       var options = {
@@ -2123,9 +1872,6 @@ app.get("/kvm/clusters", (req, res) => {
 
 // Pods
 app.get("/pods", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/pods.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
 
   var request = require("request");
   var options = {
@@ -2145,9 +1891,6 @@ app.get("/pods", (req, res) => {
 
 // Pods > detail
 app.get("/pods/:pod", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/pods_detail.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
 
   var request = require("request");
   var options = {
@@ -2168,9 +1911,6 @@ app.get("/pods/:pod", (req, res) => {
 });
 
 app.get("/pods/:pod/physicalResPerMin", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/pods_detail.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
 
   var request = require("request");
   var options = {
@@ -2192,9 +1932,6 @@ app.get("/pods/:pod/physicalResPerMin", (req, res) => {
 
 
 app.get("/hpa", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/hpa.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/hpa`,
@@ -2212,9 +1949,6 @@ app.get("/hpa", (req, res) => {
 });
 
 app.get("/vpa", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/vpa.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/vpa`,
@@ -2239,9 +1973,6 @@ app.get("/vpa", (req, res) => {
 
 // Prjects > Resources > Ingress
 app.get("/ingress", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/ingress.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
 
   var request = require("request");
   var options = {
@@ -2273,9 +2004,6 @@ app.get("/ingress/:ingress", (req, res) => {
 
 // Services
 app.get("/services", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/services.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
 
   var request = require("request");
   var options = {
@@ -2309,9 +2037,6 @@ app.get("/services/:service", (req, res) => {
 
 // DNS > Services
 app.get("/dns", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/dns.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
 
   var request = require("request");
   var options = {
@@ -2408,7 +2133,6 @@ app.get("/account-roles", (req, res) => {
 });
 
 app.put("/update/account-roles", (req, res) => {
-  // console.log(req.body);
   connection.query(
     `update tb_accounts set roles = '{"${req.body.role}"}' where user_id = '${req.body.userid}';`,
     (err, result) => {
@@ -2427,14 +2151,6 @@ app.put("/update/account-roles", (req, res) => {
       }
     }
   );
-
-
-  // bcrypt.genSalt(saltRounds, function (err, salt) {
-  //   bcrypt.hash(req.body.password, salt, function (err, hash_password) {
-  //     var create_time = getDateTime();
-      
-  //   });
-  // });
 });
 
 //////////////////////////
@@ -2537,16 +2253,6 @@ app.delete("/settings/group-role", (req, res) => {
 // Settings > Policy
 //////////////////////////
 app.get("/settings/policy/openmcp-policy", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/settings_policy.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-  // let sql =`select  policy_id, policy_name,
-  //                   rate, period
-  //           from tb_policy`
-
-  // connection.query(sql, (err, result) => {
-  //   res.send(result.rows);
-  // });
   var request = require("request");
   var options = {
     uri: `${apiServer}/apis/policy/openmcp`,
@@ -2634,12 +2340,7 @@ app.put("/settings/policy/project-policy", (req, res) => {
 
 // Settings > Config > Public Cloud Auth
 app.get("/settings/config/pca/eks", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/eks_auth.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
   connection.query(
-    // tb_auth_eks > seq,cluster,type,accessKey,secretKey
     `select * from tb_config_eks;`,
     (err, result) => {
       res.send(result.rows);
@@ -2648,9 +2349,6 @@ app.get("/settings/config/pca/eks", (req, res) => {
 });
 
 app.post("/settings/config/pca/eks", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/eks_auth.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
   connection.query(
     `insert into tb_config_eks (cluster,"accessKey","secretKey","region") values ('${req.body.cluster}','${req.body.accessKey}','${req.body.secretKey}','${req.body.region}');`,
     (err, result) => {
@@ -2722,12 +2420,7 @@ app.delete("/settings/config/pca/eks", (req, res) => {
 });
 
 app.get("/settings/config/pca/gke", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/eks_auth.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
   connection.query(
-    // tb_auth_eks > seq,cluster,type,accessKey,secretKey
     `select * from tb_config_gke;`,
     (err, result) => {
       res.send(result.rows);
@@ -2736,9 +2429,6 @@ app.get("/settings/config/pca/gke", (req, res) => {
 });
 
 app.post("/settings/config/pca/gke", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/eks_auth.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
   connection.query(
     `insert into tb_config_gke (cluster,"type","clientEmail","projectID","privateKey") values ('${req.body.cluster}','${req.body.type}','${req.body.clientEmail}','${req.body.projectID}','${req.body.privateKey}');`,
     (err, result) => {
@@ -2810,14 +2500,8 @@ app.delete("/settings/config/pca/gke", (req, res) => {
   );
 });
 
-// tb_auth_aks > seq,cluster,clientId,clientSec,tenantId,subId
 app.get("/settings/config/pca/aks", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/eks_auth.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
-
   connection.query(
-    // tb_auth_eks > seq,cluster,type,accessKey,secretKey
     `select * from tb_config_aks;`,
     (err, result) => {
       res.send(result.rows);
@@ -2826,9 +2510,6 @@ app.get("/settings/config/pca/aks", (req, res) => {
 });
 
 app.post("/settings/config/pca/aks", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/eks_auth.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
   connection.query(
     `insert into tb_config_aks (cluster,"clientId","clientSec","tenantId","subId") values ('${req.body.cluster}','${req.body.clientId}','${req.body.clientSec}','${req.body.tenantId}','${req.body.subId}');`,
     (err, result) => {
@@ -2904,7 +2585,6 @@ app.delete("/settings/config/pca/aks", (req, res) => {
 
 app.get("/settings/config/pca/kvm", (req, res) => {
   connection.query(
-    // tb_auth_kvm > seq,cluster,
     `select * from tb_config_kvm;`,
     (err, result) => {
       res.send(result.rows);
@@ -2913,9 +2593,6 @@ app.get("/settings/config/pca/kvm", (req, res) => {
 });
 
 app.post("/settings/config/pca/kvm", (req, res) => {
-  // let rawdata = fs.readFileSync("./json_data/eks_auth.json");
-  // let overview = JSON.parse(rawdata);
-  // res.send(overview);
   connection.query(
     `insert into tb_config_kvm (cluster,"agentURL","mClusterName","mClusterPwd") values ('${req.body.cluster}','${req.body.agentURL}','${req.body.mClusterName}','${req.body.mClusterPwd}');`,
     (err, result) => {
@@ -3063,7 +2740,6 @@ app.put("/settings/threshold", (req, res) => {
 app.delete("/settings/threshold", (req, res) => {
   let query = `delete from tb_host_threshold 
   where node_name = '${req.body.node}' and cluster_name = '${req.body.cluster}';`;
-  // console.log(query);
   connection.query(
     query,
     (err, result) => {

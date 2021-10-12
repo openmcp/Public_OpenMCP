@@ -180,7 +180,6 @@ type ReplicaStatus struct {
 	Deployment    string `json:"deployment"`
 	Replicas      int    `json:"replicas"`
 	ReadyReplicas int    `json:"ready_replicas"`
-	// UnavailableReplicas int    `unavailable_replicas`
 }
 
 type StatefulsetRes struct {
@@ -203,8 +202,6 @@ type StatefulsetOverview struct {
 	Pods   []PodInfo       `json:"pods"`
 	Ports  []PortInfo      `json:"ports"`
 	Events []Event         `json:"events"`
-	// PhysicalResources PhysicalResources `json:"physical_resources"`
-	// ReplicaStatus     []ReplicaInfo     `json:"replica_status"`
 }
 
 type DNSRes struct {
@@ -486,7 +483,6 @@ type ManagedCluster struct {
 	AgentPool          []AgentPool `json:"agentpools"`
 	Location           string      `json:"location"`
 	ProvisionState     string      `json:"pvstate"`
-	// VmssNames          []string `json:"vmssnames"`
 }
 
 type AgentPool struct {

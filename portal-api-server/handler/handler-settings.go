@@ -33,18 +33,6 @@ func GetOpenmcpPolicy(w http.ResponseWriter, r *http.Request) {
 					for _, item := range policyValues {
 						policyValueStr := fmt.Sprintf("%v", item)
 						value = value + policyType + " : " + policyValueStr + "|"
-						// if j+1 == len(policies) && len(policyValues) == 1 {
-						// 	value = value + policyType + " : " + policyValueStr
-						// } else if j+1 == len(policies) && len(policyValues) > 1 {
-						// 	if j+1 == len(policyValues) {
-						// 		value = value + policyType + " : " + policyValueStr
-
-						// 	} else {
-						// 		value = value + policyType + " : " + policyValueStr + "|"
-						// 	}
-						// } else {
-						// 	value = value + policyType + " : " + policyValueStr + "|"
-						// }
 					}
 				}
 			}
@@ -77,14 +65,8 @@ func UpdateOpenmcpPolicy(w http.ResponseWriter, r *http.Request) {
 		editPolicyRes.EditPolicy = append(editPolicyRes.EditPolicy, editInfo)
 	}
 
-	// var body []interface{}
-	// body = append(body, EditInfo{"replace", "/spec/metalLBRange/addressFrom", ""})
-	// body = append(body, EditInfo{"replace", "/spec/metalLBRange/addressTo", ""})
-	// body = append(body, EditInfo{"replace", "/spec/joinStatus", "UNJOIN"})
-
 	var jsonErrs []jsonErr
 
-	// https://192.168.0.152:30000/apis/openmcp.k8s.io/v1alpha1/namespaces/openmcp/openmcppolicys/log-level?clustername=openmcp
 	projectURL := "https://" + openmcpURL + "/apis/openmcp.k8s.io/v1alpha1/namespaces/openmcp/openmcppolicys/" + policyName + "?clustername=" + openmcpClusterName
 
 	resp, err := CallPatchAPI(projectURL, "application/json-patch+json", editPolicyRes.EditPolicy, true)

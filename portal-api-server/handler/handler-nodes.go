@@ -16,9 +16,7 @@ type NodeClusters struct {
 }
 
 type NodeCluster struct {
-	Name string `json:"name"`
-	// Region   string `json:"region"`
-	// Zones    string `json:"zone"`
+	Name       string `json:"name"`
 	Provider   string `json:"provider"`
 	JoinStatus string `json:"joinStatus"`
 }
@@ -27,7 +25,6 @@ func Nodes(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan Resultmap)
 	token := GetOpenMCPToken()
 
-	// clusterURL := "https://" + openmcpURL + "/apis/core.kubefed.io/v1beta1/kubefedclusters?clustername=openmcp"
 	clusterURL := "https://" + openmcpURL + "/apis/openmcp.k8s.io/v1alpha1/namespaces/openmcp/openmcpclusters?clustername=openmcp"
 	go CallAPI(token, clusterURL, ch)
 	clusters := <-ch
@@ -41,23 +38,12 @@ func Nodes(w http.ResponseWriter, r *http.Request) {
 
 	podsCount := make(map[string]int)
 
-	/////////////////////////////////////////////////////////////////////////////
-	// ㅇ openmcp cluster를 볼 필요가 있나???
-	// clusterNames = append(clusterNames, "openmcp")
-	// nodeCluster.Name = "openmcp"
-	// nodeCluster.Zones = "KR"
-	// nodeCluster.Region = "AS"
-	// nodeClusters.Clusters = append(nodeClusters.Clusters, nodeCluster)
-	/////////////////////////////////////////////////////////////////////////////
-
 	//get clusters Information
 	for _, element := range clusterData["items"].([]interface{}) {
 		joinStatus := GetStringElement(element, []string{"spec", "joinStatus"})
 		if joinStatus == "JOIN" {
 			clusterName := GetStringElement(element, []string{"metadata", "name"})
 			provider := GetStringElement(element, []string{"spec", "clusterPlatformType"})
-			// element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
-			// provider := GetStringElement(element, []string{"metadata", "provider"})
 			clusterurl := "https://" + openmcpURL + "/apis/core.kubefed.io/v1beta1/namespaces/kube-federation-system/kubefedclusters/" + clusterName + "?clustername=openmcp"
 			go CallAPI(token, clusterurl, ch)
 			clusters := <-ch
@@ -76,11 +62,8 @@ func Nodes(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// for _, clusterName := range clusterNames {
 	for _, nodeCluster := range nodeClusters.Clusters {
 		node := NodeInfo{}
-		// get node names, cpu(capacity)
-		// nodeURL := "https://" + openmcpURL + "/api/v1/nodes?clustername=" + clusterName
 		nodeURL := "https://" + openmcpURL + "/api/v1/nodes?clustername=" + nodeCluster.Name
 		go CallAPI(token, nodeURL, ch)
 		nodeResult := <-ch
@@ -91,35 +74,24 @@ func Nodes(w http.ResponseWriter, r *http.Request) {
 		for _, element := range nodeItems {
 
 			nodeName := GetStringElement(element, []string{"metadata", "name"})
-			// element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
-
 			cpuCapacity := GetStringElement(element, []string{"status", "capacity", "cpu"})
-			// element.(map[string]interface{})["status"].(map[string]interface{})["capacity"].(map[string]interface{})["cpu"].(string)
-
 			memoryCapacity := GetStringElement(element, []string{"status", "capacity", "memory"})
-			// element.(map[string]interface{})["status"].(map[string]interface{})["capacity"].(map[string]interface{})["memory"].(string)
 			memoryCapacity = strings.Split(memoryCapacity, "Ki")[0]
 			memoryCapInt, _ := strconv.Atoi(memoryCapacity)
 			memoryUseFloat := float64(memoryCapInt) / 1000 / 1000
 			memoryCapacity = fmt.Sprintf("%.1f", memoryUseFloat)
-
 			podsCapacity := GetStringElement(element, []string{"status", "capacity", "pods"})
-			// element.(map[string]interface{})["status"].(map[string]interface{})["capacity"].(map[string]interface{})["pods"].(string)
 
 			status := ""
 			statusInfo := GetInterfaceElement(element, []string{"status"})
-			// element.(map[string]interface{})["status"]
 			var healthCheck = make(map[string]string)
 			for _, elem := range statusInfo.(map[string]interface{})["conditions"].([]interface{}) {
 				conType := GetStringElement(elem, []string{"type"})
-				// elem.(map[string]interface{})["type"].(string)
 				tf := GetStringElement(elem, []string{"status"})
-				// elem.(map[string]interface{})["status"].(string)
 				healthCheck[conType] = tf
 			}
 
 			if healthCheck["Ready"] == "True" && (healthCheck["NetworkUnavailable"] == "" || healthCheck["NetworkUnavailable"] == "False") && healthCheck["MemoryPressure"] == "False" && healthCheck["DiskPressure"] == "False" && healthCheck["PIDPressure"] == "False" {
-				// healthyNodeCnt++
 				status = "Healthy"
 			} else {
 				if healthCheck["Ready"] == "Unknown" || (healthCheck["NetworkUnavailable"] == "" || healthCheck["NetworkUnavailable"] == "Unknown") || healthCheck["MemoryPressure"] == "Unknown" || healthCheck["DiskPressure"] == "Unknown" || healthCheck["PIDPressure"] == "Unknown" {
@@ -132,7 +104,6 @@ func Nodes(w http.ResponseWriter, r *http.Request) {
 			//정보유무 체크해야함
 			role := ""
 			roleCheck := GetInterfaceElement(element, []string{"metadata", "labels", "node-role.kubernetes.io/master"})
-			// element.(map[string]interface{})["metadata"].(map[string]interface{})["labels"].(map[string]interface{})["node-role.kubernetes.io/master"]
 
 			if roleCheck == "" {
 				role = "master"
@@ -141,16 +112,10 @@ func Nodes(w http.ResponseWriter, r *http.Request) {
 			}
 
 			os := GetStringElement(element, []string{"status", "nodeInfo", "osImage"})
-			// element.(map[string]interface{})["status"].(map[string]interface{})["nodeInfo"].(map[string]interface{})["osImage"].(string)
 
 			containerRuntimeVersion := GetStringElement(element, []string{"status", "nodeInfo", "containerRuntimeVersion"})
-			// element.(map[string]interface{})["status"].(map[string]interface{})["nodeInfo"].(map[string]interface{})["containerRuntimeVersion"].(string)
-
 			clMetricURL := "https://" + openmcpURL + "/metrics/nodes/" + nodeName + "?clustername=" + nodeCluster.Name
-			// clMetricURL := "https://" + openmcpURL + "/metrics/nodes/" + nodeName + "?clustername=" + clusterName
-			// clMetricURL := "http://192.168.0.152:31635/metrics/nodes/clusterd-worker1.dev.gmd.life?clustername=cluster2"
 
-			// fmt.Println("check usl ::: http://" + openmcpURL + "/metrics/nodes/" + nodeName + "?clustername=" + clusterName)
 			go CallAPI(token, clMetricURL, ch)
 			clMetricResult := <-ch
 			clMetricData := clMetricResult.data
@@ -161,7 +126,6 @@ func Nodes(w http.ResponseWriter, r *http.Request) {
 			if clMetricData["nodemetrics"] != nil {
 				for _, element := range clMetricData["nodemetrics"].([]interface{}) {
 					cpuUseCheck := GetInterfaceElement(element, []string{"cpu", "CPUUsageNanoCores"})
-					// element.(map[string]interface{})["cpu"].(map[string]interface{})["CPUUsageNanoCores"]
 					if cpuUseCheck == nil {
 						cpuUse = "0n"
 					} else {
@@ -173,7 +137,6 @@ func Nodes(w http.ResponseWriter, r *http.Request) {
 					cpuUse = fmt.Sprintf("%.1f", cpuUseFloat)
 
 					memoryUseCheck := GetInterfaceElement(element, []string{"memory", "MemoryUsageBytes"})
-					// element.(map[string]interface{})["memory"].(map[string]interface{})["MemoryUsageBytes"]
 					if memoryUseCheck == nil {
 						memoryUse = "0Ki"
 					} else {
@@ -186,18 +149,8 @@ func Nodes(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
-			// // if 조건으로 테스트용 Provider 입력해보자
-			// if nodeCluster.Name == "cluster1" {
-			// 	provider = "eks"
-			// } else if nodeCluster.Name == "cluster2" {
-			// 	provider = "kvm"
-			// } else if nodeCluster.Name == "openmcp" {
-			// 	provider = "aks"
-			// }
-
 			node.Name = nodeName
 			node.Cluster = nodeCluster.Name
-			// node.Cluster = clusterName
 			node.Status = status
 			node.Role = role
 			node.SystemVersion = os + "|" + "(" + containerRuntimeVersion + ")"
@@ -213,21 +166,16 @@ func Nodes(w http.ResponseWriter, r *http.Request) {
 
 		//pods counts by nodename
 		podURL := "https://" + openmcpURL + "/api/v1/pods?clustername=" + nodeCluster.Name
-		// podURL := "https://" + openmcpURL + "/api/v1/pods?clustername=" + clusterName
 		go CallAPI(token, podURL, ch)
 		podResult := <-ch
 		podData := podResult.data
 		podItems := podData["items"].([]interface{})
-		// fmt.Println("podItmes len:", len(podItems))
 
-		// get podUsage counts by nodename groups
 		for _, element := range podItems {
 			nodeCheck := GetInterfaceElement(element, []string{"spec", "nodeName"})
-			//  element.(map[string]interface{})["spec"].(map[string]interface{})["nodeName"]
 			nodeName := "-"
 			if nodeCheck == nil {
 				nodeName = "-"
-				// fmt.Println(element.(map[string]interface{})["metadata"].(map[string]interface{})["name"])
 			} else {
 				nodeName = nodeCheck.(string)
 			}
@@ -237,15 +185,11 @@ func Nodes(w http.ResponseWriter, r *http.Request) {
 
 	// add podUsage information in Pods
 	for key, _ := range podsCount {
-		// fmt.Println(key, val)
 		for i := range resNode.Nodes {
 			if resNode.Nodes[i].Name == key {
-				// a := podsCount[v.Name]
 				podsUsage := strconv.Itoa(podsCount[resNode.Nodes[i].Name])
 				capacity := resNode.Nodes[i].Pods
 				resNode.Nodes[i].Pods = PercentUseString(podsUsage, capacity) + "%" + "|" + podsUsage + " / " + capacity + " pods"
-
-				// fmt.Println(resNode.Nodes[i].Pods)
 			}
 		}
 	}
@@ -259,7 +203,6 @@ func NodesInCluster(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	clusterName := vars["clusterName"]
-	// fmt.Println(clusterName)
 
 	clusterURL := "https://" + openmcpURL + "/apis/openmcp.k8s.io/v1alpha1/namespaces/openmcp/openmcpclusters/" + clusterName + "?clustername=openmcp"
 	go CallAPI(token, clusterURL, ch)
@@ -282,35 +225,24 @@ func NodesInCluster(w http.ResponseWriter, r *http.Request) {
 	// get nodename, cpu capacity Information
 	for _, element := range nodeItems {
 		nodeName := GetStringElement(element, []string{"metadata", "name"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
-
 		cpuCapacity := GetStringElement(element, []string{"status", "capacity", "cpu"})
-		// element.(map[string]interface{})["status"].(map[string]interface{})["capacity"].(map[string]interface{})["cpu"].(string)
-
 		memoryCapacity := GetStringElement(element, []string{"status", "capacity", "memory"})
-		// element.(map[string]interface{})["status"].(map[string]interface{})["capacity"].(map[string]interface{})["memory"].(string)
 		memoryCapacity = strings.Split(memoryCapacity, "Ki")[0]
 		memoryCapInt, _ := strconv.Atoi(memoryCapacity)
 		memoryUseFloat := float64(memoryCapInt) / 1000 / 1000
 		memoryCapacity = fmt.Sprintf("%.1f", memoryUseFloat)
-
 		podsCapacity := GetStringElement(element, []string{"status", "capacity", "pods"})
-		// element.(map[string]interface{})["status"].(map[string]interface{})["capacity"].(map[string]interface{})["pods"].(string)
 
 		status := ""
 		statusInfo := GetInterfaceElement(element, []string{"status"})
-		// element.(map[string]interface{})["status"]
 		var healthCheck = make(map[string]string)
 		for _, elem := range statusInfo.(map[string]interface{})["conditions"].([]interface{}) {
 			conType := GetStringElement(elem, []string{"type"})
-			// elem.(map[string]interface{})["type"].(string)
 			tf := GetStringElement(elem, []string{"status"})
-			// elem.(map[string]interface{})["status"].(string)
 			healthCheck[conType] = tf
 		}
 
 		if healthCheck["Ready"] == "True" && (healthCheck["NetworkUnavailable"] == "" || healthCheck["NetworkUnavailable"] == "False") && healthCheck["MemoryPressure"] == "False" && healthCheck["DiskPressure"] == "False" && healthCheck["PIDPressure"] == "False" {
-			// healthyNodeCnt++
 			status = "Healthy"
 		} else {
 			if healthCheck["Ready"] == "Unknown" || (healthCheck["NetworkUnavailable"] == "" || healthCheck["NetworkUnavailable"] == "Unknown") || healthCheck["MemoryPressure"] == "Unknown" || healthCheck["DiskPressure"] == "Unknown" || healthCheck["PIDPressure"] == "Unknown" {
@@ -323,7 +255,6 @@ func NodesInCluster(w http.ResponseWriter, r *http.Request) {
 		//정보유무 체크해야함
 		role := ""
 		roleCheck := GetInterfaceElement(element, []string{"metadata", "labels", "node-role.kubernetes.io/master"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["labels"].(map[string]interface{})["node-role.kubernetes.io/master"]
 
 		if roleCheck == "" {
 			role = "master"
@@ -332,14 +263,10 @@ func NodesInCluster(w http.ResponseWriter, r *http.Request) {
 		}
 
 		os := GetStringElement(element, []string{"status", "nodeInfo", "osImage"})
-		// element.(map[string]interface{})["status"].(map[string]interface{})["nodeInfo"].(map[string]interface{})["osImage"].(string)
 
 		containerRuntimeVersion := GetStringElement(element, []string{"status", "nodeInfo", "containerRuntimeVersion"})
-		// element.(map[string]interface{})["status"].(map[string]interface{})["nodeInfo"].(map[string]interface{})["containerRuntimeVersion"].(string)
 
 		clMetricURL := "https://" + openmcpURL + "/metrics/nodes/" + nodeName + "?clustername=" + clusterName
-
-		// fmt.Println("check usl ::: http://" + openmcpURL + "/metrics/nodes/" + nodeName + "?clustername=" + clusterName)
 
 		go CallAPI(token, clMetricURL, ch)
 		clMetricResult := <-ch
@@ -347,12 +274,10 @@ func NodesInCluster(w http.ResponseWriter, r *http.Request) {
 
 		cpuUse := "0"
 		memoryUse := "0"
-		//  cluster CPU Usage, Memroy Usage 확인
 		if clMetricData["nodemetrics"] != nil {
 			for _, element := range clMetricData["nodemetrics"].([]interface{}) {
 
 				cpuUseCheck := GetInterfaceElement(element, []string{"cpu", "CPUUsageNanoCores"})
-				// element.(map[string]interface{})["cpu"].(map[string]interface{})["CPUUsageNanoCores"]
 				if cpuUseCheck == nil {
 					cpuUse = "0n"
 				} else {
@@ -365,7 +290,6 @@ func NodesInCluster(w http.ResponseWriter, r *http.Request) {
 				cpuUse = fmt.Sprintf("%.1f", cpuUseFloat)
 
 				memoryUseCheck := GetInterfaceElement(element, []string{"memory", "MemoryUsageBytes"})
-				// element.(map[string]interface{})["memory"].(map[string]interface{})["MemoryUsageBytes"]
 				if memoryUseCheck == nil {
 					memoryUse = "0Ki"
 				} else {
@@ -403,11 +327,9 @@ func NodesInCluster(w http.ResponseWriter, r *http.Request) {
 	// get podUsage counts by nodename groups
 	for _, element := range podItems {
 		nodeCheck := GetInterfaceElement(element, []string{"spec", "nodeName"})
-		// element.(map[string]interface{})["spec"].(map[string]interface{})["nodeName"]
 		nodeName := "-"
 		if nodeCheck == nil {
 			nodeName = "-"
-			// fmt.Println(element.(map[string]interface{})["metadata"].(map[string]interface{})["name"])
 		} else {
 			nodeName = nodeCheck.(string)
 		}
@@ -416,15 +338,12 @@ func NodesInCluster(w http.ResponseWriter, r *http.Request) {
 
 	// add podUsage information in Pods
 	for key, _ := range podsCount {
-		// fmt.Println(key, val)
 		for i := range resNode.Nodes {
 			if resNode.Nodes[i].Name == key {
-				// a := podsCount[v.Name]
 				podsUsage := strconv.Itoa(podsCount[resNode.Nodes[i].Name])
 				capacity := resNode.Nodes[i].Pods
 				resNode.Nodes[i].Pods = PercentUseString(podsUsage, capacity) + "%" + "|" + podsUsage + " / " + capacity + " pods"
 
-				// fmt.Println(resNode.Nodes[i].Pods)
 			}
 		}
 	}
@@ -445,7 +364,6 @@ func NodeOverview(w http.ResponseWriter, r *http.Request) {
 		ch := make(chan Resultmap)
 		token := GetOpenMCPToken()
 
-		// http://192.168.0.152:31635/api/v1/nodes/cluster1-worker1.dev.gmd.life?clustername=cluster1
 		nodeURL := "https://" + openmcpURL + "/api/v1/nodes/" + nodeName + "?clustername=" + clusterName
 		go CallAPI(token, nodeURL, ch)
 
@@ -500,7 +418,6 @@ func NodeOverview(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if healthCheck["Ready"] == "True" && (healthCheck["NetworkUnavailable"] == "" || healthCheck["NetworkUnavailable"] == "False") && healthCheck["MemoryPressure"] == "False" && healthCheck["DiskPressure"] == "False" && healthCheck["PIDPressure"] == "False" {
-			// healthyNodeCnt++
 			status = "Healthy"
 		} else {
 			if healthCheck["Ready"] == "Unknown" || (healthCheck["NetworkUnavailable"] == "" || healthCheck["NetworkUnavailable"] == "Unknown") || healthCheck["MemoryPressure"] == "Unknown" || healthCheck["DiskPressure"] == "Unknown" || healthCheck["PIDPressure"] == "Unknown" {
@@ -586,7 +503,6 @@ func NodeOverview(w http.ResponseWriter, r *http.Request) {
 		podResult := <-ch
 		podData := podResult.data
 		podItems := podData["items"].([]interface{})
-		// fmt.Println("podItmes len:", len(podItems))
 
 		// get podUsage counts by nodename groups
 		for _, element := range podItems {
@@ -602,11 +518,9 @@ func NodeOverview(w http.ResponseWriter, r *http.Request) {
 		var podStatus []NameVal
 		cpuStatus = append(cpuStatus, NameVal{"Used", math.Ceil(cpuUseFloat/1000/1000/1000*100) / 100})
 		cpuStatus = append(cpuStatus, NameVal{"Total", cpuCapFloat})
-		// cpuStatus = append(cpuStatus, NameVal{"Total", fmt.Sprintf("%.1f", float64(clusterCPUCapSum)/1000/1000/1000)})
 
 		memStatus = append(memStatus, NameVal{"Used", math.Ceil(memoryUseFloat/1000/1000*100) / 100})
 		memStatus = append(memStatus, NameVal{"Total", math.Ceil(float64(memoryCapFloat)/1000/1000*100) / 100})
-		// memStatus = append(memStatus, NameVal{"Total", fmt.Sprintf("%.1f", float64(clusterMemoryCapSum)/1000/1000)})
 
 		fsStatus = append(fsStatus, NameVal{"Used", math.Ceil(fsUseFloat/1000/1000*100) / 100})
 		fsStatus = append(fsStatus, NameVal{"Total", math.Ceil(fsCapaUseFloat/1000/1000*100) / 100})
@@ -731,11 +645,9 @@ func NodesMetric(w http.ResponseWriter, r *http.Request) {
 
 			cpuStatus = append(cpuStatus, NameVal{"Used", math.Ceil(cpuUseFloat/1000/1000/1000*100) / 100})
 			cpuStatus = append(cpuStatus, NameVal{"Total", cpuCapFloat})
-			// cpuStatus = append(cpuStatus, NameVal{"Total", fmt.Sprintf("%.1f", float64(clusterCPUCapSum)/1000/1000/1000)})
 
 			memStatus = append(memStatus, NameVal{"Used", math.Ceil(memoryUseFloat/1000/1000*100) / 100})
 			memStatus = append(memStatus, NameVal{"Total", math.Ceil(float64(memoryCapFloat)/1000/1000*100) / 100})
-			// memStatus = append(memStatus, NameVal{"Total", fmt.Sprintf("%.1f", float64(clusterMemoryCapSum)/1000/1000)})
 
 			fsStatus = append(fsStatus, NameVal{"Used", math.Ceil(fsUseFloat/1000/1000*100) / 100})
 			fsStatus = append(fsStatus, NameVal{"Total", math.Ceil(fsCapaUseFloat/1000/1000*100) / 100})

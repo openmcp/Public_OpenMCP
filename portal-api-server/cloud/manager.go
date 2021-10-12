@@ -41,11 +41,8 @@ func AddNode(nodenm string, aKey string, sKey string) AddNodeResult {
 	if err != nil {
 		fmt.Println("Could not create instance", err)
 		r = AddNodeResult{"Could not create instance", "", ""}
-		// return []byte(`{"result": "Could not create instance" }`)
 		return r
 	}
-
-	// fmt.Println("Created instance", *runResult.Instances[0])
 
 	// Add tags to the created instance
 	_, errtag := svc.CreateTags(&ec2.CreateTagsInput{
@@ -60,12 +57,10 @@ func AddNode(nodenm string, aKey string, sKey string) AddNodeResult {
 	if errtag != nil {
 		log.Println("Could not create tags for instance", runResult.Instances[0].InstanceId, errtag)
 		r = AddNodeResult{"Could not create instance", *runResult.Instances[0].InstanceId, errtag.Error()}
-		// return []byte(`{"result": "Could not create tags for instance"}`)
 		return r
 	}
 
 	fmt.Println("Successfully tagged instance")
-	// return []byte(`{"hello": "world"}`)
 	r = AddNodeResult{"Created instance", *runResult.Instances[0].InstanceId, ""}
 	return r
 }
@@ -83,23 +78,11 @@ func GetNodeState(instanceId *string, nodenm string, cluster string, aKey string
 	// Create EC2 service client
 	ec2Svc := ec2.New(sess)
 	iid := []*string{instanceId}
-	// Call to get detailed information on each instance
-	// result, err := ec2Svc.DescribeInstances(nil)
-
-	// result, err := ec2Svc.DescribeInstances(&ec2.DescribeInstancesInput{
-	// 	InstanceIds: iid,
-	// })
-
-	// result, err := ec2Svc.DescribeInstanceStatus(&ec2.DescribeInstanceStatusInput{
-	// 	InstanceIds: iid,
-	// })
 
 	if err != nil {
 		fmt.Println("Error", err)
 	} else {
 		for i := 0; i <= 120; i++ {
-			// fmt.Println("Count", i)
-			// log.Println("count", i)
 			result, errr := ec2Svc.DescribeInstances(&ec2.DescribeInstancesInput{
 				InstanceIds: iid,
 			})
@@ -109,18 +92,15 @@ func GetNodeState(instanceId *string, nodenm string, cluster string, aKey string
 			if errr != nil {
 				fmt.Println("GetNodeState_Error", errr)
 			} else {
-				// fmt.Println("Success", result.Reservations[0].Instances[0])
 				if status == "running" {
 					publicIPAddress = *result.Reservations[0].Instances[0].PublicIpAddress
 					db.InsertReadyNode(cluster, nodenm, publicIPAddress, status, provider)
-					// fmt.Println("break")
 					break
 				} else {
 					publicIPAddress = ""
 					db.InsertReadyNode(cluster, nodenm, publicIPAddress, status, provider)
 				}
 			}
-			// fmt.Println("Success", result.InstanceStatuses[0])
 			time.Sleep(time.Second * 5)
 		}
 

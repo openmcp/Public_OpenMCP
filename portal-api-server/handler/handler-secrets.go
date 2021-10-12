@@ -8,12 +8,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Secrets
-// name : items ("metadata","name") string
-// namespace : items ("metatdata","namespace") string
-// type : items ("status","capacity" storage") string
-// createdTime items ("metadata","creationTimestamp")
-
 // persistent volume claim (PVC)
 func GetSecrets(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan Resultmap)
@@ -25,7 +19,6 @@ func GetSecrets(w http.ResponseWriter, r *http.Request) {
 
 	resSecret := SecretRes{}
 	secret := SecretInfo{}
-	// http://192.168.0.152:31635/api/v1/namespaces/openmcp/persistentvolumeclaims?clustername=openmcp
 	secretURL := "https://" + openmcpURL + "/api/v1/namespaces/" + projectName + "/secrets?clustername=" + clusterName
 
 	go CallAPI(token, secretURL, ch)
@@ -64,16 +57,12 @@ func GetSecretOverView(w http.ResponseWriter, r *http.Request) {
 	resSecretOverview := SecretOverView{}
 	secret := SecretInfo{}
 
-	// http://192.168.0.152:31635/api/v1/namespaces/openmcp/secrets/default-token-fwpzk?clustername=openmcp
-
-	// http://192.168.0.152:31635/api/v1/namespaces/openmcp/secrets/default-token-fwpzk?clustername=openmcp
 	secretURL := "https://" + openmcpURL + "/api/v1/namespaces/" + projectName + "/secrets/" + secretName + "?clustername=" + clusterName
 	fmt.Println(secretURL)
 	go CallAPI(token, secretURL, ch)
 
 	secretResult := <-ch
 	secretData := secretResult.data
-	// secretItems := secretData["items"].([]interface{})
 
 	if secretData != nil {
 

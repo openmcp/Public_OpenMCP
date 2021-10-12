@@ -13,11 +13,6 @@ func GetStatefulsets(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan Resultmap)
 	token := GetOpenMCPToken()
 
-	// vars := mux.Vars(r)
-	// clusterName := vars["clusterName"]
-	// projectName := vars["projectName"]
-
-	// fmt.Println(clustrName, projectName)
 	clusterurl := "https://" + openmcpURL + "/apis/core.kubefed.io/v1beta1/kubefedclusters?clustername=openmcp"
 	go CallAPI(token, clusterurl, ch)
 	clusters := <-ch
@@ -30,7 +25,6 @@ func GetStatefulsets(w http.ResponseWriter, r *http.Request) {
 	//get clusters Information
 	for _, element := range clusterData["items"].([]interface{}) {
 		clusterName := GetStringElement(element, []string{"metadata", "name"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
 		clusterType := GetStringElement(element, []string{"status", "conditions", "type"})
 		if clusterType == "Ready" {
 			clusterNames = append(clusterNames, clusterName)
@@ -43,24 +37,18 @@ func GetStatefulsets(w http.ResponseWriter, r *http.Request) {
 		statefulsetURL := "https://" + openmcpURL + "/apis/apps/v1/statefulsets?clustername=" + clusterName
 		go CallAPI(token, statefulsetURL, ch)
 		statefulsetResult := <-ch
-		// fmt.Println(statefulsetResult)
 		statefulsetData := statefulsetResult.data
 		statefulsetItems := statefulsetData["items"].([]interface{})
 
 		// get deployement Information
 		for _, element := range statefulsetItems {
 			name := GetStringElement(element, []string{"metadata", "name"})
-			// element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
 			namespace := GetStringElement(element, []string{"metadata", "namespace"})
-			// element.(map[string]interface{})["metadata"].(map[string]interface{})["namespace"].(string)
 
 			status := "-"
 			availableReplicas := GetInterfaceElement(element, []string{"status", "availableReplicas"})
-			// element.(map[string]interface{})["status"].(map[string]interface{})["availableReplicas"]
 			readyReplicas := GetInterfaceElement(element, []string{"status", "readyReplicas"})
-			// element.(map[string]interface{})["status"].(map[string]interface{})["readyReplicas"]
 			replicas := GetFloat64Element(element, []string{"status", "replicas"})
-			// element.(map[string]interface{})["status"].(map[string]interface{})["replicas"].(float64)
 
 			replS := fmt.Sprintf("%.0f", replicas)
 
@@ -74,9 +62,7 @@ func GetStatefulsets(w http.ResponseWriter, r *http.Request) {
 			}
 
 			image := GetStringElement(element, []string{"spec", "template", "spec", "containers", "image"})
-			// element.(map[string]interface{})["spec"].(map[string]interface{})["template"].(map[string]interface{})["spec"].(map[string]interface{})["containers"].([]interface{})[0].(map[string]interface{})["image"].(string)
 			created_time := GetStringElement(element, []string{"metadata", "creationTimestamp"})
-			// element.(map[string]interface{})["metadata"].(map[string]interface{})["creationTimestamp"].(string)
 
 			statefulset.Name = name
 			statefulset.Status = status
@@ -98,39 +84,28 @@ func GetStatefulsetsInProject(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan Resultmap)
 	token := GetOpenMCPToken()
 
-	// fmt.Println("GetstatefulsetsInProject")
-
 	vars := mux.Vars(r)
 	clusterName := vars["clusterName"]
 	projectName := vars["projectName"]
 
 	resStatefulset := StatefulsetRes{}
 	statefulset := StatefulsetInfo{}
-	// get node names, cpu(capacity)
-	// http: //192.168.0.152:31635/apis/apps/v1/namespaces/kube-system/statefulsets?clustername=cluster1
 	statefulsetURL := "https://" + openmcpURL + "/apis/apps/v1/namespaces/" + projectName + "/statefulsets?clustername=" + clusterName
 	go CallAPI(token, statefulsetURL, ch)
 	statefulsetResult := <-ch
-	// fmt.Println(statefulsetResult)
 	statefulsetData := statefulsetResult.data
 	statefulsetItems := statefulsetData["items"].([]interface{})
 
 	// get deployement Information
 	for _, element := range statefulsetItems {
 		name := GetStringElement(element, []string{"metadata", "name"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
 		namespace := GetStringElement(element, []string{"metadata", "namespace"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["namespace"].(string)
 
 		status := "-"
 		availableReplicas := GetInterfaceElement(element, []string{"status", "availableReplicas"})
-		// element.(map[string]interface{})["status"].(map[string]interface{})["availableReplicas"]
 		readyReplicas := GetInterfaceElement(element, []string{"status", "readyReplicas"})
 
-		// element.(map[string]interface{})["status"].(map[string]interface{})["readyReplicas"]
-
 		replicas := GetFloat64Element(element, []string{"status", "replicas"})
-		// element.(map[string]interface{})["status"].(map[string]interface{})["replicas"].(float64)
 
 		replS := fmt.Sprintf("%.0f", replicas)
 
@@ -144,9 +119,7 @@ func GetStatefulsetsInProject(w http.ResponseWriter, r *http.Request) {
 		}
 
 		image := GetStringElement(element, []string{"spec", "template", "spec", "containers", "image"})
-		// element.(map[string]interface{})["spec"].(map[string]interface{})["template"].(map[string]interface{})["spec"].(map[string]interface{})["containers"].([]interface{})[0].(map[string]interface{})["image"].(string)
 		created_time := GetStringElement(element, []string{"metadata", "creationTimestamp"})
-		// element.(map[string]interface{})["metadata"].(map[string]interface{})["creationTimestamp"].(string)
 
 		statefulset.Name = name
 		statefulset.Status = status
@@ -167,8 +140,6 @@ func GetStatefulsetOverview(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan Resultmap)
 	token := GetOpenMCPToken()
 
-	// fmt.Println("GetstatefulsetsInProject")
-
 	vars := mux.Vars(r)
 	clusterName := vars["clusterName"]
 	projectName := vars["projectName"]
@@ -176,12 +147,9 @@ func GetStatefulsetOverview(w http.ResponseWriter, r *http.Request) {
 
 	resStatefulsetOverview := StatefulsetOverview{}
 	statefulset := StatefulsetInfo{}
-	// get node names, cpu(capacity)
-	// http: //192.168.0.152:31635/apis/apps/v1/namespaces/kube-system/statefulsets?clustername=cluster1
 	statefulsetURL := "https://" + openmcpURL + "/apis/apps/v1/namespaces/" + projectName + "/statefulsets/" + statefulsetName + "?clustername=" + clusterName
 	go CallAPI(token, statefulsetURL, ch)
 	statefulsetResult := <-ch
-	// fmt.Println(statefulsetResult)
 	statefulsetData := statefulsetResult.data
 
 	// get deployement Information
@@ -228,47 +196,12 @@ func GetStatefulsetOverview(w http.ResponseWriter, r *http.Request) {
 	statefulset.Labels = labels
 
 	resStatefulsetOverview.Info = statefulset
-
-	//pods
-	// pod > ownerReferences[] > kind:"RepllicaSet", name,
-	// Replicaset에서
-	// > Deployement 검색 (이름/Uid)
-	// Pod에서
-	// > ownerreferences[{kind:"statefulset",name}] >
-
-	// // replicasets
-	// // http://192.168.0.152:31635/apis/apps/v1/namespaces/kube-system/replicasets?clustername=cluster2
-	// replURL := "https://" + openmcpURL + "/apis/apps/v1/namespaces/" + projectName + "/replicasets?clustername=" + clusterName
-	// go CallAPI(token, replURL, ch)
-	// replResult := <-ch
-	// // fmt.Println(statefulsetResult)
-	// replData := replResult.data
-	// replItems := replData["items"].([]interface{})
-
-	// // find deployements within replicasets
-	// replUIDs := []string{}
-	// for _, element := range replItems {
-	// 	kind := GetStringElement(element, []string{"metadata", "ownerReferences", "kind"})
-	// 	name := GetStringElement(element, []string{"metadata", "ownerReferences", "name"})
-	// 	if kind == "statefulset" && name == statefulsetName {
-	// 		uid := GetStringElement(element, []string{"metadata", "uid"})
-	// 		replUIDs = append(replUIDs, uid)
-	// 	}
-	// }
-
-	//openmcp-apiserver-b84bf5cc7
-	//ab2a2995-8dca-41ce-aead-8e112d75e3fe
-
-	// find pods within statefulsets
-	// replicasets
-	// http://192.168.0.152:31635/apis/apps/v1/namespaces/kube-system/replicasets?clustername=cluster2
 	podURL := "https://" + openmcpURL + "/api/v1/namespaces/" + projectName + "/pods?clustername=" + clusterName
 	go CallAPI(token, podURL, ch)
 	podResult := <-ch
 	podData := podResult.data
 	podItems := podData["items"].([]interface{})
 
-	// fmt.Println("replUIDs : ", replUIDs)
 	for _, element := range podItems {
 		kind := GetStringElement(element, []string{"metadata", "ownerReferences", "kind"})
 		name := GetStringElement(element, []string{"metadata", "ownerReferences", "name"})
@@ -356,7 +289,6 @@ func GetStatefulsetOverview(w http.ResponseWriter, r *http.Request) {
 				event.Typenm = GetStringElement(element, []string{"type"})
 				event.Reason = GetStringElement(element, []string{"reason"})
 				event.Message = GetStringElement(element, []string{"message"})
-				// event.Time = GetStringElement(element, []string{"metadata", "creationTimestamp"})
 				event.Time = GetStringElement(element, []string{"lastTimestamp"})
 				event.Object = kind
 				event.Project = projectName
