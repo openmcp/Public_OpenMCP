@@ -1,0 +1,14 @@
+[
+  {
+    "cluster": "gke-cluster-1",
+    "pool": "default-pool",
+    "machine_type": "g1-samll",
+    "desired": 1
+  },
+  {
+    "cluster": "gke-cluster-1",
+    "pool": "pool-1",
+    "machine_type": "n1-standard-1",
+    "desired": 1
+  }
+]

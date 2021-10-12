@@ -1,6 +1,4 @@
-// 각 컨텐츠의 왼쪽 고정 매뉴바
 import React, { Component } from "react";
-import "../../css/style.css";
 // import {ArrowBackIos, NavigateNext} from '@material-ui/icons';
 import { NavLink } from 'react-router-dom';
 import * as fnMenuList from './LeftMenuData.js';
@@ -11,21 +9,38 @@ class LeftMenu extends Component {
     super(props);
     
     this.state = {
-      params : this.props.menu, //프로젝트에 따라서 수정되야함
+      params : this.props.menu,
     }
   }
-  render() {
-    const menuList = fnMenuList.getMenu(this.props.title);
-    // console.log(menuList[this.props.menu]);
-    // console.log(ad, this.props.menu);
-    // console.log("leftsubcomp : ", this.props.pathParam)
 
+
+
+  shouldComponentUpdate(prevProps, prevState) {
+    if (this.props.menu !== prevProps.menu || this.props.title !== prevProps.title){
+      return true;
+    } else {
+      if(this.props.pathParams.hasOwnProperty('searchString') && this.props.pathParams.searchString !== prevProps.pathParams.searchString){
+        return true;
+      }
+      return false;
+    }
+  }
+
+  render() {
+    const menuList = fnMenuList.getMenu(this.props.pathParams);
     const lists = [];
-    menuList[this.props.menu].map((item) => {
+    menuList[this.props.menu].forEach((item) => {
       if(item.type === "single"){
         lists.push(
           <li className="" >
-            <NavLink to={item.path} activeClassName="active">
+            {/* <NavLink to={item.path} activeClassName="active"> */}
+            <NavLink to={{
+              pathname: `${item.path}`,
+              search: item.searchString,
+              state: {
+                data: item.state,
+              },
+            }} activeClassName="active">
               <i className="fa fa-dashboard"></i>
               <span>{item.title}</span>
             </NavLink>
@@ -34,7 +49,13 @@ class LeftMenu extends Component {
       } else {
         lists.push(
           <li className="treeview">
-            <NavLink to={item.path} activeClassName="active">
+            <NavLink to={{
+              pathname: `${item.path}`,
+              search: item.searchString,
+              state: {
+                data: item.state,
+              },
+            }} activeClassName="active">
               <i className="fa fa-dashboard"></i>
               <span>{item.title}</span>
               <span className="pull-right-container">
@@ -46,7 +67,13 @@ class LeftMenu extends Component {
                 item.sub.map((subItem)=>{
                   return(
                     <li>
-                      <NavLink to={subItem.path} activeClassName="active">
+                      <NavLink to={{
+                        pathname: `${subItem.path}`,
+                        search: subItem.searchString,
+                        state: {
+                          data: item.state,
+                        },
+                      }} activeClassName="active">
                         <i className="fa fa-circle-o"></i> <span>{subItem.title}</span>
                       </NavLink>
                     </li>
@@ -58,6 +85,7 @@ class LeftMenu extends Component {
         )
       }
     });
+    // console.log("this.props.title", this.props.title)
     return (
       <div>
         {this.props.title !== undefined ? 

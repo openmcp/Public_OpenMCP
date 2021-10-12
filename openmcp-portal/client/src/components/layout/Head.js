@@ -1,103 +1,197 @@
 import React, { Component } from "react";
-import "../../css/style.css";
-import { Settings } from "@material-ui/icons";
+// import { Settings } from "@material-ui/icons";
+import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 
-// import styled from "styled-components";
-// import oc from "open-color";
-import { Link, NavLink } from 'react-router-dom';
-
-
-// const Mainheader = styled.div`
-// /* 레이아웃 */
-//     display: flex;
-//     position: fixed;
-//     align-items: center;
-//     justify-content: center;
-//     height: 60px;
-//     width: 100%;
-//     top: 0px;
-//     z-index: 5;
-
-//     /* 색상 */
-//     background: ${oc.indigo[6]};
-//     color: white;
-//     border-bottom: 1px solid ${oc.indigo[7]};
-//     box-shadow: 0 3px 6px rgba(0,0,0,0.10), 0 3px 6px rgba(0,0,0,0.20);
-
-//     /* 폰트 */
-//     font-size: 2.5rem;
-// `;
+import { Link } from "react-router-dom";
+// //import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+// import Grow from '@material-ui/core/Grow';
+// import Paper from '@material-ui/core/Paper';
+// import Popper from '@material-ui/core/Popper';
+// import MenuItem from '@material-ui/core/MenuItem';
+// import MenuList from '@material-ui/core/MenuList';
+import * as utilLog from "./../util/UtLogs.js";
+import { AsyncStorage } from "AsyncStorage";
+import LanguageSwitch from "../modules/LanguageSwitch.js";
+import LanguageListMenu from "../modules/LanguageListMenu.js";
 
 class Head extends Component {
-  // onSelectTopMenu = (e) => {
-  //   this.props.onSelectMenu(false,"");
-  // };
-
-  // onSelectLeftMenu = (e) => {
-  //   this.props.onSelectMenu(true,"");
-  // };
-
-  // const userName = sessionStorage.getItem("username");
-  // componentWillMount(){
-  //   userName = 
-  // }
-  
-  onLogout = (e) => {
-    // debugger;
-    // localStorage.removeItem("token");
-    sessionStorage.removeItem("token");
+  constructor(props) {
+    super(props);
+    this.state = {
+      // anchorEl:null,
+      open: false,
+      selectedMenu: "dashboard",
+    };
+    this.anchorRef = React.createRef();
+    this.prevOpen = React.createRef(this.state.open);
   }
+
+  componentWillUpdate(prevProps, prevState) {
+    if (this.props.path !== prevProps.path) {
+      // if (prevProps.path.indexOf('/dashboard') >= 0 ){
+      //   this.setState({selectedMenu:'dashboard'})
+      // } else if (prevProps.path.indexOf('/clusters') >= 0 ) {
+      //   this.setState({selectedMenu:'clusters'})
+      // } else if (prevProps.path.indexOf('/nodes') >= 0 ) {
+      //   this.setState({selectedMenu:'nodes'})
+      // } else if (prevProps.path.indexOf('/projects') >= 0 ) {
+      //   this.setState({selectedMenu:'projects'})
+      // } else if (prevProps.path.indexOf('/deployments') >= 0 ) {
+      //   this.setState({selectedMenu:'deployments'})
+      // } else if (prevProps.path.indexOf('/pods') >= 0 ) {
+      //   this.setState({selectedMenu:'pods'})
+      // } else if (prevProps.path.indexOf('/network') >= 0 ) {
+      //   this.setState({selectedMenu:'network'})
+      // } else if (prevProps.path.indexOf('/settings') >= 0 ){
+      //   this.setState({selectedMenu:'settings'})
+      // }
+      this.selectionMenu(prevProps.path);
+    }
+  }
+
+  componentWillMount() {
+    // var menu = window.location.pathname
+    // // console.log(menu)
+    // if (menu.indexOf('/dashboard') >= 0 ){
+    //   this.setState({selectedMenu:'dashboard'})
+    // } else if (menu.indexOf('/clusters') >= 0 ) {
+    //   this.setState({selectedMenu:'clusters'})
+    // } else if (menu.indexOf('/nodes') >= 0 ) {
+    //   this.setState({selectedMenu:'nodes'})
+    // } else if (menu.indexOf('/projects') >= 0 ) {
+    //   this.setState({selectedMenu:'projects'})
+    // } else if (menu.indexOf('/deployments') >= 0 ) {
+    //   this.setState({selectedMenu:'deployments'})
+    // } else if (menu.indexOf('/pods') >= 0 ) {
+    //   this.setState({selectedMenu:'pods'})
+    // } else if (menu.indexOf('/network') >= 0 ) {
+    //   this.setState({selectedMenu:'network'})
+    // } else if (menu.indexOf('/settings') >= 0 ){
+    //   this.setState({selectedMenu:'settings'})
+    // }
+    this.selectionMenu(this.props.path);
+  }
+
+  selectionMenu = (path) => {
+    if (path.indexOf("/dashboard") >= 0) {
+      this.setState({ selectedMenu: "dashboard" });
+    } else if (path.indexOf("/clusters") >= 0) {
+      this.setState({ selectedMenu: "clusters" });
+    } else if (path.indexOf("/nodes") >= 0) {
+      this.setState({ selectedMenu: "nodes" });
+    } else if (path.indexOf("/projects") >= 0) {
+      this.setState({ selectedMenu: "projects" });
+    } else if (path.indexOf("/deployments") >= 0) {
+      this.setState({ selectedMenu: "deployments" });
+    } else if (path.indexOf("/pods") >= 0) {
+      this.setState({ selectedMenu: "pods" });
+    } else if (path.indexOf("/network") >= 0) {
+      this.setState({ selectedMenu: "network" });
+    } else if (path.indexOf("/maintenance") >= 0) {
+      this.setState({ selectedMenu: "maintenance" });
+    } else if (path.indexOf("/settings") >= 0) {
+      this.setState({ selectedMenu: "settings" });
+    }
+  };
+
+  onLogout = (e) => {
+    let userId = null;
+    AsyncStorage.getItem("userName", (err, result) => {
+      userId = result;
+    });
+    utilLog.fn_insertPLogs(userId, "log-LG-LG02");
+
+    // localStorage.removeItem("token");
+    // localStorage.removeItem("userName");
+    // localStorage.removeItem("roles");
+
+    AsyncStorage.setItem("token", null);
+    AsyncStorage.setItem("userName", null);
+    AsyncStorage.setItem("roles", null);
+    AsyncStorage.setItem("projects", null);
+  };
+
+  handleToggle = () => {
+    this.setState({ open: !this.prevOpen.current });
+  };
+
+  handleClose = (event) => {
+    this.setState({ open: false });
+  };
+
+  onSelectMenu = (e) => {
+    this.setState({ selectedMenu: e.currentTarget.id });
+  };
+
+  onClick = (e) => {
+    e.preventDefault();
+  };
+
+  componentDidUpdate() {}
+
   render() {
-    const userName = sessionStorage.getItem("userName");
-    // console.log(sessionStorage.getItem("userName"));
+    // const handleListKeyDown = (event) => {
+    //   if (event.key === 'Tab') {
+    //     event.preventDefault();
+    //     this.setState({open:false});
+    //   }
+    // }
+
+    let userName = null;
+    AsyncStorage.getItem("userName", (err, result) => {
+      userName = result;
+    });
     return (
       <header className="main-header">
-        <NavLink to="/dashboard" className="logo">
+        <Link to="/dashboard" className="logo">
           <span className="logo-lg">
             <b>OpenMCP</b>
           </span>
-        </NavLink>
+        </Link>
 
         <nav className="navbar navbar-static-top">
-          <div className="top-menu navbar-left">
-            <NavLink to="/dashboard" activeClassName="active">
-              <span>Dashboard</span>
-            </NavLink>
-            <NavLink to="/clusters" activeClassName="active" >
-              <span>Clusters</span>
-            </NavLink>
-            <NavLink to="/nodes" activeClassName="active" >
-              <span>Nodes</span>
-            </NavLink>
-            <NavLink to="/projects" activeClassName="active" >
-              <span>Projects</span>
-            </NavLink>
-            <NavLink to="/pods" activeClassName="active" >
-              <span>Pods</span>
-            </NavLink>
-          </div>
-          {/* <a
-            href="/"
-            className="sidebar-toggle"
-            data-toggle="push-menu"
-            role="button"
-          >
-          </a> */}
-
-          <div className="navbar-custom-menu">
-            <ul className="nav navbar-nav">
-              <li className="dropdown user user-menu">
-                <Link to="/login" className="dropdown-toggle" data-toggle="dropdown" onClick={this.onLogout}>
-                  <span className="hidden-xs">{userName}</span>
+          <div className="top-menu navbar-right">
+            <div>
+              <LanguageListMenu />
+            </div>
+            <div
+              className={"main-menu " + this.state.selectedMenu}
+              id="accounts"
+              style={{ position: "relative", textAlign: "left" }}
+            >
+              <Link to="/" onClick={this.onClick}>
+                <AccountCircleIcon />
+                <div
+                  style={{
+                    position: "absolute",
+                    display: "inline-block",
+                    right: "15px",
+                    top: "12px",
+                  }}
+                >
+                  {userName}
+                </div>
+              </Link>
+              <div className="sub-menu accounts">
+                <Link to="/login" onClick={this.onLogout}>
+                  Logout
                 </Link>
-              </li>
-              <li className="dropdown user user-menu">
-                <a href="/" className="dropdown-toggle" data-toggle="dropdown">
-                  {/* <span className="hidden-xs">설정아이콘</span> */}
-                  <Settings style={{ fontSize: 20 }}></Settings>
-                </a>
-              </li>
-            </ul>
+                {/* <LanguageSwitch/> */}
+              </div>
+            </div>
+
+            {/* <div className={"main-menu " + this.state.selectedMenu} id="settings" onClick={this.onSelectMenu}>
+              <Link to="/settings/accounts" onClick={this.onSelectMenu}>
+                <div style={{ fontSize: 20}}><Settings></Settings></div>
+              </Link>
+              <div className="sub-menu settings">
+                <Link to="/settings/accounts" onClick={this.onSelectMenu}>Accounts</Link>
+                <Link to="/settings/group-role" onClick={this.onSelectMenu}>Group Role</Link>
+                <Link to="/settings/policy" onClick={this.onSelectMenu}>Policy</Link>
+                <Link to="/settings/alert" onClick={this.onSelectMenu}>Alert</Link>
+                <Link to="/settings/config" onClick={this.onSelectMenu}>Config</Link>
+              </div>
+            </div> */}
           </div>
         </nav>
       </header>

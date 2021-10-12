@@ -1,0 +1,9 @@
+[
+  {
+      "name": "httpbin",
+      "cluster": "cluster1",
+      "project": "httpbin",
+      "address": "192.168.0.201",
+      "created_time": "2020-11-18T09:34:53Z"
+  }
+]

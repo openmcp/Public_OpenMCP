@@ -1,0 +1,10 @@
+[
+  {
+    "name": "cluster1",
+    "status": "Provisioning",
+    "provider": "Imported",
+    "nodes": "5",
+    "cpu": "6.3/8core",
+    "ram" : "6.7/15.5GIB"
+  }
+]

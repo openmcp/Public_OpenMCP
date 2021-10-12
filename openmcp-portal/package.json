@@ -7,12 +7,19 @@
         "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\""
     },
     "dependencies": {
+        "@naisutech/react-tree": "^2.0.11",
+        "bcrypt": "^5.0.0",
         "body-parser": "^1.19.0",
         "express": "^4.17.1",
         "multer": "^1.4.2",
         "nodemon": "^2.0.5",
         "pg": "^8.4.1",
+        "react-contextmenu": "^2.14.0",
         "react-d3-tree": "^1.16.1",
+        "react-icons": "^4.2.0",
+        "react-simple-tree-menu": "^1.1.18",
+        "react-svg-worldmap": "^2.0.0-alpha.0",
+        "react-toastify": "^8.0.2",
         "request": "^2.88.2"
     },
     "devDependencies": {

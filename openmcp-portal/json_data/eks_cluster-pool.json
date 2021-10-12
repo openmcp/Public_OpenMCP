@@ -1,0 +1,23 @@
+[
+  {
+      "name": "eks-cluster1",
+      "nodegroups": [
+          {
+              "name": "ng-1",
+              "instance_type": "t3.small",
+              "desired_size": 2,
+              "max_size": 2,
+              "min_size": 2,
+              "auto_scaling_group": "eks-1cbc406f-53e3-9930-08a9-76af9c31eecd",
+              "intances": [
+                  {
+                      "instance_id": "i-024a7f62de698b1e0"
+                  },
+                  {
+                      "instance_id": "i-0b7a3e4c47ea4b361"
+                  }
+              ]
+          }
+      ]
+  }
+]

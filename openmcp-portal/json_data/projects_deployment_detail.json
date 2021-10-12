@@ -1,0 +1,271 @@
+{
+  "basic_info": {
+    "name": "nginx-deploy",
+    "namespace": "webproject",
+    "uid" : "20479a5e-5317-4ea8-881c-51fbb5be5727",
+    "labels" : {},
+    "created_time": "2020-11-18T03:05:39Z"
+  },
+  "replica_status": [
+    {
+      "cluster" : "cluster1",
+      "pods" : [
+        {
+          "status":"ready",
+          "name" : "nginx-deploy-86c57db685-6wlgz"
+        },
+        {
+          "status":"ready",
+          "name" : "nginx-deploy-86c57db685-7mprq "
+        },
+        {
+          "status":"ready",
+          "name" : "nginx-deploy-86c57db685-7mprq "
+        }
+      ]
+    },
+    {
+      "cluster" : "cluster2",
+      "pods" : [
+        {
+          "status":"ready",
+          "name" : "mapp-66cf8f8775-vddsw"
+        },
+        {
+          "status":"ready",
+          "name" : "mapp-66cf8f8775-vddsw"
+        },
+        {
+          "status":"ready",
+          "name" : "mapp-66cf8f8775-vddsw"
+        }
+      ]
+    }
+  ],
+  "pods": [
+    {
+      "name": "nginx-deploy-86c57db685-6wlgz",
+      "status": "Running",
+      "node": "cluster1-worker1.dev.gmd.life",
+      "cpu": "4m",
+      "memory": "17Mi"
+    },
+    {
+      "name": "nginx-deploy-86c57db685-7mprq",
+      "status": "Running",
+      "node": "cluster1-worker2.dev.gmd.life",
+      "cpu": "3m",
+      "memory": "16Mi"
+    },
+    {
+      "name": "nginx-deploy-86c57db685-8stgj",
+      "status": "Running",
+      "node": "cluster1-worker1.dev.gmd.life",
+      "cpu": "12m",
+      "memory": "43Mi"
+    },
+    {
+      "name": "nginx-deploy-86c57db685-ckwqr",
+      "status": "Running",
+      "node": "cluster2-worker1.dev.gmd.life",
+      "cpu": "2m",
+      "memory": "13Mi"
+    },
+    {
+      "name": "nginx-deploy-86c57db685-d7s4w",
+      "status": "Running",
+      "node": "cluster2-worker1.dev.gmd.life",
+      "cpu": "5m",
+      "memory": "13Mi"
+    },
+    {
+      "name": "nginx-deploy-86c57db685-p6b7n",
+      "status": "Running",
+      "node": "cluster2-worker2.dev.gmd.life",
+      "cpu": "12m",
+      "memory": "13Mi"
+    }
+  ],
+  "ports": [
+    {
+      "port_name": "nginx",
+      "port": 6600,
+      "listening_port": 6600,
+      "protocol": "TCP"
+    }
+  ],
+  "physical_resources": {
+    "cpu":[
+      {
+        "cpu":0.9,
+        "time":"13:17:00"
+      },
+      {
+        "cpu":1.2,
+        "time":"13:18:00"
+      },
+      {
+        "cpu":1.2,
+        "time":"13:19:00"
+      },
+      {
+        "cpu":1.1,
+        "time":"13:20:00"
+      },
+      {
+        "cpu":1.3,
+        "time":"13:21:00"
+      },
+      {
+        "cpu":1.3,
+        "time":"13:22:00"
+      },
+      {
+        "cpu":1.3,
+        "time":"13:23:00"
+      },
+      {
+        "cpu":1.4,
+        "time":"13:24:00"
+      },
+      {
+        "cpu":1.3,
+        "time":"13:25:00"
+      },
+      {
+        "cpu":1.2,
+        "time":"13:26:00"
+      }
+    ],
+    "memory":[
+      {
+        "memory":115,
+        "time":"13:17:00"
+      },
+      {
+        "memory":115,
+        "time":"13:18:00"
+      },
+      {
+        "memory":112,
+        "time":"13:19:00"
+      },
+      {
+        "memory":113,
+        "time":"13:20:00"
+      },
+      {
+        "memory":115,
+        "time":"13:21:00"
+      },
+      {
+        "memory":114,
+        "time":"13:22:00"
+      },
+      {
+        "memory":111,
+        "time":"13:23:00"
+      },
+      {
+        "memory":111,
+        "time":"13:24:00"
+      },
+      {
+        "memory":115,
+        "time":"13:25:00"
+      },
+      {
+        "memory":115,
+        "time":"13:26:00"
+      }
+    ],
+    "network" : [
+      {
+        "unit":"Bps",
+        "in":5529,
+        "out":1945,
+        "time":"13:17:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5481,
+        "out":1883,
+        "time":"13:18:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5575,
+        "out":1918,
+        "time":"13:19:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5548,
+        "out":1975,
+        "time":"13:20:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5466,
+        "out":1920,
+        "time":"13:21:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5574,
+        "out":1962,
+        "time":"13:22:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5481,
+        "out":1934,
+        "time":"13:23:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5542,
+        "out":1916,
+        "time":"13:24:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5504,
+        "out":1912,
+        "time":"13:25:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5479,
+        "out":1892,
+        "time":"13:26:00"
+      }
+    ]
+  },
+  "events": [
+    {
+      "status": "Normal",
+      "reason":"ScalingReplicaSet",
+      "message" : "Scaled up replica set nginx-deploy-86c57db685 to 3",
+      "time" : "2020-11-18T03:03:00Z"
+    },
+    {
+      "status": "Normal",
+      "reason":"SuccessfulCreate",
+      "message" : "Created pod: nginx-deploy-86c57db685-2vxtj",
+      "time" : "2020-11-18T03:04:00Z"
+    },
+    {
+      "status": "Normal",
+      "reason":"SuccessfulCreate",
+      "message" : "Created pod: nginx-deploy-86c57db685-tlh7w",
+      "time" : "2020-11-18T03:04:00Z"
+    },
+    {
+      "status": "Normal",
+      "reason":"SuccessfulCreate",
+      "message" : "Created pod: nginx-deploy-86c57db685-sb4rk",
+      "time" : "2020-11-18T03:04:00Z"
+    }    
+  ]
+}

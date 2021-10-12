@@ -19,12 +19,6 @@ var Config = struct {
 
 func initDBConfig() {
 	configor.Load(&Config, "dbconfig.yml")
-	// // fmt.Printf("config: %#v", Config)
-	// fmt.Printf("host: %s", Config.DB.Host)
-	// fmt.Printf("passwd: %s", Config.DB.Password)
-	// fmt.Printf("user: %s", Config.DB.User)
-	// fmt.Printf("port: %s", Config.DB.Port)
-
 }
 
 func checkError(err error) {
@@ -34,11 +28,8 @@ func checkError(err error) {
 }
 
 func InsertReadyNode(cluster string, nodenm string, publicIPAddress string, status string, provider string) {
-	// db.InsertReadyNode(cluster, nodenm, publicIPAddress, status, provider)
 	initDBConfig()
 	var connectionString string = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require", Config.DB.Host, Config.DB.User, Config.DB.Password, "portal-controller", Config.DB.Port)
-	// fmt.Println(connectionString)
-	// fmt.Print(cluster, " | ", nodenm, " | ", publicIPAddress, " | ", status, " | ", provider)
 	db, err := sql.Open("postgres", connectionString)
 	checkError(err)
 

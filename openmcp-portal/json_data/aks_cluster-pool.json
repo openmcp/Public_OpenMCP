@@ -1,0 +1,15 @@
+[
+  {
+      "name": "aks-cluster-01",
+      "resourcegroup": "rsg01",
+      "noderesourcegroup": "MC_rsg01_aks-cluster-01_koreacentral",
+      "agentpools": [
+          {
+              "name": "np01",
+              "vmssname": "aks-np01-47695231-vmss",
+              "nodecount": 2
+          }
+      ],
+      "location": "koreacentral"
+  }
+]

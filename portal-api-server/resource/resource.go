@@ -32,6 +32,10 @@ import (
 	_ "k8s.io/client-go/util/retry"
 )
 
+// func ListClustersInfo() Clusters {
+
+// }
+
 // func ListResource(ClusterName string, ResourceType string) {
 func ListResource() Deployments {
 

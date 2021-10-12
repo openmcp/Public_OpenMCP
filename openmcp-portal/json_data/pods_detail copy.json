@@ -1,0 +1,243 @@
+{
+  "basic_info": {
+    "name": "mysqld-57ffcdd985-hvx4g",
+    "cluster": "cluster2",
+    "project  ": "mpr",
+    "status": "CrashLoopBackOff",
+    "node": "cluster2-worker1.dev.gmd.life",
+    "total_restart_count": "13",
+    "namespace": "mpr",
+    "pod_ip": "10.244.1.139",
+    "node_ip": "192.168.0.151",
+    "created_time": "2020-11-17T03:03:39Z",
+    "resources" : {
+      "cpu_min":"130m",
+      "cpu_max":"1200m",
+      "memory_min":"90Mi",
+      "memory_max":"220Mi"
+    }
+  },
+  "containers": [
+    {
+      "name": "container-n7wyxp",
+      "status": "running",
+      "restart_count": 13,
+      "port": "3306",
+      "image": "mysql"
+    }
+  ],
+  "pod_status": [
+    {
+      "type": "ContainersReady",
+      "status": "False",
+      "last_update": "2020-11-17T03:15:17Z",
+      "reson": "ContainersNotReady",
+      "message": "containers with unready status: [container-n7wyxp]"
+    },
+    {
+      "type": "Initialized",
+      "status": "True",
+      "last_update": "2020-11-17T03:15:17Z",
+      "reson": "",
+      "message": ""
+    },{
+      "type": "PodScheduled",
+      "status": "True",
+      "last_update": "2020-11-17T03:15:17Z",
+      "reson": "",
+      "message": ""
+    },{
+      "type": "Ready",
+      "status": "False",
+      "last_update": "2020-11-17T03:15:17Z",
+      "reson": "ContainersNotReady",
+      "message": "containers with unready status: [container-n7wyxp]"
+    }
+  ],
+  "physical_resources": {
+    "cpu":[
+      {
+        "cpu":1.2,
+        "time":"13:19:00"
+      },
+      {
+        "cpu":1.3,
+        "time":"13:20:00"
+      },
+      {
+        "cpu":1.2,
+        "time":"13:21:00"
+      },
+      {
+        "cpu":1.1,
+        "time":"13:22:00"
+      },
+      {
+        "cpu":1.0,
+        "time":"13:23:00"
+      },
+      {
+        "cpu":1.1,
+        "time":"13:24:00"
+      },
+      {
+        "cpu":1.2,
+        "time":"13:25:00"
+      },
+      {
+        "cpu":1.2,
+        "time":"13:26:00"
+      },
+      {
+        "cpu":1.2,
+        "time":"13:27:00"
+      },
+      {
+        "cpu":1.2,
+        "time":"13:28:00"
+      }
+    ],
+    "memory":[
+      {
+        "memory":112,
+        "time":"13:19:00"
+      },
+      {
+        "memory":113,
+        "time":"13:20:00"
+      },
+      {
+        "memory":112,
+        "time":"13:21:00"
+      },
+      {
+        "memory":115,
+        "time":"13:22:00"
+      },
+      {
+        "memory":111,
+        "time":"13:23:00"
+      },
+      {
+        "memory":112,
+        "time":"13:24:00"
+      },
+      {
+        "memory":111,
+        "time":"13:25:00"
+      },
+      {
+        "memory":113,
+        "time":"13:26:00"
+      },
+      {
+        "memory":114,
+        "time":"13:27:00"
+      },
+      {
+        "memory":113,
+        "time":"13:28:00"
+      }
+    ],
+    "network" : [
+      {
+        "unit":"Bps",
+        "in":5520,
+        "out":1801,
+        "time":"13:19:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5452,
+        "out":1853,
+        "time":"13:20:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5575,
+        "out":1902,
+        "time":"13:21:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5324,
+        "out":1954,
+        "time":"13:22:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5268,
+        "out":1923,
+        "time":"13:23:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5583,
+        "out":1966,
+        "time":"13:24:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5514,
+        "out":1930,
+        "time":"13:25:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5577,
+        "out":1930,
+        "time":"13:26:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5577,
+        "out":1931,
+        "time":"13:27:00"
+      },
+      {
+        "unit":"Bps",
+        "in":5406,
+        "out":1850,
+        "time":"13:28:00"
+      }
+    ]
+  },
+  "events": [
+    {
+      "status": "Normal",
+      "reason":"Scheduled",
+      "message" : "Successfully assigned mpr/mysql2-6d44f7b776-dc28j to cluster2-worker1.dev.gmd.life",
+      "time" : "2020-11-17T03:16:00Z"
+    },
+    {
+      "status": "Normal",
+      "reason":"Pulling",
+      "message" : "Pulling image 'mysql'",
+      "time" : "2020-11-17T03:16:00Z"
+    },
+    {
+      "status": "Normal",
+      "reason":"Pulled",
+      "message" : "Successfully pulled image 'mysql'",
+      "time" : "2020-11-17T03:17:00Z"
+    },
+    {
+      "status": "Normal",
+      "reason":"Created",
+      "message" : "Created container container-n7wyxp",
+      "time" : "2020-11-17T03:17:00Z"
+    },
+    {
+      "status": "Normal",
+      "reason":"Started",
+      "message" : "Started container container-n7wyxp",
+      "time" : "2020-11-17T03:17:00Z"
+    },
+    {
+      "status": "Warning",
+      "reason":"Back-off",
+      "message" : "Back-off restarting failed container",
+      "time" : "2020-11-17T03:25:00Z"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+[
+  {
+      "name": "openmcp",
+      "region": "AS",
+      "zone": "KR",
+      "status": "Healthy",
+      "provider": "-",
+      "nodes": 3,
+      "cpu": "0.0/12 Core",
+      "ram": "0.0/24.5 Gi",
+      "disk": "0.0%",
+      "network": "0.0 byte/s"
+  },
+  {
+      "name": "cluster1",
+      "region": "AS",
+      "zone": "KR",
+      "status": "Healthy",
+      "provider": "-",
+      "nodes": 4,
+      "cpu": "0.5/16 Core",
+      "ram": "13.3/32.7 Gi",
+      "disk": "9.5%",
+      "network": "1.1 byte/s"
+  },
+  {
+      "name": "cluster2",
+      "region": "AS",
+      "zone": "KR",
+      "status": "Healthy",
+      "provider": "-",
+      "nodes": 3,
+      "cpu": "0.4/12 Core",
+      "ram": "9.8/24.5 Gi",
+      "disk": "11.0%",
+      "network": "1.0 byte/s"
+  }
+]

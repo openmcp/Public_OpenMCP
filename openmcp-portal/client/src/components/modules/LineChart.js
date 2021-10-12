@@ -6,7 +6,7 @@ import React, { Component } from "react";
 // website examples showcase many properties,
 // you'll often use just a few of them.
 
-class MyResponsiveLine extends Component {
+class LineChart extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -146,4 +146,4 @@ class MyResponsiveLine extends Component {
   }
 }
 
-export default MyResponsiveLine;
+export default LineChart;

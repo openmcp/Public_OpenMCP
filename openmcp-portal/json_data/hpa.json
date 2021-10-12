@@ -1,0 +1,11 @@
+[
+  {
+    "name": "openmcp-analytic-engine-5777b99466-zq4rd",
+    "cluster": "cluster1",
+    "namespace": "openmcp",
+    "reference": "Deployment/iot-data",
+    "min_repl" : 1,
+    "max_repl" : 2,
+    "current_repl" :2
+  }
+]

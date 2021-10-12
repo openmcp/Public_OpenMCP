@@ -1,0 +1,12 @@
+{
+    "api" : {
+        "url" : "http://0.0.0.0:1111"
+    },
+    "db" : {
+        "host":"0.0.0.0",
+        "user":"user-id",
+        "password":"password",
+        "port":"5432",
+        "database":"database-name"
+    }
+}

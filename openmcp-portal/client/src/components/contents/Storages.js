@@ -18,7 +18,7 @@ import {
   TableHeaderRow,
   PagingPanel,
 } from "@devexpress/dx-react-grid-material-ui";
-import Editor from "./../common/Editor";
+import Editor from "./../modules/Editor";
 
 class Storages extends Component {
   constructor(props) {
@@ -28,7 +28,7 @@ class Storages extends Component {
         { name: "project_name", title: "Name" },
         { name: "project_status", title: "Status" },
         { name: "project_creator", title: "Createor" },
-        { name: "project_create_time", title: "Created Time" },
+        { name: "project_created_time", title: "Created Time" },
       ],
       
       rows: "",
@@ -41,11 +41,12 @@ class Storages extends Component {
       pageSizes: [5, 10, 15, 0],
 
       completed: 0,
+      editorContext : ``,
     };
   }
 
   componentWillMount() {
-    // this.props.onSelectMenu(false, "");
+    this.props.menuData("none");
   }
 
   
@@ -67,7 +68,11 @@ class Storages extends Component {
     this.timer = setInterval(this.progress, 20);
     this.callApi()
       .then((res) => {
-        this.setState({ rows: res });
+        if(res == null){
+          this.setState({ rows: [] });
+        } else {
+          this.setState({ rows: res });
+        }
         clearInterval(this.timer);
       })
       .catch((err) => console.log(err));
@@ -76,24 +81,12 @@ class Storages extends Component {
   render() {
     // 셀 데이터 스타일 변경
     const HighlightedCell = ({ value, style, row, ...restProps }) => (
-      <Table.Cell
-        {...restProps}
-        style={{
-          backgroundColor:
-            value === "Healthy"
-              ? "white"
-              : value === "Unhealthy"
-              ? "white"
-              : undefined,
-          cursor: "pointer",
-          ...style,
-        }}
-      >
+      <Table.Cell>
         <span
           style={{
             color:
               value === "Healthy"
-                ? "green"
+                ? "#1ab726"
                 : value === "Unhealthy"
                 ? "red"
                 : undefined,
@@ -138,18 +131,18 @@ class Storages extends Component {
         // onClick={()=> alert(JSON.stringify(row))}
       />
     );
-    const i = 0;
+    // const i = 0;
     const Row = (props) => {
       return <Table.Row {...props} />;
     };
 
     return (
-      <div className="content-wrapper full">
+      <div className="content-wrapper fulled">
         {/* 컨텐츠 헤더 */}
         <section className="content-header">
           <h1>
           Storages
-            <small>List</small>
+            <small></small>
           </h1>
           <ol className="breadcrumb">
             <li>
@@ -163,7 +156,7 @@ class Storages extends Component {
             {this.state.rows ? (
               [
                 // <input type="button" value="create"></input>,
-                <Editor />,
+                <Editor title="create" context={this.state.editorContext}/>,
                 <Grid
                   rows={this.state.rows}
                   columns={this.state.columns}
@@ -175,16 +168,16 @@ class Storages extends Component {
                   <IntegratedFiltering />
                   <SearchPanel style={{ marginLeft: 0 }} />
 
-                  {/* 페이징 */}
-                  <PagingState defaultCurrentPage={0} defaultPageSize={5} />
-                  <IntegratedPaging />
-                  <PagingPanel pageSizes={this.state.pageSizes} />
-
                   {/* Sorting */}
                   <SortingState
                   // defaultSorting={[{ columnName: 'city', direction: 'desc' }]}
                   />
                   <IntegratedSorting />
+
+                  {/* 페이징 */}
+                  <PagingState defaultCurrentPage={0} defaultPageSize={5} />
+                  <IntegratedPaging />
+                  <PagingPanel pageSizes={this.state.pageSizes} />
 
                   {/* 테이블 */}
                   <Table cellComponent={Cell} rowComponent={Row} />

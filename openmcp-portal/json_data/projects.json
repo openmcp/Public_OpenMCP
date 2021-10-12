@@ -1,0 +1,180 @@
+[
+  {
+    "name": "kubernetes-dashboard",
+    "status": "Active",
+    "cluster" : "cluster1",
+    "created_time": "2020-10-14T05:10:37Z",
+    "labels":
+      {
+        "addonmanager.kubernetes.io/mode" : "Reconcile",
+        "kubernetes.io/minikube-addons" : "dashboard"
+      }
+  },
+  {
+    "name": "custom-metrics",
+    "status": "Active",
+    "cluster" : "cluster1",
+    "created_time": "2020-09-29T05:44:23Z",
+    "labels": {}
+  },
+  {
+    "name": "webproject",
+    "status": "Active",
+    "cluster" : "cluster1",
+    "created_time": "2020-11-18T03:04:20Z",
+    "labels": {}
+  },
+  {
+    "name": "ingress-nginx",
+    "status": "Active",
+    "cluster" : "cluster1",
+    "created_time": "2020-10-14T05:19:37Z",
+    "labels":
+      {
+        "app.kubernetes.io/name" : "ingress-nginx",
+        "app.kubernetes.io/part-of" : "ingress-nginx"
+      }
+  },
+  {
+    "name": "kube-federation-system",
+    "status": "Active",
+    "cluster" : "cluster1",
+    "created_time": "2020-10-14T07:41:45Z",
+    "labels": {}
+  },
+  {
+    "name": "kube-public",
+    "status": "Active",
+    "cluster" : "cluster1",
+    "created_time": "2020-09-29T05:44:22Z",
+    "labels": {}
+  },
+  {
+    "name": "metallb-system",
+    "status": "Active",
+    "cluster" : "cluster1",
+    "created_time": "2020-10-14T05:19:37Z",
+    "labels":
+      {
+        "app": "metallb"
+      }
+  },
+  {
+    "name": "kube-system",
+    "status": "Active",
+    "cluster" : "cluster1",
+    "created_time": "2020-09-29T05:44:22Z",
+    "labels": {}
+  },
+  {
+    "name": "monitoring",
+    "status": "Active",
+    "cluster" : "cluster1",
+    "created_time": "2020-10-23T02:09:00Z",
+    "labels": {}
+  },
+  {
+    "name":  "testns",
+    "status": "Active",
+    "cluster" : "cluster1",
+    "created_time": "2020-10-05T09:35:14Z",
+    "labels": {}
+  },
+  {
+    "name": "testns2",
+    "status": "Active",
+    "cluster" : "cluster1",
+    "created_time": "2020-10-21T09:57:14Z",
+    "labels":
+      {
+        "kubefed.io/managed" : "true"
+      }
+  },
+  {
+    "name": "custom-metrics",
+    "status": "Active",
+    "cluster" : "cluster2",
+    "created_time": "2020-10-14T06:37:43Z",
+    "labels": {}
+  },
+  {
+    "name": "ingress-nginx" ,
+    "status": "Active",
+    "cluster" : "cluster2",
+    "created_time": "2020-10-14T06:37:43Z",
+    "labels":
+      {
+        "app.kubernetes.io/name" : "ingress-nginx",
+        "app.kubernetes.io/part-of" : "ingress-nginx"
+      }
+  },
+  {
+    "name": "kube-federation-system",
+    "status": "Active",
+    "cluster" : "cluster2",
+    "created_time": "2020-09-29T05:44:09Z",
+    "labels": {}
+  },
+  {
+    "name": "kube-node-lease",
+    "status": "Active",
+    "cluster" : "cluster2",
+    "created_time": "2020-09-29T05:44:09Z",
+    "labels": {}
+  },
+  {
+    "name": "kube-public",
+    "status": "Active",
+    "cluster" : "cluster2",
+    "created_time": "2020-09-29T05:44:09Z",
+    "labels": {}
+  },
+  {
+    "name": "kube-system",
+    "status": "Active",
+    "cluster" : "cluster2",
+    "created_time": "2020-09-29T05:44:09Z",
+    "labels": {}
+  },
+  {
+    "name": "metallb-system",
+    "status": "Active",
+    "cluster" : "cluster2",
+    "created_time": "2020-10-14T06:37:43Z",
+    "labels":
+      {
+        "app" : "metallb"
+      }
+  },
+  {
+    "name": "openmcp",
+    "status": "Active",
+    "cluster" : "cluster2",
+    "created_time": "2020-10-14T04:56:14Z",
+    "labels": {}
+  },
+  {
+    "name": "monitoring",
+    "status": "Active",
+    "cluster" : "cluster2",
+    "created_time": "2020-10-23T02:09:02Z",
+    "labels": {}
+  },
+  {
+    "name": "testmig",
+    "status": "Active",
+    "cluster" : "cluster2",
+    "created_time": "2020-11-02T10:06:30Z",
+    "labels": {}
+  },
+  {
+    "name": "testns2",
+    "status": "Active",
+    "cluster" : "cluster2",
+    "created_time": "2020-09-29T05:44:09Z",
+    "labels":
+      {
+        "kubefed.io/managed": "true"
+      }
+  }
+]

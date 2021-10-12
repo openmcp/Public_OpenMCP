@@ -1,0 +1,51 @@
+[
+  {
+    "name": "OMCP-Master",
+    "attributes": {
+      "status": "Healthy",
+      "zone": "KR"
+    },
+    "children": [
+      {
+        "name": "cluster1",
+        "attributes": {
+          "status": "Warning",
+          "region": "Seoul",
+          "zone": "KR"
+        }
+      },
+      {
+        "name": "cluster2",
+        "attributes": {
+          "status": "Healthy",
+          "region": "Gyeonggi-do",
+          "zone": "KR"
+        }
+      },
+      {
+        "name": "cluster3",
+        "attributes": {
+          "status": "Healthy",
+          "region": "Seoul",
+          "zone": "KR"
+        }
+      },
+      {
+        "name": "gke-cluster1",
+        "attributes": {
+          "status": "Healthy",
+          "region": "us-central1",
+          "zone": "us-central1-c"
+        }
+      },
+      {
+        "name": "eks-cluster1",
+        "attributes": {
+          "status": "Healthy",
+          "region": "eu-west-2",
+          "zone": "eu-west-2a"
+        }
+      }
+    ]
+  }
+]

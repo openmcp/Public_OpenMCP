@@ -1,0 +1,9 @@
+[
+  {
+    "name": "gke-cluster-1",
+    "status": "Healthy",
+    "provider": "GKE",
+    "cpu": "0.4/4 Core",
+    "ram" : "6.8/16.5 Gi"
+  }
+]

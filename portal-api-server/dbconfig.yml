@@ -1,0 +1,10 @@
+db:
+    host:       0.0.0.0
+    user:       "user"
+    password:   "password"
+    port:       5432
+influx:
+    ip:         "0.0.0.0"
+    port:       8086
+    username:   username
+    password:   password
