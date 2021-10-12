@@ -1,0 +1,10 @@
+db:
+    host:       192.168.0.4
+    user:       postgres
+    password:   Rnalek19!
+    port:       5432
+influx:
+    ip:         192.168.0.220
+    port:       8086
+    username:   root
+    password:   root

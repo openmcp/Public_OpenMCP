@@ -14,15 +14,15 @@ import (
 	"time"
 )
 
-func AddNode(nodenm string) AddNodeResult {
+func AddNode(nodenm string, aKey string, sKey string) AddNodeResult {
 
 	var r = AddNodeResult{}
 
-	akid := "accesskey"
-	secretkey := "secretkey"
+	akid := aKey
+	secretkey := sKey
 
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(""),
+		Region:      aws.String("ap-northeast-2"),
 		Credentials: credentials.NewStaticCredentials(akid, secretkey, ""),
 	})
 
@@ -70,13 +70,13 @@ func AddNode(nodenm string) AddNodeResult {
 	return r
 }
 
-func GetNodeState(instanceId *string, nodenm string, cluster string) {
+func GetNodeState(instanceId *string, nodenm string, cluster string, aKey string, sKey string) {
 
-	akid := "accesskey"
-	secretkey := "secretkey"
+	akid := aKey
+	secretkey := sKey
 
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(""),
+		Region:      aws.String("ap-northeast-2"),
 		Credentials: credentials.NewStaticCredentials(akid, secretkey, ""),
 	})
 
@@ -98,8 +98,8 @@ func GetNodeState(instanceId *string, nodenm string, cluster string) {
 		fmt.Println("Error", err)
 	} else {
 		for i := 0; i <= 120; i++ {
-			fmt.Println("Count", i)
-			log.Println("count", i)
+			// fmt.Println("Count", i)
+			// log.Println("count", i)
 			result, errr := ec2Svc.DescribeInstances(&ec2.DescribeInstancesInput{
 				InstanceIds: iid,
 			})
@@ -113,7 +113,7 @@ func GetNodeState(instanceId *string, nodenm string, cluster string) {
 				if status == "running" {
 					publicIPAddress = *result.Reservations[0].Instances[0].PublicIpAddress
 					db.InsertReadyNode(cluster, nodenm, publicIPAddress, status, provider)
-					fmt.Println("break")
+					// fmt.Println("break")
 					break
 				} else {
 					publicIPAddress = ""
