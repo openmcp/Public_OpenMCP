@@ -22,19 +22,19 @@ TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
 #policy name : log-level
-#LOGVALUE="4"
+#LOGVALUE="4" # value : 0~5
 #curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
 #--data "[{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/0/value/0\", \"value\": \"$LOGVALUE\"}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
 
 
 #policy name : hpa-minmax-distribution-mode
-#HPAMODE="Unequal"
+#HPAMODE="Unequal" # value : Equal or Unequal
 #curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
 #--data "[{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/0/value/0\", \"value\": \"$HPAMODE\"}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
 
 
 #policy name : metric-collector-period
-#PERIOD="6"
+#PERIOD="6" # value : seconds
 #curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
 #--data "[{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/0/value/0\", \"value\": \"$PERIOD\"}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
 
@@ -61,7 +61,7 @@ TOKEN=`echo "$TOKEN" | tr -d '"'`
 #--data "[{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/0/value/0\", \"value\": \"$GEOWEIGHT\"},{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/1/value/0\", \"value\": \"$PERIODWEIGHT\"},{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/2/value/0\", \"value\": \"$RZWEIGHT\"},{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/3/value/0\", \"value\": \"$ONLYRWEIGHT\"},{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/4/value/0\", \"value\": \"$NORZWEIGHT\"}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
 
 #policy name : post-scheduling-type
-SCHEDULINGTYPE="Scoring"
+SCHEDULINGTYPE="Scoring"  # value : FIFO or Scoring
 curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
 --data "[{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/0/value/0\", \"value\": \"$SCHEDULINGTYPE\"}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
 
