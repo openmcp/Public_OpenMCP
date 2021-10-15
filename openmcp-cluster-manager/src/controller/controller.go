@@ -93,7 +93,7 @@ func BuildConfigFromFlags(context, kubeconfigPath string) (*rest.Config, error) 
 
 func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	//OpenMCPCluster 리소스 변화 감지
-	omcplog.V(4).Info(">> Reconcile()")
+	//omcplog.V(4).Info(">> Reconcile()")
 
 	clusterInstance := &clusterv1alpha1.OpenMCPCluster{}
 	err := r.live.Get(context.TODO(), request.NamespacedName, clusterInstance)
@@ -127,8 +127,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		omcplog.V(2).Info(clusterInstance.Name + " [ UNJOIN ]")
 
 	} else if clusterInstance.Spec.JoinStatus == "JOINING" && metallbrangeCheck == "true" {
-
-		omcplog.V(2).Info(clusterInstance.Name + " [ JOINING ] Start")
+		jointimeStart := time.Now()
+		omcplog.V(2).Info(clusterInstance.Name + " [ JOIN ] Start") //[JOINING]
 		omcplog.V(4).Info("Metallb Configmap (", clusterInstance.Spec.MetalLBRange.AddressFrom, ",", clusterInstance.Spec.MetalLBRange.AddressTo, ")")
 		joinCheck := MergeConfigAndJoin(*clusterInstance)
 
@@ -180,6 +180,9 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 				omcplog.V(2).Info("Update " + clusterInstance.Name + " status to JOIN")
 			}
 		}
+		jointimeEnd := time.Since(jointimeStart)
+		omcplog.V(2).Info(clusterInstance.Name + " [ JOIN ] End") //[JOINING]
+		omcplog.V(4).Info("=> ", clusterInstance.Name, " Join Time : ", jointimeEnd)
 	} else if clusterInstance.Spec.JoinStatus == "UNJOINING" {
 
 		omcplog.V(2).Info(clusterInstance.Name + " [ UNJOINING ] Start")
@@ -227,7 +230,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			util.CmdExec2("kubectl delete --context openmcp -n istio-system secret istio-remote-secret-" + clusterInstance.Name)
 			UninstallInitModule(moduleDirectory, clusterInstance.Name)
 
-			// 그동안 OpenMCP리소스로 배포된 하위 리소스 제거
+			// 그동안 OpenMCP 리소스로 배포된 하위 리소스 제거
 			err := resourceDelete.DeleteSubResourceAll(clusterInstance.Name, cm)
 			if err != nil {
 				omcplog.V(0).Info(err)
