@@ -203,7 +203,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			} else {
 				fmt.Println(err_haslist)
 			}
-			//return 맞나? cluster 여러개 조인되어 있을 때 hpa, vpa 생성/삭제 다시 테트
+			//return 맞나? cluster 여러개 조인되어 있을 때 hpa, vpa 생성/삭제 다시 테스트
 			return reconcile.Result{}, nil
 		} else {
 			return reconcile.Result{}, err

@@ -35,9 +35,9 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: INFLUX_IP
-              value: "10.0.3.20"
+              value: "10.0.3.191"
             - name: INFLUX_PORT
-              value: "30003"
+              value: "8086"
             - name: INFLUX_USERNAME
               value: "root"
             - name: INFLUX_PASSWORD
