@@ -3,8 +3,8 @@ kind: Service
 metadata:
   name: openmcp-apiserver
   namespace: openmcp
-  annotations:
-    metallb.universe.tf/allow-shared-ip: openmcp
+#  annotations:
+#    metallb.universe.tf/allow-shared-ip: openmcp
 spec:
   selector:
     name: openmcp-apiserver
