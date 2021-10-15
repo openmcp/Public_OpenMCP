@@ -16,20 +16,22 @@ package controller
 import (
 	"context"
 	"fmt"
-	"k8s.io/apimachinery/pkg/types"
 	"openmcp/openmcp/omcplog"
 	"os"
 	"reflect"
 	"strconv"
 
+	"k8s.io/apimachinery/pkg/types"
+
 	"github.com/getlantern/deepcopy"
 
 	"openmcp/openmcp/util/clusterManager"
 
-	"admiralty.io/multicluster-controller/pkg/reference"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"openmcp/openmcp/apis"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+
+	"admiralty.io/multicluster-controller/pkg/reference"
+	"k8s.io/apimachinery/pkg/api/errors"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
@@ -41,6 +43,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	extv1b1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 )
 
 var cm *clusterManager.ClusterManager
@@ -116,7 +119,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			return reconcile.Result{}, err
 		}
 	}
-	if instance.Status.ClusterMaps == nil || instance.Status.ChangeNeed == true {
+	if instance.Status.ClusterMaps == nil {
 		omcplog.V(3).Info("Ingress Create Start")
 		err_create := r.createIngress(req, cm, instance)
 		if err_create != nil {
@@ -137,6 +140,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 		return reconcile.Result{}, nil
 
+	}
+	if instance.Status.ChangeNeed == true {
+		omcplog.V(3).Info("Receive notify from OpenMCP Deployment ")
+
+		instance.Status.ChangeNeed = false
+		r.updateIngress(req, cm, instance)
 	}
 
 	// Check Ingress In Openmcp
@@ -298,18 +307,112 @@ func (r *reconciler) createIngress(req reconcile.Request, cm *clusterManager.Clu
 func (r *reconciler) updateIngress(req reconcile.Request, cm *clusterManager.ClusterManager, instance *resourcev1alpha1.OpenMCPIngress) error {
 	omcplog.V(4).Info("Function Called updateIngress")
 
-	for _, cluster := range cm.Cluster_list.Items {
+	cluster_map := make(map[string]int32)
 
-		omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
-		_, dep := r.ingressForOpenMCPIngress(req, instance)
-		command := "update"
-		_, err := r.sendSync(dep, command, cluster.Name)
-		if err != nil {
-			return err
+	for _, cluster := range cm.Cluster_list.Items {
+		cluster_map[cluster.Name] = 0
+	}
+
+	host_ing, ing := r.ingressForOpenMCPIngress(req, instance)
+
+	// // host Ing Update
+	// found := &extv1b1.Ingress{}
+	// err := cm.Host_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+	// if err == nil {
+	// 	err = cm.Host_client.Update(context.Background(), host_ing)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	// // Cluster Ing Update
+	// for _, cluster := range cm.Cluster_list.Items {
+	// 	omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deployed")
+	// 	command := "update"
+	// 	_, err := r.sendSync(ing, command, cluster.Name)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	serviceNames := getContainServiceAll(instance)
+
+	found := &extv1b1.Ingress{}
+	host_ing_get_err := cm.Host_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+
+	if isAllExistServiceInIngress_OpenMCPCluster(cm, instance.Namespace, serviceNames) {
+
+		if host_ing_get_err == nil { // find Ingress
+			err := cm.Host_client.Update(context.Background(), host_ing)
+			if err != nil {
+				return err
+			}
+		} else if host_ing_get_err != nil && errors.IsNotFound(host_ing_get_err) {
+			err := cm.Host_client.Create(context.Background(), host_ing)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		if host_ing_get_err == nil { // find Ingress
+			err := cm.Host_client.Delete(context.Background(), host_ing, host_ing.Namespace, host_ing.Name)
+			if err != nil {
+				return err
+			}
 		}
 	}
-	instance.Status.LastSpec = instance.Spec
 
+	for _, cluster := range cm.Cluster_list.Items {
+		found := &extv1b1.Ingress{}
+		ing_get_err := cm.Cluster_genClients[cluster.Name].Get(context.TODO(), found, instance.Namespace, instance.Name)
+
+		if isAllExistServiceInIngress_Cluster(cm, cluster, instance.Namespace, serviceNames) {
+			omcplog.V(3).Info("***********************")
+			omcplog.V(3).Info("*!!! All Svc Exsit !!!*")
+			omcplog.V(3).Info("***********************")
+
+			cluster_map[cluster.Name] = 1
+			for i, rule := range ing.Spec.Rules {
+				ing.Spec.Rules[i].Host = cluster.Name + "." + rule.Host
+			}
+
+			if ing_get_err == nil { // find Ingress
+
+				omcplog.V(3).Info("Cluster '" + cluster.Name + "' Updated")
+				command := "update"
+				_, err := r.sendSync(ing, command, cluster.Name)
+				if err != nil {
+					return err
+				}
+			} else if ing_get_err != nil && errors.IsNotFound(ing_get_err) {
+
+				omcplog.V(3).Info("Cluster '" + cluster.Name + "' Created")
+				command := "create"
+				_, err := r.sendSync(ing, command, cluster.Name)
+				if err != nil {
+					return err
+				}
+			}
+		} else {
+			omcplog.V(3).Info("**************************")
+			omcplog.V(3).Info("*!!! All Svc NotExsit !!!*")
+			omcplog.V(3).Info("**************************")
+			cluster_map[cluster.Name] = 0
+			if ing_get_err == nil { // find Ingress
+				omcplog.V(3).Info("Cluster '" + cluster.Name + "' Deleted")
+				command := "delete"
+				_, err := r.sendSync(ing, command, cluster.Name)
+				if err != nil {
+					return err
+				}
+			}
+
+		}
+
+	}
+
+	instance.Status.LastSpec = instance.Spec
+	instance.Status.ClusterMaps = cluster_map
 	err := r.live.Status().Update(context.TODO(), instance)
 
 	return err
@@ -458,4 +561,51 @@ func (r *reconciler) sendSync(ingress *extv1b1.Ingress, command string, clusterN
 	}
 
 	return s.Name, err
+}
+
+func getContainServiceAll(instance *resourcev1alpha1.OpenMCPIngress) []string {
+
+	result := []string{}
+	for _, rule := range instance.Spec.Template.Spec.Rules {
+		for _, path := range rule.HTTP.Paths {
+			result = append(result, path.Backend.ServiceName)
+		}
+
+	}
+	return result
+
+}
+func isAllExistServiceInIngress_OpenMCPCluster(cm *clusterManager.ClusterManager, ns string, serviceNames []string) bool {
+	result := true
+
+	for _, serviceName := range serviceNames {
+		svc := &corev1.Service{}
+		err := cm.Host_client.Get(context.TODO(), svc, ns, serviceName)
+
+		if err != nil && errors.IsNotFound(err) {
+			result = false
+			break
+		}
+
+	}
+
+	return result
+}
+func isAllExistServiceInIngress_Cluster(cm *clusterManager.ClusterManager, cluster fedv1b1.KubeFedCluster, ns string, serviceNames []string) bool {
+	result := true
+
+	for _, serviceName := range serviceNames {
+		svc := &corev1.Service{}
+		err := cm.Cluster_genClients[cluster.Name].Get(context.TODO(), svc, ns, serviceName)
+
+		if err != nil && errors.IsNotFound(err) {
+			fmt.Println(cluster.Name, serviceName, "Not Find!!")
+			result = false
+			break
+		}
+		fmt.Println(cluster.Name, serviceName, "Find!!")
+
+	}
+
+	return result
 }

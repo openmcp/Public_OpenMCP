@@ -112,11 +112,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			omcplog.V(2).Info("Delete Deployment")
 			err := r.DeleteDeploys(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
 
-			omcplog.V(2).Info("Notify Service Controller")
-			r.NotifyService(instance.Spec.Labels, instance.Namespace)
+			omcplog.V(2).Info("Service Notify Send")
+			r.ServiceNotifyAll(req.Namespace)
 
 			omcplog.V(2).Info("Notify HybridAutoScaler Controller")
-			r.NotifyHAS(instance.Name, instance.Namespace)
+			r.NotifyHAS(req.Name, req.Namespace)
 
 			return reconcile.Result{}, err
 		}
@@ -438,7 +438,7 @@ func (r *reconciler) NotifyHAS(deployname string, namespace string) error {
 	return nil
 }
 
-/*func (r *reconciler) NotifyServiceAll(namespace string) error {
+func (r *reconciler) ServiceNotifyAll(namespace string) error {
 	omcplog.V(4).Info("[OpenMCP Deployment] Function Called NotifyServiceAll")
 
 	osvc_list := &resourcev1alpha1.OpenMCPServiceList{}
@@ -456,7 +456,7 @@ func (r *reconciler) NotifyHAS(deployname string, namespace string) error {
 	}
 
 	return nil
-}*/
+}
 func (r *reconciler) deploymentForOpenMCPDeployment(req reconcile.Request, m *resourcev1alpha1.OpenMCPDeployment, replica int32, clusterName string) *appsv1.Deployment {
 	omcplog.V(4).Info("[OpenMCP Deployment] Function Called deploymentForOpenMCPDeployment")
 
