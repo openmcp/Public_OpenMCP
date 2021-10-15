@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	// "openmcp/openmcp/migration/pkg/apis"
@@ -437,7 +438,12 @@ func (r *reconciler) setBeforeOpenmcpDeploymnet(migraionSource v1alpha1.Migratio
 	odeploy := &resourcev1alpha1.OpenMCPDeployment{}
 	err := r.live.Get(context.TODO(), types.NamespacedName{Name: migraionSource.MigrationSources[idx].ResourceName, Namespace: migraionSource.NameSpace}, odeploy)
 	if err != nil {
-		omcplog.Error("setBeforeOpenmcpDeploymnet error : ", err)
+		if strings.Contains(err.Error(), "not found") {
+			omcplog.V(4).Info("setBeforeOpenmcpDeploymnet skip : " + migraionSource.MigrationSources[idx].ResourceName)
+			return nil
+		} else {
+			omcplog.Error("setBeforeOpenmcpDeploymnet error : ", err)
+		}
 		return err
 	}
 	omcplog.V(4).Info("--- odeploy status ---")
@@ -446,7 +452,7 @@ func (r *reconciler) setBeforeOpenmcpDeploymnet(migraionSource v1alpha1.Migratio
 	omcplog.V(4).Info(moveCount)
 	r.moveCount = moveCount
 
-	odeploy.Status.BlockSubResource = true
+	odeploy.Status.CheckSubResource = true
 	err = r.live.Status().Update(context.TODO(), odeploy)
 	if err != nil {
 		omcplog.V(3).Info(err, "-----------")
@@ -461,14 +467,19 @@ func (r *reconciler) setAfterOpenmcpDeploymnet(micSource MigrationControllerReso
 	odeploy := &resourcev1alpha1.OpenMCPDeployment{}
 	err := r.live.Get(context.TODO(), types.NamespacedName{Name: micSource.resourceList[idx].ResourceName, Namespace: micSource.nameSpace}, odeploy)
 	if err != nil {
-		omcplog.Error("setAfterOpenmcpDeploymnet error : ", err)
+		if strings.Contains(err.Error(), "not found") {
+			omcplog.V(4).Info("setAfterOpenmcpDeploymnet skip : " + micSource.resourceList[idx].ResourceName)
+			return nil
+		} else {
+			omcplog.Error("setAfterOpenmcpDeploymnet error : ", err)
+		}
 		return err
 	}
 	omcplog.V(4).Info("--- odeploy ---")
 	omcplog.V(4).Info(odeploy.Status)
 	omcplog.V(4).Info(r.moveCount)
 
-	odeploy.Status.BlockSubResource = false
+	odeploy.Status.CheckSubResource = false
 	odeploy.Status.ClusterMaps[micSource.sourceCluster] -= r.moveCount
 	odeploy.Status.ClusterMaps[micSource.targetCluster] += r.moveCount
 
