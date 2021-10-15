@@ -180,9 +180,9 @@ openmcp-sync-controller-769b85d4b4-crnxc            1/1     Running   0         
 $ kubectl get openmcppolicy -n openmcp
 NAME                            AGE
 analytic-metrics-weight         3m16s
-has-target-cluster              3m15s
+post-scheduling-type            3m15s
 hpa-minmax-distribution-mode    3m15s
-loadbalancing-controller-policy 3m15s
+lb-scoring-weight               3m15s
 log-level                       3m16s
 metric-collector-period         3m16s
 ```
