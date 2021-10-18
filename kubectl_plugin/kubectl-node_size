@@ -1,0 +1,134 @@
+#!/bin/bash
+
+
+if [ "$1" == "" ]; then
+    echo "Input Node Size"
+    echo "ex) kubectl node-size 2"
+else
+    filename='/root/.kube/nodepool.txt'
+
+    function valid_ip()
+    {
+        local  ip=$1
+        local  stat=1
+
+        if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            OIFS=$IFS
+            IFS='.'
+            ip=($ip)
+            IFS=$OIFS
+            [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 \
+                && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
+            stat=$?
+        fi
+        return $stat
+    }
+
+
+    if [ ! -f $filename ]; then
+            touch $filename
+    fi
+
+
+    joinNodeIPTemp=($(kubectl get node -o wide | awk '{print $6}'))
+    joinNodeIPs=()
+
+    joinNodeNameTemp=($(kubectl get node -o wide | awk '{print $1}'))
+    joinNodeNames=()
+
+    joinNodeRoleTemp=($(kubectl get node -o wide | awk '{print $3}'))
+
+
+    masterNodeIPs=()
+
+    for ((i=0; i<${#joinNodeIPTemp[@]}; i++)); do
+            ip=${joinNodeIPTemp[i]}
+            name=${joinNodeNameTemp[i]}
+            role=${joinNodeRoleTemp[i]}
+
+            if valid_ip $ip;
+            then
+                    if [[ ! "$role" =~ "master" ]];
+                    then
+                            echo $ip
+                            joinNodeIPs+=($ip)
+                            joinNodeNames+=($name)
+                    else
+                            masterNodeIPs+=($ip)
+                    fi
+            fi
+
+
+
+    done
+
+    target_worker_node_num=$1
+    current_worker_node_num=${#joinNodeIPs[@]}
+
+    change_worker_node_num=$(($target_worker_node_num-$current_worker_node_num))
+
+    if [ "$change_worker_node_num" -gt 0 ]; then
+            for ((i=0; i<$change_worker_node_num; i++))
+            do
+                    while read p;
+                    do
+                            if [[ ! " ${joinNodeIPs[*]} " == *$p* ]] && [[ ! " ${masterNodeIPs[*]} " == *$p* ]];
+                            then
+                                    echo "Node Join Start : $p"
+
+                                    token=`kubeadm token create`
+                                    hash=`openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
+                                    myip=`ip route get 8.8.8.8 | head -1 | cut -d' ' -f8`
+
+                                    ssh root@$p "swapoff -a"
+                                    ssh root@$p "kubeadm join $myip:6443 --token $token --discovery-token-ca-cert-hash sha256:$hash"
+                                    joinNodeIPs+=($p)
+
+                                    kubeadm token delete $token
+                                    kubectl get node
+                                    #echo "Success Node Join: $p"
+                                    break
+                            else
+                                    echo "Nothing to join"
+                            fi
+                    done < $filename
+            done
+    elif [ "$change_worker_node_num" -eq 0 ]; then
+            echo "Already Current Worker Node Num: $target_worker_node_num"
+    else
+
+            for ((i=0; i<$(($change_worker_node_num * -1)); i++))
+            do
+
+                    ip=${joinNodeIPs[i]}
+                    name=${joinNodeNames[i]}
+
+                    echo "Node Delete Start: $name ($ip)"
+
+
+                    #kubectl drain $name
+                    kubectl delete node $name
+
+                    ssh root@$ip << EOF
+                            kubeadm reset --force
+                            systemctl stop kubelet
+                            systemctl stop docker
+                            rm -rf /var/lib/cni/
+                            rm -rf /var/lib/kubelet/*
+                            rm -rf /etc/cni/
+                                ifconfig cni0 down
+                            ifconfig flannel.1 down
+                            ifconfig docker0 down
+
+                            systemctl start kubelet
+                            systemctl start docker
+EOF
+
+                    if [ $? -eq 0 ];
+                    then
+                            kubectl get node
+                            #echo "Success Node Delete '$name'"
+                    fi
+            done
+    fi
+fi
