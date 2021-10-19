@@ -11,7 +11,7 @@ metadata:
   name: test-deploy
   namespace: keti
 spec:
-  replicas: 6
+  replicas: 30
   labels:
       app: openmcp-nginx
       test: "yes"
