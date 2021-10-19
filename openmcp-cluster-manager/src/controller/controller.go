@@ -182,7 +182,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		}
 		jointimeEnd := time.Since(jointimeStart)
 		omcplog.V(2).Info(clusterInstance.Name + " [ JOIN ] End") //[JOINING]
-		omcplog.V(4).Info("=> ", clusterInstance.Name, " Join Time : ", jointimeEnd)
+		omcplog.V(4).Info("---")
+		omcplog.V(4).Info("*** ", clusterInstance.Name, " cluster join time : ", jointimeEnd)
 	} else if clusterInstance.Spec.JoinStatus == "UNJOINING" {
 
 		omcplog.V(2).Info(clusterInstance.Name + " [ UNJOINING ] Start")
