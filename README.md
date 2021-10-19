@@ -12,7 +12,6 @@
     - [(5) Register sub-cluster to OpenMCP [In sub-cluster]](#5-Register-sub-cluster-to-OpenMCP-In-sub-cluster)
     - [(6) Check Registered OpenMCPCluster [In openmcp-cluster]](#6-Check-Registered-OpenMCPCluster-In-openmcp-cluster)
     - [(7) Join sub-cluster to OpenMCP [In openmcp-cluster]](#7-Join-sub-cluster-to-OpenMCP-In-openmcp-cluster)
-    
   - [2. How to join GKE Cluster to OpenMCP](#2-How-to-join-GKE-Cluster-to-OpenMCP)
     - [(1) Install Cloud SDK](#1-Install-Cloud-SDK)
     - [(2) gcloud init](#2-gcloud-init)
