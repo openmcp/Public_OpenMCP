@@ -41,7 +41,7 @@
 
 > Container control and management platform that provides flexible service movement and seamless automatic scaling of computing resources through mutual collaboration between locally isolated containers
 
-![Architecture of the openmcp](/images/openmcp_architecture_eng.png)
+![Architecture of the openmcp](/images/openmcp_architecture_3.png)
 
 # How To Install
 
@@ -189,7 +189,7 @@ post-scheduling-type           19h
 ```
 
 ### OpenMCP Architecture
-![Architecture of the openmcp](/images/openmcp_architecture_2.png)
+![Architecture of the openmcp](/images/openmcp_architecture_3.png)
 
 ---
 
