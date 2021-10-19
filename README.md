@@ -188,8 +188,8 @@ metric-collector-period        19h
 post-scheduling-type           19h
 ```
 
-### OpenMCP Architecture
-![Architecture of the openmcp](/images/openmcp_architecture_4.png)
+<!--### OpenMCP Architecture-->
+<!--![Architecture of the openmcp](/images/openmcp_architecture_4.png)-->
 
 ---
 
