@@ -276,9 +276,9 @@ $ kubectl label nodes <node-name> topology.istio.io/subzone=<cluster-name>
 ### (5) Register sub-cluster to OpenMCP [In sub-cluster]
 
 Install 'kubectl request-join' plugin on sub-cluster.
-Before execute join command, you must set KUBECONFIG file and ~/.hosts file. 
 
 ```bash
+$ git clone https://github.com/openmcp/Member_Plugin.git
 $ cd kubectl_plugin
 $ chmod +x kubectl-request_join
 $ cp kubectl-request_join /usr/local/bin
