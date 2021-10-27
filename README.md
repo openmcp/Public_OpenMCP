@@ -279,7 +279,7 @@ Install 'kubectl request-join' plugin on sub-cluster.
 
 ```bash
 $ git clone https://github.com/openmcp/Member_Plugin.git
-$ cd kubectl_plugin
+$ cd Member_Plugin/kubectl_plugin
 $ chmod +x kubectl-request_join
 $ cp kubectl-request_join /usr/local/bin
 $ kubectl request-join
