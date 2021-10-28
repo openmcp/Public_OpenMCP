@@ -324,6 +324,8 @@ $ gcloud init
 $ gcloud container clusters list
 NAME         LOCATION       MASTER_VERSION  MASTER_IP       MACHINE_TYPE  NODE_VERSION   NUM_NODES  STATUS
 cluster3     asia-east1-a   1.16.13-gke.1   35.201.135.105  e2-medium     1.16.13-gke.1  2          RUNNING
+
+$ gcloud config set compute/region ${GKE_REGION}
 ```
 
 
