@@ -325,7 +325,7 @@ $ gcloud container clusters list
 NAME         LOCATION       MASTER_VERSION  MASTER_IP       MACHINE_TYPE  NODE_VERSION   NUM_NODES  STATUS
 cluster3     asia-east1-a   1.16.13-gke.1   35.201.135.105  e2-medium     1.16.13-gke.1  2          RUNNING
 
-$ gcloud config set compute/region ${GKE_REGION}
+$ gcloud config set compute/region <GKE_REGION>
 ```
 
 
@@ -336,7 +336,7 @@ Install 'kubectl regist' plugin on OpenMCP.
 $ cd kubectl_plugin
 $ chmod +x kubectl-regist_join
 $ cp kubectl-regist_join /usr/local/bin
-$ kubectl regist-join GKE ${GKE_CLUSTER_NAME} ${OPENMCP_IP_PORT}
+$ kubectl regist-join GKE <CLUSTERNAME>
 ```
 
 ### (5) Join GKE cluster to OpenMCP
@@ -381,7 +381,7 @@ Install 'kubectl regist' plugin on OpenMCP.
 $ cd kubectl_plugin
 $ chmod +x kubectl-regist_join
 $ cp kubectl-regist_join /usr/local/bin
-$ kubectl regist-join EKS ${EKS_CLUSTER_NAME} ${OPENMCP_IP_PORT}
+$ kubectl regist-join EKS <CLUSTERNAME>
 ```
 
 ### (5) Join EKS cluster to OpenMCP
@@ -454,7 +454,7 @@ Install 'kubectl regist' plugin on OpenMCP.
 $ cd kubectl_plugin
 $ chmod +x kubectl-regist_join
 $ cp kubectl-regist_join /usr/local/bin
-$ kubectl regist-join AKS ${AKS_CLUSTER_NAME} ${OPENMCP_IP_PORT}
+$ kubectl regist-join AKS <CLUSTERNAME>
 ```
 
 ### (5) Join AKS cluster to OpenMCP
