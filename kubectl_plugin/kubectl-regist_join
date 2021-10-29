@@ -31,7 +31,7 @@ elif [ "$1" == "AKS" ]; then
 fi
 
 export KUBECONFIG=~/.kube/config
-echo -n | openssl s_client -connect $3 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt
+echo -n | openssl s_client -connect $OPENMCP_API_SERVER:$PORT | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt
 curl -F file=@"kubeconfig" "https://$OPENMCP_API_SERVER:$PORT/joinCloud?clustername=$2&clustertype=$1" --cacert server.crt
 rm server.crt
 rm kubeconfig
