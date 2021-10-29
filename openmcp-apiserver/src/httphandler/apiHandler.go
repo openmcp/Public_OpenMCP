@@ -112,7 +112,7 @@ func (h *HttpManager) ApiHandler(w http.ResponseWriter, r *http.Request) {
 
 		if r.Method == "GET" || r.Method == "DELETE" {
 			req, err = http.NewRequest(r.Method, APISERVER+r.URL.Path, nil)
-		} else if r.Method == "POST" || r.Method == "PUT" {
+		} else if r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH" {
 			req, err = http.NewRequest(r.Method, APISERVER+r.URL.Path, r.Body)
 		}
 
@@ -124,8 +124,8 @@ func (h *HttpManager) ApiHandler(w http.ResponseWriter, r *http.Request) {
 		omcplog.V(5).Info("Content-Type : ", r.Header.Get("Content-Type"))
 		omcplog.V(5).Info("Authorization", "Bearer "+TOKEN)
 
-		//req.Header.Set("Content-Type", r.Header.Get("Content-Type"))
-		req.Header.Set("Content-Type", "application/yaml")
+		req.Header.Set("Content-Type", r.Header.Get("Content-Type"))
+		//req.Header.Set("Content-Type", "application/yaml")
 		req.Header.Set("Authorization", "Bearer "+TOKEN)
 
 		resp, err := client.Do(req)

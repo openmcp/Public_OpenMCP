@@ -44,6 +44,10 @@ spec:
       type: string
       description: The Cluster Join Status
       JSONPath: .spec.joinStatus  
+    - name: PLATFORM_TYPE
+      type: string
+      description: Cluster Platform Type
+      JSONPath: .spec.clusterPlatformType
     - name: MetalLB_Range_From
       type: string
       description: The Cluster MetalLB Range From

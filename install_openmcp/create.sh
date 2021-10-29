@@ -126,7 +126,7 @@ fi
 
 
 echo "Replace Setting Variable"
-sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/1.create.sh
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/install.sh
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-has-controller/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-scheduler/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-loadbalancing-controller/operator.yaml

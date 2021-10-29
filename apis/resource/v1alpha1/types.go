@@ -525,3 +525,89 @@ type OpenMCPVirtualServiceList struct {
 	v1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 	Items       []OpenMCPVirtualService `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
+
+type OpenMCPPersistentVolumeSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	Template appsv1.Deployment `json:"template" protobuf:"bytes,3,opt,name=template"`
+	Replicas int32             `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
+
+	//Placement
+
+}
+
+// OpenMCPPersistentVolumeStatus defines the observed state of OpenMCPPersistentVolume
+// +k8s:openapi-gen=true
+type OpenMCPPersistentVolumeStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	Replicas    int32            `json:"replicas"`
+	ClusterMaps map[string]int32 `json:"clusters"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// OpenMCPPersistentVolume is the Schema for the openmcppersistentvolumes API
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+type OpenMCPPersistentVolume struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   OpenMCPPersistentVolumeSpec   `json:"spec,omitempty"`
+	Status OpenMCPPersistentVolumeStatus `json:"status,omitempty"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// OpenMCPPersistentVolumeList contains a list of OpenMCPPersistentVolume
+type OpenMCPPersistentVolumeList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []OpenMCPPersistentVolume `json:"items"`
+}
+
+type OpenMCPPersistentVolumeClaimSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	Template appsv1.Deployment `json:"template" protobuf:"bytes,3,opt,name=template"`
+	Replicas int32             `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
+
+	//Placement
+
+}
+
+// OpenMCPPersistentVolumeClaimStatus defines the observed state of OpenMCPPersistentVolumeClaim
+// +k8s:openapi-gen=true
+type OpenMCPPersistentVolumeClaimStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	Replicas    int32            `json:"replicas"`
+	ClusterMaps map[string]int32 `json:"clusters"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// OpenMCPPersistentVolumeClaim is the Schema for the openmcppersistentvolumeclaims API
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+type OpenMCPPersistentVolumeClaim struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   OpenMCPPersistentVolumeClaimSpec   `json:"spec,omitempty"`
+	Status OpenMCPPersistentVolumeClaimStatus `json:"status,omitempty"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// OpenMCPPersistentVolumeClaimList contains a list of OpenMCPPersistentVolumeClaim
+type OpenMCPPersistentVolumeClaimList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []OpenMCPPersistentVolumeClaim `json:"items"`
+}
