@@ -3,17 +3,18 @@ kind: Migration
 metadata:
   name: migrations1
 spec:
-  MigrationServiceSource:
-  - SourceCluster: cluster1
-    TargetCluster: cluster2
-    NameSpace: default
-    ServiceName: iotservice
-    MigrationSource:
-    - ResourceName: iot-gateway
-      ResourceType: Deployment
-#    - ResourceName: iot-gateway-sv
-#      ResourceType: Service
-#    - ResourceName: iot-gateway-pv
-#      ResourceType: PersistentVolume
-#    - ResourceName: iot-gateway-pvc
-#      ResourceType: PersistentVolumeClaim
+  migrationServiceSource:
+  - sourceCluster: cluster1
+    targetCluster: cluster2
+    nameSpace: default
+    serviceName: iotservice
+    migrationSource:
+    - resourceName: iot-gateway
+      resourceType: Deployment
+    - resourceName: iot-gateway-sv
+      resourceType: Service
+#    - resourceName: iot-gateway-pv
+#      resourceType: PersistentVolume
+#    - resourceName: iot-gateway-pvc
+#      resourceType: PersistentVolumeClaim
+

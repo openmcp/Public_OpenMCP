@@ -20,32 +20,40 @@ spec:
       name: Age
       type: date
     - description: '-'
-      jsonPath: .status.MigrationStatus
-      name: IsSuccess
-      type: boolean
-    - description: '-'
-      jsonPath: .spec.MigrationServiceSource[*].SourceCluster
+      jsonPath: .spec.migrationServiceSource[*].sourceCluster
       name: SourceCluster
       type: string
     - description: '-'
-      jsonPath: .spec.MigrationServiceSource[*].TargetCluster
+      jsonPath: .spec.migrationServiceSource[*].targetCluster
       name: TargetCluster
       type: string
     - description: '-'
-      jsonPath: .spec.MigrationServiceSource[*].ServiceName
+      jsonPath: .spec.migrationServiceSource[*].serviceName
       name: ServiceName
       type: string
     - description: '-'
-      jsonPath: .spec.MigrationServiceSource[*].NameSpace
+      jsonPath: .spec.migrationServiceSource[*].nameSpace
       name: NameSpace
       type: string
     - description: '-'
-      jsonPath: .status.Reason
-      name: REASON
+      jsonPath: .status.status
+      name: Status
+      type: string
+    - description: '-'
+      jsonPath: .status.description
+      name: Description
+      type: string
+    - description: '-'
+      jsonPath: .status.progress
+      name: Progress
       type: string
     - description: ElapsedTime
-      jsonPath: .status.ElapsedTime
+      jsonPath: .status.elapsedTime
       name: ElapsedTime
+      type: string
+    - description: '-'
+      jsonPath: .status.isZeroDownTime
+      name: IsZeroDownTime
       type: string
     name: v1alpha1
     schema:
@@ -67,59 +75,71 @@ spec:
           spec:
             description: MigrationSpec defines the desired state of Migration
             properties:
-              MigrationServiceSource:
+              migrationServiceSource:
                 description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
                   Important: Run "make" to regenerate code after modifying this file'
                 items:
                   properties:
-                    MigrationSource:
+                    migrationSource:
                       description: container service spec
                       items:
                         properties:
-                          ResourceName:
+                          resourceName:
                             type: string
-                          ResourceType:
+                          resourceType:
                             description: Migration source
                             type: string
                         required:
-                        - ResourceName
-                        - ResourceType
+                        - resourceName
+                        - resourceType
                         type: object
                       type: array
-                    NameSpace:
+                    nameSpace:
                       type: string
-                    ServiceName:
+                    serviceName:
                       type: string
-                    SourceCluster:
+                    sourceCluster:
                       type: string
-                    TargetCluster:
+                    targetCluster:
                       type: string
                   required:
-                  - MigrationSource
-                  - NameSpace
-                  - ServiceName
-                  - SourceCluster
-                  - TargetCluster
+                  - migrationSource
+                  - nameSpace
+                  - serviceName
+                  - sourceCluster
+                  - targetCluster
                   type: object
                 type: array
             required:
-            - MigrationServiceSource
+            - migrationServiceSource
             type: object
           status:
             description: MigrationStatus defines the observed state of Migration
             properties:
-              ElapsedTime:
+              currentCount:
+                description: 현재 진행도
+                format: int32
+                type: integer
+              description:
                 type: string
-              MigrationStatus:
-                description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
-                  of cluster Important: Run "make" to regenerate code after modifying
-                  this file'
-                type: boolean
-              Reason:
+              elapsedTime:
+                type: string
+              isZeroDownTime:
+                description: Status of the condition, one of True, False, Unknown.
+                type: string
+              maxCount:
+                description: 최대 진행도
+                format: int32
+                type: integer
+              progress:
+                description: 최대 컨디션 카운트. currentCount/maxCount
+                type: string
+              status:
+                description: Condition 정보 리스트 Conditions []MigrationCondition `json:"conditions,omitempty"`
+                  Status of the condition, one of True, False, Unknown.
                 type: string
             required:
-            - MigrationStatus
-            - Reason
+            - description
             type: object
         type: object
     served: true
