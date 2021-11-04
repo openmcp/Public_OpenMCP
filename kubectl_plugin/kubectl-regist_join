@@ -25,13 +25,13 @@ if [ "$1" == "GKE" ]; then
   kubectl get pods &>-
   rm -
 elif [ "$1" == "EKS" ]; then
-  aws eks update-kubeconfig --name $2
+  aws eks update-kubeconfig --name $2 #--role-arn arn:aws:iam::364203975634:role/eks-cluster-iam
 elif [ "$1" == "AKS" ]; then
   az aks get-credentials --resource-group openmcp --name $2 --file ./kubeconfig
 fi
 
 export KUBECONFIG=~/.kube/config
-echo -n | openssl s_client -connect $3 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt
+echo -n | openssl s_client -connect $OPENMCP_API_SERVER:$PORT | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt
 curl -F file=@"kubeconfig" "https://$OPENMCP_API_SERVER:$PORT/joinCloud?clustername=$2&clustertype=$1" --cacert server.crt
 rm server.crt
 rm kubeconfig
