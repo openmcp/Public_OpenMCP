@@ -12,7 +12,6 @@
     - [(5) Register sub-cluster to OpenMCP [In sub-cluster]](#5-Register-sub-cluster-to-OpenMCP-In-sub-cluster)
     - [(6) Check Registered OpenMCPCluster [In openmcp-cluster]](#6-Check-Registered-OpenMCPCluster-In-openmcp-cluster)
     - [(7) Join sub-cluster to OpenMCP [In openmcp-cluster]](#7-Join-sub-cluster-to-OpenMCP-In-openmcp-cluster)
-    
   - [2. How to join GKE Cluster to OpenMCP](#2-How-to-join-GKE-Cluster-to-OpenMCP)
     - [(1) Install Cloud SDK](#1-Install-Cloud-SDK)
     - [(2) gcloud init](#2-gcloud-init)
@@ -42,7 +41,7 @@
 
 > Container control and management platform that provides flexible service movement and seamless automatic scaling of computing resources through mutual collaboration between locally isolated containers
 
-![Architecture of the openmcp](/images/openmcp_architecture_eng.png)
+![Architecture of the openmcp](/images/openmcp_architecture_4.png)
 
 # How To Install
 
@@ -141,7 +140,7 @@ Deploy all init modules for OpenMCP.
 
 ```bash
 $ cd master/
-$ ./1.create.sh
+$ ./install.sh
 ```
 > list of installed Deployment
 
@@ -160,35 +159,37 @@ Check state of pods.
 ```bash
 $ kubectl get pods -n openmcp
 NAME                                                READY   STATUS    RESTARTS   AGE
-influxdb-68bff77cbd-f9p6k                           1/1     Running   0          3m11s
-openmcp-analytic-engine-cbbcfd7f4-fjrvb             1/1     Running   0          3m12s
-openmcp-apiserver-56bf4c7bd-7q4vw                   1/1     Running   0          3m12s
-openmcp-cluster-manager-69c9ccc499-wjcqt            1/1     Running   0          3m12s
-openmcp-configmap-controller-6c97c8cd57-ww7x8       1/1     Running   0          3m11s
-openmcp-deployment-controller-747cf6d76-2xr52       1/1     Running   0          3m9s
-openmcp-dns-controller-78ff9bcdd5-5fkpq             1/1     Running   0          3m2s
-openmcp-has-controller-ccbcd86c4-bxtn8              1/1     Running   0          3m9s
-openmcp-ingress-controller-7fc4489594-zmcsl         1/1     Running   0          3m8s
-openmcp-loadbalancing-controller-867b79b8d6-bhrkk   1/1     Running   0          3m1s
-openmcp-metric-collector-77c5f94759-79tjq           1/1     Running   0          3m10s
-openmcp-policy-engine-7c7b5fb7d5-st5qs              1/1     Running   0          3m7s
-openmcp-scheduler-75f4bc655-4mzdl                   1/1     Running   0          3m8s
-openmcp-secret-controller-6d7c5bf4fc-5mlm2          1/1     Running   0          3m11s
-openmcp-service-controller-776cc6574-b8wsm          1/1     Running   0          3m8s
-openmcp-sync-controller-769b85d4b4-crnxc            1/1     Running   0          3m1s
+influxdb-55b9b9d8dd-6qghq                           1/1     Running   0          18h
+openmcp-analytic-engine-57f98db8fb-m4cxn            1/1     Running   0          18h
+openmcp-apiserver-66d4f6d8f6-2k2wz                  1/1     Running   0          18h
+openmcp-cluster-manager-6959c679b4-6zjzh            1/1     Running   0          18h
+openmcp-configmap-controller-668cdd9c87-q6jq8       1/1     Running   0          18h
+openmcp-deployment-controller-65c8cddbcb-rd2h5      1/1     Running   0          18h
+openmcp-dns-controller-54c6bbcfb7-t6cc4             1/1     Running   0          18h
+openmcp-has-controller-d64db44fd-4nc9w              1/1     Running   0          18h
+openmcp-ingress-controller-6c54847ddc-fn4kg         1/1     Running   0          18h
+openmcp-job-controller-7fcdf79d66-8fqm8             1/1     Running   0          18h
+openmcp-loadbalancing-controller-7dfd9dfb4b-frslj   1/1     Running   0          18h
+openmcp-metric-collector-65c7775bbc-9crdk           1/1     Running   0          18h
+openmcp-namespace-controller-fd6f485cb-5vq6c        1/1     Running   0          18h
+openmcp-policy-engine-67986c6679-89jzp              1/1     Running   0          18h
+openmcp-scheduler-5d4f48675c-5v55n                  1/1     Running   0          18h
+openmcp-secret-controller-b48497699-j6s4p           1/1     Running   0          18h
+openmcp-service-controller-5f5c4994d6-dtsdf         1/1     Running   0          18h
+openmcp-sync-controller-5c5f849496-xn89h            1/1     Running   0          18h
 
 $ kubectl get openmcppolicy -n openmcp
-NAME                            AGE
-analytic-metrics-weight         3m16s
-post-scheduling-type            3m15s
-hpa-minmax-distribution-mode    3m15s
-lb-scoring-weight               3m15s
-log-level                       3m16s
-metric-collector-period         3m16s
+NAME                           AGE
+analytic-metrics-weight        19h
+hpa-minmax-distribution-mode   19h
+lb-scoring-weight              19h
+log-level                      19h
+metric-collector-period        19h
+post-scheduling-type           19h
 ```
 
-### OpenMCP Architecture
-![Architecture of the openmcp](/images/openmcp_architecture_2.png)
+<!--### OpenMCP Architecture-->
+<!--![Architecture of the openmcp](/images/openmcp_architecture_4.png)-->
 
 ---
 
@@ -275,10 +276,10 @@ $ kubectl label nodes <node-name> topology.istio.io/subzone=<cluster-name>
 ### (5) Register sub-cluster to OpenMCP [In sub-cluster]
 
 Install 'kubectl request-join' plugin on sub-cluster.
-Before execute join command, you must set KUBECONFIG file and ~/.hosts file. 
 
 ```bash
-$ cd kubectl_plugin
+$ git clone https://github.com/openmcp/Member_Plugin.git
+$ cd Member_Plugin/kubectl_plugin
 $ chmod +x kubectl-request_join
 $ cp kubectl-request_join /usr/local/bin
 $ kubectl request-join
@@ -323,6 +324,8 @@ $ gcloud init
 $ gcloud container clusters list
 NAME         LOCATION       MASTER_VERSION  MASTER_IP       MACHINE_TYPE  NODE_VERSION   NUM_NODES  STATUS
 cluster3     asia-east1-a   1.16.13-gke.1   35.201.135.105  e2-medium     1.16.13-gke.1  2          RUNNING
+
+$ gcloud config set compute/region <GKE_REGION>
 ```
 
 
@@ -333,7 +336,7 @@ Install 'kubectl regist' plugin on OpenMCP.
 $ cd kubectl_plugin
 $ chmod +x kubectl-regist_join
 $ cp kubectl-regist_join /usr/local/bin
-$ kubectl regist-join GKE ${GKE_CLUSTER_NAME} ${OPENMCP_IP_PORT}
+$ kubectl regist-join GKE <CLUSTERNAME>
 ```
 
 ### (5) Join GKE cluster to OpenMCP
@@ -378,7 +381,7 @@ Install 'kubectl regist' plugin on OpenMCP.
 $ cd kubectl_plugin
 $ chmod +x kubectl-regist_join
 $ cp kubectl-regist_join /usr/local/bin
-$ kubectl regist-join EKS ${EKS_CLUSTER_NAME} ${OPENMCP_IP_PORT}
+$ kubectl regist-join EKS <CLUSTERNAME>
 ```
 
 ### (5) Join EKS cluster to OpenMCP
@@ -428,7 +431,7 @@ To sign in, use a web browser to open the page https://microsoft.com/devicelogin
 ]
 ```
 
-### (3) az aks list
+### (3) Get ClusterName and Location from 'az aks list' command
 ```
 $ az aks list
 [
@@ -451,7 +454,7 @@ Install 'kubectl regist' plugin on OpenMCP.
 $ cd kubectl_plugin
 $ chmod +x kubectl-regist_join
 $ cp kubectl-regist_join /usr/local/bin
-$ kubectl regist-join AKS ${AKS_CLUSTER_NAME} ${OPENMCP_IP_PORT}
+$ kubectl regist-join AKS <CLUSTERNAME> <CLUSTERLOCATION>
 ```
 
 ### (5) Join AKS cluster to OpenMCP

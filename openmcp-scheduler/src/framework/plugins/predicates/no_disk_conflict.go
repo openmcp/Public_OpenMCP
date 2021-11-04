@@ -1,8 +1,10 @@
 package predicates
 
 import (
+	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
 	"openmcp/openmcp/util/clusterManager"
+	"time"
 
 	v1 "k8s.io/api/core/v1"
 )
@@ -15,7 +17,7 @@ func (pl *NoDiskConflict) Name() string {
 }
 
 func (pl *NoDiskConflict) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, cm *clusterManager.ClusterManager) bool {
-
+	startTime := time.Now()
 	// check all nodes in this cluster
 	for _, node := range clusterInfo.Nodes {
 		// if node.PreFilter == false || node.PreFilterTwoStep == false {
@@ -38,10 +40,15 @@ func (pl *NoDiskConflict) Filter(newPod *ketiresource.Pod, clusterInfo *ketireso
 		}
 
 		if node_result {
+			omcplog.V(4).Info("No_disk_conflict true ")
+			elapsedTime := time.Since(startTime)
+			omcplog.V(3).Infof("No_disk_conflict Time [%v]", elapsedTime)
 			return true
 		}
 	}
-
+	elapsedTime := time.Since(startTime)
+	omcplog.V(3).Infof("No_disk_conflict Time [%v]", elapsedTime)
+	omcplog.V(4).Info("No_disk_conflict false ")
 	return false
 }
 

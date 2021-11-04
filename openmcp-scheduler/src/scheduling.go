@@ -97,7 +97,7 @@ func (sched *OpenMCPScheduler) PostsMonitoring() {
 }
 
 func (sched *OpenMCPScheduler) Postschduling() {
-	omcplog.V(0).Info("postschduling start")
+	omcplog.V(4).Info("postschduling start")
 	for {
 		sched.PostsMonitoring()
 		time.Sleep(3 * time.Second)
@@ -126,7 +126,7 @@ func (sched *OpenMCPScheduler) Postschduling() {
 			}
 
 			postdeployment := firstdeploy.NewDeployment
-			omcplog.V(0).Info("RemainReplica", firstdeploy.RemainReplica)
+			omcplog.V(4).Info("RemainReplica", firstdeploy.RemainReplica)
 			firstdeploy.NewDeployment.Status.Replicas = firstdeploy.RemainReplica
 			exist := postdeployment.Status.ClusterMaps
 			backup := map[string]int32{}
@@ -175,7 +175,7 @@ func (sched *OpenMCPScheduler) Postschduling() {
 				if firstdeploy.RemainReplica <= 0 {
 					postlist.Remove(postlist.Front())
 				}
-				omcplog.V(5).Infof(" MAPP =>: %v", chagnedp)
+				omcplog.V(3).Infof(" MAPP =>: %v", chagnedp)
 				omcplog.V(0).Infof("Remain count : %v exist count : %v", firstdeploy.RemainReplica, replicacount)
 			}
 
@@ -317,11 +317,11 @@ func (sched *OpenMCPScheduler) ScheduleOne(newPod *ketiresource.Pod, replicas in
 		return "", fmt.Errorf("There is no cluster")
 	}
 	elapsedTime := time.Since(startTime)
-	omcplog.V(5).Infof("    => filter Time [%v]", elapsedTime)
-	omcplog.V(5).Infof("    => FilteredResultMap [%v]", filterdResult)
+	omcplog.V(3).Infof("    => filter Time [%v]", elapsedTime)
+	omcplog.V(4).Infof("    => FilteredResultMap [%v]", filterdResult)
 	selectedCluster := sched.Framework.RunScorePluginsOnClusters(newPod, filteredCluster, sched.ClusterInfos, replicas)
-	omcplog.V(5).Infof("    => selectedCluster [%v]", selectedCluster)
-	omcplog.V(5).Infof("    => scoring Time [%v]", time.Since(startTime))
+	omcplog.V(4).Infof("    => selectedCluster [%v]", selectedCluster)
+	omcplog.V(3).Infof("    => scoring Time [%v]", time.Since(startTime))
 	return selectedCluster, nil
 }
 

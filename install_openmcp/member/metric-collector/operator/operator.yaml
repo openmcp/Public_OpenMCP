@@ -33,9 +33,9 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: GRPC_SERVER
-              value: "10.0.3.191"
+              value: "115.94.141.62"
             - name: GRPC_PORT
-              value: "2051"
+              value: "3212"
             - name: CLUSTER_NAME
               value: REPLACE_CLUSTER_NAME
             - name: OPERATOR_NAME

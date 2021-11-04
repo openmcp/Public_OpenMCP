@@ -1,8 +1,10 @@
 package predicates
 
 import (
+	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
 	"openmcp/openmcp/util/clusterManager"
+	"time"
 )
 
 type CheckNeededResources struct{}
@@ -13,7 +15,7 @@ func (pl *CheckNeededResources) Name() string {
 
 // Return true if there is at least 1 node that have AdditionalResources
 func (pl *CheckNeededResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, cm *clusterManager.ClusterManager) bool {
-
+	startTime := time.Now()
 	// Node must have all of the additional resource
 	// Example of *.yaml for a new OpenMCPDeployemt as folllow:
 	//     resource:
@@ -23,6 +25,8 @@ func (pl *CheckNeededResources) Filter(newPod *ketiresource.Pod, clusterInfo *ke
 	// In this case, selected node must have both of "nvidia.com/gpu, amd.com/gpu"
 
 	if len(newPod.AdditionalResource) == 0 {
+		elapsedTime := time.Since(startTime)
+		omcplog.V(3).Infof("CheckNeededResources Time [%v]", elapsedTime)
 		return true
 	}
 
@@ -36,10 +40,15 @@ func (pl *CheckNeededResources) Filter(newPod *ketiresource.Pod, clusterInfo *ke
 		}
 
 		if node_result == true {
+			//omcplog.V(3).Info("CheckNeededResources True ")
+			elapsedTime := time.Since(startTime)
+			omcplog.V(3).Infof("CheckNeededResources Time [%v]", elapsedTime)
 			return true
 		}
 	}
-
+	omcplog.V(4).Info("CheckNeededResources False ")
+	elapsedTime := time.Since(startTime)
+	omcplog.V(3).Infof("CheckNeededResources Time [%v]", elapsedTime)
 	return false
 }
 

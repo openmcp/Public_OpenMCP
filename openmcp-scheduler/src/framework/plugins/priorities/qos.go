@@ -3,6 +3,7 @@ package priorities
 import (
 	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
+	"time"
 
 	v1 "k8s.io/api/core/v1"
 )
@@ -63,11 +64,14 @@ func (pl *QosPriority) PreScore(pod *ketiresource.Pod, clusterInfo *ketiresource
 }
 
 func (pl *QosPriority) Score(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, replicas int32, clustername string) int64 {
+	startTime := time.Now()
 	if clustername == clusterInfo.ClusterName {
 		pl.prescoring[clusterInfo.ClusterName] = pl.prescoring[clusterInfo.ClusterName] - pl.betweenScore
 		return pl.prescoring[clusterInfo.ClusterName]
 	}
 	score := pl.prescoring[clusterInfo.ClusterName]
 	omcplog.V(4).Info("QosPriority score = ", score)
+	elapsedTime := time.Since(startTime)
+	omcplog.V(3).Infof("QosPriority Time [%v]", elapsedTime)
 	return score
 }

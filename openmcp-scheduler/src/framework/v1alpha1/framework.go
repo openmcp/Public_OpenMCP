@@ -4,6 +4,7 @@ import (
 	// "openmcp/openmcp/omcplog"
 
 	"container/list"
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-analytic-engine/src/protobuf"
 	"openmcp/openmcp/openmcp-scheduler/src/framework/plugins/predicates"
 	"openmcp/openmcp/openmcp-scheduler/src/framework/plugins/priorities"
@@ -53,6 +54,7 @@ func NewFramework(grpcClient protobuf.RequestAnalysisClient) OpenmcpFramework {
 			&priorities.RequestedToCapacityRatio{},
 			&priorities.BalancedNetworkAllocation{},
 			&priorities.QosPriority{},
+			&priorities.LeastRequested{},
 		},
 		prefilterPlugins: []OpenmcpPreFilterPlugin{
 			&predicates.PodFitsResources{},
@@ -163,9 +165,11 @@ func eraserCluster(scoreResult OpenmcpPluginToClusterScores) string {
 func selectCluster(scoreResult OpenmcpPluginToClusterScores) string {
 	var selectedCluster string
 	var maxScore int64
-
 	for clusterName, scoreList := range scoreResult {
 		var clusterScore int64
+		if selectedCluster == "" {
+			selectedCluster = clusterName
+		}
 		for _, score := range scoreList {
 			clusterScore += score.Score
 		}
@@ -173,7 +177,6 @@ func selectCluster(scoreResult OpenmcpPluginToClusterScores) string {
 		if clusterScore > maxScore {
 			selectedCluster = clusterName
 			maxScore = clusterScore
-
 		}
 	}
 	//omcplog.V(0).Info("selected clustet ==", selectedCluster)
@@ -228,7 +231,9 @@ func (f *openmcpFramework) RunScorePluginsOnClusters(pod *ketiresource.Pod, clus
 		}
 	}
 
+	omcplog.V(5).Info("RunScorePluginsOnClusters result array ", result)
 	pr := selectCluster(result)
+	omcplog.V(5).Info("RunScorePluginsOnClusters pr ", pr)
 	//	omcplog.V(0).Info("Score Info=>", result)
 	f.preClusterName = pr
 	return pr
