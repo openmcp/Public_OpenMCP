@@ -3,6 +3,7 @@ package priorities
 import (
 	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
+	"time"
 )
 
 type LeastRequested struct {
@@ -41,12 +42,15 @@ func (pl *LeastRequested) PreScore(pod *ketiresource.Pod, clusterInfo *ketiresou
 	return clusterScore
 }
 func (pl *LeastRequested) Score(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, replicas int32, clustername string) int64 {
+	startTime := time.Now()
 	if clustername == clusterInfo.ClusterName {
 		pl.prescoring[clusterInfo.ClusterName] = pl.prescoring[clusterInfo.ClusterName] - pl.betweenScore
 		return pl.prescoring[clusterInfo.ClusterName]
 	}
 	score := pl.prescoring[clusterInfo.ClusterName]
 	omcplog.V(4).Info("LeastRequested score = ", score)
+	elapsedTime := time.Since(startTime)
+	omcplog.V(3).Infof("LeastRequested Time [%v]", elapsedTime)
 	return score
 }
 func leastRequestedScore(requested, allocable int64) int64 {

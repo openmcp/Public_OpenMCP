@@ -31,6 +31,6 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   nfs:
     #path: /root/workspace/Public_OpenMCP/install_openmcp/member
-    path: "/root/workspace/usr/cra/Public_OpenMCP/install_openmcp/member"
+    path: "/root/workspace/usr/kch/openmcp/Public_OpenMCP/install_openmcp/member"
     server: "10.0.3.20"
     readOnly: false

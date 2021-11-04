@@ -4,6 +4,7 @@ import (
 	"math"
 	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
+	"time"
 )
 
 type DominantResource struct {
@@ -56,12 +57,15 @@ func (pl *DominantResource) PreScore(pod *ketiresource.Pod, clusterInfo *ketires
 }
 
 func (pl *DominantResource) Score(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, replicas int32, clustername string) int64 {
+	startTime := time.Now()
 	if clustername == clusterInfo.ClusterName {
 		pl.prescoring[clusterInfo.ClusterName] = pl.prescoring[clusterInfo.ClusterName] - pl.betweenScore
 		return pl.prescoring[clusterInfo.ClusterName]
 	}
 	score := pl.prescoring[clusterInfo.ClusterName]
 	omcplog.V(4).Info("DominantResource score = ", score)
+	elapsedTime := time.Since(startTime)
+	omcplog.V(3).Infof("DominantResource Time [%v]", elapsedTime)
 	return score
 }
 

@@ -2,8 +2,10 @@ package predicates
 
 import (
 	"container/list"
+	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
 	"openmcp/openmcp/util/clusterManager"
+	"time"
 )
 
 type PodFitsResources struct{}
@@ -22,13 +24,13 @@ func (pl *PodFitsResources) PreFilter(newPod *ketiresource.Pod, clusterInfo *ket
 
 	}
 	clusterInfo.PreFilter = true
-
+	omcplog.V(4).Info("pod fits resource false  ")
 	return false
 
 }
 
 func (pl *PodFitsResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, cm *clusterManager.ClusterManager) bool {
-
+	startTime := time.Now()
 	for _, node := range clusterInfo.Nodes {
 		node_result := true
 		// check if node has enough Memory
@@ -50,9 +52,16 @@ func (pl *PodFitsResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketire
 			node.AllocatableResource.Memory -= newPod.RequestedResource.Memory
 			//omcplog.V(5).Info("RequestedResource = ", newPod.RequestedResource.MilliCPU)
 			//omcplog.V(5).Info("MilliCPU = ", node.AllocatableResource.MilliCPU)
+			//omcplog.V(3).Info("pod fits resource true ")
+			elapsedTime := time.Since(startTime)
+			omcplog.V(3).Infof("pod fits resource Time [%v]", elapsedTime)
 			return true
+
 		}
 	}
+	omcplog.V(3).Info("pod fits resource false  ")
+	elapsedTime := time.Since(startTime)
+	omcplog.V(3).Infof("pod fits resource Time [%v]", elapsedTime)
 	return false
 }
 

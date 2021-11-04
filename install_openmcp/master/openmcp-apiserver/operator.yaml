@@ -43,9 +43,9 @@ spec:
             - name: API_USER_PW
               value: "keti"
             - name: INFLUX_IP
-              value: "10.0.3.191"
+              value: "10.0.3.20"
             - name: INFLUX_PORT
-              value: "8086"
+              value: "30003"
             - name: INFLUX_USERNAME
               value: "root"
             - name: INFLUX_PASSWORD

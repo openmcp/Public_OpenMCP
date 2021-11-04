@@ -1,6 +1,6 @@
 #! /bin/bash
 
-for idx in {1..30}
+for idx in {1..1}
 do
 	filename='test'
 	filename=$filename${idx}

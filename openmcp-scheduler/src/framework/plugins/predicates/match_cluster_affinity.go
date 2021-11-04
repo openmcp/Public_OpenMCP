@@ -1,9 +1,11 @@
 package predicates
 
 import (
+	"openmcp/openmcp/omcplog"
 	_ "openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
 	"openmcp/openmcp/util/clusterManager"
+	"time"
 )
 
 type MatchClusterAffinity struct{}
@@ -12,6 +14,7 @@ func (pl *MatchClusterAffinity) Name() string {
 	return "MatchClusterAffinity"
 }
 func (pl *MatchClusterAffinity) PreFilter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
+	startTime := time.Now()
 	// Node must have all of the additional resource
 	// Examples of *.yaml for a new OpenMCPDeployemt as folllow:
 	// # Example 01 #
@@ -59,21 +62,27 @@ func (pl *MatchClusterAffinity) PreFilter(newPod *ketiresource.Pod, clusterInfo 
 		if node_result == true {
 			// omcplog.V(0).Info(clusterInfo.ClusterName + "True")
 			clusterInfo.PreFilterTwoStep = true
-
+			elapsedTime := time.Since(startTime)
+			omcplog.V(3).Infof("MatchClusterAffinity Time [%v]", elapsedTime)
 			return true
 		}
 	}
-
+	omcplog.V(4).Info("MatchClusterAffinity false ")
+	elapsedTime := time.Since(startTime)
+	omcplog.V(3).Infof("MatchClusterAffinity Time [%v]", elapsedTime)
 	return false
 
 }
 func (pl *MatchClusterAffinity) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, cm *clusterManager.ClusterManager) bool {
 
 	if len(newPod.Affinity) == 0 {
+		//omcplog.V(3).Info("MatchClusterAffinity true ")
 		return true
 	}
 	if clusterInfo.PreFilterTwoStep == true {
+		//omcplog.V(3).Info("MatchClusterAffinity true ")
 		return true
 	}
+	omcplog.V(4).Info("MatchClusterAffinity false ")
 	return false
 }

@@ -25,5 +25,5 @@ data:
     .:53 {
       errors
       cache 30
-      forward . 106.251.64.250:5353
+      forward . 115.94.141.62:5353
     }
