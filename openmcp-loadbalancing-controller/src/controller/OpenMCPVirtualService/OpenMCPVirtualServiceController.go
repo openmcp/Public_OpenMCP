@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	clusterv1alpha1 "openmcp/openmcp/apis/cluster/v1alpha1"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 
 	"openmcp/openmcp/apis"
@@ -153,32 +154,56 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 }
 
 func getLocClusters() []LocCluster {
+	// locationSlice := []LocCluster{}
+
+	// region := ""
+	// zones := []string{}
+	// for _, memberCluster := range cm.Cluster_list.Items {
+	// 	nodeList := &corev1.NodeList{}
+	// 	err := cm.Cluster_genClients[memberCluster.Name].List(context.TODO(), nodeList, "default")
+	// 	if err != nil {
+	// 		fmt.Println("get NodeList Error")
+	// 		continue
+	// 	}
+	// 	for _, node := range nodeList.Items {
+	// 		if _, ok := node.Labels["node-role.kubernetes.io/master"]; ok {
+	// 			region = node.Labels["topology.kubernetes.io/region"]
+	// 		}
+	// 		zones = append(zones, node.Labels["topology.kubernetes.io/zone"])
+	// 	}
+	// 	l := LocCluster{
+	// 		clusterName: memberCluster.Name,
+	// 		region:      region,
+	// 		zones:       zones,
+	// 	}
+	// 	locationSlice = append(locationSlice, l)
+
+	// }
+	// return locationSlice
+
 	locationSlice := []LocCluster{}
 
-	region := ""
-	zones := []string{}
-	for _, memberCluster := range cm.Cluster_list.Items {
-		nodeList := &corev1.NodeList{}
-		err := cm.Cluster_genClients[memberCluster.Name].List(context.TODO(), nodeList, "default")
-		if err != nil {
-			fmt.Println("get NodeList Error")
-			continue
-		}
-		for _, node := range nodeList.Items {
-			if _, ok := node.Labels["node-role.kubernetes.io/master"]; ok {
-				region = node.Labels["topology.kubernetes.io/region"]
-			}
-			zones = append(zones, node.Labels["topology.kubernetes.io/zone"])
-		}
+	// region := ""
+	// zones := []string{}
+
+	ocList := &clusterv1alpha1.OpenMCPClusterList{}
+	err := cm.Host_client.List(context.TODO(), ocList, "openmcp")
+	if err != nil {
+		fmt.Println("get OpenMCPCLuster List Error")
+	}
+	for _, oc := range ocList.Items {
+		region := oc.Spec.NodeInfo.Region
+		zones := strings.Split(oc.Spec.NodeInfo.Zone, ",")
+
 		l := LocCluster{
-			clusterName: memberCluster.Name,
+			clusterName: oc.ClusterName,
 			region:      region,
 			zones:       zones,
 		}
 		locationSlice = append(locationSlice, l)
-
 	}
 	return locationSlice
+
 }
 func contains(s []string, e string) bool {
 	for _, a := range s {
