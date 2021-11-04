@@ -48,14 +48,6 @@ spec:
       type: string
       description: Cluster Platform Type
       JSONPath: .spec.clusterPlatformType
-    - name: MetalLB_Range_From
-      type: string
-      description: The Cluster MetalLB Range From
-      JSONPath: .spec.metalLBRange.addressFrom
-    - name: MetalLB_Range_To
-      type: string
-      description: The Cluster MetalLB Range To
-      JSONPath: .spec.metalLBRange.addressTo
     - name: NODE_REGION
       type: string
       description: Node Region info
@@ -64,3 +56,11 @@ spec:
       type: string
       description: Node Zone info
       JSONPath: .spec.nodeInfo.zone
+    - name: MetalLB_Range_From
+      type: string
+      description: The Cluster MetalLB Range From
+      JSONPath: .spec.metalLBRange.addressFrom
+    - name: MetalLB_Range_To
+      type: string
+      description: The Cluster MetalLB Range To
+      JSONPath: .spec.metalLBRange.addressTo

@@ -47,9 +47,9 @@ func JoinCloudHandler(w http.ResponseWriter, r *http.Request) {
 
 	c_name := r.Form.Get("clustername")
 	c_type := r.Form.Get("clustertype")
-	//access_token := r.Form.Get("accesstoken")
+	c_loc := r.Form.Get("clusterlocation")
 
-	fmt.Println(c_name, " / ", c_type)
+	fmt.Println(c_name, " / ", c_type, " / ", c_loc)
 
 	c_file, _, err := r.FormFile("file")
 
@@ -66,7 +66,7 @@ func JoinCloudHandler(w http.ResponseWriter, r *http.Request) {
 	c := &cobrautil.KubeConfig{}
 	err = yaml.Unmarshal(fileBytes, c)
 
-	CreateCloudClusterResource(c_name, c_type, fileBytes)
+	CreateCloudClusterResource(c_name, c_type, fileBytes, c_loc)
 
 	a := []byte("OK\n")
 	w.Write(a)
@@ -150,7 +150,7 @@ func CreateClusterResource(name string, config []byte, nodeinfo string) (string,
 	return clusterCR.Name, err
 }
 
-func CreateCloudClusterResource(c_name string, c_type string, config []byte) (string, error) {
+func CreateCloudClusterResource(c_name string, c_type string, config []byte, c_loc string) (string, error) {
 
 	clusterCR := &clusterv1alpha1.OpenMCPCluster{
 		TypeMeta: v1.TypeMeta{
@@ -166,6 +166,90 @@ func CreateCloudClusterResource(c_name string, c_type string, config []byte) (st
 			JoinStatus:          "UNJOIN",
 			KubeconfigInfo:      config,
 		},
+	}
+
+	//[Google] GKE Region/Zone Setting
+	if c_type == "GKE" && c_loc == "asia-northeast1-a" {
+		ni := clusterv1alpha1.NodeInfo{
+			Region: "JP",
+			Zone:   "Tokyo",
+		}
+
+		clusterCR.Spec.NodeInfo = ni
+	}
+
+	if c_type == "GKE" && c_loc == "europe-west3-a" {
+		ni := clusterv1alpha1.NodeInfo{
+			Region: "DE",
+			Zone:   "Hesse",
+		}
+
+		clusterCR.Spec.NodeInfo = ni
+	}
+
+	if c_type == "GKE" && c_loc == "australia-southeast1-a" {
+		ni := clusterv1alpha1.NodeInfo{
+			Region: "AU",
+			Zone:   "New South Wales",
+		}
+
+		clusterCR.Spec.NodeInfo = ni
+	}
+
+	//[Amazon] EKS Region/Zone Setting
+	if c_type == "EKS" && c_loc == "eu-west-2" {
+		ni := clusterv1alpha1.NodeInfo{
+			Region: "GB",
+			Zone:   "England",
+		}
+
+		clusterCR.Spec.NodeInfo = ni
+	}
+
+	if c_type == "EKS" && c_loc == "eu-west-3" {
+		ni := clusterv1alpha1.NodeInfo{
+			Region: "FR",
+			Zone:   "Île-de-France",
+		}
+
+		clusterCR.Spec.NodeInfo = ni
+	}
+
+	if c_type == "EKS" && c_loc == "us-east-1" {
+		ni := clusterv1alpha1.NodeInfo{
+			Region: "US",
+			Zone:   "Virginia",
+		}
+
+		clusterCR.Spec.NodeInfo = ni
+	}
+
+	//[Azure] AKS Region/Zone Setting
+	if c_type == "AKS" && c_loc == "norwayeast" {
+		ni := clusterv1alpha1.NodeInfo{
+			Region: "NO",
+			Zone:   "Oslo",
+		}
+
+		clusterCR.Spec.NodeInfo = ni
+	}
+
+	if c_type == "AKS" && c_loc == "southeastasia" {
+		ni := clusterv1alpha1.NodeInfo{
+			Region: "TH",
+			Zone:   "Bangkok",
+		}
+
+		clusterCR.Spec.NodeInfo = ni
+	}
+
+	if c_type == "AKS" && c_loc == "westus" {
+		ni := clusterv1alpha1.NodeInfo{
+			Region: "US",
+			Zone:   "California",
+		}
+
+		clusterCR.Spec.NodeInfo = ni
 	}
 
 	liveClient, _ := Live.GetDelegatingClient()
