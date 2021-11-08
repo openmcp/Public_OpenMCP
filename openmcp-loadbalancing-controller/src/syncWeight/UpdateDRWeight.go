@@ -62,7 +62,33 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 			return
 		default:
 			omcplog.V(2).Info("Analyzing DestinationRule Weight ...")
+
 			//모든 노드들의 region_zone 리스트
+			ocList, err := cm.Crd_client.OpenMCPCluster("openmcp").List(v1.ListOptions{})
+
+			if err != nil {
+				fmt.Println("OpenMCPClusterList err : ", err)
+			}
+			for _, oc := range ocList.Items {
+				clustername := oc.Name
+				if oc.Spec.JoinStatus == "JOIN" {
+					region := oc.Spec.NodeInfo.Region
+					zones := strings.Split(oc.Spec.NodeInfo.Zone, ",")
+
+					for i := 0; i < len(zones); i++ {
+						tmp := nodeInfo{
+							node_region: region,
+							node_zone:   zones[i],
+						}
+
+						//cluster_node := clustername + "/" + node.Name
+
+						NodeList[clustername] = tmp
+					}
+				}
+			}
+
+			/*//모든 노드들의 region_zone 리스트
 			for _, memberCluster := range cm.Cluster_list.Items {
 
 				clusterName := memberCluster.Name
@@ -87,7 +113,7 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 						NodeList[cluster_node] = tmp
 					}
 				}
-			}
+			}*/
 
 			node_list_all := map[string]int{}
 
@@ -136,13 +162,13 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 					}
 
 					if podNodeName != "" {
-						cluster_node := mcluster.Name + "/" + podNodeName
+						cluster_node := mcluster.Name // + "/" + podNodeName
 						region_zone := NodeList[cluster_node].node_region + "/" + NodeList[cluster_node].node_zone + "/" + mcluster.Name
 
 						target_node_list[region_zone] = append(target_node_list[region_zone], tmp_pod_list...)
 					}
 				}
-				fmt.Println("target_node_list : ",target_node_list)
+				fmt.Println("target_node_list : ", target_node_list)
 				if len(target_node_list) > 0 {
 					tmp_rz := map[string][]DRWeight{}
 					for rz, _ := range node_list_all { //from
