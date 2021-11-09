@@ -9,6 +9,8 @@ spec:
     listKind: OpenMCPServiceDNSRecordList
     plural: openmcpservicednsrecords
     singular: openmcpservicednsrecord
+    shortNames:
+    - osvcdr
   scope: Namespaced
   #scope: Cluster
   subresources:

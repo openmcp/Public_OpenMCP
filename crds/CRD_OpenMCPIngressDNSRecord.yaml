@@ -9,6 +9,8 @@ spec:
     listKind: OpenMCPIngressDNSRecordList
     plural: openmcpingressdnsrecords
     singular: openmcpingressdnsrecord
+    shortNames:
+    - oingdr
   scope: Namespaced
   #scope: Cluster
   subresources:
