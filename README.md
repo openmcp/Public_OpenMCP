@@ -431,7 +431,7 @@ To sign in, use a web browser to open the page https://microsoft.com/devicelogin
 ]
 ```
 
-### (3) az aks list
+### (3) Get ClusterName and Location from 'az aks list' command
 ```
 $ az aks list
 [
@@ -454,7 +454,7 @@ Install 'kubectl regist' plugin on OpenMCP.
 $ cd kubectl_plugin
 $ chmod +x kubectl-regist_join
 $ cp kubectl-regist_join /usr/local/bin
-$ kubectl regist-join AKS <CLUSTERNAME>
+$ kubectl regist-join AKS <CLUSTERNAME> <CLUSTERLOCATION>
 ```
 
 ### (5) Join AKS cluster to OpenMCP

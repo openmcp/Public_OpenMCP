@@ -366,7 +366,7 @@ func (ae *AnalyticEngineStruct) UpdateClusterPodScore(clusterName string, cm *cl
 	ClusterPodResourceScore := make(map[string]map[string]map[string]float64)
 
 	// ae.GeoScore Update
-	openmcpPolicyInstance, err := cm.Crd_client.OpenMCPPolicy("openmcp").Get("loadbalancing-controller-policy", metav1.GetOptions{})
+	openmcpPolicyInstance, err := cm.Crd_client.OpenMCPPolicy("openmcp").Get("lb-scoring-weight", metav1.GetOptions{})
 	if err != nil {
 		omcplog.V(0).Info(err)
 		return err
@@ -547,7 +547,7 @@ func (ae *AnalyticEngineStruct) UpdateClusterPodScore(clusterName string, cm *cl
 // 	var NoRegionZoneMatchedScore float64
 
 // 	// ae.GeoScore Update
-// 	openmcpPolicyInstance, err := cm.Crd_client.OpenMCPPolicy("openmcp").Get("loadbalancing-controller-policy", metav1.GetOptions{})
+// 	openmcpPolicyInstance, err := cm.Crd_client.OpenMCPPolicy("openmcp").Get("lb-scoring-weight", metav1.GetOptions{})
 // 	if err != nil {
 // 		return err
 // 	}
