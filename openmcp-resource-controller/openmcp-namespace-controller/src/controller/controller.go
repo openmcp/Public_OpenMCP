@@ -367,48 +367,50 @@ func CheckClusterNamespaceStatus(myClusterManager *clusterManager.ClusterManager
 						continue
 					}
 
-					ns := &corev1.Namespace{}
-					err = cm.Cluster_genClients[clusterName].Get(context.TODO(), ns, corev1.NamespaceDefault, ons.Name)
-					if err != nil && errors.IsNotFound(err) {
-						omcplog.V(2).Info(err, ": Create Namespace In Cluster '", clusterName, "'")
-						newLabel := ons.Labels
-						if newLabel == nil {
-							newLabel = make(map[string]string)
-						}
-						newLabel["istio-injection"] = "enabled"
+					if cm.Cluster_genClients[clusterName] != nil {
+						ns := &corev1.Namespace{}
+						err = cm.Cluster_genClients[clusterName].Get(context.TODO(), ns, corev1.NamespaceDefault, ons.Name)
+						if err != nil && errors.IsNotFound(err) {
+							omcplog.V(2).Info(err, ": Create Namespace In Cluster '", clusterName, "'")
+							newLabel := ons.Labels
+							if newLabel == nil {
+								newLabel = make(map[string]string)
+							}
+							newLabel["istio-injection"] = "enabled"
 
-						CreateNSInstance := &corev1.Namespace{
-							TypeMeta: metav1.TypeMeta{
-								Kind:       "Namespace",
-								APIVersion: "v1",
-							},
-							ObjectMeta: metav1.ObjectMeta{
-								Name:   ons.Name,
-								Labels: newLabel,
-							},
-						}
-						reference.SetMulticlusterControllerReference(CreateNSInstance, reference.NewMulticlusterOwnerReference(&ons, ons.GroupVersionKind(), "openmcp"))
+							CreateNSInstance := &corev1.Namespace{
+								TypeMeta: metav1.TypeMeta{
+									Kind:       "Namespace",
+									APIVersion: "v1",
+								},
+								ObjectMeta: metav1.ObjectMeta{
+									Name:   ons.Name,
+									Labels: newLabel,
+								},
+							}
+							reference.SetMulticlusterControllerReference(CreateNSInstance, reference.NewMulticlusterOwnerReference(&ons, ons.GroupVersionKind(), "openmcp"))
 
-						err2 := cm.Cluster_genClients[clusterName].Create(context.TODO(), CreateNSInstance)
-						if err2 != nil {
-							omcplog.V(0).Info(err2)
-						}
-						nsStatusActiveAll = false
+							err2 := cm.Cluster_genClients[clusterName].Create(context.TODO(), CreateNSInstance)
+							if err2 != nil {
+								omcplog.V(0).Info(err2)
+							}
+							nsStatusActiveAll = false
 
-					} else if err != nil && errors.IsAlreadyExists(err) {
-						if ns.Status.Phase != "Active" {
+						} else if err != nil && errors.IsAlreadyExists(err) {
+							if ns.Status.Phase != "Active" {
+								nsStatusActiveAll = false
+								break
+							}
+
+						} else if err != nil {
+							omcplog.V(0).Info(err)
 							nsStatusActiveAll = false
 							break
-						}
-
-					} else if err != nil {
-						omcplog.V(0).Info(err)
-						nsStatusActiveAll = false
-						break
-					} else {
-						if ns.Status.Phase != "Active" {
-							nsStatusActiveAll = false
-							break
+						} else {
+							if ns.Status.Phase != "Active" {
+								nsStatusActiveAll = false
+								break
+							}
 						}
 					}
 
