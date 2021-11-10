@@ -133,7 +133,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		joinCheck := MergeConfigAndJoin(*clusterInstance)
 
 		if joinCheck == "TRUE" {
-			omcplog.V(4).Info("OpenMCP Module Deploy---")
+
+			omcplog.V(4).Info("Deploy OpenMCP Module ---")
 
 			var moduleDirectory []string
 			if clusterInstance.Spec.ClusterPlatformType == "GKE" || clusterInstance.Spec.ClusterPlatformType == "AKS" || clusterInstance.Spec.ClusterPlatformType == "EKS" {
@@ -154,13 +155,33 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 			InstallInitModule(moduleDirectory, clusterInstance.Name, clusterInstance.Spec.MetalLBRange.AddressFrom, clusterInstance.Spec.MetalLBRange.AddressTo)
 
+			omcplog.V(4).Info("Create OpenMCP SubResource ---")
 			// 그동안 OpenMCP리소스로 배포된 하위 리소스 생성
 			err := resourceCreate.CreateSubResourceAll(clusterInstance.Name, cm)
 			if err != nil {
 				return reconcile.Result{}, err
 			}
 
-			omcplog.V(4).Info("--- JOIN Complete ---")
+			//배포 전 클러스터 노드 Region/Zone/Istio 라벨 설정
+			omcplog.V(4).Info("Set Cluster Node Label (region/zone/subzone) ---")
+			if cm.Cluster_genClients[clusterInstance.Name] == nil {
+				omcplog.V(4).Info("Fail to get node list from cluster")
+			} else {
+				nodeList := &corev1.NodeList{}
+				err_node := cm.Cluster_genClients[clusterInstance.Name].List(context.TODO(), nodeList, "default")
+
+				if err_node == nil {
+					for _, node := range nodeList.Items {
+						util.CmdExec2("kubectl label nodes " + node.Name + " topology.kubernetes.io/region=" + clusterInstance.Spec.NodeInfo.Region + " --context " + clusterInstance.Name + " --overwrite")
+						util.CmdExec2("kubectl label nodes " + node.Name + " topology.kubernetes.io/zone=" + clusterInstance.Spec.NodeInfo.Zone + " --context " + clusterInstance.Name + " --overwrite")
+						util.CmdExec2("kubectl label nodes " + node.Name + " failure-domain.beta.kubernetes.io/region=" + clusterInstance.Spec.NodeInfo.Region + " --context " + clusterInstance.Name + " --overwrite")
+						util.CmdExec2("kubectl label nodes " + node.Name + " failure-domain.beta.kubernetes.io/zone=" + clusterInstance.Spec.NodeInfo.Zone + " --context " + clusterInstance.Name + " --overwrite")
+						util.CmdExec2("kubectl label nodes " + node.Name + " topology.istio.io/subzone=" + clusterInstance.Name + " --context " + clusterInstance.Name + " --overwrite")
+					}
+				} else {
+					omcplog.V(4).Info("Fail to get node list - ", err_node)
+				}
+			}
 
 			clusterInstance.Spec.JoinStatus = "JOIN"
 			err = r.live.Update(context.TODO(), clusterInstance)
@@ -171,19 +192,19 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 					if err != nil {
 						omcplog.V(0).Info("[" + clusterInstance.Name + "] Error Status Not Changed (JOINING -> JOIN): " + err.Error())
 					} else {
-						omcplog.V(2).Info("Update " + clusterInstance.Name + " status to JOIN")
+						omcplog.V(2).Info("Update " + clusterInstance.Name + " status to JOIN ---")
 					}
 				} else {
-					omcplog.V(2).Info("Update " + clusterInstance.Name + " status to JOIN")
+					omcplog.V(2).Info("Update " + clusterInstance.Name + " status to JOIN ---")
 				}
 			} else {
-				omcplog.V(2).Info("Update " + clusterInstance.Name + " status to JOIN")
+				omcplog.V(2).Info("Update " + clusterInstance.Name + " status to JOIN ---")
 			}
 		}
 		jointimeEnd := time.Since(jointimeStart)
-		omcplog.V(2).Info(clusterInstance.Name + " [ JOIN ] End") //[JOINING]
-		omcplog.V(4).Info("---")
+		omcplog.V(2).Info("--- JOIN Complete ---") //[JOINING]
 		omcplog.V(4).Info("*** ", clusterInstance.Name, " cluster join time : ", jointimeEnd)
+
 	} else if clusterInstance.Spec.JoinStatus == "UNJOINING" {
 
 		omcplog.V(2).Info(clusterInstance.Name + " [ UNJOINING ] Start")
@@ -215,7 +236,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		}
 
 		if unjoinCheck != "" {
-			omcplog.V(4).Info("OpenMCP Module Delete---")
+			omcplog.V(4).Info("Delete OpenMCP Module ---")
 			var moduleDirectory []string
 			if clusterInstance.Spec.ClusterPlatformType == "GKE" || clusterInstance.Spec.ClusterPlatformType == "AKS" || clusterInstance.Spec.ClusterPlatformType == "EKS" {
 				moduleDirectory = []string{"custom-metrics-apiserver", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap", "istio", "namespace"}
@@ -377,12 +398,15 @@ func UninstallInitModule(directory []string, clustername string) {
 						} else if strings.Contains(dirname, "namespace") {
 							ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
 							go func() {
+								ns := strings.TrimRight(f.Name(), ".yaml")
+								util.CmdExec2("/usr/local/bin/kubectl delete svc --all -n " + ns + " --context " + clustername)
+								util.CmdExec2("/usr/local/bin/kubectl delete pods --all -n " + ns + " --context " + clustername)
 								util.CmdExec2("/usr/local/bin/kubectl delete -f " + dirname + "/" + f.Name() + " --context " + clustername)
 								cancel()
 							}()
 
 							select {
-							case <-time.After(60 * time.Second):
+							case <-time.After(120 * time.Second):
 								//fmt.Println("fail to delete ns")
 								cancel()
 							case <-ctx.Done():
