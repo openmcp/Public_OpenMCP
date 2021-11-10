@@ -157,7 +157,8 @@ func GetExternalNfsPVCAPI(volumeSnapshotKey string, runType RunType) *v1.Persist
 			},
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": getExternalNfsPVName(volumeSnapshotKey, runType),
+					"app":     getExternalNfsPVName(volumeSnapshotKey, runType),
+					"openmcp": "snapshot",
 				},
 			},
 		},
@@ -214,6 +215,7 @@ func GetPVCAPI(volumeSnapshotKey string, pvResource apiv1.PersistentVolume, runT
 			Name:      getPVCName(volumeSnapshotKey, runType),
 			Namespace: JOB_NAMESPACE,
 			Labels: map[string]string{
+				"app":     getPVName(volumeSnapshotKey, runType),
 				"openmcp": "snapshot",
 			},
 		},
@@ -226,7 +228,7 @@ func GetPVCAPI(volumeSnapshotKey string, pvResource apiv1.PersistentVolume, runT
 			},
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"name":    getPVName(volumeSnapshotKey, runType),
+					"app":     getPVName(volumeSnapshotKey, runType),
 					"openmcp": "snapshot",
 				},
 			},
@@ -243,16 +245,22 @@ func GetPVAPI(volumeSnapshotKey string, pvResource apiv1.PersistentVolume, runTy
 			//Name: "demo",
 			Name: getPVName(volumeSnapshotKey, runType),
 			Labels: map[string]string{
-				"name":    getPVName(volumeSnapshotKey, runType),
+				"app":     getPVName(volumeSnapshotKey, runType),
 				"openmcp": "snapshot",
 			},
 		},
-		Spec: apiv1.PersistentVolumeSpec{},
+		Spec: apiv1.PersistentVolumeSpec{
+			AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteMany},
+			Capacity: apiv1.ResourceList{
+				v1.ResourceName(v1.ResourceStorage): resource.MustParse("10Gi"),
+			},
+			PersistentVolumeReclaimPolicy: apiv1.PersistentVolumeReclaimRetain,
+		},
 	}
-	pv.Spec.Capacity = pvResource.Spec.Capacity
+	//pv.Spec.Capacity = pvResource.Spec.Capacity //1G니까 안되던데..
 	pv.Spec.PersistentVolumeSource = pvResource.Spec.PersistentVolumeSource
-	pv.Spec.PersistentVolumeReclaimPolicy = pvResource.Spec.PersistentVolumeReclaimPolicy
-	pv.Spec.AccessModes = pvResource.Spec.AccessModes
+	//pv.Spec.PersistentVolumeReclaimPolicy = pvResource.Spec.PersistentVolumeReclaimPolicy
+	//pv.Spec.AccessModes = pvResource.Spec.AccessModes
 
 	return pv
 }

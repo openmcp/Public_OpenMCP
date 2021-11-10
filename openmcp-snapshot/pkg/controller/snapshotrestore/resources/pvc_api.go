@@ -29,15 +29,15 @@ func JSON2Pvc(resourceInfoJSON string) (*apiv1.PersistentVolumeClaim, error) {
 		return nil, convertErr
 	}
 
-	//	for key, val := range resourceInfo.GetObjectMeta().GetLabels() {
+	//	for key, val := range resourceInfo.GetObjectMeta().Get() {
 	//		fmt.Println("===Label===")
 	//		fmt.Println(key, val)
-	//		resourceInfo.ObjectMeta.Labels[key] = val + SnapshotTailName
+	//		resourceInfo.ObjectMeta.[key] = val + SnapshotTailName
 	//	}
-	//	for key, val := range resourceInfo.Spec.Selector.MatchLabels {
+	//	for key, val := range resourceInfo.Spec.Selector.Match {
 	//		fmt.Println("===spec_MatchLabel===")
 	//		fmt.Println(key, val)
-	//		resourceInfo.Spec.Selector.MatchLabels[key] = val + SnapshotTailName
+	//		resourceInfo.Spec.Selector.Match[key] = val + SnapshotTailName
 	//	}
 	//	resourceInfo.ObjectMeta.Name = resourceInfo.ObjectMeta.Name + SnapshotTailName
 	//	resourceInfo.Spec.VolumeName = resourceInfo.Spec.VolumeName + SnapshotTailName
@@ -50,7 +50,7 @@ func JSON2Pvc(resourceInfoJSON string) (*apiv1.PersistentVolumeClaim, error) {
 				//Name: "demo",
 				Name:      resourceInfo.ObjectMeta.Name + SnapshotTailName,
 				Namespace: resourceInfo.ObjectMeta.Namespace,
-				Labels:    resourceInfo.ObjectMeta.Labels,
+				:    resourceInfo.ObjectMeta.,
 			},
 
 			Spec: resourceInfo.Spec,
