@@ -151,9 +151,8 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 			util.CmdExec2("chmod 755 " + "/init/vertical-pod-autoscaler/hack/*")
 			util.CmdExec2("/init/vertical-pod-autoscaler/hack/vpa-up.sh " + clusterInstance.Name)
-			//fmt.Println(moduleDirectory)
 
-			InstallInitModule(moduleDirectory, clusterInstance.Name, clusterInstance.Spec.MetalLBRange.AddressFrom, clusterInstance.Spec.MetalLBRange.AddressTo)
+			InstallInitModule(moduleDirectory, clusterInstance.Name, clusterInstance.Spec.MetalLBRange.AddressFrom, clusterInstance.Spec.MetalLBRange.AddressTo, clusterInstance.Spec.ClusterNetworkLocation)
 
 			omcplog.V(4).Info("Create OpenMCP SubResource ---")
 			// 그동안 OpenMCP리소스로 배포된 하위 리소스 생성
@@ -176,7 +175,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 						util.CmdExec2("kubectl label nodes " + node.Name + " topology.kubernetes.io/zone=" + clusterInstance.Spec.NodeInfo.Zone + " --context " + clusterInstance.Name + " --overwrite")
 						util.CmdExec2("kubectl label nodes " + node.Name + " failure-domain.beta.kubernetes.io/region=" + clusterInstance.Spec.NodeInfo.Region + " --context " + clusterInstance.Name + " --overwrite")
 						util.CmdExec2("kubectl label nodes " + node.Name + " failure-domain.beta.kubernetes.io/zone=" + clusterInstance.Spec.NodeInfo.Zone + " --context " + clusterInstance.Name + " --overwrite")
-						util.CmdExec2("kubectl label nodes " + node.Name + " topology.istio.io/subzone=" + clusterInstance.Name + " --context " + clusterInstance.Name + " --overwrite")
+						util.CmdExec2("kubectl label nodes " + node.Name + " topology.istio.io/subzone=" + clusterInstance.Name + " --context " + clusterInstance.Name)
 					}
 				} else {
 					omcplog.V(4).Info("Fail to get node list - ", err_node)
@@ -291,7 +290,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	return reconcile.Result{}, nil
 }
 
-func InstallInitModule(directory []string, clustername string, ipaddressfrom string, ipaddressto string) {
+func InstallInitModule(directory []string, clustername string, ipaddressfrom string, ipaddressto string, netLoc string) {
 
 	for i := 0; i < len(directory); i++ {
 		dirname, _ := filepath.Abs(directory[i])
@@ -315,27 +314,26 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 				}
 
 				if fi.Mode().IsDir() {
-					InstallInitModule([]string{dirname + "/" + f.Name()}, clustername, ipaddressfrom, ipaddressto)
+					InstallInitModule([]string{dirname + "/" + f.Name()}, clustername, ipaddressfrom, ipaddressto, netLoc)
 				} else {
-					if strings.Contains(f.Name(), "istio_install.sh") {
+					if strings.Contains(f.Name(), "istio_install") {
 						util.CmdExec2("chmod 755 " + dirname + "/gen-eastwest-gateway.sh")
-						util.CmdExec2("chmod 755 " + dirname + "/istio_install.sh")
-						util.CmdExec2(dirname + "/istio_install.sh " + dirname + " " + clustername)
+						if netLoc == "external" {
+							util.CmdExec2("chmod 755 " + dirname + "/istio_install_ex.sh")
+							util.CmdExec2(dirname + "/istio_install_ex.sh " + dirname + " " + clustername)
+						} else {
+							util.CmdExec2("chmod 755 " + dirname + "/istio_install_in.sh")
+							util.CmdExec2(dirname + "/istio_install_in.sh " + dirname + " " + clustername)
+						}
 						fmt.Println("*** ", dirname+" created")
-						/*
-							util.CmdExec2("cp " + dirname + "/istio_install.sh " + dirname + "/istio_install-" + clustername + ".sh")
-							util.CmdExec2("sed -i 's|REPLACE_DIRECTORY|" + dirname + "|g' " + dirname + "/istio_install-" + clustername + ".sh")
-							util.CmdExec2("sed -i 's|REPLACE_CLUSTERNAME|" + clustername + "|g' " + dirname + "/istio_install-" + clustername + ".sh")
-							util.CmdExec2("chmod 755 " + dirname + "/gen-eastwest-gateway.sh")
-							util.CmdExec2("chmod 755 " + dirname + "/istio_install-" + clustername + ".sh")
-							util.CmdExec2(dirname + "/istio_install-" + clustername + ".sh")
-							util.CmdExec2("rm " + dirname + "/istio_install-" + clustername + ".sh")
-						*/
 					}
 					if filepath.Ext(f.Name()) == ".yaml" || filepath.Ext(f.Name()) == ".yml" {
 						if strings.Contains(dirname, "metric-collector/operator") {
-							//fmt.Println("*** ", dirname+"/"+f.Name())
-							util.CmdExec2("cp " + dirname + "/operator.yaml " + dirname + "/operator_" + clustername + ".yaml")
+							if netLoc == "external" {
+								util.CmdExec2("cp " + dirname + "/operator_ex.yaml " + dirname + "/operator_" + clustername + ".yaml")
+							} else {
+								util.CmdExec2("cp " + dirname + "/operator_in.yaml " + dirname + "/operator_" + clustername + ".yaml")
+							}
 							util.CmdExec2("sed -i 's|REPLACE_CLUSTER_NAME|\"" + clustername + "\"|g' " + dirname + "/operator_" + clustername + ".yaml")
 							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/operator_" + clustername + ".yaml --context " + clustername)
 							util.CmdExec2("rm " + dirname + "/operator_" + clustername + ".yaml")
@@ -396,9 +394,9 @@ func UninstallInitModule(directory []string, clustername string) {
 						if strings.Contains(dirname, "istio") {
 
 						} else if strings.Contains(dirname, "namespace") {
-							ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
+							ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 							go func() {
-								ns := strings.TrimRight(f.Name(), ".yaml")
+								ns := strings.TrimSuffix(f.Name(), ".yaml")
 								util.CmdExec2("/usr/local/bin/kubectl delete svc --all -n " + ns + " --context " + clustername)
 								util.CmdExec2("/usr/local/bin/kubectl delete pods --all -n " + ns + " --context " + clustername)
 								util.CmdExec2("/usr/local/bin/kubectl delete -f " + dirname + "/" + f.Name() + " --context " + clustername)
@@ -406,7 +404,7 @@ func UninstallInitModule(directory []string, clustername string) {
 							}()
 
 							select {
-							case <-time.After(120 * time.Second):
+							case <-time.After(70 * time.Second):
 								//fmt.Println("fail to delete ns")
 								cancel()
 							case <-ctx.Done():

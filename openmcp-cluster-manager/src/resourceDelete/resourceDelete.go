@@ -29,8 +29,8 @@ func DeleteSubResourceAll(clusterName string, cm *clusterManager.ClusterManager)
 }
 
 func deleteSubResourceDeployment(clusterName string, cm *clusterManager.ClusterManager) error {
-	omcplog.V(2).Info("[Resource Clean]'" + clusterName + "' Start")
-	omcplog.V(2).Info("[Resource Clean] Deployment Resource by OpenMCP")
+	//omcplog.V(2).Info("[Resource Clean]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Resource Clean] Deployment Resource by OpenMCP")
 	odepList, err := cm.Crd_client.OpenMCPDeployment(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err
@@ -94,8 +94,8 @@ func deleteSubResourceDeployment(clusterName string, cm *clusterManager.ClusterM
 }
 
 func deleteSubResourceService(clusterName string, cm *clusterManager.ClusterManager) error {
-	omcplog.V(2).Info("[Resource Clean]'" + clusterName + "' Start")
-	omcplog.V(2).Info("[Resource Clean] Service Resource by OpenMCP")
+	//omcplog.V(2).Info("[Resource Clean]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Resource Clean] Service Resource by OpenMCP")
 	osvcList, err := cm.Crd_client.OpenMCPService(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err
@@ -152,8 +152,8 @@ func deleteSubResourceService(clusterName string, cm *clusterManager.ClusterMana
 	return nil
 }
 func deleteSubResourceIngress(clusterName string, cm *clusterManager.ClusterManager) error {
-	omcplog.V(2).Info("[Resource Clean]'" + clusterName + "' Start")
-	omcplog.V(2).Info("[Resource Clean] Ingress Resource by OpenMCP")
+	//omcplog.V(2).Info("[Resource Clean]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Resource Clean] Ingress Resource by OpenMCP")
 	oingList, err := cm.Crd_client.OpenMCPIngress(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err
@@ -211,8 +211,8 @@ func deleteSubResourceIngress(clusterName string, cm *clusterManager.ClusterMana
 	return nil
 }
 func deleteSubResourceConfigMap(clusterName string, cm *clusterManager.ClusterManager) error {
-	omcplog.V(2).Info("[Resource Clean]'" + clusterName + "' Start")
-	omcplog.V(2).Info("[Resource Clean] ConfigMap Resource by OpenMCP")
+	//omcplog.V(2).Info("[Resource Clean]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Resource Clean] ConfigMap Resource by OpenMCP")
 	oConfigmapList, err := cm.Crd_client.OpenMCPConfigMap(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err
@@ -270,8 +270,8 @@ func deleteSubResourceConfigMap(clusterName string, cm *clusterManager.ClusterMa
 	return nil
 }
 func deleteSubResourceJob(clusterName string, cm *clusterManager.ClusterManager) error {
-	omcplog.V(2).Info("[Resource Clean]'" + clusterName + "' Start")
-	omcplog.V(2).Info("[Resource Clean] Job Resource by OpenMCP")
+	//omcplog.V(2).Info("[Resource Clean]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Resource Clean] Job Resource by OpenMCP")
 	oJobList, err := cm.Crd_client.OpenMCPJob(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err
@@ -329,8 +329,8 @@ func deleteSubResourceJob(clusterName string, cm *clusterManager.ClusterManager)
 	return nil
 }
 func deleteSubResourceNamespace(clusterName string, cm *clusterManager.ClusterManager) error {
-	omcplog.V(2).Info("[Resource Clean]'" + clusterName + "' Start")
-	omcplog.V(2).Info("[Resource Clean] Namespace Resource by OpenMCP")
+	//omcplog.V(2).Info("[Resource Clean]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Resource Clean] Namespace Resource by OpenMCP")
 	onsList, err := cm.Crd_client.OpenMCPNamespace(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err
@@ -388,8 +388,8 @@ func deleteSubResourceNamespace(clusterName string, cm *clusterManager.ClusterMa
 	return nil
 }
 func deleteSubResourceSecret(clusterName string, cm *clusterManager.ClusterManager) error {
-	omcplog.V(2).Info("[Resource Clean]'" + clusterName + "' Start")
-	omcplog.V(2).Info("[Resource Clean] Secret Resource by OpenMCP")
+	//omcplog.V(2).Info("[Resource Clean]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Resource Clean] Secret Resource by OpenMCP")
 	osecList, err := cm.Crd_client.OpenMCPSecret(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err

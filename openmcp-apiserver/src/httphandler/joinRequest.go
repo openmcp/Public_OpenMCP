@@ -125,9 +125,10 @@ func CreateClusterResource(name string, config []byte, nodeinfo string) (string,
 			Namespace: "openmcp",
 		},
 		Spec: clusterv1alpha1.OpenMCPClusterSpec{
-			ClusterPlatformType: "On-Premise",
-			JoinStatus:          "UNJOIN",
-			NodeInfo:            ni,
+			ClusterPlatformType:    "On-Premise",
+			ClusterNetworkLocation: "",
+			JoinStatus:             "UNJOIN",
+			NodeInfo:               ni,
 			MetalLBRange: clusterv1alpha1.MetalLBRange{
 				AddressFrom: "",
 				AddressTo:   "",
@@ -162,9 +163,10 @@ func CreateCloudClusterResource(c_name string, c_type string, config []byte, c_l
 			Namespace: "openmcp",
 		},
 		Spec: clusterv1alpha1.OpenMCPClusterSpec{
-			ClusterPlatformType: c_type,
-			JoinStatus:          "UNJOIN",
-			KubeconfigInfo:      config,
+			ClusterPlatformType:    c_type,
+			ClusterNetworkLocation: "",
+			JoinStatus:             "UNJOIN",
+			KubeconfigInfo:         config,
 		},
 	}
 

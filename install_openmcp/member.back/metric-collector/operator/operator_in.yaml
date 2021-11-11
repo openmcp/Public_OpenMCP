@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cluster-metric-collector
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: cluster-metric-collector
+  template:
+    metadata:
+      labels:
+        name: cluster-metric-collector
+    spec:
+      serviceAccountName: cluster-metric-collector
+      imagePullSecrets:
+        - name: REPLACE_DOCKERSECRETNAME
+      containers:
+        - name: cluster-metric-collector
+          # Replace this with the built image name
+          image: ketidevit/cluster-metric-collector:v0.0.1
+          command:
+          - cluster-metric-collector
+          imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: GRPC_SERVER
+              value: REPLACE_GRPCIP
+            - name: GRPC_PORT
+              value: REPLACE_GRPCPORT
+            - name: CLUSTER_NAME
+              value: REPLACE_CLUSTER_NAME
+            - name: OPERATOR_NAME
+              value: "openmcp-metric-collector"
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0
+
+
