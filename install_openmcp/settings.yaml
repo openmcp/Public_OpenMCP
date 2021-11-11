@@ -30,6 +30,8 @@ master:
     LoadBalancingController:
       external: 115.94.141.62
       NodePort: 30004
+    Istio:
+      external: 115.94.141.62
 externalServer:
   ServerIP:
     internal: 10.0.3.12
