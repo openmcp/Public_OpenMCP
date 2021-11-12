@@ -325,23 +325,23 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 				} else {
 
 					if strings.Contains(f.Name(), istioFileName) {
-						ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
-						go func() {
-							util.CmdExec2("chmod 755 " + dirname + "/gen-eastwest-gateway.sh")
-							if netLoc == "external" {
-								util.CmdExec2("chmod 755 " + dirname + "/istio_install_ex.sh")
-								util.CmdExec2(dirname + "/istio_install_ex.sh " + dirname + " " + clustername)
-							} else {
-								util.CmdExec2("chmod 755 " + dirname + "/istio_install_in.sh")
-								util.CmdExec2(dirname + "/istio_install_in.sh " + dirname + " " + clustername)
-							}
-							fmt.Println("*** ", dirname+" created")
+						//ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+						//go func() {
+						util.CmdExec2("chmod 755 " + dirname + "/gen-eastwest-gateway.sh")
+						if netLoc == "external" {
+							util.CmdExec2("chmod 755 " + dirname + "/istio_install_ex.sh")
+							util.CmdExec2(dirname + "/istio_install_ex.sh " + dirname + " " + clustername)
+						} else {
+							util.CmdExec2("chmod 755 " + dirname + "/istio_install_in.sh")
+							util.CmdExec2(dirname + "/istio_install_in.sh " + dirname + " " + clustername)
+						}
+						fmt.Println("*** ", dirname+" created")
 
-							cancel()
+						//	cancel()
 
-						}()
+						//}()
 
-						select {
+						/*select {
 						case <-time.After(130 * time.Second):
 							//fmt.Println("fail to delete ns")
 							cancel()
@@ -362,7 +362,7 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 						} else if err_ctx == context.Canceled {
 							fmt.Println(ctx.Err())
 							fmt.Println("success to install istio")
-						}
+						}*/
 					}
 
 					if filepath.Ext(f.Name()) == ".yaml" || filepath.Ext(f.Name()) == ".yml" {
@@ -436,7 +436,7 @@ func UninstallInitModule(directory []string, clustername string) {
 						if strings.Contains(dirname, "istio") {
 
 						} else if strings.Contains(dirname, "namespace") {
-							ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+							ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 							go func() {
 								ns := strings.TrimSuffix(f.Name(), ".yaml")
 								util.CmdExec2("/usr/local/bin/kubectl delete svc --all -n " + ns + " --context " + clustername)
@@ -446,7 +446,7 @@ func UninstallInitModule(directory []string, clustername string) {
 							}()
 
 							select {
-							case <-time.After(130 * time.Second):
+							case <-time.After(100 * time.Second):
 								//fmt.Println("fail to delete ns")
 								cancel()
 							case <-ctx.Done():
