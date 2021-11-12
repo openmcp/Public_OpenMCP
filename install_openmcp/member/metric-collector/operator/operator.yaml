@@ -33,11 +33,11 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: GRPC_SERVER
-              value: "10.0.3.20"
+              value: "115.94.141.62"
             - name: GRPC_PORT
-              value: "30002"
+              value: "3212"
             - name: CLUSTER_NAME
-              value: "cluster2"
+              value: REPLACE_CLUSTER_NAME
             - name: OPERATOR_NAME
               value: "openmcp-metric-collector"
       tolerations:

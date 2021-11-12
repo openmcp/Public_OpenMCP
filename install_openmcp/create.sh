@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 
@@ -69,8 +70,7 @@ PDNS_PUBLIC_IP=`yq -r .externalServer.ServerIP.external $CONFFILE`
 PDNS_PUBLIC_PORT=`yq -r .externalServer.powerDNS.externalPort $CONFFILE`
 PDNS_API_KEY=`yq -r .externalServer.powerDNS.apiKey $CONFFILE`
 
-
-
+ISTIO_EXTERNAL_IP=`yq -r .master.Moudules.Istio.external $CONFFILE`
 
 if [ -d "master" ]; then
   # Control will enter here if $DIRECTORY exists.
@@ -126,7 +126,7 @@ fi
 
 
 echo "Replace Setting Variable"
-sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/1.create.sh
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/install.sh
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-has-controller/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-scheduler/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-loadbalancing-controller/operator.yaml
@@ -143,7 +143,8 @@ sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-s
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-policy-engine/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-namespace-controller/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-job-controller/operator.yaml
-sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' member/metric-collector/operator/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' member/metric-collector/operator/operator_in.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' member/metric-collector/operator/operator_ex.yaml
 
 sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/influxdb/deployment.yaml
 sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-has-controller/operator.yaml
@@ -163,7 +164,8 @@ sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/op
 sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-cluster-manager/operator.yaml
 sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-namespace-controller/operator.yaml
 sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-job-controller/operator.yaml
-sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' member/metric-collector/operator/operator.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' member/metric-collector/operator/operator_in.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' member/metric-collector/operator/operator_ex.yaml
 
 sed -i 's|REPLACE_GRPCIP|'\"$OMCP_IP\"'|g' master/openmcp-has-controller/operator.yaml
 sed -i 's|REPLACE_GRPCIP|'\"$OMCP_IP\"'|g' master/openmcp-scheduler/operator.yaml
@@ -181,8 +183,11 @@ sed -i 's|REPLACE_GRPCPORT|'\"$OAE_NODE_PORT\"'|g' master/openmcp-has-controller
 sed -i 's|REPLACE_GRPCPORT|'\"$OAE_NODE_PORT\"'|g' master/openmcp-scheduler/operator.yaml
 sed -i 's|REPLACE_GRPCPORT|'\"$OAE_NODE_PORT\"'|g' master/openmcp-loadbalancing-controller/operator.yaml
 
-sed -i 's|REPLACE_GRPCIP|'\"$OMCP_EXTERNAL_IP\"'|g' member/metric-collector/operator/operator.yaml
-sed -i 's|REPLACE_GRPCPORT|'\"$OME_EXTERNAL_PORT\"'|g' member/metric-collector/operator/operator.yaml
+sed -i 's|REPLACE_GRPCIP|'\"$OMCP_IP\"'|g' member/metric-collector/operator/operator_in.yaml
+sed -i 's|REPLACE_GRPCPORT|'\"$OME_NODE_PORT\"'|g' member/metric-collector/operator/operator_in.yaml
+
+sed -i 's|REPLACE_GRPCIP|'\"$OMCP_EXTERNAL_IP\"'|g' member/metric-collector/operator/operator_ex.yaml
+sed -i 's|REPLACE_GRPCPORT|'\"$OME_EXTERNAL_PORT\"'|g' member/metric-collector/operator/operator_ex.yaml
 
 sed -i 's|REPLACE_GRPCPORT|'$OME_NODE_PORT'|g' master/openmcp-metric-collector/service.yaml
 
@@ -218,6 +223,8 @@ sed -i 's|REPLACE_PDNSAPIKEY|'\"$PDNS_API_KEY\"'|g' master/openmcp-dns-controlle
 
 sed -i 's|REPLACE_ADDRESS_FROM|'"$ADDRESS_FROM"'|g' master/metallb/configmap.yaml
 sed -i 's|REPLACE_ADDRESS_TO|'"$ADDRESS_TO"'|g' master/metallb/configmap.yaml
+
+sed -i 's|REPLACE_DISCOVERY_ADDRESS_EX|'$ISTIO_EXTERNAL_IP'|g' member/istio/istio_install_ex.sh
 
 echo "Replace Setting Variable Complete"
 USERNAME=`whoami`

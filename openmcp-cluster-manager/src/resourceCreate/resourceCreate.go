@@ -22,8 +22,8 @@ func CreateSubResourceAll(clusterName string, cm *clusterManager.ClusterManager)
 }
 
 func createSubResourceDeployment(clusterName string, cm *clusterManager.ClusterManager) error {
-	omcplog.V(2).Info("[Resource Create]'" + clusterName + "' Start")
-	omcplog.V(2).Info("[Resource Create] Deployment Resource by OpenMCP")
+	//omcplog.V(2).Info("[Resource Create]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Resource Create] Deployment Resource by OpenMCP")
 	odepList, err := cm.Crd_client.OpenMCPDeployment(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err
@@ -43,8 +43,8 @@ func createSubResourceDeployment(clusterName string, cm *clusterManager.ClusterM
 }
 
 func createSubResourceService(clusterName string, cm *clusterManager.ClusterManager) error {
-	omcplog.V(2).Info("[Resource Create]'" + clusterName + "' Start")
-	omcplog.V(2).Info("[Resource Create] Deployment Resource by OpenMCP")
+	//omcplog.V(2).Info("[Resource Create]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Resource Create] Deployment Resource by OpenMCP")
 	osvcList, err := cm.Crd_client.OpenMCPService(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err
@@ -63,8 +63,8 @@ func createSubResourceService(clusterName string, cm *clusterManager.ClusterMana
 	return nil
 }
 func createSubResourceIngress(clusterName string, cm *clusterManager.ClusterManager) error {
-	omcplog.V(2).Info("[Resource Create]'" + clusterName + "' Start")
-	omcplog.V(2).Info("[Resource Create] Deployment Resource by OpenMCP")
+	//omcplog.V(2).Info("[Resource Create]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Resource Create] Deployment Resource by OpenMCP")
 	oingList, err := cm.Crd_client.OpenMCPIngress(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err
@@ -83,8 +83,8 @@ func createSubResourceIngress(clusterName string, cm *clusterManager.ClusterMana
 	return nil
 }
 func createSubResourceConfigMap(clusterName string, cm *clusterManager.ClusterManager) error {
-	omcplog.V(2).Info("[Resource Create]'" + clusterName + "' Start")
-	omcplog.V(2).Info("[Resource Create] Deployment Resource by OpenMCP")
+	//omcplog.V(2).Info("[Resource Create]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Resource Create] Deployment Resource by OpenMCP")
 	ocmList, err := cm.Crd_client.OpenMCPConfigMap(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err
@@ -103,8 +103,8 @@ func createSubResourceConfigMap(clusterName string, cm *clusterManager.ClusterMa
 	return nil
 }
 func createSubResourceJob(clusterName string, cm *clusterManager.ClusterManager) error {
-	omcplog.V(2).Info("[Resource Create]'" + clusterName + "' Start")
-	omcplog.V(2).Info("[Resource Create] Deployment Resource by OpenMCP")
+	//omcplog.V(2).Info("[Resource Create]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Resource Create] Deployment Resource by OpenMCP")
 	ojobList, err := cm.Crd_client.OpenMCPJob(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err
@@ -122,8 +122,8 @@ func createSubResourceJob(clusterName string, cm *clusterManager.ClusterManager)
 	return nil
 }
 func createSubResourceNamespace(clusterName string, cm *clusterManager.ClusterManager) error {
-	omcplog.V(2).Info("[Resource Create]'" + clusterName + "' Start")
-	omcplog.V(2).Info("[Resource Create] Deployment Resource by OpenMCP")
+	//omcplog.V(2).Info("[Resource Create]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Resource Create] Deployment Resource by OpenMCP")
 	onsList, err := cm.Crd_client.OpenMCPNamespace(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err
@@ -142,8 +142,8 @@ func createSubResourceNamespace(clusterName string, cm *clusterManager.ClusterMa
 	return nil
 }
 func createSubResourceSecret(clusterName string, cm *clusterManager.ClusterManager) error {
-	omcplog.V(2).Info("[Resource Create]'" + clusterName + "' Start")
-	omcplog.V(2).Info("[Resource Create] Deployment Resource by OpenMCP")
+	//omcplog.V(2).Info("[Resource Create]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Resource Create] Deployment Resource by OpenMCP")
 	osecList, err := cm.Crd_client.OpenMCPSecret(corev1.NamespaceAll).List(metav1.ListOptions{})
 	if err != nil {
 		return err

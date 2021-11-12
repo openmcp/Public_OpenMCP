@@ -8,6 +8,8 @@ import (
 	"sort"
 	"strings"
 
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	//clusterv1alpha1 "openmcp/openmcp/apis/cluster/v1alpha1"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 
 	"openmcp/openmcp/apis"
@@ -153,32 +155,61 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 }
 
 func getLocClusters() []LocCluster {
+	// locationSlice := []LocCluster{}
+
+	// region := ""
+	// zones := []string{}
+	// for _, memberCluster := range cm.Cluster_list.Items {
+	// 	nodeList := &corev1.NodeList{}
+	// 	err := cm.Cluster_genClients[memberCluster.Name].List(context.TODO(), nodeList, "default")
+	// 	if err != nil {
+	// 		fmt.Println("get NodeList Error")
+	// 		continue
+	// 	}
+	// 	for _, node := range nodeList.Items {
+	// 		if _, ok := node.Labels["node-role.kubernetes.io/master"]; ok {
+	// 			region = node.Labels["topology.kubernetes.io/region"]
+	// 		}
+	// 		zones = append(zones, node.Labels["topology.kubernetes.io/zone"])
+	// 	}
+	// 	l := LocCluster{
+	// 		clusterName: memberCluster.Name,
+	// 		region:      region,
+	// 		zones:       zones,
+	// 	}
+	// 	locationSlice = append(locationSlice, l)
+
+	// }
+	// return locationSlice
+
 	locationSlice := []LocCluster{}
 
-	region := ""
-	zones := []string{}
-	for _, memberCluster := range cm.Cluster_list.Items {
-		nodeList := &corev1.NodeList{}
-		err := cm.Cluster_genClients[memberCluster.Name].List(context.TODO(), nodeList, "default")
-		if err != nil {
-			fmt.Println("get NodeList Error")
-			continue
-		}
-		for _, node := range nodeList.Items {
-			if _, ok := node.Labels["node-role.kubernetes.io/master"]; ok {
-				region = node.Labels["topology.kubernetes.io/region"]
-			}
-			zones = append(zones, node.Labels["topology.kubernetes.io/zone"])
-		}
-		l := LocCluster{
-			clusterName: memberCluster.Name,
-			region:      region,
-			zones:       zones,
-		}
-		locationSlice = append(locationSlice, l)
+	// region := ""
+	// zones := []string{}
 
+	//ocList := &clusterv1alpha1.OpenMCPClusterList{}
+	//err := cm.Host_client.List(context.TODO(), ocList, "openmcp")
+	ocList, err := cm.Crd_client.OpenMCPCluster("openmcp").List(v1.ListOptions{})
+
+	if err != nil {
+		fmt.Println("OpenMCPClusterList err : ", err)
+	}
+
+	for _, oc := range ocList.Items {
+		if oc.Spec.JoinStatus == "JOIN" {
+			region := oc.Spec.NodeInfo.Region
+			zones := strings.Split(oc.Spec.NodeInfo.Zone, ",")
+
+			l := LocCluster{
+				clusterName: oc.Name,
+				region:      region,
+				zones:       zones,
+			}
+			locationSlice = append(locationSlice, l)
+		}
 	}
 	return locationSlice
+
 }
 func contains(s []string, e string) bool {
 	for _, a := range s {
@@ -369,10 +400,15 @@ func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i 
 		svcNS = svcDomainSplit[1]
 	}
 
-	omcplog.V(4).Info("locCluster: locCluster")
+	omcplog.V(4).Info("locCluster: ", locCluster)
 	if locCluster != nil {
 		svc := &corev1.Service{}
+
+		if cm.Cluster_genClients[locCluster.clusterName] == nil {
+			return nil, nil
+		}
 		err := cm.Cluster_genClients[locCluster.clusterName].Get(context.TODO(), svc, svcNS, svcName)
+
 		if err != nil && errors.IsNotFound(err) {
 			fmt.Println(err)
 			return nil, nil
@@ -392,7 +428,6 @@ func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i 
 			fmt.Println("!!!!", locCluster.clusterName, " is Not Exist Pod about Svc: '", svcName, "(", svcNS, ")', LabelSelector: '", svc.Spec.Selector, "'")
 			return nil, nil
 		}
-
 	}
 
 	vsHttpRoute := &networkingv1alpha3.HTTPRouteDestination{}
@@ -435,9 +470,10 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 		}
 
 		clusterName := vsHttpRoute.Destination.Subset
-		if clusterName != "" {
+		if clusterName != "" && cm.Cluster_genClients[clusterName] != nil {
 
 			nodeList := &corev1.NodeList{}
+
 			err := cm.Cluster_genClients[clusterName].List(context.TODO(), nodeList, "default")
 			if err != nil && errors.IsNotFound(err) {
 				return
@@ -466,36 +502,48 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 
 			//podNodeMatchFind := false
 			for _, pod := range podList.Items {
-
+			Loop1:
 				for _, node := range nodeList.Items {
 					// if _, ok := node.Labels["node-role.kubernetes.io/master"]; ok {
 					// 	continue
 					// }
 					if pod.Spec.NodeName == node.Name {
 						//podNodeMatchFind = true
+						ocList, err := cm.Crd_client.OpenMCPCluster("openmcp").List(v1.ListOptions{})
 
-						toRegion := node.Labels["topology.kubernetes.io/region"]
-						toZone := node.Labels["topology.kubernetes.io/zone"]
-
-						regionZoneInfo := protobuf.RegionZoneInfo{
-							FromRegion:    fromRegion,
-							FromZone:      fromZone,
-							ToRegion:      toRegion,
-							ToZone:        toZone,
-							ToClusterName: clusterName,
-							ToNamespace:   svcNS,
-							ToPodName:     pod.Name,
-						}
-						grpcResponse, gRPC_err := grpcClient.SendRegionZoneInfo(context.TODO(), &regionZoneInfo)
-						if gRPC_err != nil {
-							omcplog.V(0).Info(gRPC_err)
-							continue
+						if err != nil {
+							omcplog.V(0).Info(err)
 						}
 
-						cluster_X_TotalWeight = cluster_X_TotalWeight + float64(grpcResponse.Weight)
+						for _, oc := range ocList.Items {
+							if oc.Name == clusterName {
+								toRegion := oc.Spec.NodeInfo.Region
+								toZone := oc.Spec.NodeInfo.Zone
 
-						fmt.Println("*** [Score Calcuation]", fromRegion, "/", fromZone, " -> ", toRegion, "/", toZone, "(", clusterName, "/", node.Name, "/", svcNS, "/", pod.Name, "): ", grpcResponse.Weight)
-						break
+								//toRegion := node.Labels["topology.kubernetes.io/region"]
+								//toZone := node.Labels["topology.kubernetes.io/zone"]
+
+								regionZoneInfo := protobuf.RegionZoneInfo{
+									FromRegion:    fromRegion,
+									FromZone:      fromZone,
+									ToRegion:      toRegion,
+									ToZone:        toZone,
+									ToClusterName: clusterName,
+									ToNamespace:   svcNS,
+									ToPodName:     pod.Name,
+								}
+								grpcResponse, gRPC_err := grpcClient.SendRegionZoneInfo(context.TODO(), &regionZoneInfo)
+								if gRPC_err != nil {
+									omcplog.V(0).Info(gRPC_err)
+									continue
+								}
+
+								cluster_X_TotalWeight = cluster_X_TotalWeight + float64(grpcResponse.Weight)
+
+								fmt.Println("*** [Score Calcuation]", fromRegion, "/", fromZone, " -> ", toRegion, "/", toZone, "(", clusterName, "/", svcNS, "/", pod.Name, "): ", grpcResponse.Weight)
+								break Loop1
+							}
+						}
 					}
 				}
 				// if podNodeMatchFind {

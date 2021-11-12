@@ -4,6 +4,7 @@ import (
 	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
 	"openmcp/openmcp/util/clusterManager"
+	"time"
 )
 
 /*
@@ -16,9 +17,10 @@ func (pl *ClusterJoninCheck) Name() string {
 }
 
 func (pl *ClusterJoninCheck) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, cm *clusterManager.ClusterManager) bool {
+	startTime := time.Now()
 	clusterList := clusterInfo.ClusterList
 	if clusterList == nil {
-		omcplog.V(0).Infof("That instance did not get information from crd cluster.")
+		omcplog.V(4).Infof("That instance did not get information from crd cluster.")
 	}
 	// joinCluster := make(map[string]bool)
 	for _, cluster := range clusterList.Items {
@@ -27,10 +29,16 @@ func (pl *ClusterJoninCheck) Filter(newPod *ketiresource.Pod, clusterInfo *ketir
 		}
 		if "JOIN" == cluster.Spec.JoinStatus {
 			if clusterInfo.ClusterName == cluster.Name {
+				//omcplog.V(3).Info("ClusterJoninCheck true ")
+				elapsedTime := time.Since(startTime)
+				omcplog.V(3).Infof("ClusterJoninCheck Time [%v]", elapsedTime)
 				return true
 			}
 		}
 	}
+	omcplog.V(4).Info("ClusterJoninCheck false ")
+	elapsedTime := time.Since(startTime)
+	omcplog.V(3).Infof("ClusterJoninCheck Time [%v]", elapsedTime)
 	return false
 
 }

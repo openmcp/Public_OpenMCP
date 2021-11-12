@@ -4,7 +4,7 @@ PASSWORD="keti"
 IP="openmcp-apiserver.openmcp.default-domain.svc.openmcp.example.org"
 PORT="8080"
 
-POLICYNAME="loadbalancing-controller-policy"
+POLICYNAME="post-scheduling-type"
 
 URL="apis/openmcp.k8s.io/v1alpha1/namespaces/openmcp/openmcppolicys/$POLICYNAME"
 CONTEXT="openmcp"
@@ -22,19 +22,19 @@ TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
 #policy name : log-level
-#LOGVALUE="4"
+#LOGVALUE="4" # value : 0~5
 #curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
 #--data "[{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/0/value/0\", \"value\": \"$LOGVALUE\"}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
 
 
 #policy name : hpa-minmax-distribution-mode
-#HPAMODE="Unequal"
+#HPAMODE="Unequal" # value : Equal or Unequal
 #curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
 #--data "[{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/0/value/0\", \"value\": \"$HPAMODE\"}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
 
 
 #policy name : metric-collector-period
-#PERIOD="6"
+#PERIOD="6" # value : seconds
 #curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
 #--data "[{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/0/value/0\", \"value\": \"$PERIOD\"}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
 
@@ -50,15 +50,21 @@ TOKEN=`echo "$TOKEN" | tr -d '"'`
 #--data "[{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/0/value/0\", \"value\": \"$CPUWEIGHT\"},{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/1/value/0\", \"value\": \"$MEMWEIGHT\"},{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/2/value/0\", \"value\": \"$FSWEIGHT\"},{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/3/value/0\", \"value\": \"$NETWEIGHT\"},{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/4/value/0\", \"value\": \"$LATENCYWEIGHT\"}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
 
 
-#policy name : loadbalancing-controller-policy
+#policy name : lb-scoring-weight
 #GeoRate Index : 0 / Period Index : 1 / RegionZoneMatchedScore Index : 2 / OnlyRegionMatchedScore Index : 3 / NoRegionZoneMatchedScore Index : 4
-GEOWEIGHT="0.5"
-PERIODWEIGHT="5.0"
-RZWEIGHT="100"
-ONLYRWEIGHT="60"
-NORZWEIGHT="20"
+#GEOWEIGHT="0.5"
+#PERIODWEIGHT="5.0"
+#RZWEIGHT="100"
+#ONLYRWEIGHT="60"
+#NORZWEIGHT="20"
+#curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
+#--data "[{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/0/value/0\", \"value\": \"$GEOWEIGHT\"},{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/1/value/0\", \"value\": \"$PERIODWEIGHT\"},{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/2/value/0\", \"value\": \"$RZWEIGHT\"},{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/3/value/0\", \"value\": \"$ONLYRWEIGHT\"},{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/4/value/0\", \"value\": \"$NORZWEIGHT\"}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
+
+#policy name : post-scheduling-type
+SCHEDULINGTYPE="Scoring"  # value : FIFO or Scoring
 curl -X PATCH --cacert server.crt -H "Content-Type: application/json-patch+json" -H "Authorization: Bearer $TOKEN" \
---data "[{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/0/value/0\", \"value\": \"$GEOWEIGHT\"},{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/1/value/0\", \"value\": \"$PERIODWEIGHT\"},{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/2/value/0\", \"value\": \"$RZWEIGHT\"},{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/3/value/0\", \"value\": \"$ONLYRWEIGHT\"},{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/4/value/0\", \"value\": \"$NORZWEIGHT\"}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
+--data "[{\"op\": \"replace\", \"path\": \"/spec/template/spec/policies/0/value/0\", \"value\": \"$SCHEDULINGTYPE\"}]" https://$IP:$PORT/$URL?clustername=$CONTEXT
+
 
 
 rm server.crt

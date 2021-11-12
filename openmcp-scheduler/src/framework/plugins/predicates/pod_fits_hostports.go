@@ -4,6 +4,7 @@ import (
 	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
 	"openmcp/openmcp/util/clusterManager"
+	"time"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
@@ -21,6 +22,7 @@ func (pl *PodFitsHostPorts) Name() string {
 	return "PodFitsHostPorts"
 }
 func (pl *PodFitsHostPorts) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, cm *clusterManager.ClusterManager) bool {
+	startTime := time.Now()
 	// Requested ports should be available for newPod
 	// Example of *.yaml for a new OpenMCPDeployemt as folllow:
 	//   spec:
@@ -36,6 +38,8 @@ func (pl *PodFitsHostPorts) Filter(newPod *ketiresource.Pod, clusterInfo *ketire
 	wantPorts := getContainerPorts(newPod.Pod)
 
 	if len(wantPorts) == 0 {
+		elapsedTime := time.Since(startTime)
+		omcplog.V(3).Infof("pod fits host ports Time [%v]", elapsedTime)
 		return true
 	}
 
@@ -47,10 +51,16 @@ func (pl *PodFitsHostPorts) Filter(newPod *ketiresource.Pod, clusterInfo *ketire
 		// }
 		// newPod cannot be deployed, if one of the wantPorts is used
 		if fitsPorts(wantPorts, node) == false {
-			omcplog.V(0).Info("%s", ErrReason)
+			omcplog.V(4).Info("%s", ErrReason)
+			omcplog.V(4).Info("pod fits host ports false ")
+			elapsedTime := time.Since(startTime)
+			omcplog.V(3).Infof("pod fits host ports Time [%v]", elapsedTime)
 			return false
 		}
 	}
+	//omcplog.V(3).Info("pod fits ports true ")
+	elapsedTime := time.Since(startTime)
+	omcplog.V(3).Infof("pod fits host ports Time [%v]", elapsedTime)
 	return true
 }
 

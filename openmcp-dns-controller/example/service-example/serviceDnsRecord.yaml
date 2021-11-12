@@ -4,7 +4,7 @@ metadata:
   # The name of the sample service.
   name: openmcp-service-example
   # The namespace of the sample deployment/service.
-  namespace: openmcp
+#  namespace: openmcp
 spec:
   # The name of the corresponding Domain.
   domainRef: openmcp-service-example-domain

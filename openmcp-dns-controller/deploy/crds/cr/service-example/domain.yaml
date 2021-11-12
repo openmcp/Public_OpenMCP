@@ -1,9 +1,0 @@
-apiVersion: openmcp.k8s.io/v1alpha1
-kind: OpenMCPDomain
-metadata:
-  # Corresponds to <federation> in the resource records.
-  name: openmcp-service-example-domain
-  # The namespace running kubefed-controller-manager.
-  namespace: kube-federation-system
-# The domain/subdomain that is setup in your externl-dns provider.
-domain: openmcp.service.example.org
