@@ -3,17 +3,17 @@ kind: Migration
 metadata:
   name: migrations
 spec:
-  MigrationServiceSource:
-  - SourceCluster: cluster1
-    TargetCluster: cluster2
-    NameSpace: testmig
-    ServiceName: testim
-    MigrationSource:
-    - ResourceName: testim-dp
-      ResourceType: Deployment
-    - ResourceName: testim-sv
-      ResourceType: Service
-    - ResourceName: testim-pv
-      ResourceType: PersistentVolume
-    - ResourceName: testim-pvc
-      ResourceType: PersistentVolumeClaim
+  migrationServiceSource:
+  - sourceCluster: cluster1
+    targetCluster: cluster2
+    nameSpace: testmig
+    serviceName: testim
+    migrationSource:
+    - resourceName: testim-dp
+      resourceType: Deployment
+    - resourceName: testim-sv
+      resourceType: Service
+    - resourceName: testim-pv
+      resourceType: PersistentVolume
+    - resourceName: testim-pvc
+      resourceType: PersistentVolumeClaim

@@ -10,6 +10,7 @@ const EXTERNAL_NFS_PATH = "/home/nfs/pv"
 
 const EXTERNAL_NFS_NAME_PVC = "nfs-pvc"
 const EXTERNAL_NFS_NAME_PV = "nfs-pv"
+const EXTERNAL_NFS_APP = "nfs"
 
 //file copy cmd
 const COPY_CMD = "cp -r"

@@ -205,10 +205,17 @@ func volumeSnapshotRun(r *reconciler, snapshotSource *nanumv1alpha1.SnapshotSour
 	//Job Command 실행
 	restconfig := cm.Cluster_configs[snapshotSource.ResourceCluster]
 
-	commandErr := config.RunCommand(&targetListClient, restconfig, podName, snapshotCmd, config.JOB_NAMESPACE)
+	cmdResult, commandErr := config.RunCommand(&targetListClient, restconfig, podName, snapshotCmd, config.JOB_NAMESPACE)
 	if nil != commandErr {
 		return fmt.Errorf("Command run  error"), commandErr
 	}
+
+	omcplog.V(4).Info("=====in======")
+	omcplog.V(4).Info(fmt.Sprintf("%s", cmdResult.Stdin.Bytes()))
+	omcplog.V(4).Info("=====out======")
+	omcplog.V(4).Info(fmt.Sprintf("%s", cmdResult.Stdout.Bytes()))
+	omcplog.V(4).Info("=====error=======")
+	omcplog.V(4).Info(fmt.Sprintf("%s", cmdResult.Stderr.Bytes()))
 
 	return nil, nil
 }

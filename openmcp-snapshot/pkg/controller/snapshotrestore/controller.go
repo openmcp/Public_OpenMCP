@@ -2,7 +2,6 @@ package snapshotrestore
 
 import (
 	"context"
-	"encoding/json"
 	"strconv"
 	"time"
 
@@ -27,7 +26,7 @@ import (
 var cm *clusterManager.ClusterManager
 
 //pod 이름 찾기
-func GetPodName(targetClient generic.Client, dpName string, namespace string) string {
+func GetPodName(targetClient generic.Client, dpName string, namespace string) (string, error) {
 	podInfo := &corev1.Pod{}
 
 	listOption := &client.ListOptions{
@@ -36,11 +35,15 @@ func GetPodName(targetClient generic.Client, dpName string, namespace string) st
 		}),
 	}
 
-	targetClient.List(context.TODO(), podInfo, namespace, listOption)
+	err := targetClient.List(context.TODO(), podInfo, namespace, listOption)
+	if err != nil {
+		omcplog.Error("----------- : ", err)
+		return "", err
+	}
 
 	podName := podInfo.ObjectMeta.Name
 
-	return podName
+	return podName, nil
 }
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
@@ -74,39 +77,42 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 }
 
 type reconciler struct {
-	live           client.Client
-	ghosts         []client.Client
-	ghostNamespace string
+	live            client.Client
+	ghosts          []client.Client
+	ghostNamespace  string
+	progressMax     int
+	progressCurrent int
 }
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	omcplog.V(3).Info("Snapshot Start : Reconcile")
 	startDate := time.Now()
 	omcplog.V(3).Info(startDate)
-
 	instance := &nanumv1alpha1.SnapshotRestore{}
+	r.progressMax = 1
+	r.progressCurrent = 0
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 	if err != nil {
 		omcplog.Error("get instance error : ", err)
-		r.MakeStatus(instance, false, "", err)
+		r.makeStatusRun(instance, corev1.ConditionFalse, "0. get instance error", "", err)
 		return reconcile.Result{Requeue: false}, nil
 	}
-	// if len(instance.Spec.SnapshotRestoreSource) < 1 {
-	// 	omcplog.V(0).Info("========= SnapshotRestoreSource size 0")
-	// 	return reconcile.Result{}, nil
-	// }
 
-	if instance.Status.Status == true {
+	if instance.Status.Status == corev1.ConditionTrue {
 		// 이미 성공한 케이스는 로직을 안탄다.
 		omcplog.V(4).Info(instance.Name + " already succeed")
 		return reconcile.Result{Requeue: false}, nil
 	}
 
-	if instance.Status.Status == false && instance.Status.Reason != "" {
+	if instance.Status.Status == corev1.ConditionFalse {
 		// 이미 실패한 케이스는 로직을 다시 안탄다.
 		omcplog.V(4).Info(instance.Name + " already failed")
 		return reconcile.Result{Requeue: false}, nil
 	}
+
+	omcplog.V(4).Info("0. get instance ... !Update :" + strconv.Itoa(r.progressCurrent))
+	r.makeStatusRun(instance, "Running", "0. get resource instance success", "", nil)
+	omcplog.V(4).Info("0. get instance ... !Update End")
 
 	instance.Status.IsVolumeSnapshot = false
 
@@ -115,23 +121,52 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	if instance.Spec.IsGroupSnapshot {
 		setGroupErr, _ := setGroupSnapshotRestoreRun(instance, groupSnapshotKey)
 		if setGroupErr != nil {
-			omcplog.Error("setGroupSnapshotRestoreRun error : ", setGroupErr)
-			r.MakeStatus(instance, false, "", setGroupErr)
-			omcplog.V(3).Info("SnapshotRestore Failed")
+			omcplog.Error("1. get SnapshotInfo for ETCD error : ", setGroupErr)
+			r.makeStatusRun(instance, "Running", "1. get SnapshotInfo for ETCD Failed", "", setGroupErr)
+			omcplog.V(3).Info("1. get SnapshotInfo for ETCD Failed")
 			return reconcile.Result{Requeue: false}, nil
 		}
 	} else {
 		instance.Status.SnapshotRestoreSource = instance.Spec.DeepCopy().SnapshotRestoreSource
+
+		//progress++
+		r.progressCurrent++ //getResource 하기 전이라 추가함.
+		r.progressMax++
+		omcplog.V(4).Info("++ progressCurrent add :" + strconv.Itoa(r.progressCurrent))
+		omcplog.V(4).Info("++ progress Count : " + strconv.Itoa(r.progressCurrent) + "/" + strconv.Itoa(r.progressMax))
+		omcplog.V(4).Info("1. get SnapshotInfo for ETCD ... !Update :" + strconv.Itoa(r.progressCurrent))
+		r.makeStatusRun(instance, "Running", "1. get SnapshotInfo for ETCD success", "", nil)
+		omcplog.V(4).Info("1. get SnapshotInfo for ETCD ... !Update End")
 	}
 
-	err = r.live.Update(context.TODO(), instance)
-	//err = r.live.Status().Update(context.TODO(), instance)
-	if err != nil {
-		omcplog.V(3).Info(err, "-----------")
+	// 스냅샷 복구 정보들을가공하는 부분 -> r.progressMax 추가 산출 함수.
+	initErr := r.setResource(instance.Status.SnapshotRestoreSource)
+	// r.progressMax++ //1번은 최초 reconcile 초기화때 1을 가지고 시작함.
+	r.progressMax++ //2번
+	//r.progressMax++ //3번은  setResource에서 etcd, volume 개수만큼 진행
+	//r.progressMax++ //4번  미구현
+	omcplog.V(4).Info("+ [Both] Progress Setting end")
+	omcplog.V(4).Info("++ progressCurrent add :" + strconv.Itoa(r.progressCurrent))
+	omcplog.V(4).Info("++ progressMax add :" + strconv.Itoa(r.progressMax))
+	omcplog.V(4).Info("++ progress Count : " + strconv.Itoa(r.progressCurrent) + "/" + strconv.Itoa(r.progressMax))
+
+	if initErr != nil {
+		omcplog.Error("2. Init error : ", initErr)
+		r.makeStatusRun(instance, corev1.ConditionFalse, "2. Init error", "", initErr)
+		omcplog.V(3).Info("SnapshotRestore Failed")
+		return reconcile.Result{Requeue: false}, nil
+	} else {
+		r.progressCurrent++
+		omcplog.V(4).Info("++ progressCurrent add :" + strconv.Itoa(r.progressCurrent))
+		omcplog.V(4).Info("++ progress Count : " + strconv.Itoa(r.progressCurrent) + "/" + strconv.Itoa(r.progressMax))
+		omcplog.V(4).Info("2. Init ... !Update :" + strconv.Itoa(r.progressCurrent))
+		r.makeStatusRun(instance, "Running", "2. Init success", "", nil)
+		omcplog.V(4).Info("2. Init ... !Update End")
 	}
 
 	pvIdx := 1
 	for idx, snapshotRestoreSource := range instance.Status.SnapshotRestoreSource {
+		desc := ""
 		resourceType := snapshotRestoreSource.ResourceType
 		omcplog.V(4).Info("\n[" + strconv.Itoa(idx) + "] : Resource : " + resourceType)
 
@@ -141,85 +176,56 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			instance.Status.SnapshotRestoreSource[idx].VolumeSnapshotKey = volumeSnapshotKey
 			volumeSnapshotRestoreErr, errDetail := volumeSnapshotRestoreRun(r, snapshotRestoreSource.ResourceCluster, snapshotRestoreSource.ResourceSnapshotKey, groupSnapshotKey, volumeSnapshotKey, pvIdx)
 			if volumeSnapshotRestoreErr != nil {
-				if errDetail.Error() == "Command Error : TargetFile is empty!" {
+				if errDetail == nil {
+					omcplog.Error("3. volumeSnapshotRestoreRun error : ", volumeSnapshotRestoreErr)
+					r.makeStatusRun(instance, corev1.ConditionFalse, "3. volumeSnapshotRestoreRun error", "", volumeSnapshotRestoreErr)
+					omcplog.V(3).Info("SnapshotRestore Failed")
+					return reconcile.Result{Requeue: false}, nil
+
+				} else if errDetail.Error() == "Command Error : TargetFile is empty!" {
 					// 타겟이 없는 경우 성공처리
-					omcplog.V(3).Info("snapshot volume is zero.")
+					omcplog.V(3).Info("3. snapshot volume is zero.")
 					instance.Status.SnapshotRestoreSource[idx].VolumeSnapshotKey += "-Empty"
 				} else {
-					omcplog.Error("volumeSnapshotRestoreRun error : ", volumeSnapshotRestoreErr)
-					r.MakeStatusWithSource(instance, false, snapshotRestoreSource, volumeSnapshotRestoreErr, errDetail)
+					omcplog.Error("3. volumeSnapshotRestoreRun error(detail) : ", errDetail)
+					r.makeStatusRun(instance, corev1.ConditionFalse, "3. volumeSnapshotRestoreRun error(detail)", "", errDetail)
 					omcplog.V(3).Info("SnapshotRestore Failed")
 					return reconcile.Result{Requeue: false}, nil
 				}
+			} else {
+				r.progressCurrent++
+				omcplog.V(4).Info("++ progressCurrent add :" + strconv.Itoa(r.progressCurrent))
+				omcplog.V(4).Info("++ progress Count : " + strconv.Itoa(r.progressCurrent) + "/" + strconv.Itoa(r.progressMax))
+				omcplog.V(4).Info("3. volumeSnapshotRestoreRun... !Update :" + strconv.Itoa(r.progressCurrent))
+				r.makeStatusRun(instance, "Running", "3. volumeSnapshotRestoreRun success : "+desc, "", nil)
+				omcplog.V(4).Info("3. volumeSnapshotRestoreRun ... !Update End")
 			}
 			pvIdx++
 		}
 		etcdSnapshotRestoreErr := etcdSnapshotRestoreRun(r, &snapshotRestoreSource, groupSnapshotKey)
 		if etcdSnapshotRestoreErr != nil {
 			omcplog.Error("etcdSnapshotRestoreRun error : ", etcdSnapshotRestoreErr)
-			r.MakeStatusWithSource(instance, false, snapshotRestoreSource, etcdSnapshotRestoreErr, nil)
+			r.makeStatusRun(instance, corev1.ConditionFalse, "3. etcdSnapshotRestoreRun error", "", etcdSnapshotRestoreErr)
 			omcplog.V(3).Info("SnapshotRestore Failed")
 			return reconcile.Result{Requeue: false}, nil
+		} else {
+			r.progressCurrent++
+			omcplog.V(4).Info("++ progressCurrent add :" + strconv.Itoa(r.progressCurrent))
+			omcplog.V(4).Info("++ progress Count : " + strconv.Itoa(r.progressCurrent) + "/" + strconv.Itoa(r.progressMax))
+			omcplog.V(4).Info("3. etcdSnapshotRestoreRun... !Update :" + strconv.Itoa(r.progressCurrent))
+			r.makeStatusRun(instance, "Running", "3. etcdSnapshotRestoreRun success : "+desc, "", nil)
+			omcplog.V(4).Info("3. etcdSnapshotRestoreRun ... !Update End")
 		}
 	}
 
+	r.progressCurrent++
+	omcplog.V(4).Info("++ progressCurrent add :" + strconv.Itoa(r.progressCurrent))
+	omcplog.V(4).Info("++ progress Count : " + strconv.Itoa(r.progressCurrent) + "/" + strconv.Itoa(r.progressMax))
 	omcplog.V(3).Info("Snapshot Restore complete")
 	elapsed := time.Since(startDate)
-	r.MakeStatus(instance, true, elapsed.String(), nil)
+	r.makeStatusRun(instance, corev1.ConditionTrue, "Snapshot succeed", elapsed.String(), nil)
 
 	return reconcile.Result{Requeue: false}, nil
-}
-
-func (r *reconciler) MakeStatusWithSource(instance *nanumv1alpha1.SnapshotRestore, status bool, snapshotRestoreSource nanumv1alpha1.SnapshotRestoreSource, err error, detailErr error) {
-	r.makeStatusRun(instance, status, snapshotRestoreSource, "", err, detailErr)
-}
-
-func (r *reconciler) MakeStatus(instance *nanumv1alpha1.SnapshotRestore, status bool, elapsed string, err error) {
-	r.makeStatusRun(instance, status, nanumv1alpha1.SnapshotRestoreSource{}, elapsed, err, nil)
-}
-
-func (r *reconciler) makeStatusRun(instance *nanumv1alpha1.SnapshotRestore, status bool, snapshotRestoreSource nanumv1alpha1.SnapshotRestoreSource, elapsedTime string, err error, detailErr error) {
-	instance.Status.Status = status
-
-	if elapsedTime == "" {
-		elapsedTime = "0"
-	}
-	instance.Status.ElapsedTime = elapsedTime
-	omcplog.V(3).Info("[Exit]")
-	omcplog.V(3).Info("snapshotStatus : ", status)
-
-	if !status {
-		omcplog.V(3).Info("err : ", err.Error())
-		tmp := make(map[string]interface{})
-		tmp["Cluster"] = snapshotRestoreSource.ResourceCluster
-		//tmp["NameSpace"] = snapshotRestoreSource.ResourceNamespace
-		tmp["SnapshotKey"] = snapshotRestoreSource.ResourceSnapshotKey
-		tmp["ResourceType"] = snapshotRestoreSource.ResourceType
-		tmp["Reason"] = err.Error()
-		//tmp["ReasonDetail"] = detailErr.Error()
-
-		jsonTmp, err := json.Marshal(tmp)
-		if err != nil {
-			omcplog.V(3).Info(err, "-----------")
-		}
-		instance.Status.Reason = string(jsonTmp)
-		if detailErr != nil {
-			instance.Status.ReasonDetail = detailErr.Error()
-		}
-	}
-
-	omcplog.V(3).Info("live update")
-	err = r.live.Update(context.Background(), instance)
-	if err != nil {
-		omcplog.V(3).Info(err, "-----------")
-	}
-	err = r.live.Status().Update(context.Background(), instance)
-	if err != nil {
-		omcplog.V(3).Info(err, "-----------")
-	}
-	time.Sleep(5 * time.Second)
-
-	omcplog.V(3).Info("live update end")
 }
 
 //setGroupSnapshotRestoreRun 실행
@@ -261,4 +267,22 @@ func setGroupSnapshotRestoreRun(instance *nanumv1alpha1.SnapshotRestore, groupSn
 
 	instance.Status.SnapshotRestoreSource = snapshotRestoreSources
 	return nil, nil
+}
+
+// setResource : Deploy
+func (r *reconciler) setResource(resourceList []nanumv1alpha1.SnapshotRestoreSource) error {
+
+	for _, resource := range resourceList {
+		if resource.ResourceType == config.PV {
+			r.progressMax++
+		}
+		r.progressMax++
+	}
+
+	omcplog.V(4).Info("+ ProgressMax Setting end")
+	omcplog.V(4).Info("++ progressCurrent add :" + strconv.Itoa(r.progressCurrent))
+	omcplog.V(4).Info("++ progressMax add :" + strconv.Itoa(r.progressMax))
+	omcplog.V(4).Info("++ progress Count : " + strconv.Itoa(r.progressCurrent) + "/" + strconv.Itoa(r.progressMax))
+
+	return nil
 }

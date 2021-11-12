@@ -19,10 +19,6 @@ spec:
       name: Age
       type: date
     - description: '-'
-      jsonPath: .status.Status
-      name: IsSuccess
-      type: boolean
-    - description: '-'
       jsonPath: .spec.snapshotSources[*].resourceCluster
       name: Cluster
       type: string
@@ -39,11 +35,19 @@ spec:
       name: IsVolumeSnapshot
       type: boolean
     - description: '-'
-      jsonPath: .status.Reason
-      name: REASON
+      jsonPath: .status.status
+      name: Status
+      type: string
+    - description: '-'
+      jsonPath: .status.description
+      name: Description
+      type: string
+    - description: '-'
+      jsonPath: .status.progress
+      name: Progress
       type: string
     - description: ElapsedTime
-      jsonPath: .status.ElapsedTime
+      jsonPath: .status.elapsedTime
       name: ElapsedTime
       type: string
     name: v1alpha1
@@ -110,7 +114,11 @@ spec:
                       properties:
                         volumeSnapshotClassName:
                           type: string
+                        volumeSnapshotDate:
+                          type: string
                         volumeSnapshotKey:
+                          type: string
+                        volumeSnapshotSize:
                           type: string
                         volumeSnapshotSourceKind:
                           type: string
@@ -119,6 +127,27 @@ spec:
                       required:
                       - volumeSnapshotKey
                       type: object
+                    volumeHistory:
+                      items:
+                        description: VolumeDataSource contains the supported snapshot
+                          sources.
+                        properties:
+                          volumeSnapshotClassName:
+                            type: string
+                          volumeSnapshotDate:
+                            type: string
+                          volumeSnapshotKey:
+                            type: string
+                          volumeSnapshotSize:
+                            type: string
+                          volumeSnapshotSourceKind:
+                            type: string
+                          volumeSnapshotSourceName:
+                            type: string
+                        required:
+                        - volumeSnapshotKey
+                        type: object
+                      type: array
                   required:
                   - resourceCluster
                   - resourceName
@@ -132,21 +161,26 @@ spec:
           status:
             description: SnapshotStatus defines the observed state of Snapshot
             properties:
-              ElapsedTime:
+              currentCount:
+                description: 현재 진행도
+                format: int32
+                type: integer
+              description:
+                type: string
+              elapsedTime:
                 description: LastSuccessDate indicate the time to get snapshot last
                   time LastSuccessDate metav1.Time `json:"lastSuccessDate,omitempty"`
                 type: string
-              Reason:
-                description: Reason indicates the reason for any backup related failures.
-                type: string
-              ReasonDetail:
-                type: string
-              Status:
-                description: Status indicates if the backup has Succeeded.
-                type: boolean
               isVolumeSnapshot:
                 description: isVolumeSnapshot
                 type: boolean
+              maxCount:
+                description: 최대 진행도
+                format: int32
+                type: integer
+              progress:
+                description: 최대 컨디션 카운트. currentCount/maxCount
+                type: string
               snapshotSource:
                 items:
                   description: SnapshotSource contains the supported snapshot sources.
@@ -167,7 +201,11 @@ spec:
                       properties:
                         volumeSnapshotClassName:
                           type: string
+                        volumeSnapshotDate:
+                          type: string
                         volumeSnapshotKey:
+                          type: string
+                        volumeSnapshotSize:
                           type: string
                         volumeSnapshotSourceKind:
                           type: string
@@ -176,6 +214,27 @@ spec:
                       required:
                       - volumeSnapshotKey
                       type: object
+                    volumeHistory:
+                      items:
+                        description: VolumeDataSource contains the supported snapshot
+                          sources.
+                        properties:
+                          volumeSnapshotClassName:
+                            type: string
+                          volumeSnapshotDate:
+                            type: string
+                          volumeSnapshotKey:
+                            type: string
+                          volumeSnapshotSize:
+                            type: string
+                          volumeSnapshotSourceKind:
+                            type: string
+                          volumeSnapshotSourceName:
+                            type: string
+                        required:
+                        - volumeSnapshotKey
+                        type: object
+                      type: array
                   required:
                   - resourceCluster
                   - resourceName
@@ -183,10 +242,12 @@ spec:
                   - resourceType
                   type: object
                 type: array
+              status:
+                description: Condition 정보 리스트 Conditions []MigrationCondition `json:"conditions,omitempty"`
+                  Status of the condition, one of True, False, Unknown.
+                type: string
             required:
-            - Reason
-            - Status
-            - snapshotSource
+            - description
             type: object
         type: object
     served: true
