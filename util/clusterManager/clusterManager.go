@@ -110,20 +110,23 @@ func KubeFedClusterDynClients(clusterList *fedv1b1.KubeFedClusterList, cluster_c
 func NewClusterManager() *ClusterManager {
 	//mutex := &sync.Mutex{}
 	fed_namespace := "kube-federation-system"
+
 	host_config, _ := rest.InClusterConfig()
-	host_client := genericclient.NewForConfigOrDie(host_config)
+
 	host_kubeClient := kubernetes.NewForConfigOrDie(host_config)
 	crd_client, _ := clientV1alpha1.NewForConfig(host_config)
 	crd_cluster_client, _ := clientV1alpha1.NewClusterForConfig(host_config)
 	crd_istio_client, _ := clientV1alpha1.NewIstioForConfig(host_config)
 
+	host_client := genericclient.NewForConfigOrDie(host_config)
 	cluster_list := ListKubeFedClusters(host_client, fed_namespace)
-	node_list, _ := GetNodeList(host_kubeClient)
 
 	cluster_configs := KubeFedClusterConfigs(cluster_list, host_client, fed_namespace)
 	cluster_gen_clients := KubeFedClusterGenClients(cluster_list, cluster_configs)
 	cluster_kube_clients := KubeFedClusterKubeClients(cluster_list, cluster_configs)
 	cluster_dyn_clients := KubeFedClusterDynClients(cluster_list, cluster_configs)
+
+	node_list, _ := GetNodeList(host_kubeClient)
 
 	cm := &ClusterManager{
 		Fed_namespace:       fed_namespace,
