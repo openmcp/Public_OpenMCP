@@ -1,0 +1,16 @@
+apiVersion:  openmcp.k8s.io/v1alpha1
+kind: OpenMCPIngress
+metadata:
+  name: web-ingress-in
+  namespace: openmcp
+spec:
+  ingressForClientFrom: internal
+  template:
+    spec:
+      rules:
+      - host: keti.ingress.web.org
+        http:
+          paths:
+          - backend:
+              serviceName: web
+              servicePort: 8080
