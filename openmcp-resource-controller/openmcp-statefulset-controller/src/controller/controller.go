@@ -11,13 +11,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package openmcppvc
+package openmcpstatefulset
 
 import (
 	"admiralty.io/multicluster-controller/pkg/reference"
 	"context"
 	"fmt"
-	v1 "k8s.io/api/core/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
@@ -62,7 +62,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	}
 
 	fmt.Printf("%T, %s\n", live, live.GetClusterName())
-	if err := co.WatchResourceReconcileObject(context.TODO(), live, &resourcev1alpha1.OpenMCPPersistentVolumeClaim{}, controller.WatchOptions{}); err != nil {
+	if err := co.WatchResourceReconcileObject(context.TODO(), live, &resourcev1alpha1.OpenMCPStatefulSet{}, controller.WatchOptions{}); err != nil {
 
 		fmt.Println("err: ", err)
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
@@ -74,25 +74,25 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 
 	for _, ghost := range ghosts {
 		fmt.Printf("%T, %s\n", ghost, ghost.GetClusterName())
-		if err := co.WatchResourceReconcileController(context.TODO(), ghost, &v1.PersistentVolumeClaim{}, controller.WatchOptions{}); err != nil {
+		if err := co.WatchResourceReconcileController(context.TODO(), ghost, &appsv1.StatefulSet{}, controller.WatchOptions{}); err != nil {
 			return nil, fmt.Errorf("setting up PodGhost watch in ghost cluster: %v", err)
 		}
 	}
 
 	return co, nil
 }
-func (r *reconciler) sendSync(pvc *v1.PersistentVolumeClaim, command string, clusterName string) (string, error) {
+func (r *reconciler) sendSync(ss *appsv1.StatefulSet, command string, clusterName string) (string, error) {
 	syncIndex += 1
 
 	s := &syncv1alpha1.Sync{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "openmcp-pvc-sync-" + strconv.Itoa(syncIndex),
+			Name:      "openmcp-statefulset-sync-" + strconv.Itoa(syncIndex),
 			Namespace: "openmcp",
 		},
 		Spec: syncv1alpha1.SyncSpec{
 			ClusterName: clusterName,
 			Command:     command,
-			Template:    *pvc,
+			Template:    *ss,
 		},
 	}
 	err := r.live.Create(context.TODO(), s)
@@ -119,23 +119,23 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	fmt.Println("********* [", i, "] *********")
 	omcplog.V(3).Info("Namespace : ", req.Namespace, " | Name : ", req.Name, " | Context : ", req.Context)
 
-	opvc_instance := &resourcev1alpha1.OpenMCPPersistentVolumeClaim{}
-	err := r.live.Get(context.TODO(), req.NamespacedName, opvc_instance)
+	oss_instance := &resourcev1alpha1.OpenMCPStatefulSet{}
+	err := r.live.Get(context.TODO(), req.NamespacedName, oss_instance)
 
 	if err != nil && errors.IsNotFound(err) {
-		omcplog.V(3).Info("Delete PersistentVolumeClaim")
+		omcplog.V(3).Info("Delete StatefulSet")
 
 		for _, cluster := range cm.Cluster_list.Items {
-			pvc := &v1.PersistentVolumeClaim{}
+			ss := &appsv1.StatefulSet{}
 
 			cluster_client := cm.Cluster_genClients[cluster.Name]
-			err = cluster_client.Get(context.TODO(), pvc, req.Namespace, req.Name)
+			err = cluster_client.Get(context.TODO(), ss, req.Namespace, req.Name)
 			//delete
 			if err == nil {
-				pvcinstance := &v1.PersistentVolumeClaim{
+				ossinstance := &appsv1.StatefulSet{
 					TypeMeta: metav1.TypeMeta{
-						Kind:       "PersistentVolumeClaim",
-						APIVersion: "v1",
+						Kind:       "StatefulSet",
+						APIVersion: "apps/v1",
 					},
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      req.Name,
@@ -143,13 +143,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					},
 				}
 				command := "delete"
-				_, err_sync := r.sendSync(pvcinstance, command, cluster.Name)
+				_, err_sync := r.sendSync(ossinstance, command, cluster.Name)
 
 				if err_sync != nil {
 					omcplog.V(3).Info("err_sync : ", err_sync)
 					return reconcile.Result{}, err_sync
 				} else {
-					omcplog.V(3).Info("Success to Delete PVC in ", cluster.Name)
+					omcplog.V(3).Info("Success to Delete StatefulSet in ", cluster.Name)
 				}
 			}
 		}
@@ -161,33 +161,33 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		return reconcile.Result{}, err
 	}
 
-	if opvc_instance.Status.ClusterMaps == nil {
+	if oss_instance.Status.ClusterMaps == nil {
 
-		pvc := r.setPVCResourceStruct(req, opvc_instance)
+		ss := r.setSSResourceStruct(req, oss_instance)
 		cluster_map := make(map[string]int32)
 
-		for _, clustername := range opvc_instance.Spec.Clusters {
-			foundpvc := &v1.PersistentVolumeClaim{}
+		for _, clustername := range oss_instance.Spec.Clusters {
+			foundss := &appsv1.StatefulSet{}
 			cluster_client := cm.Cluster_genClients[clustername]
 
-			err = cluster_client.Get(context.TODO(), foundpvc, opvc_instance.Namespace, opvc_instance.Name)
+			err = cluster_client.Get(context.TODO(), foundss, oss_instance.Namespace, oss_instance.Name)
 			if err != nil && errors.IsNotFound(err) {
 				//create
 				command := "create"
-				_, err_sync := r.sendSync(pvc, command, clustername)
+				_, err_sync := r.sendSync(ss, command, clustername)
 				cluster_map[clustername] = 1
 				if err_sync != nil {
 					return reconcile.Result{}, err_sync
 				}
 
-				fmt.Println("Success to Create PVC in ", clustername)
+				fmt.Println("Success to Create StatefulSet in ", clustername)
 			}
 		}
 
-		opvc_instance.Status.ClusterMaps = cluster_map
-		opvc_instance.Status.LastSpec = opvc_instance.Spec
+		oss_instance.Status.ClusterMaps = cluster_map
+		oss_instance.Status.LastSpec = oss_instance.Spec
 
-		err_status_update := r.live.Status().Update(context.TODO(), opvc_instance)
+		err_status_update := r.live.Status().Update(context.TODO(), oss_instance)
 		if err_status_update != nil {
 			fmt.Println("Failed to update instance status", err_status_update)
 			return reconcile.Result{}, err_status_update
@@ -198,31 +198,30 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	return reconcile.Result{}, nil
 }
 
-func (r *reconciler) setPVCResourceStruct(req reconcile.Request, m *resourcev1alpha1.OpenMCPPersistentVolumeClaim) *v1.PersistentVolumeClaim {
-	omcplog.V(4).Info("setPVCResourceStruct() Function Called")
+func (r *reconciler) setSSResourceStruct(req reconcile.Request, m *resourcev1alpha1.OpenMCPStatefulSet) *appsv1.StatefulSet {
+	omcplog.V(4).Info("setSSResourceStruct() Function Called")
 
-	ls := LabelsForPVC(m.Name)
+	ls := LabelsForSS(m.Name)
 
-	pvc := &v1.PersistentVolumeClaim{
+	ss := &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       "PersistentVolumeClaim",
-			APIVersion: "v1",
+			Kind:       "StatefulSet",
+			APIVersion: "apps/v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			CreationTimestamp: m.CreationTimestamp,
-			Name:              m.Name,
-			Namespace:         m.Namespace,
-			Labels:            ls,
+			Name:      m.Name,
+			Namespace: m.Namespace,
+			Labels:    ls,
 		},
 
 		Spec: m.Spec.Template.Spec,
 	}
 
-	reference.SetMulticlusterControllerReference(pvc, reference.NewMulticlusterOwnerReference(m, m.GroupVersionKind(), req.Context))
+	reference.SetMulticlusterControllerReference(ss, reference.NewMulticlusterOwnerReference(m, m.GroupVersionKind(), req.Context))
 
-	return pvc
+	return ss
 }
 
-func LabelsForPVC(name string) map[string]string {
-	return map[string]string{"app": "openmcppersistentvolumeclaim", "openmcppersistentvolumeclaim_cr": name}
+func LabelsForSS(name string) map[string]string {
+	return map[string]string{"app": "openmcpstatefulset", "openmcpstatefulset_cr": name}
 }

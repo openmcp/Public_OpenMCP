@@ -1,0 +1,35 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPStatefulSet
+metadata:
+  name: postgis-ss-test
+spec:
+  clusters:
+    - cluster01
+  labels:
+    app: postgis-ss-test
+  template:
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: postgis-ss-test
+      serviceName: postgis
+      template:
+        metadata:
+          labels:
+            app: postgis-ss-test
+        spec:
+          imagePullSecrets:
+            - name: regcred
+          containers:
+            - env:
+                - name: POSTGRES_DBNAME
+                  value: smart_city
+                - name: POSTGRES_PASS
+                  value: postgres
+                - name: POSTGRES_USER
+                  value: postgres
+              image: kartoza/postgis:11.0-2.5
+              name: postgis4
+              ports:
+                - containerPort: 5432

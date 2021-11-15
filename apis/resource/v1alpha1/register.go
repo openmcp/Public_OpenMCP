@@ -54,6 +54,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&OpenMCPPersistentVolumeClaimList{},
 		&OpenMCPPersistentVolume{},
 		&OpenMCPPersistentVolumeList{},
+		&OpenMCPStatefulSet{},
+		&OpenMCPStatefulSetList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

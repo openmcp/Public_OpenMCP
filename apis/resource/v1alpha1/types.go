@@ -572,8 +572,8 @@ type OpenMCPPersistentVolumeClaimSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	Template corev1.PersistentVolumeClaim `json:"template" protobuf:"bytes,3,opt,name=template"`
-	Replicas int32                        `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
+	Template corev1.PersistentVolumeClaim `json:"template" protobuf:"bytes,1,opt,name=template"`
+	Replicas int32                        `json:"replicas" protobuf:"varint,2,opt,name=replicas"`
 	Clusters []string                     `json:"clusters" protobuf:"bytes,3,opt,name=clusters"`
 }
 
@@ -608,4 +608,46 @@ type OpenMCPPersistentVolumeClaimList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []OpenMCPPersistentVolumeClaim `json:"items"`
+}
+
+type OpenMCPStatefulSetSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	Template appsv1.StatefulSet `json:"template" protobuf:"bytes,1,opt,name=template"`
+	Replicas int32              `json:"replicas" protobuf:"varint,2,opt,name=replicas"`
+	Clusters []string           `json:"clusters" protobuf:"bytes,3,opt,name=clusters"`
+}
+
+// OpenMCPStatefulSetStatus defines the observed state of OpenMCPStatefulSet
+// +k8s:openapi-gen=true
+type OpenMCPStatefulSetStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	ClusterMaps      map[string]int32       `json:"clusterMaps"`
+	LastSpec         OpenMCPStatefulSetSpec `json:"lastSpec"`
+	CheckSubResource bool                   `json:"checkSubResource" protobuf:"bytes,3,opt,name=checkSubResource"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// OpenMCPStatefulSet is the Schema for the openmcpstatefulsets API
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
+type OpenMCPStatefulSet struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   OpenMCPStatefulSetSpec   `json:"spec,omitempty"`
+	Status OpenMCPStatefulSetStatus `json:"status,omitempty"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// OpenMCPStatefulSetList contains a list of OpenMCPStatefulSet
+type OpenMCPStatefulSetList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []OpenMCPStatefulSet `json:"items"`
 }
