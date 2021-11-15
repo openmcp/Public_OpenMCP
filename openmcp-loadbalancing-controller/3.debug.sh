@@ -8,6 +8,6 @@ echo "Exec Into '"$NAME"'"
 
 for ((;;))
 do
-kubectl logs -n $NS $NAME --follow
+kubectl logs  -n $NS $NAME --tail=10 --follow
 done
 

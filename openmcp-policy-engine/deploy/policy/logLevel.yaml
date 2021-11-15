@@ -11,5 +11,5 @@ spec:
       policies:
         - type: Level
           value:
-            - "3"
+            - "5"
   policyStatus: Enabled
