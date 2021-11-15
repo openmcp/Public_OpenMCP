@@ -1,0 +1,21 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPPersistentVolume
+metadata:
+  name: opv-test
+spec:
+  clusters:
+  - cluster01
+  labels:
+    app: opv-test
+  template:
+    spec:
+      capacity:
+        storage: 2Gi
+      storageClassName: post
+      accessModes:
+        - ReadWriteMany
+      persistentVolumeReclaimPolicy: Retain
+      nfs:
+        path: /root/k8s_smartcity/openmcp/sql
+        server: "10.0.3.20"
+        readOnly: false

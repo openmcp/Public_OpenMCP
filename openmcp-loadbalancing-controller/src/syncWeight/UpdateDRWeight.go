@@ -47,7 +47,6 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 	cm := myClusterManager
 
 	DistributeList = map[types.NamespacedName]drInfo{}
-	NodeList = map[string]nodeInfo{}
 
 	SERVER_IP := os.Getenv("GRPC_SERVER")
 	SERVER_PORT := os.Getenv("GRPC_PORT")
@@ -65,6 +64,7 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 
 			//모든 노드들의 region_zone 리스트
 			ocList, err := cm.Crd_client.OpenMCPCluster("openmcp").List(v1.ListOptions{})
+			NodeList = map[string]nodeInfo{}
 
 			if err != nil {
 				fmt.Println("OpenMCPClusterList err : ", err)

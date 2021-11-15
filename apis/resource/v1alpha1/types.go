@@ -583,9 +583,9 @@ type OpenMCPPersistentVolumeClaimStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	ClusterMaps      map[string]int32            `json:"clusterMaps"`
-	LastSpec         OpenMCPPersistentVolumeSpec `json:"lastSpec"`
-	CheckSubResource bool                        `json:"checkSubResource" protobuf:"bytes,3,opt,name=checkSubResource"`
+	ClusterMaps      map[string]int32                 `json:"clusterMaps"`
+	LastSpec         OpenMCPPersistentVolumeClaimSpec `json:"lastSpec"`
+	CheckSubResource bool                             `json:"checkSubResource" protobuf:"bytes,3,opt,name=checkSubResource"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
