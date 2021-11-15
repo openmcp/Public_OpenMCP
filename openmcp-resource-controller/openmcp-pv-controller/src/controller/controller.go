@@ -123,7 +123,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	err := r.live.Get(context.TODO(), req.NamespacedName, opv_instance)
 
 	if err != nil && errors.IsNotFound(err) {
-		omcplog.V(3).Info("Delete PersistenVolume")
+		omcplog.V(3).Info("Delete PersistentVolume")
 
 		for _, cluster := range cm.Cluster_list.Items {
 			pv := &v1.PersistentVolume{}

@@ -414,6 +414,72 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			}
 		}
 
+	} else if obj.GetKind() == "StatefulSet" {
+		subInstance := &appsv1.StatefulSet{}
+		if err := json.Unmarshal(jsonbody, &subInstance); err != nil {
+			// do error check
+			fmt.Println(err)
+			return reconcile.Result{}, err
+		}
+		if command == "create" {
+			err = clusterClient.Create(context.TODO(), subInstance)
+			if err == nil {
+				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+				if !errors.IsNotFound(err) {
+					return reconcile.Result{}, err // err
+				}
+			} else {
+				omcplog.V(0).Info("[Error] Cannot Create StatefulSet : ", err)
+			}
+		} else if command == "delete" {
+			err = clusterClient.Delete(context.TODO(), subInstance, subInstance.Namespace, subInstance.Name)
+			if err == nil {
+				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+			} else {
+				omcplog.V(0).Info("[Error] Cannot Delete StatefulSet : ", err)
+			}
+		} else if command == "update" {
+			err = clusterClient.Update(context.TODO(), subInstance)
+			if err == nil {
+				omcplog.V(2).Info("Updated Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+			} else {
+				omcplog.V(0).Info("[Error] Cannot Update StatefulSet : ", err)
+			}
+		}
+
+	} else if obj.GetKind() == "DaemonSet" {
+		subInstance := &appsv1.DaemonSet{}
+		if err := json.Unmarshal(jsonbody, &subInstance); err != nil {
+			// do error check
+			fmt.Println(err)
+			return reconcile.Result{}, err
+		}
+		if command == "create" {
+			err = clusterClient.Create(context.TODO(), subInstance)
+			if err == nil {
+				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+				if !errors.IsNotFound(err) {
+					return reconcile.Result{}, err // err
+				}
+			} else {
+				omcplog.V(0).Info("[Error] Cannot Create DaemonSet : ", err)
+			}
+		} else if command == "delete" {
+			err = clusterClient.Delete(context.TODO(), subInstance, subInstance.Namespace, subInstance.Name)
+			if err == nil {
+				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+			} else {
+				omcplog.V(0).Info("[Error] Cannot Delete DaemonSet : ", err)
+			}
+		} else if command == "update" {
+			err = clusterClient.Update(context.TODO(), subInstance)
+			if err == nil {
+				omcplog.V(2).Info("Updated Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+			} else {
+				omcplog.V(0).Info("[Error] Cannot Update DaemonSet : ", err)
+			}
+		}
+
 	} else if obj.GetKind() == "Job" {
 		subInstance := &batchv1.Job{}
 		if err := json.Unmarshal(jsonbody, &subInstance); err != nil {
