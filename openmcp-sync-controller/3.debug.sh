@@ -8,5 +8,5 @@ echo "Exec Into '"$NAME"'"
 #kubectl exec -it $NAME -n $NS /bin/sh
 for ((;;))
 do
-kubectl logs --follow -n $NS $NAME
+kubectl logs --follow -n $NS $NAME --tail=10
 done

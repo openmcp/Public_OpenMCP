@@ -8,6 +8,6 @@ NAME=$(kubectl get pod -n $NS | grep -E 'openmcp-metric-collector' | awk '{print
 #kubectl exec -it $NAME -n $NS /bin/sh
 for ((;;))
 do
-kubectl logs -f -n $NS $NAME
+kubectl logs -f --tail=10 -n $NS $NAME
 done
 
