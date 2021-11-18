@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
@@ -46,13 +47,14 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
 	}
 
-	ghostclients := []client.Client{}
+	ghostclients := map[string]client.Client{}
 	for _, ghost := range ghosts {
 		ghostclient, err := ghost.GetDelegatingClient()
 		if err != nil {
 			return nil, fmt.Errorf("getting delegating client for ghost cluster: %v", err)
 		}
-		ghostclients = append(ghostclients, ghostclient)
+		ghostclients[ghost.Name] = ghostclient
+		//ghostclients = append(ghostclients, ghostclient)
 	}
 
 	co := controller.New(&reconciler{live: liveClient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{})
@@ -107,7 +109,7 @@ func (r *reconciler) sendSync(pv *v1.PersistentVolume, command string, clusterNa
 
 type reconciler struct {
 	live           client.Client
-	ghosts         []client.Client
+	ghosts         map[string]client.Client
 	ghostNamespace string
 }
 
@@ -126,10 +128,13 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		omcplog.V(3).Info("Delete PersistentVolume")
 
 		for _, cluster := range cm.Cluster_list.Items {
+			type ObjectKey = types.NamespacedName
+
 			pv := &v1.PersistentVolume{}
 
-			cluster_client := cm.Cluster_genClients[cluster.Name]
-			err = cluster_client.Get(context.TODO(), pv, req.Namespace, req.Name)
+			//cluster_client := cm.Cluster_genClients[cluster.Name]
+			cluster_client := r.ghosts[cluster.Name]
+			err = cluster_client.Get(context.TODO(), ObjectKey{Name: req.Name}, pv)
 			//delete
 			if err == nil {
 				pvinstance := &v1.PersistentVolume{
@@ -167,10 +172,14 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		cluster_map := make(map[string]int32)
 
 		for _, clustername := range opv_instance.Spec.Clusters {
+			type ObjectKey = types.NamespacedName
 			foundpv := &v1.PersistentVolume{}
-			cluster_client := cm.Cluster_genClients[clustername]
 
-			err = cluster_client.Get(context.TODO(), foundpv, opv_instance.Namespace, opv_instance.Name)
+			//cluster_client := cm.Cluster_genClients[cluster.Name]
+			cluster_client := r.ghosts[clustername]
+			err = cluster_client.Get(context.TODO(), ObjectKey{Namespace: opv_instance.Namespace, Name: opv_instance.Name}, foundpv)
+
+			//err = cluster_client.Get(context.TODO(), foundpv, opv_instance.Namespace, opv_instance.Name)
 			if err != nil && errors.IsNotFound(err) {
 				//create
 				command := "create"

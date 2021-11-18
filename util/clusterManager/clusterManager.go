@@ -111,19 +111,25 @@ func NewClusterManager() *ClusterManager {
 	//mutex := &sync.Mutex{}
 	fed_namespace := "kube-federation-system"
 
+	//컨트롤러 모듈 생성 시 정의한 sa, secret 기반 config
 	host_config, _ := rest.InClusterConfig()
 
-	host_kubeClient := kubernetes.NewForConfigOrDie(host_config)
-	crd_client, _ := clientV1alpha1.NewForConfig(host_config)
-	crd_cluster_client, _ := clientV1alpha1.NewClusterForConfig(host_config)
-	crd_istio_client, _ := clientV1alpha1.NewIstioForConfig(host_config)
+	//컨트롤러 배포시 생성된 secret 기반 kube client, crd client 생성
+	host_kubeClient := kubernetes.NewForConfigOrDie(host_config)             // k8sscheme 기본 kube 리소스
+	crd_client, _ := clientV1alpha1.NewForConfig(host_config)                //resourcev1alpha1
+	crd_cluster_client, _ := clientV1alpha1.NewClusterForConfig(host_config) //clusterv1alpha1
+	crd_istio_client, _ := clientV1alpha1.NewIstioForConfig(host_config)     // v1alpha3 networking.istio.io
 
-	host_client := genericclient.NewForConfigOrDie(host_config)
+	//federation list 받아오기 위한 컨트롤러 SA secret 기반 generic client 생성
+	host_client := genericclient.NewForConfigOrDie(host_config) //fedapis, k8sscheme
 	cluster_list := ListKubeFedClusters(host_client, fed_namespace)
 
+	//federation 조인시 member cluster에 생성한 sa, secret 기반 config
 	cluster_configs := KubeFedClusterConfigs(cluster_list, host_client, fed_namespace)
-	cluster_gen_clients := KubeFedClusterGenClients(cluster_list, cluster_configs)
-	cluster_kube_clients := KubeFedClusterKubeClients(cluster_list, cluster_configs)
+
+	//kubefed secret 기반 generic, kube, dyn client 생성
+	cluster_gen_clients := KubeFedClusterGenClients(cluster_list, cluster_configs)   //fedapis, k8sscheme
+	cluster_kube_clients := KubeFedClusterKubeClients(cluster_list, cluster_configs) // k8sscheme
 	cluster_dyn_clients := KubeFedClusterDynClients(cluster_list, cluster_configs)
 
 	node_list, _ := GetNodeList(host_kubeClient)

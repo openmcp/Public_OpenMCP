@@ -37,6 +37,7 @@ func main() {
 	host_ctx := "openmcp"
 	namespace := "openmcp"
 
+	//openmcp-has-controller 모듈 생성 시 정의한 sa, secret 기반 config
 	host_cfg := cm.Host_config
 	live := cluster.New(host_ctx, host_cfg, cluster.Options{})
 	ghosts := []*cluster.Cluster{}
