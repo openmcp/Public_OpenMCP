@@ -63,4 +63,5 @@ tar xfP !DATE --listed-incremental backuplist
 #  fi
 #done
 echo "4. Snapshot restore end"
+#아래 명령어가 없으면 job 이 완료가 아닌 running 상태가 됨.
 touch /success

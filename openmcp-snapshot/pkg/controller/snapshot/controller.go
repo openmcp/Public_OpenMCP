@@ -163,11 +163,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 
 	pvIdx := 1
-	for idx, snapshotSources := range instance.Status.SnapshotSources {
+	for idx, snapshotSource := range instance.Status.SnapshotSources {
 		desc := ""
-		resourceType := snapshotSources.ResourceType
+		resourceType := snapshotSource.ResourceType
 		omcplog.V(4).Info("\n[" + strconv.Itoa(idx) + "] : Resource : " + resourceType)
-		omcplog.V(4).Info(snapshotSources)
+		omcplog.V(4).Info(snapshotSource)
 
 		// resource Type PV일때 볼륨 스냅샷 진행.
 		if resourceType == config.PV {
@@ -176,7 +176,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			volumeDataSource := &nanumv1alpha1.VolumeDataSource{VolumeSnapshotKey: volumeSnapshotKey}
 			instance.Status.SnapshotSources[idx].VolumeDataSource = volumeDataSource
 			omcplog.V(4).Info("volumeSnapshotKey : " + volumeSnapshotKey)
-			volumeSnapshotErr, errDetail := volumeSnapshotRun(r, &snapshotSources, groupSnapshotKey, volumeSnapshotKey, pvIdx)
+			crdVolumeInfos, volumeSnapshotErr, errDetail := volumeSnapshotRun(r, &snapshotSource, groupSnapshotKey, volumeSnapshotKey, pvIdx)
 			if volumeSnapshotErr != nil {
 				if errDetail == nil {
 					omcplog.Error("3. volumeSnapshotRun error : ", volumeSnapshotErr)
@@ -195,16 +195,18 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					return reconcile.Result{Requeue: false}, nil
 				}
 			} else {
+				instance.Status.SnapshotSources[idx].VolumeInfos = crdVolumeInfos
 				r.progressCurrent++
 				omcplog.V(4).Info("++ progressCurrent add :" + strconv.Itoa(r.progressCurrent))
 				omcplog.V(4).Info("++ progress Count : " + strconv.Itoa(r.progressCurrent) + "/" + strconv.Itoa(r.progressMax))
 				omcplog.V(4).Info("3. volumeSnapshotRun... !Update :" + strconv.Itoa(r.progressCurrent))
 				r.makeStatusRun(instance, "Running", "3. volumeSnapshotRun success : "+desc, "", nil)
+				//r.makeStatusRunWithVolumeInfos(instance, corev1.ConditionFalse, "3. volumeSnapshotRun error(detail)", "", errDetail, volumeInfos)
 				omcplog.V(4).Info("3. volumedSnapshotRun ... !Update End")
 			}
 			pvIdx++
 		}
-		etcdSnapshotKeyAllPath, etcdSnapshotErr := etcdSnapshotRun(r, &snapshotSources, groupSnapshotKey)
+		etcdSnapshotKeyAllPath, etcdSnapshotErr := etcdSnapshotRun(r, &snapshotSource, groupSnapshotKey)
 		instance.Status.SnapshotSources[idx].ResourceSnapshotKey = etcdSnapshotKeyAllPath
 		if etcdSnapshotErr != nil {
 			omcplog.Error("3. etcdSnapshotRun error : ", etcdSnapshotErr)
@@ -278,25 +280,55 @@ func (r *reconciler) setResource(status *nanumv1alpha1.SnapshotStatus) ([]nanumv
 						continue
 					}
 					omcplog.V(0).Info(sourcePVC.Name)
-					pvc_matchLabel := sourcePVC.Spec.Selector.DeepCopy().MatchLabels
+					omcplog.V(0).Info(sourcePVC.Spec)
 
-					omcplog.V(0).Info("pvc_matchLabel :")
-					omcplog.V(0).Info(pvc_matchLabel)
+					if sourcePVC.Spec.Selector != nil {
+						// case1 sourcePVC.Spec.Selector.MatchLabels 을 이용하여 접근하는 경우
+						pvc_matchLabel := sourcePVC.Spec.Selector.DeepCopy().MatchLabels
 
-					// 4. PVC에서 추출된 라벨 정보로 PV 추출
-					sourcePVList := &corev1.PersistentVolumeList{}
-					err = sourceClient.List(context.TODO(), sourcePVList, namespace, &client.ListOptions{
-						LabelSelector: labels.SelectorFromSet(labels.Set(pvc_matchLabel)),
-					})
-					if err != nil {
+						omcplog.V(0).Info("pvc_matchLabel :")
 						omcplog.V(0).Info(pvc_matchLabel)
-						omcplog.V(0).Info(" this label not exist!!!")
-						continue
-					}
-					for _, pv := range sourcePVList.Items {
-						omcplog.V(0).Info("- 4. check pv -")
-						omcplog.V(0).Info(pv.Name)
-						pvNames = append(pvNames, pv.Name)
+
+						// 4. PVC에서 추출된 라벨 정보로 PV 추출
+						sourcePVList := &corev1.PersistentVolumeList{}
+						err = sourceClient.List(context.TODO(), sourcePVList, namespace, &client.ListOptions{
+							LabelSelector: labels.SelectorFromSet(labels.Set(pvc_matchLabel)),
+						})
+						if err != nil {
+							omcplog.V(0).Info(pvc_matchLabel)
+							omcplog.V(0).Info(" this label not exist!!!")
+							continue
+						}
+						for _, pv := range sourcePVList.Items {
+							omcplog.V(0).Info("- 4. check pv -")
+							omcplog.V(0).Info(pv.Name)
+							pvNames = append(pvNames, pv.Name)
+						}
+					} else {
+						// case2 pv.spec.claimRef를 이용하여 접근하는 경우
+
+						sourcePVList := &corev1.PersistentVolumeList{}
+						err = sourceClient.List(context.TODO(), sourcePVList, namespace)
+						if err != nil {
+							omcplog.V(0).Info("pv all")
+							omcplog.V(0).Info(" this matchPV not exist!!!")
+							continue
+						}
+						for _, pv := range sourcePVList.Items {
+							omcplog.V(0).Info("- 4. check pv detail -")
+							omcplog.V(0).Info(pv.Name)
+
+							if pv.Spec.ClaimRef != nil {
+								if pv.Spec.ClaimRef.Kind == "PersistentVolumeClaim" {
+									if pv.Spec.ClaimRef.Name == sourcePVC.Name {
+										omcplog.V(0).Info("find pvc " + sourcePVC.Name)
+										omcplog.V(0).Info("this pv : " + pv.Name)
+										pvNames = append(pvNames, pv.Name)
+										break
+									}
+								}
+							}
+						}
 					}
 				}
 			}

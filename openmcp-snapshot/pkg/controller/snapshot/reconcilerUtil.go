@@ -30,6 +30,8 @@ func (r *reconciler) makeStatusRun(instance *snapshotv1alpha1.Snapshot, status c
 	omcplog.V(3).Info("Status : ", instance.Status.Status)
 	omcplog.V(3).Info("Description : ", instance.Status.Description)
 	omcplog.V(3).Info("ConditionProgress : ", instance.Status.ConditionProgress)
+	omcplog.V(3).Info("---SnapshotSources---")
+	omcplog.V(3).Info(instance.Status.SnapshotSources)
 
 	err = r.live.Status().Update(context.TODO(), instance)
 	if err != nil {

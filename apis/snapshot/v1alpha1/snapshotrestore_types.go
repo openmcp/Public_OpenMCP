@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -32,16 +33,25 @@ type SnapshotRestoreStatus struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	// Succeeded indicates if the backup has Succeeded.
-	Status bool `json:"Status"`
-	// Reason indicates the reason for any backup related failures.
-	Reason       string `json:"Reason"`
-	ReasonDetail string `json:"ReasonDetail"`
 	// LastSuccessDate indicate the time to get snapshot last time
 	//LastSuccessDate metav1.Time `json:"lastSuccessDate,omitempty"`
 	ElapsedTime string `json:"ElapsedTime,omitempty"`
 	// isVolumeSnapshot
 	IsVolumeSnapshot      bool                    `json:"isVolumeSnapshot,omitempty"`
-	SnapshotRestoreSource []SnapshotRestoreSource `json:"snapshotRestoreSource"`
+	SnapshotRestoreSource []SnapshotRestoreSource `json:"snapshotRestoreSource,omitempty"`
+
+	// 현재 진행도
+	CurrentCount int32 `json:"currentCount,omitempty"`
+	// 최대 진행도
+	MaxCount int32 `json:"maxCount,omitempty"`
+	// 최대 컨디션 카운트. currentCount/maxCount
+	ConditionProgress string `json:"progress,omitempty"`
+
+	// Condition 정보 리스트
+	//Conditions []MigrationCondition `json:"conditions,omitempty"`
+	// Status of the condition, one of True, False, Unknown.
+	Status      v1.ConditionStatus `json:"status,omitempty" protobuf:"bytes,2,opt,name=status,casttype=k8s.io/api/core/v1.ConditionStatus"`
+	Description string             `json:"description"`
 }
 
 // +genclient
@@ -52,13 +62,14 @@ type SnapshotRestoreStatus struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:resource:path=snapshotrestores,scope=Namespaced
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="Created time stamp"
-// +kubebuilder:printcolumn:name="IsSuccess",type="boolean",JSONPath=".status.Status",description="-"
 // +kubebuilder:printcolumn:name="Cluster",type="string",JSONPath=".spec.snapshotRestoreSources[*].resourceCluster",description="-"
 // +kubebuilder:printcolumn:name="NameSpace",type="string",JSONPath=".spec.snapshotRestoreSources[*].resourceNamespace",description="-"
 // +kubebuilder:printcolumn:name="SnapshotKey",type="string",JSONPath=".spec.groupSnapshotKey",description="-"
 // +kubebuilder:printcolumn:name="IsGroupSnapshot",type="boolean",JSONPath=".spec.isGroupSnapshot",description="-"
-// +kubebuilder:printcolumn:name="REASON",type="string",JSONPath=".status.Reason",description="-"
-// +kubebuilder:printcolumn:name="ElapsedTime",type="string",JSONPath=".status.ElapsedTime",description="ElapsedTime"
+// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.status",description="-"
+// +kubebuilder:printcolumn:name="Description",type="string",JSONPath=".status.description",description="-"
+// +kubebuilder:printcolumn:name="Progress",type="string",JSONPath=".status.progress",description="-"
+// +kubebuilder:printcolumn:name="ElapsedTime",type="string",JSONPath=".status.elapsedTime",description="ElapsedTime"
 type SnapshotRestore struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

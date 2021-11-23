@@ -56,4 +56,5 @@ tar cfP !DATE /data --listed-incremental backuplist
 #find /data -type f -newermt "$newerthan" ! -newermt "$olderthan" | xargs tar cvfP !DATE
 #
 echo "3. Snapshot end"
-touch /success
+#getVolumeList.sh 를 그다음에 실행하는데 거기서 지정함.
+#touch /success

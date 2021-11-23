@@ -83,3 +83,18 @@ func GetLoopForSuccessTemplate() (string, error) {
 	omcplog.V(5).Info("--- GetLoopForSuccessTemplate end")
 	return cmd, nil
 }
+
+func GetVolumeListTemplate(pvName string, mountPath string) (string, error) {
+	omcplog.V(5).Info("--- GetVolumeListTemplate start")
+	cmd, err := GetTemplate("getVolumeList.sh")
+	if err != nil {
+		omcplog.Error("get GetVolumeListTemplate error : ", err)
+		return "", err
+	}
+
+	ret1 := strings.ReplaceAll(cmd, "!PVNAME", pvName)
+        ret := strings.ReplaceAll(ret1, "!PATH", mountPath)
+
+	omcplog.V(5).Info("--- GetVolumeListTemplate end")
+	return ret, nil
+}
