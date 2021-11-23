@@ -98,6 +98,19 @@ spec:
                 items:
                   description: SnapshotSource contains the supported snapshot sources.
                   properties:
+                    VolumeInfo:
+                      items:
+                        properties:
+                          volumeSnapshotDate:
+                            type: string
+                          volumeSnapshotKey:
+                            type: string
+                          volumeSnapshotSize:
+                            type: string
+                        required:
+                        - volumeSnapshotKey
+                        type: object
+                      type: array
                     resourceCluster:
                       type: string
                     resourceName:
@@ -114,11 +127,7 @@ spec:
                       properties:
                         volumeSnapshotClassName:
                           type: string
-                        volumeSnapshotDate:
-                          type: string
                         volumeSnapshotKey:
-                          type: string
-                        volumeSnapshotSize:
                           type: string
                         volumeSnapshotSourceKind:
                           type: string
@@ -127,27 +136,6 @@ spec:
                       required:
                       - volumeSnapshotKey
                       type: object
-                    volumeHistory:
-                      items:
-                        description: VolumeDataSource contains the supported snapshot
-                          sources.
-                        properties:
-                          volumeSnapshotClassName:
-                            type: string
-                          volumeSnapshotDate:
-                            type: string
-                          volumeSnapshotKey:
-                            type: string
-                          volumeSnapshotSize:
-                            type: string
-                          volumeSnapshotSourceKind:
-                            type: string
-                          volumeSnapshotSourceName:
-                            type: string
-                        required:
-                        - volumeSnapshotKey
-                        type: object
-                      type: array
                   required:
                   - resourceCluster
                   - resourceName
@@ -185,6 +173,19 @@ spec:
                 items:
                   description: SnapshotSource contains the supported snapshot sources.
                   properties:
+                    VolumeInfo:
+                      items:
+                        properties:
+                          volumeSnapshotDate:
+                            type: string
+                          volumeSnapshotKey:
+                            type: string
+                          volumeSnapshotSize:
+                            type: string
+                        required:
+                        - volumeSnapshotKey
+                        type: object
+                      type: array
                     resourceCluster:
                       type: string
                     resourceName:
@@ -201,11 +202,7 @@ spec:
                       properties:
                         volumeSnapshotClassName:
                           type: string
-                        volumeSnapshotDate:
-                          type: string
                         volumeSnapshotKey:
-                          type: string
-                        volumeSnapshotSize:
                           type: string
                         volumeSnapshotSourceKind:
                           type: string
@@ -214,27 +211,6 @@ spec:
                       required:
                       - volumeSnapshotKey
                       type: object
-                    volumeHistory:
-                      items:
-                        description: VolumeDataSource contains the supported snapshot
-                          sources.
-                        properties:
-                          volumeSnapshotClassName:
-                            type: string
-                          volumeSnapshotDate:
-                            type: string
-                          volumeSnapshotKey:
-                            type: string
-                          volumeSnapshotSize:
-                            type: string
-                          volumeSnapshotSourceKind:
-                            type: string
-                          volumeSnapshotSourceName:
-                            type: string
-                        required:
-                        - volumeSnapshotKey
-                        type: object
-                      type: array
                   required:
                   - resourceCluster
                   - resourceName
