@@ -111,20 +111,26 @@ fi
 # Ports
 IOP=$(cat <<EOF
 $IOP
+          serviceAnnotations:
+            metallb.universe.tf/address-pool: default2
           service:
             ports:
               - name: status-port
                 port: 15021
                 targetPort: 15021
+                nodePort: 32021
               - name: tls
                 port: 15443
                 targetPort: 15443
+                nodePort: 32443
               - name: tls-istiod
                 port: 15012
                 targetPort: 15012
+                nodePort: 32012
               - name: tls-webhook
                 port: 15017
                 targetPort: 15017
+                nodePort: 32017
 EOF
 )
 

@@ -32,9 +32,11 @@ func JoinHandler(w http.ResponseWriter, r *http.Request) {
 	fileBytes, err := ioutil.ReadAll(file)
 
 	c := &cobrautil.KubeConfig{}
-	serverIP := c.Clusters[0].Cluster.Server[9:]
-	serverIP = strings.Split(serverIP, ":")[0]
+
 	err = yaml.Unmarshal(fileBytes, c)
+
+	serverIP := c.Clusters[0].Cluster.Server[8:]
+	serverIP = strings.Split(serverIP, ":")[0]
 
 	CreateClusterResource(c.Clusters[0].Name, serverIP, fileBytes, nodeinfo)
 

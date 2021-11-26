@@ -34,9 +34,9 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: GRPC_SERVER
-              value: MYIP
+              value: "10.0.3.20"
             - name: GRPC_PORT
-              value: OAE_GRPC_PORT
+              value: "30001"
             - name: OPERATOR_NAME
               value: "openmcp-has-controller"
       tolerations:
