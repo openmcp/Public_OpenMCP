@@ -358,8 +358,8 @@ $ kubectl join <CLUSTERNAME>
 
 ```
 $ aws configure
-AWS Access Key ID [None]: AKIAVJTB7UPJPEMHUAJR
-AWS Secret Access Key [None]: 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
+AWS Access Key ID [None]: ...
+AWS Secret Access Key [None]: ...
 Default region name [None]: eu-west-2
 Default output format [None]: json
 ```
@@ -390,8 +390,8 @@ Before trying to join EKS cluster, you should execute 'openmcp-cluster-manager' 
 ```
 $ kubectl exec -it openmcp-cluster-manager-69c9ccc499-wjcqt -n openmcp bash
 bash-4.2# aws configure
-AWS Access Key ID [None]: AKIAVJTB7UPJPEMHUAJR
-AWS Secret Access Key [None]: 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
+AWS Access Key ID [None]: ...
+AWS Secret Access Key [None]: ...
 Default region name [None]: eu-west-2
 Default output format [None]: json
 ```
@@ -412,17 +412,17 @@ $ kubectl join <CLUSTERNAME>
 ### (2) az login
 ```
 $ az login
-To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code S36KSFXTS to authenticate.
+To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code ... to authenticate.
 [
   {
     "cloudName": "AzureCloud",
-    "homeTenantId": "e2bc6150-a5fd-481b-9617-3effff354b44",
-    "id": "aa2aa30f-ca48-45d2-aed8-11a3850565bd",
+    "homeTenantId": "...",
+    "id": "...",
     "isDefault": true,
     "managedByTenants": [],
     "name": "Microsoft Azure",
     "state": "Enabled",
-    "tenantId": "e2bc6150-a5fd-481b-9617-3effff354b44",
+    "tenantId": "...",
     "user": {
       "name": "admin@openmcp.onmicrosoft.com",
       "type": "user"
