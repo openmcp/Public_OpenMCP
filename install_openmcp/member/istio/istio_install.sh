@@ -1,17 +1,18 @@
 #!/bin/bash
 
 DIR=$1
+CTX_MASTER=openmcp
 CTX=$2
 
 # istio 클러스터간 통신을 위해 $CTX에 인증서 배포
-#pushd certs
-#kubectl create secret generic cacerts -n istio-system --context $CTX \
+# pushd certs
+# kubectl create secret generic cacerts -n istio-system --context $CTX \
 #      --from-file=$DIR/certs/openmcp/ca-cert.pem \
 #      --from-file=$DIR/certs/openmcp/ca-key.pem \
 #      --from-file=$DIR/certs/openmcp/root-cert.pem \
 #      --from-file=$DIR/certs/openmcp/cert-chain.pem
-#popd
-kubectl get secret -n istio-system cacerts -o yaml | kubectl create -n istio-system --context $2 -f -
+# popd
+kubectl get secret -n istio-system --context $CTX_MASTER cacerts -o yaml | kubectl create -n istio-system --context $CTX -f -
 
 # istio-system 네임 스페이스가 이미 생성 된 경우 여기에 클러스터의 네트워크를 설정해야합니다
 kubectl --context=$CTX get namespace istio-system && \
@@ -21,18 +22,20 @@ kubectl --context=$CTX label namespace istio-system topology.istio.io/network=ne
 istioctl x create-remote-secret \
     --context=$CTX \
     --name=$CTX | \
-    kubectl apply -f - --context=openmcp
+    kubectl apply -f - --context=$CTX_MASTER
 istioctl x create-remote-secret \
     --context=$CTX \
     --name=$CTX | \
-    kubectl apply -f - --context=openmcp
+    kubectl apply -f - --context=$CTX_MASTER
 
 
 # Configure $CTX as a remote
-#export DISCOVERY_ADDRESS=$(kubectl \
-#    --context=openmcp \
-#    -n istio-system get svc istio-eastwestgateway \
-#    -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+export DISCOVERY_ADDRESS=$(kubectl \
+    --context=$CTX_MASTER \
+    -n istio-system get svc istio-eastwestgateway \
+    -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+#export DISCOVERY_ADDRESS=115.94.141.62
 
 # $CTX에 대한 Istio configuration 을 만듭니다.
 cat <<EOF > $CTX.yaml
@@ -46,11 +49,11 @@ spec:
   profile: remote
   values:
     global:
-      meshID: mesh-openmcp
+      meshID: mesh-$CTX_MASTER
       multiCluster:
         clusterName: $CTX
       network: network-$CTX
-      remotePilotAddress: 115.94.141.62
+      remotePilotAddress: $DISCOVERY_ADDRESS
 EOF
 
 # $CTX에 configuration 적용

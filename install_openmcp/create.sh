@@ -219,6 +219,9 @@ sed -i 's|REPLACE_PDNSAPIKEY|'\"$PDNS_API_KEY\"'|g' master/openmcp-dns-controlle
 sed -i 's|REPLACE_ADDRESS_FROM|'"$ADDRESS_FROM"'|g' master/metallb/configmap.yaml
 sed -i 's|REPLACE_ADDRESS_TO|'"$ADDRESS_TO"'|g' master/metallb/configmap.yaml
 
+sed -i 's|REPLACE_PUBLIC_IP|'"$OMCP_EXTERNAL_IP"'|g' master/metallb/configmap.yaml
+
+
 echo "Replace Setting Variable Complete"
 USERNAME=`whoami`
 

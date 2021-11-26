@@ -1,0 +1,15 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+   defaultConfig:
+     proxyMetadata:
+       ISTIO_META_DNS_CAPTURE: "true"
+  profile: remote
+  values:
+    global:
+      meshID: mesh-openmcp
+      multiCluster:
+        clusterName: cluster10
+      network: network-cluster10
+      remotePilotAddress: 115.94.141.62

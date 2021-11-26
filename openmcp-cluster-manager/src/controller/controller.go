@@ -324,6 +324,8 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 							util.CmdExec2("cp " + dirname + "/metallb_configmap.yaml " + dirname + "/metallb_configmap_" + clustername + ".yaml")
 							util.CmdExec2("sed -i 's|CLUSTER_ADDRESS_FROM|" + ipaddressfrom + "|g' " + dirname + "/metallb_configmap_" + clustername + ".yaml")
 							util.CmdExec2("sed -i 's|CLUSTER_ADDRESS_TO|" + ipaddressto + "|g' " + dirname + "/metallb_configmap_" + clustername + ".yaml")
+							util.CmdExec2("sed -i 's|REPLACE_PUBLIC_IP|" + REPLACE_PUBLIC_IP + "|g' " + dirname + "/metallb_configmap_" + clustername + ".yaml")
+
 							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/metallb_configmap_" + clustername + ".yaml --context " + clustername)
 							util.CmdExec2("rm " + dirname + "/metallb_configmap_" + clustername + ".yaml")
 							fmt.Println("*** ", dirname+"/metallb_configmap_"+clustername+" created")
