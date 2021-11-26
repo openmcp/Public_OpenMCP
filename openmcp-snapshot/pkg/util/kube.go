@@ -1,11 +1,11 @@
 package util
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"openmcp/openmcp/omcplog"
-	"os"
 	"regexp"
 	"strings"
 
@@ -89,7 +89,7 @@ func FindErrorForEvent(targetListClient *kubernetes.Clientset, resourceName stri
 }
 
 // pod 내에서 쉘 실행시키는 함수
-func RunCommand(client kubernetes.Interface, config *restclient.Config, podName string, command string, namespace string) error {
+func RunCommand(client kubernetes.Interface, config *restclient.Config, podName string, command string, namespace string) (*ExecutorResult, error) {
 	omcplog.V(3).Info("----- Start Command -----")
 	//omcplog.V(3).Info(command)
 
@@ -114,10 +114,11 @@ func RunCommand(client kubernetes.Interface, config *restclient.Config, podName 
 
 	omcplog.V(3).Info("1. setConfig")
 	//omcplog.V(3).Info(config)
+	result := new(ExecutorResult)
 	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
 	if err != nil {
 		omcplog.Error("NewSPDYExecutor err : ", err)
-		return err
+		return result, err
 	}
 
 	//err = exec.Stream(remotecommand.StreamOptions{
@@ -131,21 +132,31 @@ func RunCommand(client kubernetes.Interface, config *restclient.Config, podName 
 
 	omcplog.V(3).Info("2. Run stream")
 	err = exec.Stream(remotecommand.StreamOptions{
-		Stdin:  os.Stdin,
-		Stdout: os.Stdout,
-		Stderr: os.Stderr,
+		Stdin:  &result.Stdin,
+		Stdout: &result.Stdout,
+		Stderr: &result.Stderr,
+		//Stdin:  os.Stdin,
+		//Stdout: os.Stdout,
+		//Stderr: os.Stderr,
 	})
 
-	omcplog.V(3).Info("3. Print Error")
+	omcplog.V(3).Info("3. Result")
 	if err != nil {
 		omcplog.Error(err)
 		if strings.Contains(err.Error(), "100") {
 			omcplog.Error("Command Error : TargetFile is empty!")
-			return fmt.Errorf("Command Error : TargetFile is empty!")
+			return result, fmt.Errorf("Command Error : TargetFile is empty!")
 		} else {
-			omcplog.Error("NewSPDYExecutor Stream err : ", err)
-			return err
+			omcplog.Error("NewSPDYExecutor Stream err : ", err, result.Stderr)
+			return result, err
 		}
 	}
-	return nil
+	return result, nil
+}
+
+// ExecutorResult contains the outputs of the execution.
+type ExecutorResult struct {
+	Stdout bytes.Buffer
+	Stderr bytes.Buffer
+	Stdin  bytes.Buffer
 }

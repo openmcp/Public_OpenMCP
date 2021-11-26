@@ -37,7 +37,10 @@ func main() {
 	host_ctx := "openmcp"
 	namespace := "openmcp"
 
+	//openmcp-has-controller 모듈 생성 시 정의한 sa, secret 기반 config
 	host_cfg := cm.Host_config
+
+	//openmcp-has-controller secret 기반 multicluster client 생성
 	live := cluster.New(host_ctx, host_cfg, cluster.Options{})
 	ghosts := []*cluster.Cluster{}
 
@@ -47,12 +50,11 @@ func main() {
 		ghost_ctx := ghost_cluster.Name
 		ghost_cfg := cm.Cluster_configs[ghost_ctx]
 
+		//federation 조인시 member cluster에 생성한 sa, secret 기반 config
 		ghost := cluster.New(ghost_ctx, ghost_cfg, cluster.Options{})
 		ghosts = append(ghosts, ghost)
 	}
-	/*for _, ghost := range ghosts {
-		fmt.Println(ghost.Name)
-	}*/
+
 	co, _ := openmcphas.NewController(live, ghosts, namespace, cm)
 	reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
 	loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)

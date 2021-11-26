@@ -37,6 +37,8 @@ export DISCOVERY_ADDRESS=$(kubectl \
 
 #export DISCOVERY_ADDRESS=115.94.141.62
 
+# export DISCOVERY_ADDRESS=REPLACE_DISCOVERY_ADDRESS_EX
+
 # $CTX에 대한 Istio configuration 을 만듭니다.
 cat <<EOF > $CTX.yaml
 apiVersion: install.istio.io/v1alpha1

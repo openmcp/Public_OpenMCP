@@ -2,7 +2,6 @@ package snapshot
 
 import (
 	"context"
-	"encoding/json"
 	"strconv"
 	"time"
 
@@ -18,7 +17,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/types"
 
 	// "sigs.k8s.io/controller-runtime/pkg/client"
 	// "sigs.k8s.io/kubefed/pkg/controller/util"
@@ -29,7 +27,6 @@ import (
 )
 
 var cm *clusterManager.ClusterManager
-var namespacedName types.NamespacedName
 
 //pod 이름 찾기
 func GetPodName(targetClient generic.Client, dpName string, namespace string) (string, error) {
@@ -83,35 +80,41 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 }
 
 type reconciler struct {
-	live           client.Client
-	ghosts         []client.Client
-	ghostNamespace string
+	live            client.Client
+	ghosts          []client.Client
+	ghostNamespace  string
+	progressMax     int
+	progressCurrent int
 }
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	omcplog.V(3).Info("Snapshot Start : Reconcile")
 	startDate := time.Now()
 	omcplog.V(3).Info(startDate)
-
 	instance := &nanumv1alpha1.Snapshot{}
-	namespacedName = req.NamespacedName
+	r.progressMax = 1
+	r.progressCurrent = 0
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 	if err != nil {
 		omcplog.Error("get instance error : ", err)
-		r.MakeStatus(instance, false, "", err)
+		r.makeStatusRun(instance, corev1.ConditionFalse, "0. get instance error", "", err)
 		return reconcile.Result{Requeue: false}, nil
+
 	}
 
-	if instance.Status.Status == true {
+	if instance.Status.Status == corev1.ConditionTrue {
 		// 이미 성공한 케이스는 로직을 안탄다.
 		omcplog.V(4).Info(instance.Name + " already succeed")
 		return reconcile.Result{Requeue: false}, nil
 	}
-	if instance.Status.Status == false && instance.Status.Reason != "" {
+	if instance.Status.Status == corev1.ConditionFalse {
 		// 이미 실패한 케이스는 로직을 다시 안탄다.
 		omcplog.V(4).Info(instance.Name + " already failed")
 		return reconcile.Result{Requeue: false}, nil
 	}
+	omcplog.V(4).Info("0. get instance ... !Update :" + strconv.Itoa(r.progressCurrent))
+	r.makeStatusRun(instance, "Running", "0. get resource instance success", "", nil)
+	omcplog.V(4).Info("0. get instance ... !Update End")
 
 	//groupSnapshot 키값에 사용될 시간 추출
 	//startTime := strconv.Itoa(int(time.Now().Unix()))
@@ -123,131 +126,129 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	instance.Spec.GroupSnapshotKey = groupSnapshotKey
 	//instance.Status.SnapshotKey = startTime
 
+	//progress++
+	r.progressCurrent++ //getResource 하기 전이라 추가함.
+	r.progressMax++
+	omcplog.V(4).Info("++ progressCurrent add :" + strconv.Itoa(r.progressCurrent))
+	omcplog.V(4).Info("++ progress Count : " + strconv.Itoa(r.progressCurrent) + "/" + strconv.Itoa(r.progressMax))
+	omcplog.V(4).Info("1. get SnapshotKey ... !Update :" + strconv.Itoa(r.progressCurrent))
+	r.makeStatusRun(instance, "Running", "1. get SnapshotKey success", "", nil)
+	omcplog.V(4).Info("1. get SnapshotKey ... !Update End")
+
 	// 스냅샷 Resource 정보들을 가공하는 부분
+	var initErr error
 	instance.Status.SnapshotSources = instance.Spec.DeepCopy().SnapshotSources
-	setResourceForOnlyDeploy(&instance.Status)
+	instance.Status.SnapshotSources, initErr = r.setResource(&instance.Status)
+	// r.progressMax++ //1번은 최초 reconcile 초기화때 1을 가지고 시작함.
+	r.progressMax++ //2번
+	//r.progressMax++ //3번은  setResource에서 etcd, volume 개수만큼 진행
+	//r.progressMax++ //4번  미구현
+	omcplog.V(4).Info("+ [Both] Progress Setting end")
+	omcplog.V(4).Info("++ progressCurrent add :" + strconv.Itoa(r.progressCurrent))
+	omcplog.V(4).Info("++ progressMax add :" + strconv.Itoa(r.progressMax))
+	omcplog.V(4).Info("++ progress Count : " + strconv.Itoa(r.progressCurrent) + "/" + strconv.Itoa(r.progressMax))
+
+	if initErr != nil {
+		omcplog.Error("2. Init error : ", initErr)
+		r.makeStatusRun(instance, corev1.ConditionFalse, "2. Init error", "", initErr)
+		omcplog.V(3).Info("Snapshot Failed")
+		return reconcile.Result{Requeue: false}, nil
+	} else {
+		r.progressCurrent++
+		omcplog.V(4).Info("++ progressCurrent add :" + strconv.Itoa(r.progressCurrent))
+		omcplog.V(4).Info("++ progress Count : " + strconv.Itoa(r.progressCurrent) + "/" + strconv.Itoa(r.progressMax))
+		omcplog.V(4).Info("2. Init ... !Update :" + strconv.Itoa(r.progressCurrent))
+		r.makeStatusRun(instance, "Running", "2. Init success", "", nil)
+		omcplog.V(4).Info("2. Init ... !Update End")
+	}
 
 	pvIdx := 1
-	for idx, snapshotSources := range instance.Status.SnapshotSources {
-		resourceType := snapshotSources.ResourceType
+	for idx, snapshotSource := range instance.Status.SnapshotSources {
+		desc := ""
+		resourceType := snapshotSource.ResourceType
 		omcplog.V(4).Info("\n[" + strconv.Itoa(idx) + "] : Resource : " + resourceType)
+		omcplog.V(4).Info(snapshotSource)
 
+		// resource Type PV일때 볼륨 스냅샷 진행.
 		if resourceType == config.PV {
 			instance.Status.IsVolumeSnapshot = true
 			volumeSnapshotKey := util.MakeVolumeProcessResourceKey(groupSnapshotKey, strconv.Itoa(int(startDate.Unix())), strconv.Itoa(pvIdx))
 			volumeDataSource := &nanumv1alpha1.VolumeDataSource{VolumeSnapshotKey: volumeSnapshotKey}
 			instance.Status.SnapshotSources[idx].VolumeDataSource = volumeDataSource
 			omcplog.V(4).Info("volumeSnapshotKey : " + volumeSnapshotKey)
-			volumeSnapshotErr, errDetail := volumeSnapshotRun(r, &snapshotSources, groupSnapshotKey, volumeSnapshotKey, pvIdx)
+			crdVolumeInfos, volumeSnapshotErr, errDetail := volumeSnapshotRun(r, &snapshotSource, groupSnapshotKey, volumeSnapshotKey, pvIdx)
 			if volumeSnapshotErr != nil {
 				if errDetail == nil {
-					omcplog.Error("volumeSnapshotRun error : ", volumeSnapshotErr)
-					r.MakeStatusWithSource(instance, false, snapshotSources, volumeSnapshotErr, errDetail)
+					omcplog.Error("3. volumeSnapshotRun error : ", volumeSnapshotErr)
+					r.makeStatusRun(instance, corev1.ConditionFalse, "3. volumeSnapshotRun error", "", volumeSnapshotErr)
 					omcplog.V(3).Info("Snapshot Failed")
 					return reconcile.Result{Requeue: false}, nil
+
 				} else if errDetail.Error() == "Command Error : TargetFile is empty!" {
 					// 타겟이 없은 경우 성공처리
-					omcplog.V(3).Info("snapshot volume is zero.")
+					omcplog.V(3).Info("3. snapshot volume is zero.")
 					instance.Status.SnapshotSources[idx].VolumeDataSource.VolumeSnapshotKey += " Empty"
 				} else {
-					omcplog.Error("volumeSnapshotRun error : ", errDetail)
-					r.MakeStatusWithSource(instance, false, snapshotSources, volumeSnapshotErr, errDetail)
+					omcplog.Error("3. volumeSnapshotRun error(detail) : ", errDetail)
+					r.makeStatusRun(instance, corev1.ConditionFalse, "3. volumeSnapshotRun error(detail)", "", errDetail)
 					omcplog.V(3).Info("Snapshot Failed")
 					return reconcile.Result{Requeue: false}, nil
 				}
+			} else {
+				instance.Status.SnapshotSources[idx].VolumeInfos = crdVolumeInfos
+				r.progressCurrent++
+				omcplog.V(4).Info("++ progressCurrent add :" + strconv.Itoa(r.progressCurrent))
+				omcplog.V(4).Info("++ progress Count : " + strconv.Itoa(r.progressCurrent) + "/" + strconv.Itoa(r.progressMax))
+				omcplog.V(4).Info("3. volumeSnapshotRun... !Update :" + strconv.Itoa(r.progressCurrent))
+				r.makeStatusRun(instance, "Running", "3. volumeSnapshotRun success : "+desc, "", nil)
+				//r.makeStatusRunWithVolumeInfos(instance, corev1.ConditionFalse, "3. volumeSnapshotRun error(detail)", "", errDetail, volumeInfos)
+				omcplog.V(4).Info("3. volumedSnapshotRun ... !Update End")
 			}
 			pvIdx++
 		}
-		etcdSnapshotKeyAllPath, etcdSnapshotErr := etcdSnapshotRun(r, &snapshotSources, groupSnapshotKey)
+		etcdSnapshotKeyAllPath, etcdSnapshotErr := etcdSnapshotRun(r, &snapshotSource, groupSnapshotKey)
 		instance.Status.SnapshotSources[idx].ResourceSnapshotKey = etcdSnapshotKeyAllPath
 		if etcdSnapshotErr != nil {
-			omcplog.Error("etcdSnapshotRun error : ", etcdSnapshotErr)
-			r.MakeStatusWithSource(instance, false, snapshotSources, etcdSnapshotErr, nil)
+			omcplog.Error("3. etcdSnapshotRun error : ", etcdSnapshotErr)
+			r.makeStatusRun(instance, corev1.ConditionFalse, "3. etcdSnapshotRun error", "", etcdSnapshotErr)
 			omcplog.V(3).Info("Snapshot Failed")
 			return reconcile.Result{Requeue: false}, nil
+		} else {
+			r.progressCurrent++
+			omcplog.V(4).Info("++ progressCurrent add :" + strconv.Itoa(r.progressCurrent))
+			omcplog.V(4).Info("++ progress Count : " + strconv.Itoa(r.progressCurrent) + "/" + strconv.Itoa(r.progressMax))
+			omcplog.V(4).Info("3. etcdSnapshotRun... !Update :" + strconv.Itoa(r.progressCurrent))
+			r.makeStatusRun(instance, "Running", "3. etcdSnapshotRun success : "+desc, "", nil)
+			omcplog.V(4).Info("3. etcdSnapshotRun ... !Update End")
 		}
 	}
+
+	// TODO get Snapshot 정보 추출
+
+	// TODO get Snapshot List 정보 추출.
+	r.progressCurrent++
+	omcplog.V(4).Info("++ progressCurrent add :" + strconv.Itoa(r.progressCurrent))
+	omcplog.V(4).Info("++ progress Count : " + strconv.Itoa(r.progressCurrent) + "/" + strconv.Itoa(r.progressMax))
 	omcplog.V(3).Info("Snapshot Complete")
 	elapsed := time.Since(startDate)
-	r.MakeStatus(instance, true, elapsed.String(), nil)
+	r.makeStatusRun(instance, corev1.ConditionTrue, "Snapshot succeed", elapsed.String(), nil)
 
 	return reconcile.Result{Requeue: false}, nil
 
 }
 
-func (r *reconciler) MakeStatusWithSource(instance *nanumv1alpha1.Snapshot, snapshotStatus bool, snapshotSource nanumv1alpha1.SnapshotSource, err error, detailErr error) {
-	r.makeStatusRun(instance, snapshotStatus, snapshotSource, "", err, detailErr)
-}
-
-func (r *reconciler) MakeStatus(instance *nanumv1alpha1.Snapshot, snapshotStatus bool, elapsed string, err error) {
-	r.makeStatusRun(instance, snapshotStatus, nanumv1alpha1.SnapshotSource{}, elapsed, err, nil)
-}
-
-func (r *reconciler) makeStatusRun(instance *nanumv1alpha1.Snapshot, snapshotStatus bool, snapshotSource nanumv1alpha1.SnapshotSource, elapsedTime string, err error, detailErr error) {
-	instance.Status.Status = snapshotStatus
-
-	if elapsedTime == "" {
-		elapsedTime = "0"
-	}
-	instance.Status.ElapsedTime = elapsedTime
-	omcplog.V(3).Info("[Exit]")
-	omcplog.V(3).Info("snapshotStatus : ", snapshotStatus)
-
-	if !snapshotStatus {
-		omcplog.V(3).Info("err : ", err.Error())
-		tmp := make(map[string]interface{})
-		tmp["Cluster"] = snapshotSource.ResourceCluster
-		tmp["NameSpace"] = snapshotSource.ResourceNamespace
-		//tmp["ResourceType"] = snapshotSource.ResourceType
-		//tmp["ResourceName"] = snapshotSource.ResourceName
-		tmp["GroupSnapshotKey"] = instance.Spec.GroupSnapshotKey
-		//tmp["VolumeSnapshotClassName"] = snapshotSource.VolumeDataSource.VolumeSnapshotClassName
-		//tmp["VolumeSnapshotSourceKind"] = snapshotSource.VolumeDataSource.VolumeSnapshotSourceKind
-		//tmp["VolumeSnapshotSourceName"] = snapshotSource.VolumeDataSource.VolumeSnapshotSourceName
-		//tmp["VolumeSnapshotKey"] = instance.Status.VolumeDataSource.VolumeSnapshotKey
-		tmp["Reason"] = err.Error()
-		//tmp["ReasonDetail"] = detailErr.Error()
-
-		jsonTmp, err := json.Marshal(tmp)
-		if err != nil {
-			omcplog.V(3).Info(err, "-----------")
-		}
-		instance.Status.Reason = string(jsonTmp)
-		if detailErr != nil {
-			instance.Status.ReasonDetail = detailErr.Error()
-		}
-	}
-
-	//r.live.Update(context.TODO(), instance)
-	//r.live.Status().Patch(context.TODO(), instance)
-	//r.live.Status().Update(context.TODO(), instance)
-	//err = r.live.Status().Update(context.TODO(), instance)
-	omcplog.V(3).Info("live update")
-	err = r.live.Update(context.Background(), instance)
-	if err != nil {
-		omcplog.V(3).Info(err, "-----------")
-	}
-	err = r.live.Status().Update(context.Background(), instance)
-	if err != nil {
-		omcplog.V(3).Info(err, "-----------")
-	}
-	time.Sleep(5 * time.Second)
-
-	omcplog.V(3).Info("live update end")
-}
-
 // setResource : Deploy
-func setResourceForOnlyDeploy(status *nanumv1alpha1.SnapshotStatus) error {
+func (r *reconciler) setResource(status *nanumv1alpha1.SnapshotStatus) ([]nanumv1alpha1.SnapshotSource, error) {
 	resourceList := status.SnapshotSources
 
 	for _, resource := range resourceList {
 		namespace := resource.ResourceNamespace
 		resourceName := resource.ResourceName
 		sourceClient := cm.Cluster_genClients[resource.ResourceCluster]
-		pvcNames := []string{}
-		pvNames := []string{}
 
 		if resource.ResourceType == config.DEPLOY {
+			pvcNames := []string{}
+			pvNames := []string{}
 			// 1. Deployment 데이터를 가져온다.
 			omcplog.V(0).Info("- 1. getDeployment -")
 			omcplog.V(0).Info(resourceName)
@@ -259,29 +260,75 @@ func setResourceForOnlyDeploy(status *nanumv1alpha1.SnapshotStatus) error {
 			omcplog.V(0).Info(volumeInfo)
 			for i, volume := range volumeInfo {
 				// 2. PVC 정보가 있는지 체크하고 있으면 기입.
-				omcplog.V(0).Info("- 2. check deployment -" + string(rune(i)))
+				omcplog.V(0).Info("- 2. check deployment -" + strconv.Itoa(i))
+
 				omcplog.V(0).Info(volume)
 				pvcInfo := volume.PersistentVolumeClaim
 				if pvcInfo == nil {
 					continue
 				} else {
-					omcplog.V(0).Info("--- pvc bingo ---")
+					omcplog.V(0).Info("--- pvc contain ---")
+					omcplog.V(0).Info(pvcInfo.ClaimName)
 					pvcNames = append(pvcNames, pvcInfo.ClaimName)
 
-					// 3. PVC 정보를 토대로 PV 라벨 정보 추출 후 이름 추출.
-					sourcePVC := &corev1.PersistentVolumeClaim{}
-					_ = sourceClient.Get(context.TODO(), sourcePVC, namespace, pvcInfo.ClaimName)
-					pvc_matchLabel := sourcePVC.Spec.Selector.DeepCopy().MatchLabels
+					// 3. PVC 정보를 토대로 PV 라벨 정보 추출
 					omcplog.V(0).Info("- 3. check pvc -")
-					omcplog.V(0).Info(pvc_matchLabel)
-					sourcePVList := &corev1.PersistentVolumeList{}
-					_ = sourceClient.List(context.TODO(), sourcePVList, namespace, &client.ListOptions{
-						LabelSelector: labels.SelectorFromSet(labels.Set(pvc_matchLabel)),
-					})
-					for _, pv := range sourcePVList.Items {
-						omcplog.V(0).Info("- 4. check pv -")
-						omcplog.V(0).Info(pv)
-						pvNames = append(pvNames, pv.Name)
+					sourcePVC := &corev1.PersistentVolumeClaim{}
+					err := sourceClient.Get(context.TODO(), sourcePVC, namespace, pvcInfo.ClaimName)
+					if err != nil {
+						omcplog.V(0).Info(pvcInfo.ClaimName + " is not exist!!!")
+						continue
+					}
+					omcplog.V(0).Info(sourcePVC.Name)
+					omcplog.V(0).Info(sourcePVC.Spec)
+
+					if sourcePVC.Spec.Selector != nil {
+						// case1 sourcePVC.Spec.Selector.MatchLabels 을 이용하여 접근하는 경우
+						pvc_matchLabel := sourcePVC.Spec.Selector.DeepCopy().MatchLabels
+
+						omcplog.V(0).Info("pvc_matchLabel :")
+						omcplog.V(0).Info(pvc_matchLabel)
+
+						// 4. PVC에서 추출된 라벨 정보로 PV 추출
+						sourcePVList := &corev1.PersistentVolumeList{}
+						err = sourceClient.List(context.TODO(), sourcePVList, namespace, &client.ListOptions{
+							LabelSelector: labels.SelectorFromSet(labels.Set(pvc_matchLabel)),
+						})
+						if err != nil {
+							omcplog.V(0).Info(pvc_matchLabel)
+							omcplog.V(0).Info(" this label not exist!!!")
+							continue
+						}
+						for _, pv := range sourcePVList.Items {
+							omcplog.V(0).Info("- 4. check pv -")
+							omcplog.V(0).Info(pv.Name)
+							pvNames = append(pvNames, pv.Name)
+						}
+					} else {
+						// case2 pv.spec.claimRef를 이용하여 접근하는 경우
+
+						sourcePVList := &corev1.PersistentVolumeList{}
+						err = sourceClient.List(context.TODO(), sourcePVList, namespace)
+						if err != nil {
+							omcplog.V(0).Info("pv all")
+							omcplog.V(0).Info(" this matchPV not exist!!!")
+							continue
+						}
+						for _, pv := range sourcePVList.Items {
+							omcplog.V(0).Info("- 4. check pv detail -")
+							omcplog.V(0).Info(pv.Name)
+
+							if pv.Spec.ClaimRef != nil {
+								if pv.Spec.ClaimRef.Kind == "PersistentVolumeClaim" {
+									if pv.Spec.ClaimRef.Name == sourcePVC.Name {
+										omcplog.V(0).Info("find pvc " + sourcePVC.Name)
+										omcplog.V(0).Info("this pv : " + pv.Name)
+										pvNames = append(pvNames, pv.Name)
+										break
+									}
+								}
+							}
+						}
 					}
 				}
 			}
@@ -291,12 +338,16 @@ func setResourceForOnlyDeploy(status *nanumv1alpha1.SnapshotStatus) error {
 				tmp := nanumv1alpha1.SnapshotSource{}
 				tmp.ResourceName = pvName
 				tmp.ResourceType = config.PV
+				tmp.ResourceNamespace = "default"
+				tmp.ResourceCluster = resource.ResourceCluster
 				resourceList = append(resourceList, tmp)
 			}
 			for _, pvcName := range pvcNames {
 				tmp := nanumv1alpha1.SnapshotSource{}
 				tmp.ResourceName = pvcName
 				tmp.ResourceType = config.PVC
+				tmp.ResourceNamespace = resource.ResourceNamespace
+				tmp.ResourceCluster = resource.ResourceCluster
 				resourceList = append(resourceList, tmp)
 			}
 		}
@@ -323,12 +374,12 @@ func setResourceForOnlyDeploy(status *nanumv1alpha1.SnapshotStatus) error {
 		}
 	}
 	omcplog.V(0).Info(fixedResourceList)
-	//Deploy를 가장 앞으로.
+	//Deploy를 가장 뒤로.
 	for i, fixedResource := range fixedResourceList {
 		if fixedResource.ResourceType == config.DEPLOY {
 			tmp := fixedResourceList[i]
-			fixedResourceList[i] = fixedResourceList[0]
-			fixedResourceList[0] = tmp
+			fixedResourceList[i] = fixedResourceList[len(fixedResourceList)-1]
+			fixedResourceList[len(fixedResourceList)-1] = tmp
 		}
 	}
 
@@ -336,6 +387,25 @@ func setResourceForOnlyDeploy(status *nanumv1alpha1.SnapshotStatus) error {
 	omcplog.V(0).Info(fixedResourceList)
 	omcplog.V(0).Info("--------------------")
 
+	omcplog.V(0).Info("----check resource........----")
+	//deploy의 볼륨개수, service pv,pvc 등의 개수에 따라 수정.
+	for i, fixedResource := range fixedResourceList {
+		if fixedResource.ResourceType == config.DEPLOY {
+			tmp := fixedResourceList[i]
+			fixedResourceList[i] = fixedResourceList[len(fixedResourceList)-1]
+			fixedResourceList[len(fixedResourceList)-1] = tmp
+		} else if fixedResource.ResourceType == config.PV {
+			//PV 가 있으면 한번 더. 3. snapshot 진행시 VolumeSnapshot 에 대한 내용을 한번 더함.
+			r.progressMax++
+		}
+		//etcd 스냅샷에 대한 내용.
+		r.progressMax++
+	}
+	omcplog.V(4).Info("+ ProgressMax Setting end")
+	omcplog.V(4).Info("++ progressCurrent add :" + strconv.Itoa(r.progressCurrent))
+	omcplog.V(4).Info("++ progressMax add :" + strconv.Itoa(r.progressMax))
+	omcplog.V(4).Info("++ progress Count : " + strconv.Itoa(r.progressCurrent) + "/" + strconv.Itoa(r.progressMax))
+
 	resourceList = fixedResourceList
-	return nil
+	return resourceList, nil
 }

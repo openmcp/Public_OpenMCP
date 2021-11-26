@@ -362,7 +362,6 @@ func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination
 			vsHttpRoutes = append(vsHttpRoutes, vsHttpRoute)
 		} else {
 			for i, locCluster := range locClusters {
-
 				vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, i, &locCluster, ns)
 				if err != nil {
 					return nil, err
@@ -391,7 +390,6 @@ func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination
 }
 func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i int, locCluster *LocCluster, ns string) (*networkingv1alpha3.HTTPRouteDestination, error) {
 	omcplog.V(4).Info("func createVsHttpRoute Called")
-
 	// 서비스가 있는지 체크
 	svcDomain := ovsHttpRoute.Destination.Host
 	svcDomainSplit := strings.Split(svcDomain, ".")

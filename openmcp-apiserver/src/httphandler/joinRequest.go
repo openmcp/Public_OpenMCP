@@ -32,9 +32,11 @@ func JoinHandler(w http.ResponseWriter, r *http.Request) {
 	fileBytes, err := ioutil.ReadAll(file)
 
 	c := &cobrautil.KubeConfig{}
+	serverIP := c.Clusters[0].Cluster.Server[9:]
+	serverIP = strings.Split(serverIP, ":")[0]
 	err = yaml.Unmarshal(fileBytes, c)
 
-	CreateClusterResource(c.Clusters[0].Name, fileBytes, nodeinfo)
+	CreateClusterResource(c.Clusters[0].Name, serverIP, fileBytes, nodeinfo)
 
 	a := []byte("OK\n")
 	w.Write(a)
@@ -72,7 +74,7 @@ func JoinCloudHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(a)
 }
 
-func CreateClusterResource(name string, config []byte, nodeinfo string) (string, error) {
+func CreateClusterResource(name string, serverIP string, config []byte, nodeinfo string) (string, error) {
 	regionmap := map[string]string{}
 	zonemap := map[string]string{}
 
@@ -125,9 +127,11 @@ func CreateClusterResource(name string, config []byte, nodeinfo string) (string,
 			Namespace: "openmcp",
 		},
 		Spec: clusterv1alpha1.OpenMCPClusterSpec{
-			ClusterPlatformType: "On-Premise",
-			JoinStatus:          "UNJOIN",
-			NodeInfo:            ni,
+			ServerIP:               serverIP,
+			ClusterPlatformType:    "On-Premise",
+			ClusterNetworkLocation: "",
+			JoinStatus:             "UNJOIN",
+			NodeInfo:               ni,
 			MetalLBRange: clusterv1alpha1.MetalLBRange{
 				AddressFrom: "",
 				AddressTo:   "",
@@ -162,9 +166,10 @@ func CreateCloudClusterResource(c_name string, c_type string, config []byte, c_l
 			Namespace: "openmcp",
 		},
 		Spec: clusterv1alpha1.OpenMCPClusterSpec{
-			ClusterPlatformType: c_type,
-			JoinStatus:          "UNJOIN",
-			KubeconfigInfo:      config,
+			ClusterPlatformType:    c_type,
+			ClusterNetworkLocation: "",
+			JoinStatus:             "UNJOIN",
+			KubeconfigInfo:         config,
 		},
 	}
 

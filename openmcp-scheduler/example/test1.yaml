@@ -15,18 +15,9 @@ spec:
           imagePullSecrets:
             - name: regcred
           containers:
-<<<<<<< HEAD
-            - image: nginx
-              name: nginx
-              resources:
-                requests:
-                  memory: "10"
-                  cpu: "0.1"
-=======
           - image: nginx
             name: nginx
 #            resources:
 #              requests:
 #                memory: "100"
 #                cpu: "0.1"
->>>>>>> 55ddc79c0f9409efd12d0a54c7c29db10d458769

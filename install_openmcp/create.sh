@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 
@@ -68,8 +69,6 @@ PDNS_IP=`yq -r .externalServer.ServerIP.internal $CONFFILE`
 PDNS_PUBLIC_IP=`yq -r .externalServer.ServerIP.external $CONFFILE`
 PDNS_PUBLIC_PORT=`yq -r .externalServer.powerDNS.externalPort $CONFFILE`
 PDNS_API_KEY=`yq -r .externalServer.powerDNS.apiKey $CONFFILE`
-
-
 
 
 if [ -d "master" ]; then
@@ -143,7 +142,8 @@ sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-s
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-policy-engine/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-namespace-controller/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-job-controller/operator.yaml
-sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' member/metric-collector/operator/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' member/metric-collector/operator/operator_in.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' member/metric-collector/operator/operator_ex.yaml
 
 sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/influxdb/deployment.yaml
 sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-has-controller/operator.yaml
@@ -163,7 +163,8 @@ sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/op
 sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-cluster-manager/operator.yaml
 sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-namespace-controller/operator.yaml
 sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' master/openmcp-job-controller/operator.yaml
-sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' member/metric-collector/operator/operator.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' member/metric-collector/operator/operator_in.yaml
+sed -i 's|REPLACE_DOCKERIMAGEPULLPOLICY|'$DOCKER_IMAGE_PULL_POLICY'|g' member/metric-collector/operator/operator_ex.yaml
 
 sed -i 's|REPLACE_GRPCIP|'\"$OMCP_IP\"'|g' master/openmcp-has-controller/operator.yaml
 sed -i 's|REPLACE_GRPCIP|'\"$OMCP_IP\"'|g' master/openmcp-scheduler/operator.yaml
@@ -181,8 +182,11 @@ sed -i 's|REPLACE_GRPCPORT|'\"$OAE_NODE_PORT\"'|g' master/openmcp-has-controller
 sed -i 's|REPLACE_GRPCPORT|'\"$OAE_NODE_PORT\"'|g' master/openmcp-scheduler/operator.yaml
 sed -i 's|REPLACE_GRPCPORT|'\"$OAE_NODE_PORT\"'|g' master/openmcp-loadbalancing-controller/operator.yaml
 
-sed -i 's|REPLACE_GRPCIP|'\"$OMCP_EXTERNAL_IP\"'|g' member/metric-collector/operator/operator.yaml
-sed -i 's|REPLACE_GRPCPORT|'\"$OME_EXTERNAL_PORT\"'|g' member/metric-collector/operator/operator.yaml
+sed -i 's|REPLACE_GRPCIP|'\"$OMCP_IP\"'|g' member/metric-collector/operator/operator_in.yaml
+sed -i 's|REPLACE_GRPCPORT|'\"$OME_NODE_PORT\"'|g' member/metric-collector/operator/operator_in.yaml
+
+sed -i 's|REPLACE_GRPCIP|'\"$OMCP_EXTERNAL_IP\"'|g' member/metric-collector/operator/operator_ex.yaml
+sed -i 's|REPLACE_GRPCPORT|'\"$OME_EXTERNAL_PORT\"'|g' member/metric-collector/operator/operator_ex.yaml
 
 sed -i 's|REPLACE_GRPCPORT|'$OME_NODE_PORT'|g' master/openmcp-metric-collector/service.yaml
 

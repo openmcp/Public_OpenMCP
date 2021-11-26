@@ -12,16 +12,30 @@ else
     exit
   else
     if [[ "$platform" == "GKE" ]] || [[ "$platform" == "EKS" ]] || [[ "$platform" == "AKS" ]]; then
-      kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"JOINING"}]'
+      read -p "Input Cluster Network Location (internal OR external) : " network_loc
+      if [[ "$network_loc" == "external" ]] || [[ "$network_loc" == "internal" ]]; then
+        kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/clusterNetworkLocation","value":'$network_loc'}]'
+        kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"JOINING"}]'
+        sleep 2
+      else
+        echo "Please Input Value correctly"
+      fi
     elif [ "$platform" == "On-Premise" ]; then
+      read -p "Input Cluster Network Location (internal OR external) : " network_loc
       read -p "Input MetalLB IP Address Range (FROM) : " address_from
       read -p "Input MetalLB IP Address Range (TO) : " address_to
 
-      kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"JOINING"}]'
-      sleep 2
-      kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressFrom","value": '$address_from'}]'
-      sleep 2
-      kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressTo","value": '$address_to'}]'
+      if [[ "$network_loc" == "external" ]] || [[ "$network_loc" == "internal" ]]; then
+        kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"JOINING"}]'
+        sleep 2
+        kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/clusterNetworkLocation","value":'$network_loc'}]'
+        sleep 2
+        kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressFrom","value": '$address_from'}]'
+        sleep 2
+        kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/metalLBRange/addressTo","value": '$address_to'}]'
+      else
+        echo "Please Input Value correctly"
+      fi
     fi
   fi
 fi
