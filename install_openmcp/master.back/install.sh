@@ -23,7 +23,7 @@ kubectl create ns istio-system
 echo "Input Your Docker ID(No Pull Limit Plan)"
 docker login
 
-kubectl create secret generic REPLACE_DOCKERSECRETNAME \
+kubectl create secret generic "regcred" \
     --from-file=.dockerconfigjson=/root/.docker/config.json \
     --type=kubernetes.io/dockerconfigjson \
     --namespace=openmcp
@@ -86,6 +86,8 @@ export PATH=$PWD/bin:$PATH
 mkdir -p certs
 pushd certs
 
+CTX=openmcp
+
 make -f ../tools/certs/Makefile.selfsigned.mk root-ca
 make -f ../tools/certs/Makefile.selfsigned.mk openmcp-cacerts
 
@@ -101,11 +103,11 @@ cp bin/istioctl /usr/local/bin
 chmod 755 samples/multicluster/gen-eastwest-gateway.sh
 
 # istio-system 네임 스페이스가 이미 생성 된 경우 여기에 클러스터의 네트워크를 설정해야합니다
-kubectl --context=openmcp get namespace istio-system && \
-kubectl --context=openmcp label namespace istio-system topology.istio.io/network=network-openmcp
+kubectl --context=$CTX get namespace istio-system && \
+kubectl --context=$CTX label namespace istio-system topology.istio.io/network=network-$CTX
 
 # openmcp에 대한 Istio configuration 을 만듭니다.
-cat <<EOF > openmcp.yaml
+cat <<EOF > $CTX.yaml
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:
@@ -115,24 +117,24 @@ spec:
        ISTIO_META_DNS_CAPTURE: "true"
   values:
     global:
-      meshID: mesh-openmcp
+      meshID: mesh-$CTX
       multiCluster:
-        clusterName: openmcp
-      network: network-openmcp
+        clusterName: $CTX
+      network: network-$CTX
 EOF
 
 # openmcp에 configuration 적용
-istioctl install --context=openmcp -f openmcp.yaml -y
+istioctl install --context=$CTX -f $CTX.yaml -y
 
 # openmcp에 east-west traffic 전용 게이트웨이를 설치합니다.
 samples/multicluster/gen-eastwest-gateway.sh \
-    --mesh mesh-openmcp --cluster openmcp --network network-openmcp | \
-    istioctl --context=openmcp install -y -f -
+    --mesh mesh-$CTX --cluster $CTX --network network-$CTX | \
+    istioctl --context=$CTX install -y -f -
 
 # East-west 게이트웨이에 외부 IP 주소가 할당 될 때까지 기다립니다.
 for ((;;))
 do
-        status=`kubectl --context=openmcp get svc istio-eastwestgateway -n istio-system | grep istio-eastwestgateway | awk '{print $4}'`
+        status=`kubectl --context=$CTX get svc istio-eastwestgateway -n istio-system | grep istio-eastwestgateway | awk '{print $4}'`
         if [ "$status" != "<none>" ]; then
                 break
         fi
@@ -141,11 +143,11 @@ do
 done
 
 # Expose the control plane in openmcp
-kubectl apply --context=openmcp -f \
+kubectl apply --context=$CTX -f \
     samples/multicluster/expose-istiod.yaml
 
 # Expose services in openmcp
-kubectl --context=openmcp apply -n istio-system -f \
+kubectl --context=$CTX apply -n istio-system -f \
     samples/multicluster/expose-services.yaml
 
 #istio 인증서 복사

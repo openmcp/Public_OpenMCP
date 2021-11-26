@@ -11,3 +11,9 @@ data:
      addresses:
      - REPLACE_ADDRESS_FROM-REPLACE_ADDRESS_TO
      #- 192.168.1.240-192.168.1.250
+   - name: default2
+     protocol: layer2
+     addresses:
+     - REPLACE_PUBLIC_IP-REPLACE_PUBLIC_IP
+     #- 115.94.141.62-115.94.141.62
+     auto-assign: false

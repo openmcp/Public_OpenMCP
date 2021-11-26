@@ -11,3 +11,8 @@ data:
      addresses:
      #- REPLACE_ADDRESS_FROM-REPLACE_ADDRESS_TO
      - 10.0.3.191-10.0.3.200
+   - name: default2
+     protocol: layer2
+     addresses:
+     - 115.94.141.62-115.94.141.62
+     auto-assign: false
