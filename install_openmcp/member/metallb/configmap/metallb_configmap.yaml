@@ -11,8 +11,8 @@ data:
       addresses:
       - CLUSTER_ADDRESS_FROM-CLUSTER_ADDRESS_TO
     - name: default2
-     protocol: layer2
-     addresses:
-     - REPLACE_PUBLIC_IP-REPLACE_PUBLIC_IP
-     #- 115.94.141.62-115.94.141.62
-     auto-assign: false
+      protocol: layer2
+      addresses:
+      - REPLACE_PUBLIC_IP-REPLACE_PUBLIC_IP
+      #- 115.94.141.62-115.94.141.62
+      auto-assign: false

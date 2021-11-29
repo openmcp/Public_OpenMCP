@@ -12,7 +12,7 @@ CTX=$2
 #      --from-file=$DIR/certs/openmcp/root-cert.pem \
 #      --from-file=$DIR/certs/openmcp/cert-chain.pem
 # popd
-kubectl get secret -n istio-system --context $CTX_MASTER cacerts -o yaml | kubectl create -n istio-system --context $CTX -f -
+kubectl get secret -n istio-system --context $CTX_MASTER cacerts -o yaml | kubectl apply -n istio-system --context $CTX -f -
 
 # istio-system 네임 스페이스가 이미 생성 된 경우 여기에 클러스터의 네트워크를 설정해야합니다
 kubectl --context=$CTX get namespace istio-system && \

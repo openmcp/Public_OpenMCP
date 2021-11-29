@@ -30,7 +30,7 @@ done
 
 end_time=$( date +%s.%N --date="$start_time seconds ago" )
 
-kubectl get node --context cluster2
+kubectl get node --context $1
 
 echo "---"
 echo "*** node join time: ${end_time}s"

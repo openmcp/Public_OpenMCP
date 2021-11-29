@@ -23,6 +23,7 @@ export KUBECONFIG=./kubeconfig
 if [ "$1" == "GKE" ]; then
   location=$(gcloud container clusters list | grep $2 | awk '{print $2}')
   echo $location
+  #gcloud config set container/use_application_default_credentials true
   gcloud container clusters get-credentials $2 --region $location
   kubectl get pods &>-
   rm -
