@@ -1,0 +1,10 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: Cache
+metadata:
+  name: cache-test
+spec:
+  timer: "5"
+  cachecount: 4
+
+
+    
