@@ -1,9 +1,9 @@
 package apis
 
 import (
+	cachev1alpha1 "openmcp/openmcp/apis/cache/v1alpha1"
 	clusterv1alpha1 "openmcp/openmcp/apis/cluster/v1alpha1"
 	dnsv1alpha1 "openmcp/openmcp/apis/dns/v1alpha1"
-	globalcachev1alpha1 "openmcp/openmcp/apis/globalcache/v1alpha1"
 	loadbalancingv1alpha1 "openmcp/openmcp/apis/loadbalancing/v1alpha1"
 	migrationv1alpha1 "openmcp/openmcp/apis/migration/v1alpha1"
 	policyv1alpha1 "openmcp/openmcp/apis/policy/v1alpha1"
@@ -21,6 +21,6 @@ func init() {
 	AddToSchemes = append(AddToSchemes, syncv1alpha1.SchemeBuilder.AddToScheme)
 	AddToSchemes = append(AddToSchemes, policyv1alpha1.SchemeBuilder.AddToScheme)
 	AddToSchemes = append(AddToSchemes, snapshotv1alpha1.SchemeBuilder.AddToScheme)
-	AddToSchemes = append(AddToSchemes, globalcachev1alpha1.SchemeBuilder.AddToScheme)
 	AddToSchemes = append(AddToSchemes, clusterv1alpha1.SchemeBuilder.AddToScheme)
+	AddToSchemes = append(AddToSchemes, cachev1alpha1.SchemeBuilder.AddToScheme)
 }
