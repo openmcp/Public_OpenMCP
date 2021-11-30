@@ -27,11 +27,12 @@ type OpenMCPDeploymentSpec struct {
 	Template OpenMCPDeploymentTemplate `json:"template" protobuf:"bytes,3,opt,name=template"`
 
 	// Added
-	Replicas int32               `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
-	Clusters []string            `json:"clusters,omitempty" protobuf:"bytes,11,opt,name=clusters"`
-	Labels   map[string]string   `json:"labels,omitempty" protobuf:"bytes,11,opt,name=labels"`
-	Affinity map[string][]string `json:"affinity,omitempty" protobuf:"bytes,3,opt,name=affinity"`
-	Policy   map[string]string   `json:"policy,omitempty" protobuf:"bytes,3,opt,name=policy"`
+	Replicas       int32               `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
+	Clusters       []string            `json:"clusters,omitempty" protobuf:"bytes,11,opt,name=clusters"`
+	Labels         map[string]string   `json:"labels,omitempty" protobuf:"bytes,11,opt,name=labels"`
+	Affinity       map[string][]string `json:"affinity,omitempty" protobuf:"bytes,3,opt,name=affinity"`
+	Policy         map[string]string   `json:"policy,omitempty" protobuf:"bytes,3,opt,name=policy"`
+	SchedulingType string              `json:"schedulingType,omitempty" protobuf:"bytes,3,opt,name=schedulingtype"`
 
 	//Placement
 }

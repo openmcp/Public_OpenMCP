@@ -76,11 +76,11 @@ func (pl *MatchClusterAffinity) PreFilter(newPod *ketiresource.Pod, clusterInfo 
 func (pl *MatchClusterAffinity) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, cm *clusterManager.ClusterManager) bool {
 
 	if len(newPod.Affinity) == 0 {
-		//omcplog.V(3).Info("MatchClusterAffinity true ")
+		omcplog.V(3).Info("MatchClusterAffinity true ")
 		return true
 	}
 	if clusterInfo.PreFilterTwoStep == true {
-		//omcplog.V(3).Info("MatchClusterAffinity true ")
+		omcplog.V(3).Info("MatchClusterAffinity true ")
 		return true
 	}
 	omcplog.V(4).Info("MatchClusterAffinity false ")

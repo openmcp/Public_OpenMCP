@@ -16,13 +16,15 @@ func (pl *PodFitsResources) Name() string {
 func (pl *PodFitsResources) PreFilter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster) bool {
 	for _, node := range clusterInfo.Nodes {
 		// check if node has enough CPU
-		if node.AllocatableResource.MilliCPU < newPod.RequestedResource.MilliCPU {
-			// omcplog.V(0).Info(clusterInfo.ClusterName + "True")
+		if node.AllocatableResource.MilliCPU <= newPod.RequestedResource.MilliCPU {
+
 			clusterInfo.PreFilter = false
+			omcplog.V(4).Info("pod fits resource true")
 			return true
 		}
 
 	}
+
 	clusterInfo.PreFilter = true
 	omcplog.V(4).Info("pod fits resource false  ")
 	return false
@@ -34,14 +36,17 @@ func (pl *PodFitsResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketire
 	for _, node := range clusterInfo.Nodes {
 		node_result := true
 		// check if node has enough Memory
-		if node.AllocatableResource.Memory < newPod.RequestedResource.Memory {
+		if node.AllocatableResource.Memory <= newPod.RequestedResource.Memory {
+			omcplog.V(3).Infof("node memory [%v]", node.AllocatableResource.Memory)
 			node_result = false
 		}
 		// check if node has enough EphemeralStorage
-		if node.AllocatableResource.EphemeralStorage < newPod.RequestedResource.EphemeralStorage {
+		if node.AllocatableResource.EphemeralStorage <= newPod.RequestedResource.EphemeralStorage {
+			omcplog.V(3).Infof("EphemeralStorage [%v]", node.AllocatableResource.EphemeralStorage)
 			node_result = false
 		}
-		if node.AllocatableResource.MilliCPU < newPod.RequestedResource.MilliCPU {
+		if node.AllocatableResource.MilliCPU <= newPod.RequestedResource.MilliCPU {
+			omcplog.V(3).Infof("MilliCPU [%v]", node.AllocatableResource.MilliCPU)
 			node_result = false
 		}
 		if node_result == true {

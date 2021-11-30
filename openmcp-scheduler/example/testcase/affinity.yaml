@@ -7,10 +7,10 @@ spec:
   replicas: 3
   affinity: 
     region: 
-      - AS
-    zone: 
-      - KR
-      - CH
+      - GB
+#    zone: 
+#      - KR
+#      - CH
   labels:
       app: openmcp-nginx
       test: "yes"

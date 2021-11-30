@@ -216,7 +216,7 @@ func CreateCloudClusterResource(c_name string, c_type string, config []byte, c_l
 	if c_type == "EKS" && c_loc == "eu-west-3" {
 		ni := clusterv1alpha1.NodeInfo{
 			Region: "FR",
-			Zone:   "Île-de-France",
+			Zone:   "Ile-de-France",
 		}
 
 		clusterCR.Spec.NodeInfo = ni

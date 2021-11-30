@@ -11,10 +11,12 @@ metadata:
   name: test-deploy
   namespace: keti
 spec:
-  replicas: 30
+  replicas: 3
+  clusters:
+  - cluster14
+  - cluster13
   labels:
       app: openmcp-nginx
-      test: "yes"
   template:
     spec:
       template:
@@ -26,7 +28,7 @@ spec:
               name: nginx
               resources:
                 requests:
-                  memory: "10"
+                  memory: "9"
                   cpu: "0.1"
 EOF
 
