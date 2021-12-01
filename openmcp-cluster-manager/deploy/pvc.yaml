@@ -29,3 +29,19 @@ spec:
   selector:
     matchLabels:
       app: initmodule
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-aws-config
+  namespace: openmcp
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: cluster-manager
+  selector:
+    matchLabels:
+      app: aws-config

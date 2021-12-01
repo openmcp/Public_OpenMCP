@@ -33,3 +33,21 @@ spec:
     path: /root/workspace/usr/kch/openmcp/Public_OpenMCP/install_openmcp/member
     server: "10.0.3.20"
     readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-aws-config
+  labels:
+    app: aws-config
+spec:
+  capacity:
+    storage: 2Gi
+  storageClassName: cluster-manager
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    path: /root/.aws
+    server: "10.0.3.20"
+    readOnly: false

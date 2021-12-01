@@ -113,6 +113,13 @@ if [ "" = "$NFS_OK3" ]; then
   echo "Not found NFS Setting. Add Export '/home/nfs' in /etc/exports"
   echo "/home/nfs *(rw,no_root_squash,sync,no_subtree_check)" >> /etc/exports
 fi
+
+NFS_OK4=$(grep -r '/root/.aws' /etc/exports)
+if [ "" = "$NFS_OK4" ]; then
+  echo "Not found NFS Setting. Add Export '/root/.aws' in /etc/exports"
+  echo "/root/.aws *(rw,no_root_squash,sync,no_subtree_check)" >> /etc/exports
+fi
+
 exportfs -a
 
 # Init /etc/resolv.conf
@@ -169,7 +176,8 @@ sed -i 's|REPLACE_GRPCIP|'\"$OMCP_IP\"'|g' master/openmcp-has-controller/operato
 sed -i 's|REPLACE_GRPCIP|'\"$OMCP_IP\"'|g' master/openmcp-scheduler/operator.yaml
 sed -i 's|REPLACE_GRPCIP|'\"$OMCP_IP\"'|g' master/openmcp-loadbalancing-controller/operator.yaml
 
-sed -i 's|REPLACE_INIT_MEMBER_DIR|'\"$INIT_MEMBER_DIR\"'|g' master/openmcp-cluster-manager/pv.yaml 
+
+sed -i 's|REPLACE_INIT_MEMBER_DIR|'$INIT_MEMBER_DIR'|g' master/openmcp-cluster-manager/pv.yaml 
 sed -i 's|REPLACE_OMCPIP|'\"$OMCP_IP\"'|g' master/openmcp-cluster-manager/pv.yaml
 sed -i 's|REPLACE_OMCPIP|'\"$OMCP_IP\"'|g' master/openmcp-apiserver/pv.yaml
 
