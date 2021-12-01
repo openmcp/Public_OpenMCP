@@ -47,8 +47,8 @@ type MigrationSource struct {
 
 // MigrationStatus defines the observed state of Migration
 type MigrationStatus struct {
-	ElapsedTime string `json:"elapsedTime,omitempty"`
-
+	ElapsedTime   string `json:"elapsedTime,omitempty"`
+	CheckZeroTime string `json:"checkZeroTime,omitempty"`
 	// Status of the condition, one of True, False, Unknown.
 	IsZeroDownTime v1.ConditionStatus `json:"isZeroDownTime,omitempty" protobuf:"bytes,2,opt,name=isZeroDownTime,casttype=k8s.io/api/core/v1.ConditionStatus"`
 	// 현재 진행도

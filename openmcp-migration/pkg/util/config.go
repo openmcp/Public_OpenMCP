@@ -2,8 +2,14 @@ package util
 
 /*User Config*/
 //external NFS IP
-const EXTERNAL_NFS = "211.45.109.210"
+//const EXTERNAL_NFS = "211.45.109.210"
+
+//const EXTERNAL_NFS_PATH = "/home/nfs/pv"
+//const EXTERNAL_NFS = "192.168.0.161"
 const EXTERNAL_NFS_PATH = "/home/nfs/pv"
+
+//keti test
+const EXTERNAL_NFS = "115.94.141.62"
 
 /*System Config*/
 /***********************************************************/

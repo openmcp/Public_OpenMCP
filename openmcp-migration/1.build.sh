@@ -1,9 +1,10 @@
 #!/bin/bash
-docker_registry_ip="10.0.3.40:5005"
-#docker_registry_ip="index.docker.io"
+#docker_registry_ip="10.0.3.40:5005"
+docker_registry_ip="index.docker.io"
 docker_id="openmcp"
 controller_name="openmcp-migration"
 controller_version="v0.0.2"
+#controller_version="v2.0.2.c"
 
 export GO111MODULE=on
 go mod vendor
