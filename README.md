@@ -212,6 +212,7 @@ post-scheduling-type           19h
 15017 -> 32017
 15443 -> 32443
 ```
+  
 <API Certificate>
 ```bash
 cd /etc/kubernetes/pki
@@ -224,6 +225,7 @@ sudo kubeadm init phase certs apiserver --apiserver-advertise-address=0.0.0.0 --
 
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 ```
+  
 <KubeConfig Modify>
 ```bash
 $ vim $HOME/.kube/config
