@@ -17,8 +17,8 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
 	"log"
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
@@ -31,11 +31,13 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
+var cm = clusterManager.NewClusterManager()
+
 func main() {
 
 	logLevel.KetiLogInit()
 
-	cm := clusterManager.NewClusterManager()
+	omcplog.V(2).Info("OpenMCP Namespace Controller Start")
 
 	host_ctx := "openmcp"
 	namespace := "openmcp"
@@ -53,13 +55,24 @@ func main() {
 
 		ghosts = append(ghosts, ghost)
 	}
-	for _, ghost := range ghosts {
-		fmt.Println(ghost.Name)
+
+	co, err_co := openmcpnamespace.NewController(live, ghosts, namespace, cm)
+	if err_co != nil {
+		omcplog.V(2).Info("err_co : ", err_co)
+		return
 	}
 
-	co, _ := openmcpnamespace.NewController(live, ghosts, namespace, cm)
-	reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
-	loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
+	reshape_cont, err_reshape := reshape.NewController(live, ghosts, namespace, cm)
+	if err_reshape != nil {
+		omcplog.V(2).Info("err_reshape : ", err_reshape)
+		return
+	}
+
+	loglevel_cont, err_log := logLevel.NewController(live, ghosts, namespace)
+	if err_log != nil {
+		omcplog.V(2).Info("err_log : ", err_log)
+		return
+	}
 
 	m := manager.New()
 	m.AddController(co)

@@ -19,7 +19,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"openmcp/openmcp/openmcp-resource-controller/openmcp-configmap-controller/src/controller"
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
@@ -27,6 +27,8 @@ import (
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/manager"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+
+	"openmcp/openmcp/openmcp-resource-controller/openmcp-configmap-controller/src/controller"
 )
 
 func main() {
@@ -53,10 +55,24 @@ func main() {
 	for _, ghost := range ghosts {
 		fmt.Println(ghost.Name)
 	}
-	co, _ := controller.NewController(live, ghosts, namespace, cm)
-	reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
-	loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
 
+	co, err_co := controller.NewController(live, ghosts, namespace, cm)
+	if err_co != nil {
+		omcplog.V(2).Info("err_co : ", err_co)
+		return
+	}
+
+	reshape_cont, err_reshape := reshape.NewController(live, ghosts, namespace, cm)
+	if err_reshape != nil {
+		omcplog.V(2).Info("err_reshape : ", err_reshape)
+		return
+	}
+
+	loglevel_cont, err_log := logLevel.NewController(live, ghosts, namespace)
+	if err_log != nil {
+		omcplog.V(2).Info("err_log : ", err_log)
+		return
+	}
 	m := manager.New()
 	m.AddController(co)
 	m.AddController(reshape_cont)

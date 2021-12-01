@@ -34,7 +34,7 @@ var cm = clusterManager.NewClusterManager()
 func main() {
 	logLevel.KetiLogInit()
 
-	omcplog.V(2).Info("Start OpenMCP Deployment Controller")
+	omcplog.V(2).Info("OpenMCP Deployment Controller Start")
 
 	//cm := clusterManager.NewClusterManager()
 

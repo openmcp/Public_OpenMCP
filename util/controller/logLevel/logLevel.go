@@ -21,7 +21,8 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
 	}
-	ghostclients := []client.Client{}
+
+	/*ghostclients := []client.Client{}
 	for _, ghost := range ghosts {
 		ghostclient, err := ghost.GetDelegatingClient()
 		if err != nil {
@@ -30,7 +31,12 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		ghostclients = append(ghostclients, ghostclient)
 	}
 
-	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{})
+	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{})*/
+
+	r := &reconciler{live: liveclient} //, ghosts: ghostclients, ghostNamespace: ghostNamespace}
+
+	co := controller.New(r, controller.Options{})
+
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
@@ -42,9 +48,9 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 }
 
 type reconciler struct {
-	live           client.Client
-	ghosts         []client.Client
-	ghostNamespace string
+	live client.Client
+	//ghosts         []client.Client
+	//ghostNamespace string
 }
 
 var logLevel = "0"

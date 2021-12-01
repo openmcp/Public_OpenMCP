@@ -37,15 +37,18 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
 	}
-	ghostclients := []client.Client{}
+
+	/*ghostclients := []client.Client{}
 	for _, ghost := range ghosts {
 		ghostclient, err := ghost.GetDelegatingClient()
 		if err != nil {
 			return nil, fmt.Errorf("getting delegating client for ghost cluster: %v", err)
 		}
 		ghostclients = append(ghostclients, ghostclient)
-	}
-	r := &reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}
+	}*/
+
+	r := &reconciler{live: liveclient} //, ghosts: ghostclients, ghostNamespace: ghostNamespace}
+
 	co := controller.New(r, controller.Options{})
 	if err := fedapis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
@@ -84,9 +87,9 @@ func (r *reconciler) initGlobal() {
 }
 
 type reconciler struct {
-	live           client.Client
-	ghosts         []client.Client
-	ghostNamespace string
+	live client.Client
+	//ghosts         []client.Client
+	//ghostNamespace string
 }
 
 //var i int = 0

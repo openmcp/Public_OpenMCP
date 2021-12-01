@@ -49,12 +49,15 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 
 	ghostclients := map[string]client.Client{}
 	for _, ghost := range ghosts {
+
 		ghostclient, err := ghost.GetDelegatingClient()
 		if err != nil {
-			return nil, fmt.Errorf("getting delegating client for ghost cluster: %v", err)
+			omcplog.V(4).Info("Error getting delegating client for ghost cluster [", ghost.Name, "]")
+			//return nil, fmt.Errorf("getting delegating client for ghost cluster: %v", err)
+		} else {
+			ghostclients[ghost.Name] = ghostclient
+			//ghostclients = append(ghostclients, ghostclient)
 		}
-		ghostclients[ghost.Name] = ghostclient
-		//ghostclients = append(ghostclients, ghostclient)
 	}
 
 	co := controller.New(&reconciler{live: liveClient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{})
@@ -132,9 +135,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 			pv := &v1.PersistentVolume{}
 
-			//cluster_client := cm.Cluster_genClients[cluster.Name]
-			cluster_client := r.ghosts[cluster.Name]
-			err = cluster_client.Get(context.TODO(), ObjectKey{Name: req.Name}, pv)
+			cluster_client := cm.Cluster_genClients[cluster.Name]
+			err = cluster_client.Get(context.TODO(), pv, req.Namespace, req.Name)
+			//cluster_client := r.ghosts[cluster.Name]
+			//err = cluster_client.Get(context.TODO(), ObjectKey{Name: req.Name}, pv)
 			//delete
 			if err == nil {
 				pvinstance := &v1.PersistentVolume{
@@ -175,11 +179,12 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			type ObjectKey = types.NamespacedName
 			foundpv := &v1.PersistentVolume{}
 
-			//cluster_client := cm.Cluster_genClients[cluster.Name]
-			cluster_client := r.ghosts[clustername]
-			err = cluster_client.Get(context.TODO(), ObjectKey{Namespace: opv_instance.Namespace, Name: opv_instance.Name}, foundpv)
+			cluster_client := cm.Cluster_genClients[clustername]
+			err = cluster_client.Get(context.TODO(), foundpv, opv_instance.Namespace, opv_instance.Name)
 
-			//err = cluster_client.Get(context.TODO(), foundpv, opv_instance.Namespace, opv_instance.Name)
+			//cluster_client := r.ghosts[clustername]
+			//err = cluster_client.Get(context.TODO(), ObjectKey{Namespace: opv_instance.Namespace, Name: opv_instance.Name}, foundpv)
+
 			if err != nil && errors.IsNotFound(err) {
 				//create
 				command := "create"
