@@ -15,6 +15,9 @@ spec:
   hostPath: 
     path: /tmp
     type: Directory
+  claimRef:
+    name: iot-gateway-pvc
+    namespace: default
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -30,9 +33,9 @@ spec:
   resources: 
     requests: 
       storage: 1Gi
-  selector: 
-    matchLabels: 
-      name: iot-gateway-pv 
+#  selector: 
+#    matchLabels: 
+#      name: iot-gateway-pv 
 ---
 apiVersion: apps/v1
 kind: Deployment

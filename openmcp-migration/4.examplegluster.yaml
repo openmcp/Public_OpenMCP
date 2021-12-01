@@ -1,0 +1,15 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: Migration
+metadata:
+  name: migrations
+spec:
+  migrationServiceSource:
+  - sourceCluster: cluster1
+    targetCluster: cluster2
+    nameSpace: default
+    serviceName: gluster
+    migrationSource:
+    - resourceName: gluster-dp
+      resourceType: Deployment
+    - resourceName: gluster-sv
+      resourceType: Service
