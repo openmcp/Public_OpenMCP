@@ -245,15 +245,23 @@ NAME                                       TYPE           CLUSTER-IP       EXTER
 service/openmcp-apiserver                  LoadBalancer   10.96.65.179     XX.XX.XX.XX   8080:30000/TCP   54s
 ```
 
-### (3) Register DNS Server [In sub-cluster]
+### (3) Register DNS Server or Hosts [In sub-cluster]
 
-Write the [<EXTERNAL_SERVER_IP>](https://github.com/openmcp/external) of the external server at the top of the '/etc/resolv.conf' file.
-This is to join the OpenMCP cluster through DNS Domain on the API server.
-  
+If you are using the same network, write the  [<EXTERNAL_SERVER_IP>](https://github.com/openmcp/external of an external server at the top of the '/etc/resolv.conf' file. Join the OpenMCP cluster through the DNS domain of the API server. If you use a different network, write the authorized APISERVER IP information of the OpenMCP master in /etc/hosts.
+
+
+
 ```bash
+# Same Network
 $ vim /etc/resolv.conf
 nameserver <EXTERNAL_SERVER_IP>
+
+# Different Network
+$ vim /etc/hosts
+<PUBLIC_APISERVER_IP> openmcp-apiserver.openmcp.default-domain.svc.openmcp.example.org
 ```
+
+
 
 ### (4) Register Region and Zone to All Nodes of sub-cluster [In sub-cluster]
 
