@@ -386,13 +386,15 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 							util.CmdExec2("rm " + dirname + "/metallb_configmap_" + clustername + ".yaml")
 							fmt.Println("*** ", dirname+"/metallb_configmap_"+clustername+" created")
 						} else if strings.Contains(dirname, "configmap/coredns") {
-							if netLoc == "external" {
+							if netLoc == "external" && strings.Contains(f.Name(), "coredns-cm_ex.yaml") {
 								util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/coredns-cm_ex.yaml --context " + clustername)
-							} else {
+								util.CmdExec2("/usr/local/bin/kubectl delete pod --namespace kube-system --selector k8s-app=kube-dns")
+								fmt.Println("*** ", dirname+" restarted")
+							} else if netLoc == "internal" && strings.Contains(f.Name(), "coredns-cm_in.yaml") {
 								util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/coredns-cm_in.yaml --context " + clustername)
+								util.CmdExec2("/usr/local/bin/kubectl delete pod --namespace kube-system --selector k8s-app=kube-dns")
+								fmt.Println("*** ", dirname+" restarted")
 							}
-							util.CmdExec2("/usr/local/bin/kubectl delete pod --namespace kube-system --selector k8s-app=kube-dns")
-							fmt.Println("*** ", dirname+" restarted")
 						} else {
 							if strings.Contains(dirname, "istio") {
 							} else {
