@@ -205,14 +205,14 @@ post-scheduling-type           19h
 
 ### (0) If the cluster you are trying to join is writing an internal network, you must change the certificate of port forwarding and API Server.
 
-<Port Forwarding>
+> Port Forwarding
 ```bash
   15012 -> 32012
   15021 -> 32021
   15017 -> 32017
   15443 -> 32443
 ```
-  <API Certificate>
+> API Certificate
 ```bash
 cd /etc/kubernetes/pki
 
@@ -225,7 +225,7 @@ sudo kubeadm init phase certs apiserver --apiserver-advertise-address=0.0.0.0 --
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 ```
   
-<KubeConfig Modify>
+> KubeConfig Modify
 ```bash
 $ vim $HOME/.kube/config
 server: https://<EXTERNALIP>:6443
