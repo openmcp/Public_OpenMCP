@@ -113,6 +113,13 @@ if [ "" = "$NFS_OK3" ]; then
   echo "Not found NFS Setting. Add Export '/home/nfs' in /etc/exports"
   echo "/home/nfs *(rw,no_root_squash,sync,no_subtree_check)" >> /etc/exports
 fi
+
+NFS_OK4=$(grep -r '/root/.aws' /etc/exports)
+if [ "" = "$NFS_OK4" ]; then
+  echo "Not found NFS Setting. Add Export '/root/.aws' in /etc/exports"
+  echo "/root/.aws *(rw,no_root_squash,sync,no_subtree_check)" >> /etc/exports
+fi
+
 exportfs -a
 
 # Init /etc/resolv.conf

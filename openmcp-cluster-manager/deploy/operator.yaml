@@ -39,6 +39,8 @@ spec:
               mountPath: /mnt
             - name: initmodule
               mountPath: /init
+            - name: aws-config
+              mountPath: /root/.aws
           env:
           - name: INFLUX_IP
             value: "10.0.3.20"
@@ -55,6 +57,9 @@ spec:
         - name: initmodule
           persistentVolumeClaim:
             claimName: pvc-initmodule
+        - name: aws-config
+          persistentVolumeClaim:
+            claimName: pvc-aws-config
       tolerations:
         - key: node.kubernetes.io/not-ready
           effect: NoExecute
