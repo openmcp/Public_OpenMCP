@@ -207,13 +207,12 @@ post-scheduling-type           19h
 
 <Port Forwarding>
 ```bash
-15012 -> 32012
-15021 -> 32021
-15017 -> 32017
-15443 -> 32443
+  15012 -> 32012
+  15021 -> 32021
+  15017 -> 32017
+  15443 -> 32443
 ```
-  
-<API Certificate>
+  <API Certificate>
 ```bash
 cd /etc/kubernetes/pki
 
