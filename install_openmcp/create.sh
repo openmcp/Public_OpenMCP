@@ -218,7 +218,6 @@ sed -i 's|REPLACE_PORT|'$LB_NODE_PORT'|g' master/openmcp-loadbalancing-controlle
 
 sed -i 's|REPLACE_NFSIP|'\"$OMCP_IP\"'|g' master/influxdb/pv.yaml
 
-sed -i 's|REPLACE_PDNSIP|'$PDNS_IP':53|g' master/configmap/coredns/coredns-cm.yaml
 sed -i 's|REPLACE_PDNSIP|'$PDNS_IP':53|g' member/configmap/coredns/coredns-cm_in.yaml
 sed -i 's|REPLACE_PDNSIP|'$PDNS_PUBLIC_IP':'$PDNS_PUBLIC_PORT'|g' member/configmap/coredns/coredns-cm_ex.yaml
 
