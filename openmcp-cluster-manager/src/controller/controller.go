@@ -138,13 +138,13 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 			var moduleDirectory []string
 			if clusterInstance.Spec.ClusterPlatformType == "GKE" {
-				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap", "istio"}
+				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metric-collector", "metrics-server", "nginx-ingress-controller", "istio" /*, "configmap" */}
 			} else if clusterInstance.Spec.ClusterPlatformType == "AKS" || clusterInstance.Spec.ClusterPlatformType == "EKS" {
-				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap", "istio"}
+				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metric-collector", "metrics-server", "nginx-ingress-controller", "istio" /*, "configmap" */}
 			} else if clusterInstance.Spec.ClusterNetworkLocation == "internal" {
-				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap"}
+				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller" /*, "configmap" */}
 			} else if clusterInstance.Spec.ClusterNetworkLocation == "external" {
-				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap", "istio"}
+				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "istio" /*, "configmap" */}
 			}
 
 			for i, dirname := range moduleDirectory {
@@ -242,9 +242,9 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			omcplog.V(4).Info("Delete OpenMCP Module ---")
 			var moduleDirectory []string
 			if clusterInstance.Spec.ClusterPlatformType == "GKE" || clusterInstance.Spec.ClusterPlatformType == "AKS" || clusterInstance.Spec.ClusterPlatformType == "EKS" {
-				moduleDirectory = []string{"custom-metrics-apiserver", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap", "istio", "namespace"}
+				moduleDirectory = []string{"custom-metrics-apiserver", "metric-collector", "metrics-server", "nginx-ingress-controller", "istio", "namespace" /*, "configmap"*/}
 			} else {
-				moduleDirectory = []string{"custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "configmap", "istio", "namespace"}
+				moduleDirectory = []string{"custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "istio", "namespace" /*, "configmap"*/}
 			}
 			for i, dirname := range moduleDirectory {
 				moduleDirectory[i] = "/init/" + dirname
@@ -385,14 +385,17 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/metallb_configmap_" + clustername + ".yaml --context " + clustername)
 							util.CmdExec2("rm " + dirname + "/metallb_configmap_" + clustername + ".yaml")
 							fmt.Println("*** ", dirname+"/metallb_configmap_"+clustername+" created")
+
 						} else if strings.Contains(dirname, "configmap/coredns") {
-							if netLoc == "external" {
+							if netLoc == "external" && strings.Contains(f.Name(), "coredns-cm_ex.yaml") {
 								util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/coredns-cm_ex.yaml --context " + clustername)
-							} else {
+								util.CmdExec2("/usr/local/bin/kubectl delete pod --namespace kube-system --selector k8s-app=kube-dns")
+								fmt.Println("*** ", dirname+" restarted")
+							} else if netLoc == "internal" && strings.Contains(f.Name(), "coredns-cm_in.yaml") {
 								util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/coredns-cm_in.yaml --context " + clustername)
+								util.CmdExec2("/usr/local/bin/kubectl delete pod --namespace kube-system --selector k8s-app=kube-dns")
+								fmt.Println("*** ", dirname+" restarted")
 							}
-							util.CmdExec2("/usr/local/bin/kubectl delete pod --namespace kube-system --selector k8s-app=kube-dns")
-							fmt.Println("*** ", dirname+" restarted")
 						} else {
 							if strings.Contains(dirname, "istio") {
 							} else {
@@ -467,6 +470,8 @@ func UninstallInitModule(directory []string, clustername string) {
 								fmt.Println(ctx.Err())
 								fmt.Println("success to delete ns")
 							}
+
+						} else if strings.Contains(dirname, "configmap/coredns") {
 
 						} else {
 							util.CmdExec2("/usr/local/bin/kubectl delete -f " + dirname + "/" + f.Name() + " --context " + clustername)
