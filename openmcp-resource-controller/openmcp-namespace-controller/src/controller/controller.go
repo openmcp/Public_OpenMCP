@@ -38,24 +38,29 @@ import (
 var cm *clusterManager.ClusterManager
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
-	omcplog.V(4).Info("Function Called NewController")
+	omcplog.V(4).Info("NewController Function Called ")
 	cm = myClusterManager
 
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
 	}
+
 	ghostclients := []client.Client{}
 	for _, ghost := range ghosts {
 		ghostclient, err := ghost.GetDelegatingClient()
 		if err != nil {
-			return nil, fmt.Errorf("getting delegating client for ghost cluster: %v", err)
+			omcplog.V(4).Info("Error getting delegating client for ghost cluster [", ghost.Name, "]")
+			//return nil, fmt.Errorf("getting delegating client for ghost cluster: %v", err)
+		} else {
+			ghostclients = append(ghostclients, ghostclient)
 		}
-		ghostclients = append(ghostclients, ghostclient)
 	}
+
 	r := &reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}
 
 	co := controller.New(r, controller.Options{})
+
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
@@ -70,11 +75,10 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		}
 	}
 
-	//r.newClusterDeployNamespace()
 	return co, nil
 }
 func (r *reconciler) newClusterDeployNamespace() error {
-	omcplog.V(4).Info("Function Called newClusterDeployNamespace")
+	omcplog.V(4).Info("newClusterDeployNamespace Function Called ")
 
 	ns := &corev1.Namespace{}
 	onList, err := cm.Crd_client.OpenMCPNamespace("default").List(metav1.ListOptions{})
@@ -115,7 +119,7 @@ type reconciler struct {
 var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
-	omcplog.V(4).Info("Function Called Reconcile")
+	omcplog.V(4).Info("OpenMCPNamespace Reconcile Function Called")
 	i += 1
 	omcplog.V(5).Info("********* [", i, "] *********")
 	omcplog.V(3).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
@@ -124,19 +128,20 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	instance := &resourcev1alpha1.OpenMCPNamespace{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
 
-	omcplog.V(4).Info("instance Name: ", instance.Name)
-	omcplog.V(4).Info("instance Namespace : ", instance.Namespace)
-
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// ...TODO: multicluster garbage collector
 			// Until then...
 			omcplog.V(3).Info("Delete OpenMCPNamespace")
-			err := r.DeleteNamespace(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
-			return reconcile.Result{}, err
+			err_delete := r.DeleteNamespace(cm, req.NamespacedName.Name, req.NamespacedName.Namespace)
+
+			if err_delete != nil {
+				return reconcile.Result{}, err_delete
+			}
+			return reconcile.Result{}, nil
 		}
 		omcplog.V(1).Info(err)
-		return reconcile.Result{}, err
+		return reconcile.Result{}, nil
 	}
 
 	if instance.Status.ClusterMaps == nil {
@@ -200,7 +205,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 }
 
 func (r *reconciler) namespaceForOpenMCPNamespace(req reconcile.Request, m *resourcev1alpha1.OpenMCPNamespace) *corev1.Namespace {
-	omcplog.V(4).Info("Function Called namespaceForOpenMCPNamespace")
+	omcplog.V(4).Info("namespaceForOpenMCPNamespace Function Called ")
 
 	newLabel := m.Labels
 	if newLabel == nil {
@@ -230,7 +235,7 @@ func (r *reconciler) namespaceForOpenMCPNamespace(req reconcile.Request, m *reso
 var syncIndex int = 0
 
 func (r *reconciler) sendSync(secret *corev1.Namespace, command string, clusterName string) (string, error) {
-	omcplog.V(4).Info("Function Called sendSync")
+	omcplog.V(4).Info("sendSync Function Called")
 
 	syncIndex += 1
 
@@ -258,7 +263,7 @@ func (r *reconciler) sendSync(secret *corev1.Namespace, command string, clusterN
 }
 
 func (r *reconciler) createNamespace(req reconcile.Request, cm *clusterManager.ClusterManager, instance *resourcev1alpha1.OpenMCPNamespace) error {
-	omcplog.V(4).Info("Function Called createNamespace")
+	omcplog.V(4).Info("createNamespace Function Called")
 	dep := r.namespaceForOpenMCPNamespace(req, instance)
 
 	// err := cm.Host_client.Create(context.TODO(), dep)
@@ -291,7 +296,7 @@ func (r *reconciler) createNamespace(req reconcile.Request, cm *clusterManager.C
 }
 
 func (r *reconciler) DeleteNamespace(cm *clusterManager.ClusterManager, name string, namespace string) error {
-	omcplog.V(4).Info("Function Called DeleteNamespace")
+	//omcplog.V(4).Info("DeleteNamespace Function Called")
 
 	dep := &corev1.Namespace{
 		TypeMeta: metav1.TypeMeta{
@@ -305,28 +310,26 @@ func (r *reconciler) DeleteNamespace(cm *clusterManager.ClusterManager, name str
 	}
 	err := cm.Host_client.Delete(context.TODO(), dep, dep.Namespace, dep.Name)
 	if err != nil && errors.IsNotFound(err) {
-		fmt.Println(err)
-	} else if err != nil {
-		return err
+		omcplog.V(4).Info(err)
 	}
 
 	for _, cluster := range cm.Cluster_list.Items {
 
-		omcplog.V(3).Info(cluster.Name, " Delete Start")
+		omcplog.V(3).Info("[", cluster.Name, "] Delete Start")
 
 		command := "delete"
 		_, err := r.sendSync(dep, command, cluster.Name)
 
 		if err != nil {
-			return err
+			omcplog.V(4).Info(err)
 		}
-		omcplog.V(3).Info(cluster.Name, "Delete Complete")
+		omcplog.V(3).Info("[", cluster.Name, "] Delete Complete")
 	}
 	return nil
 }
 
 func (r *reconciler) updateNamespace(req reconcile.Request, cm *clusterManager.ClusterManager, instance *resourcev1alpha1.OpenMCPNamespace) error {
-	omcplog.V(4).Info("Function Called updateNamespace")
+	omcplog.V(4).Info("updateNamespace Function Called ")
 
 	for _, cluster := range cm.Cluster_list.Items {
 
@@ -349,11 +352,11 @@ func CheckClusterNamespaceStatus(myClusterManager *clusterManager.ClusterManager
 	for {
 		select {
 		case <-quit:
-			omcplog.V(2).Info("CheckClusterNamespaceStatus Quit")
+			//omcplog.V(2).Info("CheckClusterNamespaceStatus Quit")
 			quitok <- true
 			return
 		default:
-			omcplog.V(2).Info("CheckClusterNamespaceStatus Start")
+			//omcplog.V(2).Info("CheckClusterNamespaceStatus Start")
 			onsList, err := cm.Crd_client.OpenMCPNamespace("default").List(metav1.ListOptions{})
 			if err != nil {
 				omcplog.V(0).Info(err)

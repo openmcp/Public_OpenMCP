@@ -266,7 +266,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 				omcplog.V(0).Info(err)
 			}
 
-			omcplog.V(4).Info("Cluster Unjoin---")
+			//omcplog.V(4).Info("Cluster Unjoin---")
 			UnjoinAndDeleteConfig(memberkc, openmcpkc)
 
 			omcplog.V(4).Info("--- UNJOIN Complete ---")
@@ -387,7 +387,7 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 							fmt.Println("*** ", dirname+"/metallb_configmap_"+clustername+" created")
 
 						} else if strings.Contains(dirname, "configmap/coredns") {
-							if netLoc == "external" && strings.Contains(f.Name(), "coredns-cm_ex.yaml") {
+							/*if netLoc == "external" && strings.Contains(f.Name(), "coredns-cm_ex.yaml") {
 								util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/coredns-cm_ex.yaml --context " + clustername)
 								util.CmdExec2("/usr/local/bin/kubectl delete pod --namespace kube-system --selector k8s-app=kube-dns")
 								fmt.Println("*** ", dirname+" restarted")
@@ -395,7 +395,7 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 								util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/coredns-cm_in.yaml --context " + clustername)
 								util.CmdExec2("/usr/local/bin/kubectl delete pod --namespace kube-system --selector k8s-app=kube-dns")
 								fmt.Println("*** ", dirname+" restarted")
-							}
+							}*/
 						} else {
 							if strings.Contains(dirname, "istio") {
 							} else {
