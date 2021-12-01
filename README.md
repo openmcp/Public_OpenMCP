@@ -207,6 +207,7 @@ post-scheduling-type           19h
 
 > Port Forwarding
 ```bash
+  6443 -> 6443
   15012 -> 32012
   15021 -> 32021
   15017 -> 32017
