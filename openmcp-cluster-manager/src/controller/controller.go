@@ -297,6 +297,11 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 func InstallInitModule(directory []string, clustername string, ipaddressfrom string, ipaddressto string, netLoc string, public_istio_eastwest_ip string) {
 
 	for i := 0; i < len(directory); i++ {
+
+		if netLoc == "internal" {
+			time.Sleep(time.Second * 7)
+		}
+
 		dirname, _ := filepath.Abs(directory[i])
 		//fmt.Println(dirname)
 		fi, err := os.Stat(dirname)
@@ -323,8 +328,6 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 
 					if strings.Contains(f.Name(), "istio_install.sh") {
 
-						//ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
-						//go func() {
 						util.CmdExec2("chmod 755 " + dirname + "/gen-eastwest-gateway.sh")
 
 						util.CmdExec2("chmod 755 " + dirname + "/istio_install.sh")
@@ -332,32 +335,42 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 
 						fmt.Println("*** ", dirname+" created")
 
-						//	cancel()
+						/*
+							//ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+							//go func() {
+							util.CmdExec2("chmod 755 " + dirname + "/gen-eastwest-gateway.sh")
 
-						//}()
+							util.CmdExec2("chmod 755 " + dirname + "/istio_install.sh")
+							util.CmdExec2(dirname + "/istio_install.sh " + dirname + " " + clustername)
 
-						/*select {
-						case <-time.After(130 * time.Second):
-							//fmt.Println("fail to delete ns")
-							cancel()
-						case <-ctx.Done():
-							//fmt.Println("success to delete ns")
-						}
+							fmt.Println("*** ", dirname+" created")
 
-						err_ctx := ctx.Err()
+							//	cancel()
 
-						if err_ctx == context.DeadlineExceeded {
-							fmt.Println(ctx.Err())
-							fmt.Println("fail to install istio")
+							//}()
 
-							util.CmdExec2("/usr/local/bin/kubectl delete svc --all -n istio-system --context " + clustername)
-							util.CmdExec2("/usr/local/bin/kubectl delete deploy --all -n istio-system --context " + clustername)
-							//util.CmdExec2("/usr/local/bin/kubectl delete ns istio-system --context " + clustername)
+							select {
+							case <-time.After(130 * time.Second):
+								//fmt.Println("fail to delete ns")
+								cancel()
+							case <-ctx.Done():
+								//fmt.Println("success to delete ns")
+							}
 
-						} else if err_ctx == context.Canceled {
-							fmt.Println(ctx.Err())
-							fmt.Println("success to install istio")
-						}*/
+							err_ctx := ctx.Err()
+
+							if err_ctx == context.DeadlineExceeded {
+								fmt.Println(ctx.Err())
+								fmt.Println("fail to install istio")
+
+								util.CmdExec2("/usr/local/bin/kubectl delete svc --all -n istio-system --context " + clustername)
+								util.CmdExec2("/usr/local/bin/kubectl delete deploy --all -n istio-system --context " + clustername)
+								//util.CmdExec2("/usr/local/bin/kubectl delete ns istio-system --context " + clustername)
+
+							} else if err_ctx == context.Canceled {
+								fmt.Println(ctx.Err())
+								fmt.Println("success to install istio")
+							}*/
 					}
 
 					if filepath.Ext(f.Name()) == ".yaml" || filepath.Ext(f.Name()) == ".yml" {

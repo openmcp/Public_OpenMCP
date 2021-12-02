@@ -2,8 +2,6 @@
 
 start_time=$( date +%s.%N )
 
-#kubectl create -f openmcpdeploy.yaml
-
 cat <<EOF | kubectl create -f -
 apiVersion: openmcp.k8s.io/v1alpha1
 kind: OpenMCPDeployment
@@ -14,9 +12,9 @@ spec:
   replicas: 30
   clusters:
   - cluster01
-  - cluster10
-  - cluster05
-  - cluster11
+  - cluster02
+  - cluster03
+  - cluster04
   labels:
       app: openmcp-nginx
   template:
@@ -28,10 +26,10 @@ spec:
           containers:
             - image: nginx
               name: nginx
-              resources:
-                requests:
-                  memory: "9"
-                  cpu: "0.1"
+#              resources:
+#                requests:
+#                  memory: "1"
+#                  cpu: "0.1"
 EOF
 
 sleep 1
@@ -57,7 +55,7 @@ do
            continue
         fi
 
-        statuslist=($(kubectl get pod -n keti --context cluster10 | grep 'test-deploy' | awk '{print $3}'))
+        statuslist=($(kubectl get pod -n keti --context cluster02 | grep 'test-deploy' | awk '{print $3}'))
 
         for ((i=0; i<${#statuslist[@]}; i++)); do
             status=${statuslist[i]}
@@ -72,7 +70,7 @@ do
            continue
         fi
 
-        statuslist2=($(kubectl get pod -n keti --context cluster05 | grep 'test-deploy' | awk '{print $3}'))
+        statuslist2=($(kubectl get pod -n keti --context cluster03 | grep 'test-deploy' | awk '{print $3}'))
 
         for ((i=0; i<${#statuslist2[@]}; i++)); do
             status=${statuslist2[i]}
@@ -87,7 +85,7 @@ do
            continue
         fi
  
-        statuslist3=($(kubectl get pod -n keti --context cluster11 | grep 'test-deploy' | awk '{print $3}'))
+        statuslist3=($(kubectl get pod -n keti --context cluster04 | grep 'test-deploy' | awk '{print $3}'))
 
         for ((i=0; i<${#statuslist3[@]}; i++)); do
             status=${statuslist3[i]}
@@ -106,8 +104,8 @@ done
 end_time=$( date +%s.%N --date="$start_time seconds ago" )
 
 kubectl get pods -n keti --context cluster01
-kubectl get pods -n keti --context cluster10
-kubectl get pods -n keti --context cluster05
-kubectl get pods -n keti --context cluster11
+kubectl get pods -n keti --context cluster02
+kubectl get pods -n keti --context cluster03
+kubectl get pods -n keti --context cluster04
 echo "---"
 echo "*** 30pods deploy time: ${end_time}s"
