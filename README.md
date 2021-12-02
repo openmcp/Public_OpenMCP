@@ -423,16 +423,6 @@ $ kubectl regist-join EKS <CLUSTERNAME>
 
 ### (5) Join EKS cluster to OpenMCP
 
-Before trying to join EKS cluster, you should execute 'openmcp-cluster-manager' container, and set aws configure.
-```
-$ kubectl exec -it openmcp-cluster-manager-69c9ccc499-wjcqt -n openmcp bash
-bash-4.2# aws configure
-AWS Access Key ID [None]: ...
-AWS Secret Access Key [None]: ...
-Default region name [None]: eu-west-2
-Default output format [None]: json
-```
-
 Install 'kubectl join' plugin on OpenMCP.
 ```
 $ cd kubectl_plugin
