@@ -81,6 +81,7 @@ func main() {
 
 	quit := make(chan bool)
 	quitok := make(chan bool)
+
 	go openmcpnamespace.CheckClusterNamespaceStatus(cm, quit, quitok)
 
 	stop := reshape.SetupSignalHandler()

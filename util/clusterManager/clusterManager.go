@@ -3,7 +3,9 @@ package clusterManager
 import (
 	"context"
 	"fmt"
+	"k8s.io/client-go/util/flowcontrol"
 	clientV1alpha1 "openmcp/openmcp/clientset/v1alpha1"
+	"openmcp/openmcp/omcplog"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -80,6 +82,7 @@ func KubeFedClusterGenClients(clusterList *fedv1b1.KubeFedClusterList, cluster_c
 		clusterName := cluster.Name
 		cluster_config := cluster_configs[clusterName]
 		//cluster_client := genericclient.NewForConfigOrDie(cluster_config)
+		cluster_config.RateLimiter = flowcontrol.NewTokenBucketRateLimiter(100, 100) // default 5 10
 		cluster_client, _ := genericclient.New(cluster_config)
 		cluster_clients[clusterName] = cluster_client
 	}
@@ -108,6 +111,7 @@ func KubeFedClusterDynClients(clusterList *fedv1b1.KubeFedClusterList, cluster_c
 	return cluster_clients
 }
 func NewClusterManager() *ClusterManager {
+	omcplog.V(4).Info("NewClusterManager Called")
 	//mutex := &sync.Mutex{}
 	fed_namespace := "kube-federation-system"
 
@@ -128,7 +132,7 @@ func NewClusterManager() *ClusterManager {
 	cluster_configs := KubeFedClusterConfigs(cluster_list, host_client, fed_namespace)
 
 	//kubefed secret 기반 generic, kube, dyn client 생성
-	cluster_gen_clients := KubeFedClusterGenClients(cluster_list, cluster_configs)   //fedapis, k8sscheme
+	cluster_gen_clients := KubeFedClusterGenClients(cluster_list, cluster_configs)   //fedapis, k8sscheme //throttling log
 	cluster_kube_clients := KubeFedClusterKubeClients(cluster_list, cluster_configs) // k8sscheme
 	cluster_dyn_clients := KubeFedClusterDynClients(cluster_list, cluster_configs)
 

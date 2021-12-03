@@ -48,6 +48,7 @@ type reconciler struct {
 }
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
+	omcplog.V(2).Info("Start OpenMCPClusterManager Controller")
 	cm = myClusterManager
 
 	liveClient, err := live.GetDelegatingClient()
@@ -59,9 +60,11 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	for _, ghost := range ghosts {
 		ghostTmp, err := ghost.GetDelegatingClient()
 		if err != nil {
-			return nil, fmt.Errorf("getting delegating client for ghost cluster: %v", err)
+			omcplog.V(4).Info("Error getting delegating client for ghost cluster [", ghost.Name, "]")
+			//return nil, fmt.Errorf("getting delegating client for ghost cluster: %v", err)
+		} else {
+			ghostClients[ghost.Name] = ghostTmp
 		}
-		ghostClients[ghost.Name] = ghostTmp
 	}
 
 	r.live = liveClient
@@ -299,7 +302,7 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 	for i := 0; i < len(directory); i++ {
 
 		if netLoc == "internal" {
-			time.Sleep(time.Second * 7)
+			time.Sleep(time.Second * 9)
 		}
 
 		dirname, _ := filepath.Abs(directory[i])
