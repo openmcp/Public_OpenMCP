@@ -32,7 +32,7 @@ spec:
 #                  cpu: "0.1"
 EOF
 
-sleep 1
+sleep 3
 
 echo "---"
 echo "Wait Until Pod Status is Running ..."
@@ -84,7 +84,7 @@ do
         then
            continue
         fi
- 
+
         statuslist3=($(kubectl get pod -n keti --context cluster04 | grep 'test-deploy' | awk '{print $3}'))
 
         for ((i=0; i<${#statuslist3[@]}; i++)); do
@@ -103,9 +103,15 @@ done
 
 end_time=$( date +%s.%N --date="$start_time seconds ago" )
 
+echo "[cluster1]"
 kubectl get pods -n keti --context cluster01
+echo "[cluster2]"
 kubectl get pods -n keti --context cluster02
+echo "[cluster3]"
 kubectl get pods -n keti --context cluster03
+echo "[cluster4]"
 kubectl get pods -n keti --context cluster04
+#kubectl get pods -n keti --context cluster05
+
 echo "---"
 echo "*** 30pods deploy time: ${end_time}s"

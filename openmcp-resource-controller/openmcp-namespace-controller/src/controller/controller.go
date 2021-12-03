@@ -119,7 +119,7 @@ type reconciler struct {
 var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
-	omcplog.V(4).Info("OpenMCPNamespace Reconcile Function Called")
+	//omcplog.V(4).Info("OpenMCPNamespace Reconcile Called")
 	i += 1
 	omcplog.V(5).Info("********* [", i, "] *********")
 	omcplog.V(3).Info(req.Context, " / ", req.Namespace, " / ", req.Name)
@@ -152,7 +152,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		}
 		return reconcile.Result{}, nil
 	}
-	if !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec) {
+
+	if err == nil || !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec) {
 		err := r.updateNamespace(req, cm, instance)
 		if err != nil {
 			omcplog.V(1).Info(err)
@@ -196,6 +197,15 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					return reconcile.Result{}, err
 				}
 
+			} else if err == nil {
+				svc := r.namespaceForOpenMCPNamespace(req, instance)
+
+				command := "update"
+				_, err = r.sendSync(svc, command, cluster_name)
+
+				if err != nil {
+					return reconcile.Result{}, err
+				}
 			}
 
 		}
