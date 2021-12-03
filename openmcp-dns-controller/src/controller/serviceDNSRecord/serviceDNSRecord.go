@@ -43,13 +43,16 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
 	}
+
 	ghostclients := []client.Client{}
 	for _, ghost := range ghosts {
 		ghostclient, err := ghost.GetDelegatingClient()
 		if err != nil {
-			return nil, fmt.Errorf("getting delegating client for ghost cluster: %v", err)
+			omcplog.V(4).Info("Error getting delegating client for ghost cluster [", ghost.Name, "]")
+			//return nil, fmt.Errorf("getting delegating client for ghost cluster: %v", err)
+		} else {
+			ghostclients = append(ghostclients, ghostclient)
 		}
-		ghostclients = append(ghostclients, ghostclient)
 	}
 
 	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{})
