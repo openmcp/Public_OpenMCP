@@ -203,6 +203,35 @@ post-scheduling-type           19h
 --------------------------------------------------------------------------------------------
 ## 1. How to join Kubernetes Cluster to OpenMCP
 
+### (0) If the cluster you are trying to join is writing an internal network, you must change the certificate of port forwarding and API Server.
+
+> Port Forwarding
+```bash
+  6443 -> 6443
+  15012 -> 32012
+  15021 -> 32021
+  15017 -> 32017
+  15443 -> 32443
+```
+> API Certificate
+```bash
+cd /etc/kubernetes/pki
+
+sudo cp apiserver.crt apiserver.crt.old
+sudo cp apiserver.key apiserver.key.old
+sudo rm apiserver.crt apiserver.key
+
+sudo kubeadm init phase certs apiserver --apiserver-advertise-address=0.0.0.0 --apiserver-cert-extra-sans=<EXTERNALIP>
+
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+```
+  
+> KubeConfig Modify
+```bash
+$ vim $HOME/.kube/config
+server: https://<EXTERNALIP>:6443
+```
+  
 ### (1) (option) Rename cluster name [In sub-cluster]
 
 Before you join the sub-cluster to OpenMCP, check for duplicate cluster names so it does not overlap.
@@ -245,15 +274,23 @@ NAME                                       TYPE           CLUSTER-IP       EXTER
 service/openmcp-apiserver                  LoadBalancer   10.96.65.179     XX.XX.XX.XX   8080:30000/TCP   54s
 ```
 
-### (3) Register DNS Server [In sub-cluster]
+### (3) Register DNS Server or Hosts [In sub-cluster]
 
-Write the [<EXTERNAL_SERVER_IP>](https://github.com/openmcp/external) of the external server at the top of the '/etc/resolv.conf' file.
-This is to join the OpenMCP cluster through DNS Domain on the API server.
-  
+If you are using the same network, write the  [<EXTERNAL_SERVER_IP>](https://github.com/openmcp/external of an external server at the top of the '/etc/resolv.conf' file. Join the OpenMCP cluster through the DNS domain of the API server. If you use a different network, write the authorized APISERVER IP information of the OpenMCP master in /etc/hosts.
+
+
+
 ```bash
+# Same Network
 $ vim /etc/resolv.conf
 nameserver <EXTERNAL_SERVER_IP>
+
+# Different Network
+$ vim /etc/hosts
+<PUBLIC_APISERVER_IP> openmcp-apiserver.openmcp.default-domain.svc.openmcp.example.org
 ```
+
+
 
 ### (4) Register Region and Zone to All Nodes of sub-cluster [In sub-cluster]
 
@@ -385,16 +422,6 @@ $ kubectl regist-join EKS <CLUSTERNAME>
 ```
 
 ### (5) Join EKS cluster to OpenMCP
-
-Before trying to join EKS cluster, you should execute 'openmcp-cluster-manager' container, and set aws configure.
-```
-$ kubectl exec -it openmcp-cluster-manager-69c9ccc499-wjcqt -n openmcp bash
-bash-4.2# aws configure
-AWS Access Key ID [None]: ...
-AWS Secret Access Key [None]: ...
-Default region name [None]: eu-west-2
-Default output format [None]: json
-```
 
 Install 'kubectl join' plugin on OpenMCP.
 ```

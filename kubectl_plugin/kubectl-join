@@ -12,14 +12,11 @@ else
     exit
   else
     if [[ "$platform" == "GKE" ]] || [[ "$platform" == "EKS" ]] || [[ "$platform" == "AKS" ]]; then
-      read -p "Input Cluster Network Location (internal OR external) : " network_loc
-      if [[ "$network_loc" == "external" ]] || [[ "$network_loc" == "internal" ]]; then
-        kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/clusterNetworkLocation","value":'$network_loc'}]'
-        kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"JOINING"}]'
+
+        kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/clusterNetworkLocation","value":"external"}]'
         sleep 2
-      else
-        echo "Please Input Value correctly"
-      fi
+        kubectl patch openmcpcluster $1 -n openmcp --type='json' -p '[{"op":"replace","path":"/spec/joinStatus","value":"JOINING"}]'
+
     elif [ "$platform" == "On-Premise" ]; then
       read -p "Input Cluster Network Location (internal OR external) : " network_loc
       read -p "Input MetalLB IP Address Range (FROM) : " address_from

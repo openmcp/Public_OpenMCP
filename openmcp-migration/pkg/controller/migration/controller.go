@@ -99,15 +99,14 @@ type reconciler struct {
 func (r *reconciler) setResource(migraionSource v1alpha1.MigrationServiceSource, migSource *MigrationControllerResource) error {
 
 	sourceClient := migSource.sourceClient
-	pvcNames := []string{}
-	pvNames := []string{}
-
 	resourceList := migraionSource.MigrationSources
 	pvCheck := false
 	namespace := migraionSource.NameSpace
 	for i, resource := range resourceList {
 		resourceName := resource.ResourceName
 		if resource.ResourceType == config.DEPLOY {
+			pvcNames := []string{}
+			pvNames := []string{}
 			omcplog.V(0).Info("- 0. setBeforeOpenmcpDeploymnet -" + strconv.Itoa(i))
 			// 0. OpenMCPDeployment 의 CheckSubResource 기능을 잠시 활성화시킨다.
 			err := r.setBeforeOpenmcpDeploymnet(migraionSource, i)
@@ -145,25 +144,55 @@ func (r *reconciler) setResource(migraionSource v1alpha1.MigrationServiceSource,
 						continue
 					}
 					omcplog.V(0).Info(sourcePVC.Name)
-					pvc_matchLabel := sourcePVC.Spec.Selector.DeepCopy().MatchLabels
+					omcplog.V(0).Info(sourcePVC.Spec)
 
-					omcplog.V(0).Info("pvc_matchLabel :")
-					omcplog.V(0).Info(pvc_matchLabel)
+					if sourcePVC.Spec.Selector != nil {
+						// case1 sourcePVC.Spec.Selector.MatchLabels 을 이용하여 접근하는 경우
+						pvc_matchLabel := sourcePVC.Spec.Selector.DeepCopy().MatchLabels
 
-					// 4. PVC에서 추출된 라벨 정보로 PV 추출
-					sourcePVList := &corev1.PersistentVolumeList{}
-					err = sourceClient.List(context.TODO(), sourcePVList, namespace, &client.ListOptions{
-						LabelSelector: labels.SelectorFromSet(labels.Set(pvc_matchLabel)),
-					})
-					if err != nil {
+						omcplog.V(0).Info("pvc_matchLabel :")
 						omcplog.V(0).Info(pvc_matchLabel)
-						omcplog.V(0).Info(" this label not exist!!!")
-						continue
-					}
-					for _, pv := range sourcePVList.Items {
-						omcplog.V(0).Info("- 4. check pv -")
-						omcplog.V(0).Info(pv.Name)
-						pvNames = append(pvNames, pv.Name)
+
+						// 4. PVC에서 추출된 라벨 정보로 PV 추출
+						sourcePVList := &corev1.PersistentVolumeList{}
+						err = sourceClient.List(context.TODO(), sourcePVList, namespace, &client.ListOptions{
+							LabelSelector: labels.SelectorFromSet(labels.Set(pvc_matchLabel)),
+						})
+						if err != nil {
+							omcplog.V(0).Info(pvc_matchLabel)
+							omcplog.V(0).Info(" this label not exist!!!")
+							continue
+						}
+						for _, pv := range sourcePVList.Items {
+							omcplog.V(0).Info("- 4. check pv -")
+							omcplog.V(0).Info(pv.Name)
+							pvNames = append(pvNames, pv.Name)
+						}
+					} else {
+						// case2 pv.spec.claimRef를 이용하여 접근하는 경우
+
+						sourcePVList := &corev1.PersistentVolumeList{}
+						err = sourceClient.List(context.TODO(), sourcePVList, namespace)
+						if err != nil {
+							omcplog.V(0).Info("pv all")
+							omcplog.V(0).Info(" this matchPV not exist!!!")
+							continue
+						}
+						for _, pv := range sourcePVList.Items {
+							omcplog.V(0).Info("- 4. check pv detail -")
+							omcplog.V(0).Info(pv.Name)
+
+							if pv.Spec.ClaimRef != nil {
+								if pv.Spec.ClaimRef.Kind == "PersistentVolumeClaim" {
+									if pv.Spec.ClaimRef.Name == sourcePVC.Name {
+										omcplog.V(0).Info("find pvc " + sourcePVC.Name)
+										omcplog.V(0).Info("this pv : " + pv.Name)
+										pvNames = append(pvNames, pv.Name)
+										break
+									}
+								}
+							}
+						}
 					}
 				}
 			}
