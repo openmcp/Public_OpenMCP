@@ -28,11 +28,15 @@ cd ../openmcp-policy-engine
 ./2.create.sh
 cd $cur
 
-cd ../openmcp-resource-controller/openmcp-deployment-controller
+cd ../openmcp-resource-controller/openmcp-configmap-controller
 ./2.create.sh
 cd $cur
 
-cd ../openmcp-resource-controller/openmcp-configmap-controller
+cd ../openmcp-resource-controller/openmcp-daemonset-controller
+./2.create.sh
+cd $cur
+
+cd ../openmcp-resource-controller/openmcp-deployment-controller
 ./2.create.sh
 cd $cur
 
@@ -52,11 +56,23 @@ cd ../openmcp-resource-controller/openmcp-namespace-controller
 ./2.create.sh
 cd $cur
 
+cd ../openmcp-resource-controller/openmcp-pv-controller
+./2.create.sh
+cd $cur
+
+cd ../openmcp-resource-controller/openmcp-pvc-controller
+./2.create.sh
+cd $cur
+
 cd ../openmcp-resource-controller/openmcp-secret-controller
 ./2.create.sh
 cd $cur
 
 cd ../openmcp-resource-controller/openmcp-service-controller
+./2.create.sh
+cd $cur
+
+cd ../openmcp-resource-controller/openmcp-statefulset-controller
 ./2.create.sh
 cd $cur
 

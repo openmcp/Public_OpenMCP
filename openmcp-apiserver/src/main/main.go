@@ -81,8 +81,17 @@ func main() {
 		ghosts = append(ghosts, ghost)
 	}
 
-	reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
-	loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
+	reshape_cont, err_reshape := reshape.NewController(live, ghosts, namespace, cm)
+	if err_reshape != nil {
+		omcplog.V(2).Info("err_reshape : ", err_reshape)
+		return
+	}
+
+	loglevel_cont, err_log := logLevel.NewController(live, ghosts, namespace)
+	if err_log != nil {
+		omcplog.V(2).Info("err_log : ", err_log)
+		return
+	}
 
 	m := manager.New()
 	m.AddController(reshape_cont)

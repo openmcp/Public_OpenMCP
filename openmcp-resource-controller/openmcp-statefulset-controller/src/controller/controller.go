@@ -54,7 +54,6 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		}
 		ghostclients = append(ghostclients, ghostclient)
 	}
-
 	co := controller.New(&reconciler{live: liveClient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{})
 
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {

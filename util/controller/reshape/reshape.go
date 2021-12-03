@@ -26,7 +26,7 @@ var prev_clusterStatus map[string]bool
 var cm *clusterManager.ClusterManager
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, myClusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
-	omcplog.V(2).Info("Start ReshapeController")
+	omcplog.V(2).Info("Start Reshape Controller")
 	c = make(chan string)
 	cm = myClusterManager
 
@@ -58,7 +58,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("setting up Pod watch in live cluster: %v", err)
 	}
 
-	r.initGlobal()
+	//r.initGlobal()
 
 	return co, nil
 }
@@ -69,19 +69,19 @@ func (r *reconciler) initGlobal() {
 	err := r.live.List(context.TODO(), kubeFedClusterList, &client.ListOptions{})
 	if err != nil {
 		klog.V(0).Info(err)
-	}
-
-	for _, cluster := range kubeFedClusterList.Items {
-		prev_clusterStatus[cluster.Name] = true
-		clusterStatus[cluster.Name] = true
-		for _, cond := range cluster.Status.Conditions {
-			if cond.Type == "Offline" {
-				prev_clusterStatus[cluster.Name] = false
-				clusterStatus[cluster.Name] = false
-				break
+	} else {
+		for _, cluster := range kubeFedClusterList.Items {
+			prev_clusterStatus[cluster.Name] = true
+			clusterStatus[cluster.Name] = true
+			for _, cond := range cluster.Status.Conditions {
+				if cond.Type == "Offline" {
+					prev_clusterStatus[cluster.Name] = false
+					clusterStatus[cluster.Name] = false
+					break
+				}
 			}
-		}
 
+		}
 	}
 
 }
@@ -130,7 +130,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 	if ReshapeFlag {
 
-		fmt.Println("Reshape Cluster")
+		omcplog.V(2).Info("Reshape Cluster ...")
 		//i = 0
 
 		newCm := clusterManager.NewClusterManager()

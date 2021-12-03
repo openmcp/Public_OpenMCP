@@ -96,7 +96,7 @@ func NewControllers(cm *clusterManager.ClusterManager, scheduler *openmcpschedul
 var cm *clusterManager.ClusterManager
 
 func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamespace string, scheduler *openmcpscheduler.OpenMCPScheduler, clusterManager *clusterManager.ClusterManager) (*controller.Controller, error) {
-	omcplog.V(4).Info("[OpenMCP Deployment] Function Called NewController")
+	omcplog.V(4).Info("[OpenMCP Schduler] NewController Function Called")
 	cm = clusterManager
 	liveclient, err := live.GetDelegatingClient()
 	if err != nil {

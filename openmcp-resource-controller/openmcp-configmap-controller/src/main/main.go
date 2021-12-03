@@ -73,6 +73,7 @@ func main() {
 		omcplog.V(2).Info("err_log : ", err_log)
 		return
 	}
+
 	m := manager.New()
 	m.AddController(co)
 	m.AddController(reshape_cont)
