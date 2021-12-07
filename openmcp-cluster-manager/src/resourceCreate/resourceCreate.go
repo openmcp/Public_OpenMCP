@@ -51,7 +51,7 @@ func createSubResourceService(clusterName string, cm *clusterManager.ClusterMana
 	}
 	for _, osvc := range osvcList.Items {
 
-		omcplog.V(2).Info("[Create Resource] Found Deployment '" + osvc.Name + "' in Cluster. Update Status ClusterMap")
+		omcplog.V(2).Info("[Create Resource] Found Service '" + osvc.Name + "' in Cluster. Update Status ClusterMap")
 		//osvc.Status.ClusterMaps[clusterName] = 1
 		osvc.Status.ClusterMaps = syncResource.SyncResource(cm)
 		_, err2 := cm.Crd_client.OpenMCPService(osvc.Namespace).UpdateStatus(&osvc)
@@ -71,7 +71,7 @@ func createSubResourceIngress(clusterName string, cm *clusterManager.ClusterMana
 	}
 	for _, oing := range oingList.Items {
 
-		omcplog.V(2).Info("[Create Resource] Found Deployment '" + oing.Name + "' in Cluster. Update Status ClusterMap")
+		omcplog.V(2).Info("[Create Resource] Found Ingress '" + oing.Name + "' in Cluster. Update Status ClusterMap")
 		//oing.Status.ClusterMaps[clusterName] = 1
 		oing.Status.ClusterMaps = syncResource.SyncResource(cm)
 		_, err2 := cm.Crd_client.OpenMCPIngress(oing.Namespace).UpdateStatus(&oing)
@@ -91,7 +91,7 @@ func createSubResourceConfigMap(clusterName string, cm *clusterManager.ClusterMa
 	}
 	for _, ocm := range ocmList.Items {
 
-		omcplog.V(2).Info("[Create Resource] Found Deployment '" + ocm.Name + "' in Cluster. Update Status ClusterMap")
+		omcplog.V(2).Info("[Create Resource] Found ConfigMap '" + ocm.Name + "' in Cluster. Update Status ClusterMap")
 		//ocm.Status.ClusterMaps[clusterName] = 1
 		ocm.Status.ClusterMaps = syncResource.SyncResource(cm)
 		_, err2 := cm.Crd_client.OpenMCPConfigMap(ocm.Namespace).UpdateStatus(&ocm)
@@ -112,7 +112,7 @@ func createSubResourceJob(clusterName string, cm *clusterManager.ClusterManager)
 	for _, ojob := range ojobList.Items {
 		//ojob.Status.ClusterMaps[clusterName] = 1
 		ojob.Status.ClusterMaps = syncResource.SyncResource(cm)
-		omcplog.V(2).Info("[Create Resource] Found Deployment '" + ojob.Name + "' in Cluster. Update Status ClusterMap")
+		omcplog.V(2).Info("[Create Resource] Found Job '" + ojob.Name + "' in Cluster. Update Status ClusterMap")
 		_, err2 := cm.Crd_client.OpenMCPJob(ojob.Namespace).UpdateStatus(&ojob)
 		if err2 != nil {
 			return err2
@@ -130,7 +130,7 @@ func createSubResourceNamespace(clusterName string, cm *clusterManager.ClusterMa
 	}
 	for _, ons := range onsList.Items {
 
-		omcplog.V(2).Info("[Create Resource] Found Deployment '" + ons.Name + "' in Cluster. Update Status ClusterMap")
+		omcplog.V(2).Info("[Create Resource] Found Namespace '" + ons.Name + "' in Cluster. Update Status ClusterMap")
 		//ons.Status.ClusterMaps[clusterName] = 1
 		ons.Status.ClusterMaps = syncResource.SyncResource(cm)
 		_, err2 := cm.Crd_client.OpenMCPNamespace(ons.Namespace).UpdateStatus(&ons)
@@ -150,7 +150,7 @@ func createSubResourceSecret(clusterName string, cm *clusterManager.ClusterManag
 	}
 	for _, osec := range osecList.Items {
 
-		omcplog.V(2).Info("[Create Resource] Found Deployment '" + osec.Name + "' in Cluster. Update Status ClusterMap")
+		omcplog.V(2).Info("[Create Resource] Found Secret '" + osec.Name + "' in Cluster. Update Status ClusterMap")
 		//osec.Status.ClusterMaps[clusterName] = 1
 		osec.Status.ClusterMaps = syncResource.SyncResource(cm)
 		_, err2 := cm.Crd_client.OpenMCPSecret(osec.Namespace).UpdateStatus(&osec)
