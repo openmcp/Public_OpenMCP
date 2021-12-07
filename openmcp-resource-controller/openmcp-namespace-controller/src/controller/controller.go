@@ -153,7 +153,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		return reconcile.Result{}, nil
 	}
 
+<<<<<<< HEAD
 	if err == nil || !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec){
+=======
+	if err == nil || !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec) {
+>>>>>>> ad8287465ffd19f46568147d2eaddfab943acbef
 		err := r.updateNamespace(req, cm, instance)
 		if err != nil {
 			omcplog.V(1).Info(err)
@@ -197,7 +201,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					return reconcile.Result{}, err
 				}
 
+<<<<<<< HEAD
 			}else if err == nil {
+=======
+			} else if err == nil {
+>>>>>>> ad8287465ffd19f46568147d2eaddfab943acbef
 				svc := r.namespaceForOpenMCPNamespace(req, instance)
 
 				command := "update"

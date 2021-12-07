@@ -26,10 +26,7 @@ import (
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
 )
-
-
 
 var cm *clusterManager.ClusterManager
 

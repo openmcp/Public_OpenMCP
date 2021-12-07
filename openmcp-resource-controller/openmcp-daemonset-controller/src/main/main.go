@@ -66,7 +66,10 @@ func main() {
 		omcplog.V(2).Info("err_log : ", err_log)
 		return
 	}
+<<<<<<< HEAD
 
+=======
+>>>>>>> ad8287465ffd19f46568147d2eaddfab943acbef
 
 	m := manager.New()
 	m.AddController(co)
