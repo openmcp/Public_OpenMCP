@@ -32,11 +32,6 @@ spec:
 #                  cpu: "0.1"
 EOF
 
-<<<<<<< HEAD
-=======
-sleep 3
-
->>>>>>> ad8287465ffd19f46568147d2eaddfab943acbef
 echo "---"
 echo "Wait Until Pod Status is Running ..."
 for ((;;))

@@ -82,11 +82,7 @@ func KubeFedClusterGenClients(clusterList *fedv1b1.KubeFedClusterList, cluster_c
 		clusterName := cluster.Name
 		cluster_config := cluster_configs[clusterName]
 		//cluster_client := genericclient.NewForConfigOrDie(cluster_config)
-<<<<<<< HEAD
-		cluster_config.RateLimiter = flowcontrol.NewTokenBucketRateLimiter(100,100) // default 5 10
-=======
 		cluster_config.RateLimiter = flowcontrol.NewTokenBucketRateLimiter(100, 100) // default 5 10
->>>>>>> ad8287465ffd19f46568147d2eaddfab943acbef
 		cluster_client, _ := genericclient.New(cluster_config)
 		cluster_clients[clusterName] = cluster_client
 	}
