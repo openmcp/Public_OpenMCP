@@ -32,8 +32,6 @@ spec:
 #                  cpu: "0.1"
 EOF
 
-sleep 1
-
 echo "---"
 echo "Wait Until Pod Status is Running ..."
 for ((;;))
@@ -41,6 +39,10 @@ do
         tmp=1
 
         statuslist0=($(kubectl get pod -n keti --context cluster01 | grep 'test-deploy' | awk '{print $3}'))
+        if [ ${#statuslist0[@]} == 0 ]; then
+           echo "wait..."
+           continue
+        fi  
 
         for ((i=0; i<${#statuslist0[@]}; i++)); do
             status=${statuslist0[i]}
@@ -56,6 +58,11 @@ do
         fi
 
         statuslist=($(kubectl get pod -n keti --context cluster02 | grep 'test-deploy' | awk '{print $3}'))
+        
+        if [ ${#statuslist[@]} == 0 ]; then
+           echo "wait..."
+           continue
+        fi
 
         for ((i=0; i<${#statuslist[@]}; i++)); do
             status=${statuslist[i]}
@@ -72,6 +79,12 @@ do
 
         statuslist2=($(kubectl get pod -n keti --context cluster03 | grep 'test-deploy' | awk '{print $3}'))
 
+        if [ ${#statuslist2[@]} == 0 ]; then
+           echo "wait..."
+           continue
+        fi
+
+
         for ((i=0; i<${#statuslist2[@]}; i++)); do
             status=${statuslist2[i]}
             if [ "$status" != "Running" ]; then
@@ -84,8 +97,14 @@ do
         then
            continue
         fi
- 
+
         statuslist3=($(kubectl get pod -n keti --context cluster04 | grep 'test-deploy' | awk '{print $3}'))
+
+        if [ ${#statuslist3[@]} == 0 ]; then
+           echo "wait..."
+           continue
+        fi
+
 
         for ((i=0; i<${#statuslist3[@]}; i++)); do
             status=${statuslist3[i]}
@@ -103,9 +122,15 @@ done
 
 end_time=$( date +%s.%N --date="$start_time seconds ago" )
 
+echo "[cluster1]"
 kubectl get pods -n keti --context cluster01
+echo "[cluster2]"
 kubectl get pods -n keti --context cluster02
+echo "[cluster3]"
 kubectl get pods -n keti --context cluster03
+echo "[cluster4]"
 kubectl get pods -n keti --context cluster04
+#kubectl get pods -n keti --context cluster05
+
 echo "---"
 echo "*** 30pods deploy time: ${end_time}s"

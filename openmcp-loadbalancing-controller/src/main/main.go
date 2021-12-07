@@ -29,6 +29,7 @@ import (
 	"openmcp/openmcp/util/clusterManager"
 	"openmcp/openmcp/util/controller/logLevel"
 	"openmcp/openmcp/util/controller/reshape"
+	"runtime"
 	"sync"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
@@ -37,6 +38,7 @@ import (
 )
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU()) // CPU 개수를 구한 뒤 사용할 최대 CPU 개수 설정
 	logLevel.KetiLogInit()
 
 	omcplog.V(2).Info("Start OpenMCPServiceMeshController")
@@ -60,10 +62,29 @@ func main() {
 		ghosts = append(ghosts, ghost)
 	}
 
-	vs_cont, _ := OpenMCPVirtualService.NewController(live, ghosts, namespace, cm)
-	dr_cont, _ := DestinationRule.NewController(live, ghosts, namespace, cm)
-	reshape_cont, _ := reshape.NewController(live, ghosts, namespace, cm)
-	loglevel_cont, _ := logLevel.NewController(live, ghosts, namespace)
+	vs_cont, err_vs := OpenMCPVirtualService.NewController(live, ghosts, namespace, cm)
+	if err_vs != nil {
+		omcplog.V(2).Info("err_vs : ", err_vs)
+		return
+	}
+
+	dr_cont, err_dr := DestinationRule.NewController(live, ghosts, namespace, cm)
+	if err_dr != nil {
+		omcplog.V(2).Info("err_dr : ", err_dr)
+		return
+	}
+
+	reshape_cont, err_reshape := reshape.NewController(live, ghosts, namespace, cm)
+	if err_reshape != nil {
+		omcplog.V(2).Info("err_reshape : ", err_reshape)
+		return
+	}
+
+	loglevel_cont, err_log := logLevel.NewController(live, ghosts, namespace)
+	if err_log != nil {
+		omcplog.V(2).Info("err_log : ", err_log)
+		return
+	}
 
 	m := manager.New()
 	m.AddController(vs_cont)

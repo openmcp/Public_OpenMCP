@@ -47,20 +47,18 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
 	}
 
-	ghostclients := map[string]client.Client{}
+	ghostClients := map[string]client.Client{}
 	for _, ghost := range ghosts {
-
-		ghostclient, err := ghost.GetDelegatingClient()
+		ghostTmp, err := ghost.GetDelegatingClient()
 		if err != nil {
 			omcplog.V(4).Info("Error getting delegating client for ghost cluster [", ghost.Name, "]")
 			//return nil, fmt.Errorf("getting delegating client for ghost cluster: %v", err)
 		} else {
-			ghostclients[ghost.Name] = ghostclient
-			//ghostclients = append(ghostclients, ghostclient)
+			ghostClients[ghost.Name] = ghostTmp
 		}
 	}
 
-	co := controller.New(&reconciler{live: liveClient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{})
+	co := controller.New(&reconciler{live: liveClient, ghosts: ghostClients, ghostNamespace: ghostNamespace}, controller.Options{})
 
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)

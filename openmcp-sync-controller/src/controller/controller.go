@@ -46,15 +46,19 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 	if err != nil {
 		return nil, fmt.Errorf("getting delegating client for live cluster: %v", err)
 	}
-	ghostclients := map[string]client.Client{}
+
+	ghostClients := map[string]client.Client{}
 	for _, ghost := range ghosts {
-		ghostclient, err := ghost.GetDelegatingClient()
+		ghostTmp, err := ghost.GetDelegatingClient()
 		if err != nil {
-			return nil, fmt.Errorf("getting delegating client for ghost cluster: %v", err)
+			omcplog.V(4).Info("Error getting delegating client for ghost cluster [", ghost.Name, "]")
+			//return nil, fmt.Errorf("getting delegating client for ghost cluster: %v", err)
+		} else {
+			ghostClients[ghost.Name] = ghostTmp
 		}
-		ghostclients[ghost.Name] = ghostclient
 	}
-	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{})
+
+	co := controller.New(&reconciler{live: liveclient, ghosts: ghostClients, ghostNamespace: ghostNamespace}, controller.Options{})
 
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
@@ -84,7 +88,7 @@ type reconciler struct {
 var i int = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
-	omcplog.V(4).Info("[OpenMCP Sync] Function Called Reconcile")
+	omcplog.V(4).Info("[OpenMCP Sync] Reconcile Function Called")
 	i += 1
 
 	// Fetch the Sync instance

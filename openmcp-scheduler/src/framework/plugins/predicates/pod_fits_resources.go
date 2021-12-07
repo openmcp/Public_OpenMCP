@@ -51,7 +51,7 @@ func (pl *PodFitsResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketire
 		}
 		if node_result == true {
 			node.AllocatableResource.EphemeralStorage -= newPod.RequestedResource.EphemeralStorage
-			// omcplog.V(5).Info("EphemeralStorage = ", node.AllocatableResource.EphemeralStorage)
+			// omcplog.V(5).Info("EphemeralStorage = ", node.cAllocatableResource.EphemeralStorage)
 			node.AllocatableResource.MilliCPU -= newPod.RequestedResource.MilliCPU
 			// omcplog.V(5).Info("MilliCPU = ", node.AllocatableResource.MilliCPU)
 			node.AllocatableResource.Memory -= newPod.RequestedResource.Memory

@@ -28,11 +28,16 @@ cd ../openmcp-policy-engine
 ./4.delete.sh
 cd $cur
 
-cd ../openmcp-resource-controller/openmcp-deployment-controller
+
+cd ../openmcp-resource-controller/openmcp-configmap-controller
 ./4.delete.sh
 cd $cur
 
-cd ../openmcp-resource-controller/openmcp-configmap-controller
+cd ../openmcp-resource-controller/openmcp-daemonset-controller
+./4.delete.sh
+cd $cur
+
+cd ../openmcp-resource-controller/openmcp-deployment-controller
 ./4.delete.sh
 cd $cur
 
@@ -52,11 +57,23 @@ cd ../openmcp-resource-controller/openmcp-namespace-controller
 ./4.delete.sh
 cd $cur
 
+cd ../openmcp-resource-controller/openmcp-pv-controller
+./4.delete.sh
+cd $cur
+
+cd ../openmcp-resource-controller/openmcp-pvc-controller
+./4.delete.sh
+cd $cur
+
 cd ../openmcp-resource-controller/openmcp-secret-controller
 ./4.delete.sh
 cd $cur
 
 cd ../openmcp-resource-controller/openmcp-service-controller
+./4.delete.sh
+cd $cur
+
+cd ../openmcp-resource-controller/openmcp-statefulset-controller
 ./4.delete.sh
 cd $cur
 
