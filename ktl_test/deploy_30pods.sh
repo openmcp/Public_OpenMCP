@@ -39,6 +39,7 @@ do
         tmp=1
 
         statuslist0=($(kubectl get pod -n keti --context cluster01 | grep 'test-deploy' | awk '{print $3}'))
+
         if [ ${#statuslist0[@]} == 0 ]; then
            echo "wait..."
            continue
@@ -57,15 +58,15 @@ do
            continue
         fi
 
-        statuslist=($(kubectl get pod -n keti --context cluster02 | grep 'test-deploy' | awk '{print $3}'))
+        statuslist1=($(kubectl get pod -n keti --context cluster02 | grep 'test-deploy' | awk '{print $3}'))
         
-        if [ ${#statuslist[@]} == 0 ]; then
+        if [ ${#statuslist1[@]} == 0 ]; then
            echo "wait..."
            continue
         fi
 
-        for ((i=0; i<${#statuslist[@]}; i++)); do
-            status=${statuslist[i]}
+        for ((i=0; i<${#statuslist1[@]}; i++)); do
+            status=${statuslist1[i]}
             if [ "$status" != "Running" ]; then
                    tmp=2
                    break
@@ -130,7 +131,6 @@ echo "[cluster3]"
 kubectl get pods -n keti --context cluster03
 echo "[cluster4]"
 kubectl get pods -n keti --context cluster04
-#kubectl get pods -n keti --context cluster05
 
 echo "---"
 echo "*** 30pods deploy time: ${end_time}s"
