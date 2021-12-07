@@ -19,7 +19,9 @@ func ClearInfluxDB(clusterName string) error {
 	inf := NewInflux(INFLUX_IP, INFLUX_PORT, INFLUX_USERNAME, INFLUX_PASSWORD)
 
 	err := inf.DeleteAllCluster(clusterName)
-	omcplog.V(4).Info("ClearInfluxDB ERROR : ", err)
+	if err != nil {
+		omcplog.V(4).Info("ClearInfluxDB ERROR : ", err)
+	}
 	return err
 }
 func NewInflux(INFLUX_IP, INFLUX_PORT, username, password string) *Influx {
