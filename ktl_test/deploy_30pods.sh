@@ -35,16 +35,9 @@ for ((;;))
 do
         tmp=1
 
-<<<<<<< HEAD
-        statuslist0=($(kubectl get pod -n keti --context cluster01 | grep 'test-deploy' | awk '{print $3}'))
-
-        if [ ${#statuslist0[@]} == 0 ]; then
-           echo "wait..."
-=======
         statuslist0=$(kubectl get pod -n keti --context cluster01 2>&1 | grep 'test-deploy' | awk '{print $3}')
 
         if [ "${statuslist0}" == "" ]; then
->>>>>>> ff3bfe7f8885714229f45760f6f759adf6980acf
            continue
         else
            statuslist0=($(kubectl get pod -n keti --context cluster01 | grep 'test-deploy' | awk '{print $3}'))
@@ -63,16 +56,9 @@ do
            continue
         fi
 
-<<<<<<< HEAD
-        statuslist1=($(kubectl get pod -n keti --context cluster02 | grep 'test-deploy' | awk '{print $3}'))
-        
-        if [ ${#statuslist1[@]} == 0 ]; then
-           echo "wait..."
-=======
         statuslist1=$(kubectl get pod -n keti --context cluster02 2>&1 | grep 'test-deploy' | awk '{print $3}')
 
         if [ "${statuslist1}" == "" ]; then
->>>>>>> ff3bfe7f8885714229f45760f6f759adf6980acf
            continue
         else
            statuslist1=($(kubectl get pod -n keti --context cluster02 | grep 'test-deploy' | awk '{print $3}'))
