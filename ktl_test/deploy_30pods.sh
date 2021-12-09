@@ -25,11 +25,8 @@ spec:
             - name: regcred
           containers:
             - image: nginx
+              imagePullPolicy: IfNotPresent
               name: nginx
-#              resources:
-#                requests:
-#                  memory: "1"
-#                  cpu: "0.1"
 EOF
 
 echo "---"
@@ -38,11 +35,12 @@ for ((;;))
 do
         tmp=1
 
-        statuslist0=($(kubectl get pod -n keti --context cluster01 | grep 'test-deploy' | awk '{print $3}'))
+        statuslist0=$(kubectl get pod -n keti --context cluster01 2>&1 | grep 'test-deploy' | awk '{print $3}')
 
-        if [ ${#statuslist0[@]} == 0 ]; then
-           echo "wait..."
+        if [ "${statuslist0}" == "" ]; then
            continue
+        else
+           statuslist0=($(kubectl get pod -n keti --context cluster01 | grep 'test-deploy' | awk '{print $3}'))
         fi  
 
         for ((i=0; i<${#statuslist0[@]}; i++)); do
@@ -58,11 +56,12 @@ do
            continue
         fi
 
-        statuslist1=($(kubectl get pod -n keti --context cluster02 | grep 'test-deploy' | awk '{print $3}'))
-        
-        if [ ${#statuslist1[@]} == 0 ]; then
-           echo "wait..."
+        statuslist1=$(kubectl get pod -n keti --context cluster02 2>&1 | grep 'test-deploy' | awk '{print $3}')
+
+        if [ "${statuslist1}" == "" ]; then
            continue
+        else
+           statuslist1=($(kubectl get pod -n keti --context cluster02 | grep 'test-deploy' | awk '{print $3}'))
         fi
 
         for ((i=0; i<${#statuslist1[@]}; i++)); do
@@ -78,11 +77,15 @@ do
            continue
         fi
 
-        statuslist2=($(kubectl get pod -n keti --context cluster03 | grep 'test-deploy' | awk '{print $3}'))
 
-        if [ ${#statuslist2[@]} == 0 ]; then
-           echo "wait..."
+        statuslist2=$(kubectl get pod -n keti --context cluster03 2>&1 | grep 'test-deploy' | awk '{print $3}')
+
+
+        if [ "${statuslist2}" == "" ]; then
            continue
+        else
+           statuslist2=($(kubectl get pod -n keti --context cluster03 | grep 'test-deploy' | awk '{print $3}'))
+
         fi
 
 
@@ -94,16 +97,17 @@ do
             fi
         done
 
-        if [ "$tmp" == "2" ];
+       if [ "$tmp" == "2" ];
         then
            continue
         fi
 
-        statuslist3=($(kubectl get pod -n keti --context cluster04 | grep 'test-deploy' | awk '{print $3}'))
+        statuslist3=$(kubectl get pod -n keti --context cluster04 2>&1 | grep 'test-deploy' | awk '{print $3}')
 
-        if [ ${#statuslist3[@]} == 0 ]; then
-           echo "wait..."
+        if [ "${statuslist3}" == "" ]; then
            continue
+        else
+           statuslist3=($(kubectl get pod -n keti --context cluster04 | grep 'test-deploy' | awk '{print $3}'))
         fi
 
 
