@@ -413,6 +413,7 @@ func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i 
 	}
 
 	omcplog.V(4).Info("locCluster: ", locCluster)
+
 	if locCluster != nil {
 		svc := &corev1.Service{}
 
