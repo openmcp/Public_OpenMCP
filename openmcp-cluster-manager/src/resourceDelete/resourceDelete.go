@@ -361,7 +361,7 @@ func deleteSubResourceNamespace(clusterName string, cm *clusterManager.ClusterMa
 				if err4 != nil {
 					return err4
 				}
-				omcplog.V(2).Info("[Delete Resource] Deleted Job '" + ons.Name + "' in Cluster")
+				omcplog.V(2).Info("[Delete Resource] Deleted Namespace '" + ons.Name + "' in Cluster")
 
 				changed_ons, err5 := cm.Crd_client.OpenMCPNamespace(ons.Namespace).Get(ons.Name, metav1.GetOptions{})
 				if err5 != nil {
@@ -420,7 +420,7 @@ func deleteSubResourceSecret(clusterName string, cm *clusterManager.ClusterManag
 				if err4 != nil {
 					return err4
 				}
-				omcplog.V(2).Info("[Delete Resource] Deleted Job '" + osec.Name + "' in Cluster")
+				omcplog.V(2).Info("[Delete Resource] Deleted Secret '" + osec.Name + "' in Cluster")
 
 				changed_osec, err5 := cm.Crd_client.OpenMCPSecret(osec.Namespace).Get(osec.Name, metav1.GetOptions{})
 				if err5 != nil {

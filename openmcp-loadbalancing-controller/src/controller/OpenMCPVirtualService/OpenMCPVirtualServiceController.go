@@ -223,6 +223,7 @@ func contains(s []string, e string) bool {
 	return false
 }
 func MakeVirtualService(ovs *resourcev1alpha1.OpenMCPVirtualService) (*v1alpha3.VirtualService, error) {
+	omcplog.V(4).Info("func MakeVirtualService Called")
 	vs := &v1alpha3.VirtualService{}
 	vs.Name = ovs.Name
 	vs.Namespace = ovs.Namespace
@@ -245,6 +246,7 @@ func MakeVirtualService(ovs *resourcev1alpha1.OpenMCPVirtualService) (*v1alpha3.
 
 	reference.SetMulticlusterControllerReference(vs, reference.NewMulticlusterOwnerReference(ovs, ovs.GroupVersionKind(), "openmcp"))
 
+	omcplog.V(4).Info("func MakeVirtualService Ended")
 	return vs, nil
 }
 
@@ -254,6 +256,7 @@ type RegionZone struct {
 }
 
 func createVsHttps(ovs *resourcev1alpha1.OpenMCPVirtualService) ([]*networkingv1alpha3.HTTPRoute, error) {
+	omcplog.V(4).Info("func createVsHttps Called")
 	vsHttps := []*networkingv1alpha3.HTTPRoute{}
 
 	locClusters := getLocClusters()
@@ -302,12 +305,15 @@ func createVsHttps(ovs *resourcev1alpha1.OpenMCPVirtualService) ([]*networkingv1
 		}
 
 	}
+	omcplog.V(4).Info("func createVsHttps Ended")
+
 	return vsHttps, nil
 }
 func createVsHttp(ovsHttp *networkingv1alpha3.HTTPRoute, exactRegion, exactZone, ns string) (*networkingv1alpha3.HTTPRoute, error) {
+	omcplog.V(4).Info("func createVsHttp Called")
 	vsHttp := &networkingv1alpha3.HTTPRoute{}
-
 	err := deepcopy.Copy(&vsHttp, &ovsHttp)
+
 	if err != nil {
 		return nil, err
 	}
@@ -344,9 +350,11 @@ func createVsHttp(ovsHttp *networkingv1alpha3.HTTPRoute, exactRegion, exactZone,
 
 	vsHttp.Route, _ = createVsHttpRoutes(ovsHttp.Route, exactRegion, exactZone, ns)
 
+	omcplog.V(4).Info("func createVsHttp Ended")
 	return vsHttp, nil
 }
 func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, exactRegion, exactZone, ns string) ([]*networkingv1alpha3.HTTPRouteDestination, error) {
+	omcplog.V(4).Info("func createVsHttpRoutes Called")
 	vsHttpRoutes := []*networkingv1alpha3.HTTPRouteDestination{}
 	locClusters := getLocClusters()
 
@@ -388,6 +396,7 @@ func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination
 	}
 
 	setWeight(vsHttpRoutes, exactRegion, exactZone, ns)
+	omcplog.V(4).Info("func createVsHttpRoutes Ended")
 
 	return vsHttpRoutes, nil
 }
@@ -441,6 +450,7 @@ func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i 
 	if locCluster != nil {
 		vsHttpRoute.Destination.Subset = locCluster.clusterName
 	}
+	omcplog.V(4).Info("func createVsHttpRoute Ended")
 
 	return vsHttpRoute, nil
 }
