@@ -301,9 +301,9 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 
 	for i := 0; i < len(directory); i++ {
 
-		if netLoc == "internal" {
+		/*if netLoc == "internal" {
 			time.Sleep(time.Second * 9)
-		}
+		}*/
 
 		dirname, _ := filepath.Abs(directory[i])
 		//fmt.Println(dirname)
