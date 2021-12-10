@@ -86,7 +86,6 @@ func (kc *KubeletClient) makeRequestAndGetValue(client *http.Client, req *http.R
 
 	fmt.Println("Request Host:", req.Host)
 	response, err := client.Do(req)
-	fmt.Println("Status: ", response.Status)
 	if err != nil {
 		fmt.Println(err)
 		return err
