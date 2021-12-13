@@ -140,12 +140,12 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			omcplog.V(4).Info("Deploy OpenMCP Module ---")
 
 			var moduleDirectory []string
-			if clusterInstance.Spec.ClusterPlatformType == "GKE" {
-				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metric-collector", "metrics-server", "nginx-ingress-controller", "istio" /*, "configmap" */}
-			} else if clusterInstance.Spec.ClusterPlatformType == "AKS" || clusterInstance.Spec.ClusterPlatformType == "EKS" {
-				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metric-collector", "metrics-server", "nginx-ingress-controller", "istio" /*, "configmap" */}
+			if clusterInstance.Spec.ClusterPlatformType == "GKE" || clusterInstance.Spec.ClusterPlatformType == "AKS" {
+				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metric-collector", "istio", "nginx-ingress-controller" /*,"metrics-server",  "configmap" */}
+			} else if clusterInstance.Spec.ClusterPlatformType == "EKS" {
+				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metric-collector", "metrics-server", "istio", "nginx-ingress-controller" /*, "configmap" */}
 			} else if clusterInstance.Spec.ClusterNetworkLocation == "internal" {
-				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller" /*, "configmap" */}
+				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "istio" /*, "configmap" */}
 			} else if clusterInstance.Spec.ClusterNetworkLocation == "external" {
 				moduleDirectory = []string{"namespace", "custom-metrics-apiserver", "metallb", "metric-collector", "metrics-server", "nginx-ingress-controller", "istio" /*, "configmap" */}
 			}
@@ -332,7 +332,6 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 					if strings.Contains(f.Name(), "istio_install.sh") {
 
 						util.CmdExec2("chmod 755 " + dirname + "/gen-eastwest-gateway.sh")
-
 						util.CmdExec2("chmod 755 " + dirname + "/istio_install.sh")
 						util.CmdExec2(dirname + "/istio_install.sh " + dirname + " " + clustername)
 

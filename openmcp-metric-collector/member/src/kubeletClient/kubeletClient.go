@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"openmcp/openmcp/openmcp-metric-collector/member/src/stats"
 	"strconv"
+	"time"
 )
 
 type ErrNotFound struct {
@@ -69,6 +70,7 @@ func (kc *KubeletClient) GetSummary(host, token string) (*stats.Summary, error) 
 	if client == nil {
 		client = http.DefaultClient
 	}
+	client.Timeout = 5 * time.Minute
 	err = kc.makeRequestAndGetValue(client, req.WithContext(context.TODO()), token, summary)
 
 	summary.IP = host
@@ -86,7 +88,6 @@ func (kc *KubeletClient) makeRequestAndGetValue(client *http.Client, req *http.R
 
 	fmt.Println("Request Host:", req.Host)
 	response, err := client.Do(req)
-	fmt.Println("Status: ", response.Status)
 	if err != nil {
 		fmt.Println(err)
 		return err

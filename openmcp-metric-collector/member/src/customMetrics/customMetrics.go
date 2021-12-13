@@ -198,8 +198,7 @@ func PostData(host string, token string, client *http.Client, resourceNamespace 
 	req, err := http.NewRequest("POST", os.ExpandEnv(url), buff)
 
 	if err != nil {
-		// handle err
-		fmt.Println("Fail NewRequest")
+		fmt.Println("Fail NewRequest - ", err)
 	}
 
 	req.Header.Add("Content-Type", "application/json")
@@ -207,9 +206,9 @@ func PostData(host string, token string, client *http.Client, resourceNamespace 
 
 	resp, err := client.Do(req)
 	if err != nil {
-		// handle err
-		fmt.Println("Fail POST")
+		fmt.Println("Fail POST - ", err)
 	} else {
+		defer resp.Body.Close()
 	}
-	defer resp.Body.Close()
+
 }

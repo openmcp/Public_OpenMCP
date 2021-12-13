@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"sort"
 	"strings"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -239,6 +238,7 @@ func MakeVirtualService(ovs *resourcev1alpha1.OpenMCPVirtualService) (*v1alpha3.
 	if err != nil {
 		return nil, err
 	}
+
 	vs.Spec.Http, err = createVsHttps(ovs)
 	if err != nil {
 		return nil, err
@@ -413,6 +413,7 @@ func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i 
 	}
 
 	omcplog.V(4).Info("locCluster: ", locCluster)
+
 	if locCluster != nil {
 		svc := &corev1.Service{}
 
@@ -422,11 +423,11 @@ func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i 
 		err := cm.Cluster_genClients[locCluster.clusterName].Get(context.TODO(), svc, svcNS, svcName)
 
 		if err != nil && errors.IsNotFound(err) {
-			fmt.Println(err)
+			omcplog.V(4).Info(err)
 			return nil, nil
 		}
 		if err != nil {
-			fmt.Println(err)
+			omcplog.V(0).Info(err)
 			return nil, err
 		}
 		listOption := &client.ListOptions{
@@ -434,10 +435,11 @@ func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i 
 				svc.Spec.Selector,
 			),
 		}
+		omcplog.V(2).Info("Find Service '", svcName, "'in '", locCluster.clusterName, "'")
 		podList := &corev1.PodList{}
 		err = cm.Cluster_genClients[locCluster.clusterName].List(context.TODO(), podList, svcNS, listOption)
 		if len(podList.Items) == 0 {
-			fmt.Println("!!!!", locCluster.clusterName, " is Not Exist Pod about Svc: '", svcName, "(", svcNS, ")', LabelSelector: '", svc.Spec.Selector, "'")
+			omcplog.V(4).Info("!!!!", locCluster.clusterName, " is Not Exist Pod about Svc: '", svcName, "(", svcNS, ")', LabelSelector: '", svc.Spec.Selector, "'")
 			return nil, nil
 		}
 	}
@@ -598,45 +600,50 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 
 		weight := int32(math.Floor(orgWeight))
 		vsHttpRoute.Weight = weight
-		omcplog.V(4).Info("vsHttpRoute.Weight : ", weight)
+		omcplog.V(0).Info("vsHttpRoute.Weight : ", weight)
 
 		totalWeight += weight
 
 	}
-	omcplog.V(4).Info("totalWeight : ", totalWeight)
-
 	// weight 스케일링된 값을 100으로 맞춰주는 알고리즘
-	sort.Slice(orgClusterPrimeNumbers, func(i, j int) bool {
-		return orgClusterPrimeNumbers[i].primeNumber > orgClusterPrimeNumbers[j].primeNumber
-	})
-
 	if totalWeight != 100 {
-		restWeight := 100 - totalWeight
-
-		for restWeight > 0 {
-
-			for i, _ := range orgClusterPrimeNumbers {
-				orgClusterPrimeNumbers[i].allocateWeight += 1
-				restWeight -= 1
-
-				if restWeight == 0 {
-					break
-				}
-			}
-
-		}
-
-		for i, vsHttpRoute := range vsHttpRoutes {
-			for j, cpn := range orgClusterPrimeNumbers {
-				if vsHttpRoute.Destination.Subset == cpn.clusterName {
-					vsHttpRoutes[i].Weight = vsHttpRoutes[i].Weight + (int32(cpn.allocateWeight))
-					orgClusterPrimeNumbers[j].allocateWeight = 0
-					break
-				}
-			}
-
-		}
-
+		vsHttpRoutes[0].Weight += 100 - totalWeight
 	}
+
+	// omcplog.V(4).Info("totalWeight : ", totalWeight)
+
+	// // weight 스케일링된 값을 100으로 맞춰주는 알고리즘
+	// sort.Slice(orgClusterPrimeNumbers, func(i, j int) bool {
+	// 	return orgClusterPrimeNumbers[i].primeNumber > orgClusterPrimeNumbers[j].primeNumber
+	// })
+
+	// if totalWeight != 100 {
+	// 	restWeight := 100 - totalWeight
+
+	// 	for restWeight > 0 {
+
+	// 		for i, _ := range orgClusterPrimeNumbers {
+	// 			orgClusterPrimeNumbers[i].allocateWeight += 1
+	// 			restWeight -= 1
+
+	// 			if restWeight == 0 {
+	// 				break
+	// 			}
+	// 		}
+
+	// 	}
+
+	// 	for i, vsHttpRoute := range vsHttpRoutes {
+	// 		for j, cpn := range orgClusterPrimeNumbers {
+	// 			if vsHttpRoute.Destination.Subset == cpn.clusterName {
+	// 				vsHttpRoutes[i].Weight = vsHttpRoutes[i].Weight + (int32(cpn.allocateWeight))
+	// 				orgClusterPrimeNumbers[j].allocateWeight = 0
+	// 				break
+	// 			}
+	// 		}
+
+	// 	}
+
+	// }
 
 }

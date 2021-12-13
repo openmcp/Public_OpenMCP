@@ -2,10 +2,10 @@
     "apiVersion": "v1",
     "kind": "Namespace",
     "metadata": {
-        "creationTimestamp": "2021-12-03T06:10:16Z",
-        "deletionTimestamp": "2021-12-07T08:07:23Z",
+        "creationTimestamp": "2021-12-03T06:07:42Z",
+        "deletionTimestamp": "2021-12-09T06:25:12Z",
         "labels": {
-            "topology.istio.io/network": "network-cluster11"
+            "topology.istio.io/network": "network-cluster10"
         },
         "managedFields": [
             {
@@ -24,7 +24,7 @@
                 },
                 "manager": "kubectl",
                 "operation": "Update",
-                "time": "2021-12-03T06:10:20Z"
+                "time": "2021-12-03T06:07:49Z"
             },
             {
                 "apiVersion": "v1",
@@ -78,13 +78,13 @@
                 },
                 "manager": "kube-controller-manager",
                 "operation": "Update",
-                "time": "2021-12-07T08:07:29Z"
+                "time": "2021-12-09T06:25:17Z"
             }
         ],
         "name": "istio-system",
-        "resourceVersion": "16927274",
+        "resourceVersion": "15531560",
         "selfLink": "/api/v1/namespaces/istio-system",
-        "uid": "f3772e9c-1bd0-4b63-9bd7-2a79d113102a"
+        "uid": "500ece36-0ca9-41c3-9564-c80b082cfe99"
     },
     "spec": {
         "finalizers": [
@@ -94,35 +94,35 @@
     "status": {
         "conditions": [
             {
-                "lastTransitionTime": "2021-12-07T08:07:28Z",
+                "lastTransitionTime": "2021-12-09T06:25:17Z",
                 "message": "Discovery failed for some groups, 1 failing: unable to retrieve the complete list of server APIs: metrics.k8s.io/v1beta1: an error on the server (\"Internal Server Error: \\\"/apis/metrics.k8s.io/v1beta1?timeout=32s\\\": Unauthorized\") has prevented the request from succeeding",
                 "reason": "DiscoveryFailed",
                 "status": "True",
                 "type": "NamespaceDeletionDiscoveryFailure"
             },
             {
-                "lastTransitionTime": "2021-12-07T08:07:29Z",
+                "lastTransitionTime": "2021-12-09T06:25:17Z",
                 "message": "All legacy kube types successfully parsed",
                 "reason": "ParsedGroupVersions",
                 "status": "False",
                 "type": "NamespaceDeletionGroupVersionParsingFailure"
             },
             {
-                "lastTransitionTime": "2021-12-07T08:07:29Z",
+                "lastTransitionTime": "2021-12-09T06:25:17Z",
                 "message": "All content successfully deleted, may be waiting on finalization",
                 "reason": "ContentDeleted",
                 "status": "False",
                 "type": "NamespaceDeletionContentFailure"
             },
             {
-                "lastTransitionTime": "2021-12-07T08:08:35Z",
+                "lastTransitionTime": "2021-12-09T06:27:07Z",
                 "message": "All content successfully removed",
                 "reason": "ContentRemoved",
                 "status": "False",
                 "type": "NamespaceContentRemaining"
             },
             {
-                "lastTransitionTime": "2021-12-07T08:08:35Z",
+                "lastTransitionTime": "2021-12-09T06:27:07Z",
                 "message": "All content-preserving finalizers finished",
                 "reason": "ContentHasNoFinalizers",
                 "status": "False",

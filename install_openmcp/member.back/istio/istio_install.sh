@@ -56,6 +56,39 @@ spec:
         clusterName: $CTX
       network: network-$CTX
       remotePilotAddress: $DISCOVERY_ADDRESS
+  components:
+    ingressGateways:
+      - name: istio-ingressgateway
+        enabled: true
+        k8s:
+          service:
+            ports:
+              # We have to specify original ports otherwise it will be erased
+              - name: status-port
+                nodePort: 31022
+                port: 15022
+                protocol: TCP
+                targetPort: 15021
+              - name: http2
+                nodePort: 31080
+                port: 80
+                protocol: TCP
+                targetPort: 8080
+              - name: https
+                nodePort: 31443
+                port: 443
+                protocol: TCP
+                targetPort: 8443
+              - name: tcp-istiod
+                nodePort: 31013
+                port: 15013
+                protocol: TCP
+                targetPort: 15012
+              - name: tls
+                nodePort: 31444
+                port: 15444
+                protocol: TCP
+                targetPort: 15443
 EOF
 
 # $CTX에 configuration 적용
