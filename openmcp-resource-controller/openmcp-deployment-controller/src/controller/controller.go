@@ -23,6 +23,7 @@ import (
 	"openmcp/openmcp/util/clusterManager"
 	"reflect"
 	"strconv"
+	"time"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
@@ -106,7 +107,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	// Fetch the OpenMCPDeployment instance
 	instance := &resourcev1alpha1.OpenMCPDeployment{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
-	omcplog.V(5).Info("Resource Get => [Name] : " + instance.Name + " [Namespace]  : " + instance.Namespace)
+	omcplog.V(2).Info("Resource Get => [Name] : " + instance.Name + " [Namespace]  : " + instance.Namespace)
+
+	schedulingTimeStart := time.Now()
+	omcplog.V(2).Info("*** Scheduling Start ...")
 
 	if err != nil {
 
@@ -149,7 +153,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 		} else if instance.Status.SchedulingNeed == false && instance.Status.SchedulingComplete == true {
 
-			omcplog.V(2).Info("Create a Sync Resource for Deployment with Scheduling results.")
+			omcplog.V(3).Info("Create a Sync Resource for Deployment with Scheduling results.")
 
 			sync_req_name := ""
 
@@ -162,11 +166,16 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 				found := &appsv1.Deployment{}
 				err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
-				omcplog.V(2).Info("/// cluster_client : ", cluster_client)
+				omcplog.V(3).Info("/// cluster_client : ", cluster_client)
 
 				if err != nil && errors.IsNotFound(err) {
 					// Not Exist Deployment.
 					if replica != 0 {
+
+						omcplog.V(2).Info("*** Scheduling End")
+						schedulingTimeEnd := time.Since(schedulingTimeStart)
+						omcplog.V(2).Info("***** Step 1. Scheduling Time : ", schedulingTimeEnd)
+						
 						// Create !
 						command := "create"
 						omcplog.V(2).Info("SyncResource Create (ClusterName : "+myCluster.Name+", Command : "+command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
