@@ -90,13 +90,20 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				Namespace: req.Namespace,
 			},
 		}
-		err2 := r.live.Delete(context.TODO(), instance_osvcdnsr, nil)
-		if err2 != nil && errors.IsNotFound(err2) {
-			omcplog.V(2).Info(err2)
-			return reconcile.Result{}, nil
-		} else if err2 != nil {
-			omcplog.V(2).Info("err : ", err2)
-			return reconcile.Result{}, err2
+		type ObjectKey = types.NamespacedName
+		osdnsr := &dnsv1alpha1.OpenMCPServiceDNSRecord{}
+		err_osdnsr := r.live.Get(context.TODO(), ObjectKey{Name: req.Name + "-by-openmcp", Namespace: req.Namespace}, osdnsr)
+		if err_osdnsr != nil && errors.IsNotFound(err_osdnsr) {
+			err2 := r.live.Delete(context.TODO(), instance_osvcdnsr)
+			if err2 != nil && errors.IsNotFound(err2) {
+				omcplog.V(2).Info(err2)
+				return reconcile.Result{}, nil
+			} else if err2 != nil {
+				omcplog.V(2).Info("err : ", err2)
+				return reconcile.Result{}, err2
+			}
+		} else if err_osdnsr != nil {
+			omcplog.V(2).Info(err_osdnsr)
 		}
 		return reconcile.Result{}, nil
 	}
