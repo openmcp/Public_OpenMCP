@@ -14,26 +14,25 @@ limitations under the License.
 package controller // import "admiralty.io/multicluster-controller/examples/openmcpdeployment/pkg/controller/openmcpdeployment"
 
 import (
+	"admiralty.io/multicluster-controller/pkg/cluster"
+	"admiralty.io/multicluster-controller/pkg/controller"
+	"admiralty.io/multicluster-controller/pkg/reconcile"
+	"admiralty.io/multicluster-controller/pkg/reference"
 	"context"
 	"fmt"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"openmcp/openmcp/apis"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 	"reflect"
-	"strconv"
-
-	"admiralty.io/multicluster-controller/pkg/cluster"
-	"admiralty.io/multicluster-controller/pkg/controller"
-	"admiralty.io/multicluster-controller/pkg/reconcile"
-	"admiralty.io/multicluster-controller/pkg/reference"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strconv"
 )
 
 var cm *clusterManager.ClusterManager
@@ -58,7 +57,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		}
 	}
 
-	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{})
+	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{MaxConcurrentReconciles: 32})
 
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
@@ -106,7 +105,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	// Fetch the OpenMCPDeployment instance
 	instance := &resourcev1alpha1.OpenMCPDeployment{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, instance)
-	omcplog.V(5).Info("Resource Get => [Name] : " + instance.Name + " [Namespace]  : " + instance.Namespace)
+	omcplog.V(2).Info("Resource Get => [Name] : " + instance.Name + " [Namespace]  : " + instance.Namespace)
 
 	if err != nil {
 
@@ -140,6 +139,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.V(0).Info("Failed to update instance status", err)
 				return reconcile.Result{}, err
 			}
+
 			return reconcile.Result{}, err
 
 			//} else if instance.Status.SchedulingNeed == true && instance.Status.SchedulingComplete == false {
@@ -149,7 +149,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 		} else if instance.Status.SchedulingNeed == false && instance.Status.SchedulingComplete == true {
 
-			omcplog.V(2).Info("Create a Sync Resource for Deployment with Scheduling results.")
+			omcplog.V(3).Info("Create a Sync Resource for Deployment with Scheduling results.")
 
 			sync_req_name := ""
 
@@ -162,14 +162,15 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 				found := &appsv1.Deployment{}
 				err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
-				omcplog.V(2).Info("/// cluster_client : ", cluster_client)
 
 				if err != nil && errors.IsNotFound(err) {
 					// Not Exist Deployment.
 					if replica != 0 {
+
 						// Create !
 						command := "create"
-						omcplog.V(2).Info("SyncResource Create (ClusterName : "+myCluster.Name+", Command : "+command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
+						omcplog.V(3).Info("SyncResource Create")
+						omcplog.V(2).Info("=> ClusterName : "+myCluster.Name+", Command : "+command+", Replicas : ", replica, " / ", instance.Status.Replicas)
 						sync_req_name, err = r.sendSync(dep, command, myCluster.Name)
 
 						if err != nil {
@@ -185,7 +186,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					if replica == 0 {
 						// Delete !
 						command := "delete"
-						omcplog.V(2).Info("SyncResource Create (ClusterName : "+myCluster.Name+", Command : "+command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
+						omcplog.V(3).Info("SyncResource Create (ClusterName : "+myCluster.Name+", Command : "+command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
 						sync_req_name, err = r.sendSync(dep, command, myCluster.Name)
 
 						if err != nil {
@@ -194,7 +195,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					} else {
 						// Update !
 						command := "update"
-						omcplog.V(2).Info("SyncResource Create (ClusterName : "+myCluster.Name+", Command : "+command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
+						omcplog.V(3).Info("SyncResource Create (ClusterName : "+myCluster.Name+", Command : "+command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
 						sync_req_name, err = r.sendSync(dep, command, myCluster.Name)
 						if err != nil {
 							return reconcile.Result{}, err
@@ -204,6 +205,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 				}
 			}
+
 			omcplog.V(2).Info("Notify Service Controller")
 			r.NotifyService(instance.Spec.Labels, instance.Namespace)
 
@@ -356,10 +358,19 @@ func (r *reconciler) DeleteDeploys(cm *clusterManager.ClusterManager, name strin
 	}
 	omcplog.V(2).Info("Delete Check ", dep.Name, "/", dep.Namespace)
 	for _, cluster := range cm.Cluster_list.Items {
-		command := "delete"
-		_, err := r.sendSync(dep, command, cluster.Name)
-		if err != nil {
-			return err
+
+		found := &appsv1.Deployment{}
+		cluster_client := cm.Cluster_genClients[cluster.Name]
+		err_founddeploy := cluster_client.Get(context.TODO(), found, namespace, name)
+
+		if err_founddeploy == nil {
+			command := "delete"
+			_, err := r.sendSync(dep, command, cluster.Name)
+			if err != nil {
+				return err
+			}
+		} else {
+			//omcplog.V(0).Info("Failed to del", err_founddeploy)
 		}
 	}
 	return nil
