@@ -138,17 +138,26 @@ func (h *HttpManager) ApiHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		defer resp.Body.Close()
 
+		if resp.Status >= "400" {
+			omcplog.V(0).Info("resp.Status:", resp.Status)
+			return
+
+		}
+
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			omcplog.V(0).Info(err)
-			panic(err.Error())
+			//panic(err.Error())
+			return
 		}
 
 		var prettyJSON bytes.Buffer
 		err = json.Indent(&prettyJSON, body, "", "\t")
 		if err != nil {
 			omcplog.V(0).Info(err)
-			panic(err.Error())
+			//panic(err.Error())
+			return
+
 		}
 
 		//omcplog.V(5).Info(string(prettyJSON.Bytes()))

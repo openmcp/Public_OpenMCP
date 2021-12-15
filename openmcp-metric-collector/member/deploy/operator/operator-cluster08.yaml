@@ -37,9 +37,10 @@ spec:
             - name: GRPC_PORT
               value: "3212"
             - name: CLUSTER_NAME
-              value: cluster08
+              value: cluster06
             - name: OPERATOR_NAME
               value: "openmcp-metric-collector"
+      hostNetwork: true
       tolerations:
         - key: node.kubernetes.io/not-ready
           effect: NoExecute

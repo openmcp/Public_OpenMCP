@@ -53,7 +53,9 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 
 	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
+
 	for {
+
 		select {
 		case <-quit:
 			omcplog.V(2).Info("SyncWeight Quit")
@@ -357,6 +359,7 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 			//fmt.Println(DistributeList)
 
 			time.Sleep(time.Second * 10)
+
 		}
 
 	}

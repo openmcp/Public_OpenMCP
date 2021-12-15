@@ -21,6 +21,7 @@ import (
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
+	"time"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
@@ -99,13 +100,16 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 	omcplog.V(5).Info("Resource Get => [Name] : " + instance.Name + " [Namespace]  : " + instance.Namespace)
 
+	deployTimeStart := time.Now()
+	omcplog.V(2).Info("*** Deploy Start ...")
+
 	// Instance Delete
 	err = r.live.Delete(context.TODO(), instance)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	omcplog.V(2).Info("Resource Extract from SyncResource")
+	omcplog.V(3).Info("Resource Extract from SyncResource")
 	obj, clusterName, command := r.resourceForSync(instance)
 
 	jsonbody, err := json.Marshal(obj)
@@ -128,6 +132,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err = clusterClient.Create(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+				omcplog.V(2).Info("*** Deploy End")
+				deployTimeEnd := time.Since(deployTimeStart)
+				omcplog.V(2).Info("***** Step 2. Deploy Time : ", deployTimeEnd)
 				if !errors.IsNotFound(err) {
 					return reconcile.Result{}, err // err
 				}
