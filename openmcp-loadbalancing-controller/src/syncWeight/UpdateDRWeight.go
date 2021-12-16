@@ -54,6 +54,7 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
 	for {
+
 		select {
 		case <-quit:
 			omcplog.V(2).Info("SyncWeight Quit")
@@ -143,29 +144,33 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 					tmp_pod_list := []string{}
 					cluster_client := cm.Cluster_genClients[mcluster.Name]
 
-					listOption := &client.ListOptions{
-						LabelSelector: labels.SelectorFromSet(
-							osvc.Spec.Template.Spec.Selector,
-						),
-					}
+					if cm.Cluster_genClients[mcluster.Name] != nil {
+						listOption := &client.ListOptions{
+							LabelSelector: labels.SelectorFromSet(
+								osvc.Spec.Template.Spec.Selector,
+							),
+						}
 
-					podList := &corev1.PodList{}
-					err_pod := cluster_client.List(context.TODO(), podList, osvc.Namespace, listOption)
+						podList := &corev1.PodList{}
+						err_pod := cluster_client.List(context.TODO(), podList, osvc.Namespace, listOption)
 
-					if err_pod == nil {
-						for _, pod := range podList.Items {
-							tmp_pod_list = append(tmp_pod_list, pod.Name)
-							podNodeName = pod.Spec.NodeName
+						if err_pod == nil {
+							for _, pod := range podList.Items {
+								tmp_pod_list = append(tmp_pod_list, pod.Name)
+								podNodeName = pod.Spec.NodeName
+							}
+						} else {
+							omcplog.V(2).Info(err_pod)
+						}
+
+						if podNodeName != "" {
+							cluster_node := mcluster.Name // + "/" + podNodeName
+							region_zone := NodeList[cluster_node].node_region + "/" + NodeList[cluster_node].node_zone + "/" + mcluster.Name
+
+							target_node_list[region_zone] = append(target_node_list[region_zone], tmp_pod_list...)
 						}
 					} else {
-						omcplog.V(2).Info(err_pod)
-					}
-
-					if podNodeName != "" {
-						cluster_node := mcluster.Name // + "/" + podNodeName
-						region_zone := NodeList[cluster_node].node_region + "/" + NodeList[cluster_node].node_zone + "/" + mcluster.Name
-
-						target_node_list[region_zone] = append(target_node_list[region_zone], tmp_pod_list...)
+						omcplog.V(0).Info("err!! : ", mcluster.Name, " cluster client has 'nil'")
 					}
 				}
 				fmt.Println("target_node_list : ", target_node_list)
@@ -357,6 +362,7 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 			//fmt.Println(DistributeList)
 
 			time.Sleep(time.Second * 10)
+
 		}
 
 	}

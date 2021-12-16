@@ -14,17 +14,12 @@ limitations under the License.
 package sync // import "admiralty.io/multicluster-controller/examples/serviceDNS/pkg/controller/serviceDNS"
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"openmcp/openmcp/apis"
-	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
-	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/util/clusterManager"
-
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
+	"context"
+	"encoding/json"
+	"fmt"
 	vpav1beta2 "github.com/kubernetes/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	appsv1 "k8s.io/api/apps/v1"
 	hpav2beta2 "k8s.io/api/autoscaling/v2beta2"
@@ -34,6 +29,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"openmcp/openmcp/apis"
+	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
+	"openmcp/openmcp/omcplog"
+	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -58,7 +57,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		}
 	}
 
-	co := controller.New(&reconciler{live: liveclient, ghosts: ghostClients, ghostNamespace: ghostNamespace}, controller.Options{})
+	co := controller.New(&reconciler{live: liveclient, ghosts: ghostClients, ghostNamespace: ghostNamespace}, controller.Options{MaxConcurrentReconciles: 32})
 
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
@@ -99,13 +98,16 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	}
 	omcplog.V(5).Info("Resource Get => [Name] : " + instance.Name + " [Namespace]  : " + instance.Namespace)
 
+	/*deployTimeStart := time.Now()
+	omcplog.V(2).Info("*** Deploy Start ...")*/
+
 	// Instance Delete
 	err = r.live.Delete(context.TODO(), instance)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	omcplog.V(2).Info("Resource Extract from SyncResource")
+	omcplog.V(3).Info("Resource Extract from SyncResource")
 	obj, clusterName, command := r.resourceForSync(instance)
 
 	jsonbody, err := json.Marshal(obj)
@@ -127,7 +129,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		if command == "create" {
 			err = clusterClient.Create(context.TODO(), subInstance)
 			if err == nil {
-				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+				omcplog.V(2).Info("Created " + obj.GetKind() + " (" + obj.GetName() + ", " + obj.GetNamespace() + ") in " + clusterName)
+				/*omcplog.V(2).Info("*** Deploy End")
+				deployTimeEnd := time.Since(deployTimeStart)
+				omcplog.V(2).Info("***** Step 2. ",clusterName," Deploy Time : ", deployTimeEnd)*/
 				if !errors.IsNotFound(err) {
 					return reconcile.Result{}, err // err
 				}
@@ -562,7 +567,7 @@ func (r *reconciler) resourceForSync(instance *syncv1alpha1.Sync) (*unstructured
 
 	u := &unstructured.Unstructured{}
 
-	omcplog.V(2).Info("[Parsing Sync] ClusterName : ", clusterName, ", command : ", command)
+	omcplog.V(3).Info("[Parsing Sync] ClusterName : ", clusterName, ", command : ", command)
 	var err error
 	u.Object, err = runtime.DefaultUnstructuredConverter.ToUnstructured(&instance.Spec.Template)
 	if err != nil {
