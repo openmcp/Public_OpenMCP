@@ -139,8 +139,8 @@ func ReverseProxy(myClusterManager *clusterManager.ClusterManager) {
 		}
 		fmt.Println()
 
-		//req.Header.Add("Client-Region", "AU")
-		//req.Header.Add("Client-Zone", "New-South-Wales")
+		//req.Header.Add("Client-Region", "JP")
+		//req.Header.Add("Client-Zone", "Tokyo")
 		req.Header.Add("Client-Region", region)
 		req.Header.Add("Client-Zone", zone)
 

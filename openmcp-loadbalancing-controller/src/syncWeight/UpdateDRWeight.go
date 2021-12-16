@@ -53,6 +53,7 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 
 	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
+
 	for {
 
 		select {
