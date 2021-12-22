@@ -1,22 +1,49 @@
 apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPService
+metadata:
+  name: test-osvc-php
+  namespace: test
+  labels:
+    app: php-apache
+spec:
+  labelselector:
+    app: php-apache
+  template:
+    spec:
+      ports:
+        - port: 80
+      selector:
+        app: php-apache
+---
+apiVersion: openmcp.k8s.io/v1alpha1
 kind: OpenMCPDeployment
 metadata:
-  name: test-pod
-#  namespace: keti
+  name: test-odeploy-php
+  namespace: test
 spec:
-  replicas: 5
+  replicas: 4
+  clusters:
+  - cluster01
+  - cluster02
+  - cluster03
   labels:
-      app: test-pod
+      app: php-apache
   template:
     spec:
       template:
         spec:
           containers:
-          - image: k8s.gcr.io/hpa-example
+          - name: php-apache
+            image: k8s.gcr.io/hpa-example
             ports:
-            - containerPort: 80
-            name: php-apache
+              - containerPort: 80
             resources:
               requests:
-                memory: 10Mi
-                cpu: 100m
+                memory: 500Mi
+                cpu: 250m
+          #- name: nginx
+          #  image: nginx
+          #  resource:
+          #    requests:
+          #       memory: "9"
+          #       cpu: "1"
