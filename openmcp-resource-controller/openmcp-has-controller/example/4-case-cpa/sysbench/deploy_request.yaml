@@ -1,0 +1,50 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPService
+metadata:
+  name: test-has-service
+  namespace: test
+  labels:
+    app: test-has-pod
+spec:
+  labelselector:
+    app: test-has-pod
+  template:
+    spec:
+      type: LoadBalancer
+      ports:
+        - port: 8021
+          targetPort: 7070
+          name: http-sysbench
+          nodePort: 32132
+      selector:
+        app: test-has-pod
+---
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: test-has-pod 
+  namespace: test
+spec:
+  replicas: 4
+  clusters:
+  - cluster01
+  - cluster02
+  - cluster03
+  labels:
+      app: test-has-pod
+  template:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: sysbench
+            command:
+            - sysbench-test
+            image: ketidevit/sysbench-test:v0.0.1
+            imagePullPolicy: IfNotPresent
+            ports:
+              - containerPort: 7070
+            resources:
+              requests:
+                memory: 100Mi
+                cpu: 100m

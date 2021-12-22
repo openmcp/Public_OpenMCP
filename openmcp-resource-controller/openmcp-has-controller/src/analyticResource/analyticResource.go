@@ -113,7 +113,7 @@ Exit:
 												continue Exit
 											} else {
 												//fmt.Println("[" + deploy.Name + "] Success to Scale-in in ", targetCluster)
-												fmt.Println("[", deploy.TargetCluster, "] Success to Scale-in Deployment '", deploy.Name, "'")
+												fmt.Println("[", deploy.TargetCluster, "] Success to Scale-in Deployment '"+deploy.Name+"'")
 												tmptime := CPAInfoList[cpaKey]
 												if tmptime.AutoscalingTime == nil {
 													scalingTime := make(map[string]time.Time)
@@ -141,7 +141,7 @@ Exit:
 												continue Exit
 											} else {
 												//fmt.Println("[" + deploy.Name + "] Success to Scale-out in ", targetCluster)
-												fmt.Println("[", deploy.TargetCluster, "] Success to Scale-out Deployment '", deploy.Name, "'")
+												fmt.Println("[", deploy.TargetCluster, "] Success to Scale-out Deployment '"+deploy.Name+"'")
 												tmptime := CPAInfoList[cpaKey]
 												if tmptime.AutoscalingTime == nil {
 													scalingTime := make(map[string]time.Time)
@@ -152,8 +152,6 @@ Exit:
 											}
 
 										} else if beforeScaling == CPAInfoList[cpaKey].CpaMax+1 {
-											fmt.Println("*** CurrentReplicas == MaxReplicas. Get Replicas from other clusters.")
-
 											r_cluster_list := deploy.RestCluster
 
 											if len(r_cluster_list) == 0 {
@@ -163,12 +161,15 @@ Exit:
 
 											for _, r_cluster := range r_cluster_list {
 												if r_cluster != targetCluster {
+
 													//pod 감소
 													r_dep := &appsv1.Deployment{}
 													r_cluster_client := cm.Cluster_genClients[r_cluster]
 													r_dep_err := r_cluster_client.Get(context.TODO(), r_dep, deploy.Namespace, deploy.Name)
 
 													if *r_dep.Spec.Replicas > 1 {
+														fmt.Println("*** CurrentReplicas == MaxReplicas. Get Replicas from other clusters.")
+
 														if r_dep_err != nil {
 															fmt.Println("getTargetDeploy err : ", r_dep_err)
 															continue Exit
@@ -180,7 +181,7 @@ Exit:
 																continue Exit
 															} else {
 																//fmt.Println("[" + deploy.Name + "] Success to Scale-in in ", r_cluster)
-																fmt.Println("[", r_cluster, "] Success to Scale-in Deployment '", deploy.Name, "'")
+																fmt.Println("[", r_cluster, "] Success to Scale-in Deployment '"+deploy.Name+"'")
 															}
 														}
 
@@ -198,7 +199,7 @@ Exit:
 															continue Exit
 														} else {
 															//fmt.Println("[" + deploy.Name + "] Success to Scale-in in ", targetCluster)
-															fmt.Println("[", deploy.TargetCluster, "] Success to Scale-out Deployment '", deploy.Name, "'")
+															fmt.Println("[", deploy.TargetCluster, "] Success to Scale-out Deployment '"+deploy.Name+"'")
 															tmptime := CPAInfoList[cpaKey]
 															if tmptime.AutoscalingTime == nil {
 																scalingTime := make(map[string]time.Time)
@@ -208,7 +209,7 @@ Exit:
 															CPAInfoList[cpaKey] = tmptime
 														}
 
-														fmt.Println("Success to send replica from ", r_cluster, " to ", targetCluster)
+														fmt.Println("Success to send replica from", r_cluster, "to", targetCluster)
 														break
 													}
 												}
