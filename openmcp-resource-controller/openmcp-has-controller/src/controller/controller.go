@@ -42,8 +42,6 @@ import (
 
 	"strconv"
 	"time"
-
-	fedv1b1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 )
 
 var cm *clusterManager.ClusterManager
@@ -199,6 +197,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 					if check == 0 {
 						delete(analyticResource.CPAInfoList, k)
 						fmt.Println("Success to Delete CPA ", k)
+						fmt.Println("")
 					}
 				}
 
@@ -215,7 +214,9 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	if !reflect.DeepEqual(hasInstance.Status.LastSpec, hasInstance.Spec) || hasInstance.Status.ChangeNeed == true {
 		omcplog.V(3).Info("hasInstance.Status.ChangeNeed : ", hasInstance.Status.ChangeNeed)
 		//Apply "has-target-cluster" Policy
-		clusterListItems, hasInstance := r.UpdateTargetClusterPolicy(cm, hasInstance)
+		//clusterListItems, hasInstance := r.UpdateTargetClusterPolicy(cm, hasInstance)
+
+		clusterListItems := cm.Cluster_list.Items
 
 		target_cluster_policy_err := r.live.Status().Update(context.TODO(), hasInstance)
 		if target_cluster_policy_err != nil {
@@ -235,84 +236,92 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			cpaKey.HASName = hasInstance.Name
 			cpaKey.HASNamespace = hasInstance.Namespace
 
-			_, prs := analyticResource.CPAInfoList[cpaKey]
+			//_, prs := analyticResource.CPAInfoList[cpaKey]
 			//fmt.Println("CPA Exists? ", prs, "(",cpaKey,")")
 			//cpa 리스트에 없는 경우
-			if prs == false {
-				//타겟으로 하는 openmcpdeployment 배포되어있는지 검사
-				openmcpDep := &resourcev1alpha1.OpenMCPDeployment{}
-				openmcpDep_err := r.live.Get(
-					context.TODO(),
-					ObjectKey{
-						Namespace: hasInstance.Namespace,
-						Name:      hasInstance.Spec.ScalingOptions.CpaTemplate.ScaleTargetRef.Name},
-					openmcpDep)
+			//if prs == false {
+			//타겟으로 하는 openmcpdeployment 배포되어있는지 검사
+			openmcpDep := &resourcev1alpha1.OpenMCPDeployment{}
+			openmcpDep_err := r.live.Get(
+				context.TODO(),
+				ObjectKey{
+					Namespace: hasInstance.Namespace,
+					Name:      hasInstance.Spec.ScalingOptions.CpaTemplate.ScaleTargetRef.Name},
+				openmcpDep)
 
-				var totalCpuRequest int64
-				var totalMemRequest int64
+			var totalCpuRequest int64
+			var totalMemRequest int64
 
-				totalCpuRequest = 0
-				totalMemRequest = 0
+			totalCpuRequest = 0
+			totalMemRequest = 0
 
-				for _, container := range openmcpDep.Spec.Template.Spec.Template.Spec.Containers {
+			for _, container := range openmcpDep.Spec.Template.Spec.Template.Spec.Containers {
 
-					cpuInt64 := container.Resources.Requests.Cpu().MilliValue()
-					memInt64 := container.Resources.Requests.Memory().MilliValue()
+				cpuInt64 := container.Resources.Requests.Cpu().MilliValue()
+				memInt64 := container.Resources.Requests.Memory().MilliValue()
 
-					if cpuInt64 > 0 {
-						totalCpuRequest += cpuInt64
-					}
-					if memInt64 > 0 {
-						totalMemRequest += memInt64
-					}
+				if cpuInt64 > 0 {
+					totalCpuRequest += cpuInt64
 				}
-
-				if totalCpuRequest == 0 || totalMemRequest == 0 {
-					omcplog.V(0).Info("!![error] Fail to CPA - There is no request on Deployment")
-				} else {
-					if openmcpDep_err == nil {
-						cpaCluster := make([]string, 0)
-						var totalReplicas int32
-						totalReplicas = 0
-
-						//어느 클러스터에 배포되어있는지 확인
-						for _, cluster := range cm.Cluster_list.Items {
-							dep := &appsv1.Deployment{}
-							cluster_client := cm.Cluster_genClients[cluster.Name]
-							dep_err := cluster_client.Get(context.TODO(), dep, hasInstance.Namespace, hasInstance.Spec.ScalingOptions.CpaTemplate.ScaleTargetRef.Name)
-							if dep_err == nil {
-								totalReplicas = totalReplicas + *dep.Spec.Replicas
-								cpaCluster = append(cpaCluster, cluster.Name)
-							}
-						}
-						deployInfo := &protobuf.CPADeployInfo{
-							Name:        openmcpDep.Name,
-							Namespace:   openmcpDep.Namespace,
-							ReplicasNum: totalReplicas,
-							CPAName:     hasInstance.Name,
-							Clusters:    cpaCluster,
-							//containers total Request 계산해서 put
-							CpuRequest: totalCpuRequest,
-							MemRequest: totalMemRequest,
-						}
-
-						cpaValue := analyticResource.CPAValue{}
-
-						cpaValue.OmcpdeployInfo = deployInfo
-						//cpaValue.InitReplicas = openmcpDep.Spec.Replicas
-						cpaValue.ReplicasAfterScaling = totalReplicas
-						cpaValue.CpaMin = hasInstance.Spec.ScalingOptions.CpaTemplate.MinReplicas
-						cpaValue.CpaMax = hasInstance.Spec.ScalingOptions.CpaTemplate.MaxReplicas
-
-						analyticResource.CPAInfoList[cpaKey] = cpaValue
-
-						fmt.Println("Success to Put CPA ", cpaKey)
-
-					} else {
-						fmt.Println(openmcpDep_err)
-					}
+				if memInt64 > 0 {
+					totalMemRequest += memInt64
 				}
 			}
+
+			if totalCpuRequest == 0 || totalMemRequest == 0 {
+				omcplog.V(0).Info("!![error] Fail to CPA - There is no request on Deployment")
+			} else {
+				if openmcpDep_err == nil {
+					cpaCluster := make([]string, 0)
+					var totalReplicas int32
+					totalReplicas = 0
+
+					//어느 클러스터에 배포되어있는지 확인
+					for _, cluster := range cm.Cluster_list.Items {
+						dep := &appsv1.Deployment{}
+						cluster_client := cm.Cluster_genClients[cluster.Name]
+						dep_err := cluster_client.Get(context.TODO(), dep, hasInstance.Namespace, hasInstance.Spec.ScalingOptions.CpaTemplate.ScaleTargetRef.Name)
+						if dep_err == nil {
+							totalReplicas = totalReplicas + *dep.Spec.Replicas
+							cpaCluster = append(cpaCluster, cluster.Name)
+						}
+					}
+
+					deployInfo := &protobuf.CPADeployInfo{
+						Name:        openmcpDep.Name,
+						Namespace:   openmcpDep.Namespace,
+						ReplicasNum: totalReplicas,
+						CPAName:     hasInstance.Name,
+						Clusters:    cpaCluster,
+						//containers total Request 계산해서 put
+						CpuRequest: totalCpuRequest,
+						MemRequest: totalMemRequest,
+					}
+
+					cpaValue := analyticResource.CPAValue{}
+					scalingTime := make(map[string]time.Time)
+					cpaValue.AutoscalingTime = scalingTime
+					//예외처리하기!! cpa 리스트 이미 있는 경우 autoscaling 시간 덮어쓰지 않게
+					_, prs := analyticResource.CPAInfoList[cpaKey]
+					if prs {
+						cpaValue.AutoscalingTime = analyticResource.CPAInfoList[cpaKey].AutoscalingTime
+					}
+
+					cpaValue.OmcpdeployInfo = deployInfo
+					cpaValue.ReplicasAfterScaling = totalReplicas
+					cpaValue.CpaMin = hasInstance.Spec.ScalingOptions.CpaTemplate.MinReplicas
+					cpaValue.CpaMax = hasInstance.Spec.ScalingOptions.CpaTemplate.MaxReplicas
+
+					analyticResource.CPAInfoList[cpaKey] = cpaValue
+
+					fmt.Println("Success to Put CPA ", cpaKey)
+					fmt.Println("")
+
+				} else {
+					fmt.Println(openmcpDep_err)
+				}
+			}
+			//}
 
 			return reconcile.Result{}, nil
 
@@ -776,7 +785,7 @@ func (r *reconciler) UpdateMinMaxDistributionPolicy(hasInstance *resourcev1alpha
 	return cluster_min_map, cluster_max_map, min_max_err
 }
 
-func (r *reconciler) UpdateTargetClusterPolicy(cm *clusterManager.ClusterManager, hasInstance *resourcev1alpha1.OpenMCPHybridAutoScaler) ([]fedv1b1.KubeFedCluster, *resourcev1alpha1.OpenMCPHybridAutoScaler) {
+/*func (r *reconciler) UpdateTargetClusterPolicy(cm *clusterManager.ClusterManager, hasInstance *resourcev1alpha1.OpenMCPHybridAutoScaler) ([]fedv1b1.KubeFedCluster, *resourcev1alpha1.OpenMCPHybridAutoScaler) {
 	checkPolicy := 0
 	clusterListItems := make([]fedv1b1.KubeFedCluster, 0)
 
@@ -839,7 +848,7 @@ func (r *reconciler) UpdateTargetClusterPolicy(cm *clusterManager.ClusterManager
 
 	return clusterListItems, hasInstance
 }
-
+*/
 func (r *reconciler) CreateMinMaxMap(hasInstance *resourcev1alpha1.OpenMCPHybridAutoScaler, cluster_dep_request map[string]bool, foundPolicy *policyv1alpha1.OpenMCPPolicy, minmax_policy_err error, dep_list_for_hpa []string, cluster_dep_replicas map[string]int32) (map[string]int32, map[string]int32, *resourcev1alpha1.OpenMCPHybridAutoScaler, error) {
 	timeStart_mixmaxdist := time.Now()
 
