@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmcp-pv-controller
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openmcp-pv-controller
+  template:
+    metadata:
+      labels:
+        name: openmcp-pv-controller
+    spec:
+      serviceAccountName: openmcp-pv-controller
+      imagePullSecrets:
+        - name: REPLACE_DOCKERSECRETNAME
+      containers:
+        - name: openmcp-pv-controller
+          # Replace this with the built image name
+          image: ketidevit/openmcp-pv-controller:v0.0.1
+          command:
+          - openmcp-pv-controller
+          imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
+          env:
+            - name: WATCH_NAMESPACE
+              #value: ""
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "openmcp-pv-controller"
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0

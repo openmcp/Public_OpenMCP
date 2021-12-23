@@ -6,6 +6,14 @@ echo "--- openmcp-apiserver"
 kubectl delete -f openmcp-apiserver/.
 echo "--- openmcp-configmap-controller"
 kubectl delete -f openmcp-configmap-controller/.
+echo "--- openmcp-daemonset-controller"
+kubectl delete -f openmcp-daemonset-controller/.
+echo "--- openmcp-statefulset-controller"
+kubectl delete -f openmcp-statefulset-controller/.
+echo "--- openmcp-pv-controller"
+kubectl delete -f openmcp-pv-controller/.
+echo "--- openmcp-pvc-controller"
+kubectl delete -f openmcp-pvc-controller/.
 echo "--- openmcp-secret-controller"
 kubectl delete -f openmcp-secret-controller/.
 echo "--- openmcp-metric-collector"

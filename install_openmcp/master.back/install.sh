@@ -73,6 +73,14 @@ echo "--- openmcp-job-controller"
 kubectl apply -f openmcp-job-controller/.
 echo "--- openmcp-namespace-controller"
 kubectl apply -f openmcp-namespace-controller/.
+echo "--- openmcp-pv-controller"
+kubectl apply -f openmcp-pv-controller/.
+echo "--- openmcp-pvc-controller"
+kubectl apply -f openmcp-pvc-controller/.
+echo "--- openmcp-daemonset-controller"
+kubectl apply -f openmcp-daemonset-controller/.
+echo "--- openmcp-statefulset-controller"
+kubectl apply -f openmcp-statefulset-controller/.
 echo "--- metallb"
 kubectl create -f metallb/.
 echo "--- configmap"
