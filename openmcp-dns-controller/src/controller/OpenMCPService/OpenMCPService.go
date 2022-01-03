@@ -102,11 +102,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				omcplog.V(2).Info("err : ", err2)
 				return reconcile.Result{}, err2
 			}
-<<<<<<< HEAD
-		}else if err_osdnsr != nil {
-=======
+
 		} else if err_osdnsr != nil {
->>>>>>> db35fa5fed2b7de661da9de3b62f758387f8ecdf
+
 			omcplog.V(2).Info(err_osdnsr)
 		}
 		return reconcile.Result{}, nil

@@ -11,9 +11,5 @@ spec:
       policies:
         - type: period
           value:
-<<<<<<< HEAD
-            - "300"
-=======
             - "200"
->>>>>>> db35fa5fed2b7de661da9de3b62f758387f8ecdf
   policyStatus: Enabled
