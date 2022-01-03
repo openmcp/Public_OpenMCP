@@ -2,89 +2,15 @@
     "apiVersion": "v1",
     "kind": "Namespace",
     "metadata": {
-        "creationTimestamp": "2021-12-03T06:07:42Z",
-        "deletionTimestamp": "2021-12-09T06:25:12Z",
+        "creationTimestamp": "2021-12-13T06:48:46Z",
+        "deletionTimestamp": "2021-12-13T06:52:29Z",
         "labels": {
-            "topology.istio.io/network": "network-cluster10"
+            "topology.istio.io/network": "network-cluster06"
         },
-        "managedFields": [
-            {
-                "apiVersion": "v1",
-                "fieldsType": "FieldsV1",
-                "fieldsV1": {
-                    "f:metadata": {
-                        "f:labels": {
-                            ".": {},
-                            "f:topology.istio.io/network": {}
-                        }
-                    },
-                    "f:status": {
-                        "f:phase": {}
-                    }
-                },
-                "manager": "kubectl",
-                "operation": "Update",
-                "time": "2021-12-03T06:07:49Z"
-            },
-            {
-                "apiVersion": "v1",
-                "fieldsType": "FieldsV1",
-                "fieldsV1": {
-                    "f:status": {
-                        "f:conditions": {
-                            ".": {},
-                            "k:{\"type\":\"NamespaceContentRemaining\"}": {
-                                ".": {},
-                                "f:lastTransitionTime": {},
-                                "f:message": {},
-                                "f:reason": {},
-                                "f:status": {},
-                                "f:type": {}
-                            },
-                            "k:{\"type\":\"NamespaceDeletionContentFailure\"}": {
-                                ".": {},
-                                "f:lastTransitionTime": {},
-                                "f:message": {},
-                                "f:reason": {},
-                                "f:status": {},
-                                "f:type": {}
-                            },
-                            "k:{\"type\":\"NamespaceDeletionDiscoveryFailure\"}": {
-                                ".": {},
-                                "f:lastTransitionTime": {},
-                                "f:message": {},
-                                "f:reason": {},
-                                "f:status": {},
-                                "f:type": {}
-                            },
-                            "k:{\"type\":\"NamespaceDeletionGroupVersionParsingFailure\"}": {
-                                ".": {},
-                                "f:lastTransitionTime": {},
-                                "f:message": {},
-                                "f:reason": {},
-                                "f:status": {},
-                                "f:type": {}
-                            },
-                            "k:{\"type\":\"NamespaceFinalizersRemaining\"}": {
-                                ".": {},
-                                "f:lastTransitionTime": {},
-                                "f:message": {},
-                                "f:reason": {},
-                                "f:status": {},
-                                "f:type": {}
-                            }
-                        }
-                    }
-                },
-                "manager": "kube-controller-manager",
-                "operation": "Update",
-                "time": "2021-12-09T06:25:17Z"
-            }
-        ],
         "name": "istio-system",
-        "resourceVersion": "15531560",
+        "resourceVersion": "8980424",
         "selfLink": "/api/v1/namespaces/istio-system",
-        "uid": "500ece36-0ca9-41c3-9564-c80b082cfe99"
+        "uid": "f19106df-631e-474c-a83f-afa1934ff1da"
     },
     "spec": {
         "finalizers": [
@@ -94,35 +20,35 @@
     "status": {
         "conditions": [
             {
-                "lastTransitionTime": "2021-12-09T06:25:17Z",
-                "message": "Discovery failed for some groups, 1 failing: unable to retrieve the complete list of server APIs: metrics.k8s.io/v1beta1: an error on the server (\"Internal Server Error: \\\"/apis/metrics.k8s.io/v1beta1?timeout=32s\\\": Unauthorized\") has prevented the request from succeeding",
-                "reason": "DiscoveryFailed",
-                "status": "True",
+                "lastTransitionTime": "2021-12-13T06:59:45Z",
+                "message": "All resources successfully discovered",
+                "reason": "ResourcesDiscovered",
+                "status": "False",
                 "type": "NamespaceDeletionDiscoveryFailure"
             },
             {
-                "lastTransitionTime": "2021-12-09T06:25:17Z",
+                "lastTransitionTime": "2021-12-13T06:52:36Z",
                 "message": "All legacy kube types successfully parsed",
                 "reason": "ParsedGroupVersions",
                 "status": "False",
                 "type": "NamespaceDeletionGroupVersionParsingFailure"
             },
             {
-                "lastTransitionTime": "2021-12-09T06:25:17Z",
-                "message": "All content successfully deleted, may be waiting on finalization",
-                "reason": "ContentDeleted",
-                "status": "False",
+                "lastTransitionTime": "2021-12-13T06:53:01Z",
+                "message": "Failed to delete all resource types, 1 remaining: unexpected items still remain in namespace: istio-system for gvr: /v1, Resource=pods",
+                "reason": "ContentDeletionFailed",
+                "status": "True",
                 "type": "NamespaceDeletionContentFailure"
             },
             {
-                "lastTransitionTime": "2021-12-09T06:27:07Z",
-                "message": "All content successfully removed",
-                "reason": "ContentRemoved",
-                "status": "False",
+                "lastTransitionTime": "2021-12-13T06:52:36Z",
+                "message": "Some resources are remaining: pods. has 3 resource instances",
+                "reason": "SomeResourcesRemain",
+                "status": "True",
                 "type": "NamespaceContentRemaining"
             },
             {
-                "lastTransitionTime": "2021-12-09T06:27:07Z",
+                "lastTransitionTime": "2021-12-13T06:52:36Z",
                 "message": "All content-preserving finalizers finished",
                 "reason": "ContentHasNoFinalizers",
                 "status": "False",

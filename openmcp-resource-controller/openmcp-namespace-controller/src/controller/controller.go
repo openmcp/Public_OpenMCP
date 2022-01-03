@@ -153,7 +153,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		return reconcile.Result{}, nil
 	}
 
-	if err == nil || !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec){
+	if err == nil || !reflect.DeepEqual(instance.Status.LastSpec, instance.Spec) {
 		err := r.updateNamespace(req, cm, instance)
 		if err != nil {
 			omcplog.V(1).Info(err)
@@ -299,6 +299,7 @@ func (r *reconciler) createNamespace(req reconcile.Request, cm *clusterManager.C
 		}
 
 	}
+	instance.Status.CheckSubResource = true
 	instance.Status.ClusterMaps = cluster_map
 	instance.Status.LastSpec = instance.Spec
 	err := r.live.Status().Update(context.TODO(), instance)

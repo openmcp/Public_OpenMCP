@@ -111,7 +111,7 @@ func SyncVSWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 				}
 			*/
 
-			time.Sleep(time.Second * 5)
+			time.Sleep(time.Second * 2)
 		}
 	}
 

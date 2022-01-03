@@ -56,7 +56,7 @@ func NewController(live *cluster.Cluster, ghosts []*cluster.Cluster, ghostNamesp
 		ghostclients = append(ghostclients, ghostclient)
 	}
 
-	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{})
+	co := controller.New(&reconciler{live: liveclient, ghosts: ghostclients, ghostNamespace: ghostNamespace}, controller.Options{MaxConcurrentReconciles: 32})
 	if err := apis.AddToScheme(live.GetScheme()); err != nil {
 		return nil, fmt.Errorf("adding APIs to live cluster's scheme: %v", err)
 	}
@@ -370,6 +370,7 @@ func (r *reconciler) createService(req reconcile.Request, cm *clusterManager.Clu
 		}
 	}
 	omcplog.V(5).Info("Status Update")
+	instance.Status.CheckSubResource = true
 	instance.Status.LastSpec = instance.Spec
 	instance.Status.ClusterMaps = cluster_map
 
@@ -462,6 +463,7 @@ func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.Clu
 	}
 	instance.Status.LastSpec = instance.Spec
 	instance.Status.ClusterMaps = cluster_map
+	instance.Status.ChangeNeed = false
 	err := r.live.Status().Update(context.TODO(), instance)
 	return err
 

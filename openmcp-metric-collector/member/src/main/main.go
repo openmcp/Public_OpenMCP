@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
+	"net/http"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
 
 	//"github.com/golang/protobuf/ptypes/timestamp"
+	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/openmcp-metric-collector/member/src/customMetrics"
 	"openmcp/openmcp/openmcp-metric-collector/member/src/kubeletClient"
 	"openmcp/openmcp/openmcp-metric-collector/member/src/protobuf"
@@ -112,22 +115,46 @@ func convert(data *storage.Collection, latencyTime string) *protobuf.Collection 
 
 }
 func main() {
+
 	MemberMetricCollector()
 }
 
 func MemberMetricCollector() {
 	SERVER_IP := os.Getenv("GRPC_SERVER")
 	SERVER_PORT := os.Getenv("GRPC_PORT")
+
+	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 100
+
 	fmt.Println("ClusterMetricCollector Start")
 	grpcClient := protobuf.NewGrpcClient(SERVER_IP, SERVER_PORT)
 
 	var period_int64 int64 = 5
 	var latencyTime float64 = 0
 
+	host_config, err := rest.InClusterConfig()
+	if err != nil {
+		omcplog.V(0).Info(err)
+	}
+	host_kubeClient := kubernetes.NewForConfigOrDie(host_config)
+
+	token := host_config.BearerToken
+	host := host_config.Host
+	kubeclient := host_kubeClient
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   5 * time.Second,
+	}
+
 	for {
-		host_config, _ := rest.InClusterConfig()
-		host_kubeClient := kubernetes.NewForConfigOrDie(host_config)
-		Node_list, _ := clusterManager.GetNodeList(host_kubeClient)
+
+		Node_list, err := clusterManager.GetNodeList(host_kubeClient)
+		if err != nil {
+			omcplog.V(0).Info(err)
+		}
 
 		nodes := Node_list.Items
 		fmt.Println("Get Metric Data From Kubelet")
@@ -167,15 +194,13 @@ func MemberMetricCollector() {
 		// _ = data
 
 		fmt.Println("[http Start] Post Metric Data to Custom Metric Server")
-		token := host_config.BearerToken
-		host := host_config.Host
-		client := host_kubeClient
+
 		//fmt.Println("host: ", host)
 		//fmt.Println("token: ", token)
 		//fmt.Println("client: ", client)
 
-		customMetrics.AddToPodCustomMetricServer(data, token, host)
-		customMetrics.AddToDeployCustomMetricServer(data, token, host, client)
+		customMetrics.AddToPodCustomMetricServer(data, token, host, client)
+		customMetrics.AddToDeployCustomMetricServer(data, token, host, kubeclient, client)
 		fmt.Println("[http End] Post Metric Data to Custom Metric Server")
 
 		period_int64 = r.Tick

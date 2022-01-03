@@ -37,6 +37,7 @@ type OpenMCPScheduler struct {
 	PostThread      bool
 	Selectpolicy    string
 	Live            *client.Client
+	SchdPolicy      string
 }
 
 func NewScheduler(cm *clusterManager.ClusterManager, grpcClient protobuf.RequestAnalysisClient) *OpenMCPScheduler {
@@ -50,6 +51,8 @@ func NewScheduler(cm *clusterManager.ClusterManager, grpcClient protobuf.Request
 	if !sched.IsNetwork {
 		go sched.LocalNetworkAnalysis()
 		go sched.Postschduling()
+		go sched.SchedulingPolicyMonitoring()
+		sched.SchdPolicy = "None"
 		sched.IsNetwork = true
 		omcplog.V(0).Infof("LocalNetworkAnalysis Start")
 
@@ -57,8 +60,28 @@ func NewScheduler(cm *clusterManager.ClusterManager, grpcClient protobuf.Request
 	return sched
 
 }
+
+/**
+/*@brief 스케쥴링 정책에 대한 모니터링
+/*@details 스케줄링 정책 라운드로빈 RR , OpenMCP Filter & Scoring 기법 openmcp
+**/
+func (sched *OpenMCPScheduler) SchedulingPolicyMonitoring() {
+	for {
+		openmcpPolicyInstance, perr := sched.ClusterManager.Crd_client.OpenMCPPolicy("openmcp").Get("scheduling-policy", metav1.GetOptions{})
+		if perr == nil {
+			policies := openmcpPolicyInstance.Spec.Template.Spec.Policies
+			for _, policy := range policies {
+				if policy.Type == "algorithm" {
+					sched.SchdPolicy = policy.Value[0]
+				}
+			}
+		}
+	}
+}
+
 func (sched *OpenMCPScheduler) PostsMonitoring() {
 	sched.SetupResources()
+
 	postlist := sched.PostDeployments
 	osvc_list := &resourcev1alpha1.OpenMCPDeploymentList{}
 	if sched.Live == nil {
@@ -109,7 +132,7 @@ func (sched *OpenMCPScheduler) Postschduling() {
 			if sched.Selectpolicy == "FIFO" {
 				firstdeploy = (postlist.Front()).Value.(*ketiresource.PostDelployment)
 
-			} else if sched.Selectpolicy == "LRU" {
+			} else if sched.Selectpolicy == "OPENMCP" {
 				minresource := (postlist.Front()).Value.(*ketiresource.PostDelployment)
 				for e := postlist.Front(); e != nil; e = postlist.Front().Next() {
 					deploy := e.Value.(*ketiresource.PostDelployment)
@@ -187,11 +210,64 @@ func (sched *OpenMCPScheduler) Postschduling() {
 
 }
 
+/**
+/*@brief RR 스케쥴링 수행하는 함수
+**/
+func (sched *OpenMCPScheduler) RRScheduling(clusters map[string]*ketiresource.Cluster, replicas int32, requestclusters []string) map[string]int32 {
+	cluster_replicas_map := make(map[string]int32)
+	remain_rep := replicas
+	filteredCluster := make(map[string]*ketiresource.Cluster)
+	cluster_count := 0
+	queue_cluster := make(map[int]string)
+	for clusterName, cluster := range clusters {
+		if remain_rep == 0 {
+			break
+		}
+		if requestclusters == nil {
+			filteredCluster[clusterName] = cluster
+			queue_cluster[cluster_count] = clusterName
+			cluster_count++
+		}
+		if requestclusters != nil {
+			for _, s := range requestclusters {
+
+				if s == clusterName {
+					filteredCluster[clusterName] = cluster
+					queue_cluster[cluster_count] = clusterName
+					cluster_count++
+				}
+			}
+		}
+	}
+
+	omcplog.V(5).Infof(" filteredCluster =>: %v", filteredCluster)
+	if len(filteredCluster) == 0 {
+		omcplog.V(2).Infof("no filter")
+	}
+	for _, s := range queue_cluster {
+		cluster_replicas_map[s] = 0
+	}
+	for i := 0; i < int(replicas); i++ {
+		index := i % cluster_count
+		omcplog.V(2).Info("index=", int(index))
+		omcplog.V(2).Info("queue_cluster[index]=", queue_cluster[index])
+		cluster_replicas_map[queue_cluster[index]] = cluster_replicas_map[queue_cluster[index]] + 1
+	}
+
+	return cluster_replicas_map
+}
+
+/**
+/*@params requestclusters : define cluster yaml파일에 기록된 클러스터들
+/*@params requestclusters : posted: 더이상 배포될수 있는 환경이 아닐때 true
+/*@params posted :
+**/
 func (sched *OpenMCPScheduler) Scheduling(dep *resourcev1alpha1.OpenMCPDeployment, posted bool, requestclusters []string) (map[string]int32, error) {
 	startTime := time.Now()
 	// Get CLusterClients from clusterManager
 	//clusterv1alpha1.OpenMCPCluster
 	cm := sched.ClusterManager
+	depReplicas := dep.Spec.Replicas
 
 	// Get CLusterClients from clusterManager
 	sched.ClusterClients = cm.Cluster_kubeClients
@@ -199,59 +275,75 @@ func (sched *OpenMCPScheduler) Scheduling(dep *resourcev1alpha1.OpenMCPDeploymen
 	// Return scheduling result (ex. cluster1:2, cluster2:1)
 	totalSchedulingResult := map[string]int32{}
 
-	if sched.IsResource == false {
+	if len(sched.ClusterInfos) == 0 {
+		omcplog.V(0).Infof("sched.ClusterInfos loading ...")
 		sched.SetupResources()
-		omcplog.V(0).Infof("SetupResources")
 		sched.IsResource = true
-
 	}
-	// Get Data from Node&Pod Spec
-	//sched.SetupResources()
+	// RR 정책일경우 처리
+	if sched.SchdPolicy == "RR" {
+		omcplog.V(0).Infof("Round Robin Scheduling ...")
+		totalSchedulingResult = sched.RRScheduling(sched.ClusterInfos, depReplicas, requestclusters)
+		if len(totalSchedulingResult) == 0 {
+			return totalSchedulingResult, fmt.Errorf("There is postpods error")
 
-	depReplicas := dep.Spec.Replicas
-	// Make resource to schedule pod into cluster
-	newPod := newPodFromOpenMCPDeployment(dep)
-	// Scheduling one pod
-	for i := int32(0); i < depReplicas; i++ {
-
-		//sched.SetupCapacityResource()
-		// If there is no proper cluster to deploy Pod,
-		// stop scheduling and return scheduling result
-		schedulingResult, err := sched.ScheduleOne(newPod, depReplicas-i, dep, posted, requestclusters)
-		if err != nil {
-			return totalSchedulingResult, fmt.Errorf("There is no proper cluster to deploy Pod(%d)~Pod(%d)", i, depReplicas)
 		}
-		if schedulingResult == "" {
-			continue
+		sched.Framework.EndPod()
+		return totalSchedulingResult, nil
 
-			//If schdulingResult is post,
-		} else if schedulingResult == "post" {
-			backdeploy := (sched.PostDeployments.Back()).Value.(*ketiresource.PostDelployment)
-			backdeploy.Replica = depReplicas
-			backdeploy.NewDeployment.Status.ClusterMaps = totalSchedulingResult
-			dep.Spec.Replicas = dep.Spec.Replicas - backdeploy.RemainReplica
-			return totalSchedulingResult, nil
+	} else {
+		// Get Data from Node&Pod Spec
+		//sched.SetupResources()
+
+		// Make resource to schedule pod into cluster
+		newPod := newPodFromOpenMCPDeployment(dep)
+		// Scheduling one pod
+		for i := int32(0); i < depReplicas; i++ {
+
+			//sched.SetupCapacityResource()
+			// If there is no proper cluster to deploy Pod,
+			// stop scheduling and return scheduling result
+			schedulingResult, err := sched.ScheduleOne(newPod, depReplicas-i, dep, posted, requestclusters)
+			if err != nil {
+				return totalSchedulingResult, fmt.Errorf("There is no proper cluster to deploy Pod(%d)~Pod(%d)", i, depReplicas)
+			}
+			if schedulingResult == "" {
+				continue
+
+				//If schdulingResult is post,
+			} else if schedulingResult == "post" {
+				backdeploy := (sched.PostDeployments.Back()).Value.(*ketiresource.PostDelployment)
+				backdeploy.Replica = depReplicas
+				backdeploy.NewDeployment.Status.ClusterMaps = totalSchedulingResult
+				dep.Spec.Replicas = dep.Spec.Replicas - backdeploy.RemainReplica
+				return totalSchedulingResult, nil
+			}
+
+			_, exists := totalSchedulingResult[schedulingResult]
+			if !exists {
+				totalSchedulingResult[schedulingResult] = 1
+			} else {
+				totalSchedulingResult[schedulingResult] += 1
+			}
+
+			sched.UpdateResources(newPod, schedulingResult)
 		}
+		sched.Framework.EndPod()
+		elapsedTime := time.Since(startTime)
+		omcplog.V(0).Infof("    => Scheduling Time [%v]", elapsedTime)
 
-		_, exists := totalSchedulingResult[schedulingResult]
-		if !exists {
-			totalSchedulingResult[schedulingResult] = 1
-		} else {
-			totalSchedulingResult[schedulingResult] += 1
-		}
-
-		sched.UpdateResources(newPod, schedulingResult)
+		return totalSchedulingResult, nil
 	}
-	sched.Framework.EndPod()
-	elapsedTime := time.Since(startTime)
-	omcplog.V(0).Infof("    => Scheduling Time [%v]", elapsedTime)
-
-	return totalSchedulingResult, nil
 }
 
+/**
+/*@brief EraseScheduling 레플리카 개수가 감소했을 경우에 수행하는 함수
+**/
 func (sched *OpenMCPScheduler) EraseScheduling(dep *resourcev1alpha1.OpenMCPDeployment, replicas int32, clusters map[string]*ketiresource.Cluster, request map[string]int32) string {
 	// Make resource to schedule pod into cluster
-
+	if sched.SchdPolicy == "RR" {
+		return "RR"
+	}
 	newPod := newPodFromOpenMCPDeployment(dep)
 	filterdResult := sched.Framework.EraseFilterPluginsOnClusters(newPod, clusters, request)
 

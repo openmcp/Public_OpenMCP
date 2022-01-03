@@ -5,7 +5,7 @@ ENV OPERATOR=/usr/local/bin/openmcp-loadbalancing-controller \
     USER_NAME=openmcp-loadbalancing-controller
 
 COPY GeoLite2-City.mmdb /root/
-COPY dbip-city-lite-2021-07.mmdb /root/
+COPY dbip-city-lite-2021-12.mmdb /root/
 
 # install operator binary
 COPY _output/bin/openmcp-loadbalancing-controller ${OPERATOR}

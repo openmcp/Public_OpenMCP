@@ -9,5 +9,5 @@ NAME=$(kubectl get pod -n $NS | grep -E 'openmcp-analytic-engine' | awk '{print 
 
 for ((;;))
 do
-kubectl logs -f -n $NS $NAME
+kubectl logs -f -n $NS $NAME --tail 10
 done

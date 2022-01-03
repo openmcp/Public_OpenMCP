@@ -11,17 +11,17 @@ spec:
       policies:
         - type: GeoRate
           value:
-            - "0.9"
+            - "0.3"
         - type: Period
           value:
             - "5.0"
         - type: RegionZoneMatchedScore
           value:
-            - "100"
+            - "200"
         - type: OnlyRegionMatchedScore
           value:
-            - "1"
+            - "100"
         - type: NoRegionZoneMatchedScore
           value:
-            - "1"
+            - "0"
   policyStatus: Enabled

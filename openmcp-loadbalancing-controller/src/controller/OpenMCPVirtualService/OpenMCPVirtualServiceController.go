@@ -6,6 +6,7 @@ import (
 	"math"
 	"os"
 	"strings"
+	"sync"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	//clusterv1alpha1 "openmcp/openmcp/apis/cluster/v1alpha1"
@@ -134,7 +135,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	checkVs := &v1alpha3.VirtualService{}
 	err = r.live.Get(context.TODO(), req.NamespacedName, checkVs)
 	if err == nil || (err != nil && errors.IsNotFound(err)) {
-		vs, err2 := MakeVirtualService(ovs)
+		vs, err2 := MakeTempVirtualService(ovs)
 		if err == nil {
 			// Update VirtualService
 			vs.ResourceVersion = checkVs.ResourceVersion
@@ -249,6 +250,25 @@ func MakeVirtualService(ovs *resourcev1alpha1.OpenMCPVirtualService) (*v1alpha3.
 	omcplog.V(4).Info("func MakeVirtualService Ended")
 	return vs, nil
 }
+func MakeTempVirtualService(ovs *resourcev1alpha1.OpenMCPVirtualService) (*v1alpha3.VirtualService, error) {
+	omcplog.V(4).Info("func MakeTempVirtualService Called")
+	vs := &v1alpha3.VirtualService{}
+	vs.Name = ovs.Name
+	vs.Namespace = ovs.Namespace
+	err := deepcopy.Copy(&vs.Labels, &ovs.Labels)
+	if err != nil {
+		return nil, err
+	}
+	err = deepcopy.Copy(&vs.Spec, &ovs.Spec)
+	if err != nil {
+		return nil, err
+	}
+
+	reference.SetMulticlusterControllerReference(vs, reference.NewMulticlusterOwnerReference(ovs, ovs.GroupVersionKind(), "openmcp"))
+
+	omcplog.V(4).Info("func MakeTempVirtualService Ended")
+	return vs, nil
+}
 
 type RegionZone struct {
 	region string
@@ -273,36 +293,48 @@ func createVsHttps(ovs *resourcev1alpha1.OpenMCPVirtualService) ([]*networkingv1
 		}
 		vsHttps = append(vsHttps, vsHttp)
 
+		var mutex sync.Mutex
+		var mutex2 sync.Mutex
+		var wg sync.WaitGroup
+		wg.Add(len(locClusters))
 		// 지역(클러스터)별 경로 생성
 		for _, locCluster := range locClusters {
-			for _, zone := range locCluster.zones {
 
-				skipFlag := false
-				for _, usedRegionZone := range usedRegionZones {
-					if usedRegionZone.region == locCluster.region && usedRegionZone.zone == zone {
-						skipFlag = true
-						break
+			go func(locCluster LocCluster, mutex *sync.Mutex, mutex2 *sync.Mutex) {
+				defer wg.Done()
+				for _, zone := range locCluster.zones {
+
+					skipFlag := false
+					for _, usedRegionZone := range usedRegionZones {
+						if usedRegionZone.region == locCluster.region && usedRegionZone.zone == zone {
+							skipFlag = true
+							break
+						}
 					}
+					if skipFlag {
+						continue
+					}
+					mutex.Lock()
+					usedRegionZones = append(usedRegionZones, RegionZone{locCluster.region, zone})
+					mutex.Unlock()
+
+					exactRegion = locCluster.region
+					exactZone = zone
+
+					vsHttp, err := createVsHttp(ovsHttp, exactRegion, exactZone, ovs.Namespace)
+					if err != nil {
+						omcplog.V(0).Info(err)
+						return
+					}
+					mutex2.Lock()
+					vsHttps = append(vsHttps, vsHttp)
+					mutex2.Unlock()
+
 				}
-				if skipFlag {
-					continue
-				}
-
-				usedRegionZones = append(usedRegionZones, RegionZone{locCluster.region, zone})
-
-				exactRegion = locCluster.region
-				exactZone = zone
-
-				vsHttp, err := createVsHttp(ovsHttp, exactRegion, exactZone, ovs.Namespace)
-				if err != nil {
-					return nil, err
-				}
-
-				vsHttps = append(vsHttps, vsHttp)
-
-			}
+			}(locCluster, &mutex, &mutex2)
 
 		}
+		wg.Wait()
 
 	}
 	omcplog.V(4).Info("func createVsHttps Ended")
@@ -359,7 +391,7 @@ func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination
 	locClusters := getLocClusters()
 
 	for _, ovsHttpRoute := range ovsHttpRoutes {
-
+		// fmt.Println("!!!!!!!!!!!!!!!!!!SSSSSSS!!!!!!!!!!!!!!!!!!!!!!!")
 		if exactRegion == "default" {
 			// default 경로생성
 			vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, -1, nil, ns)
@@ -372,17 +404,28 @@ func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination
 			}
 			vsHttpRoutes = append(vsHttpRoutes, vsHttpRoute)
 		} else {
+			var mutex sync.Mutex
+			var wg sync.WaitGroup
+			wg.Add(len(locClusters))
 			for i, locCluster := range locClusters {
-				vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, i, &locCluster, ns)
-				if err != nil {
-					return nil, err
-				}
-				if vsHttpRoute == nil {
-					// 해당 Cluster에 해당 서비스가 존재하지 않는경우 생성하지 않음
-					continue
-				}
-				vsHttpRoutes = append(vsHttpRoutes, vsHttpRoute)
+				go func(i int, locCluster LocCluster, mutex *sync.Mutex) {
+					defer wg.Done()
+					vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, i, &locCluster, ns)
+					if err != nil {
+						// 	return nil, err
+						omcplog.V(0).Info(err)
+					}
+					if vsHttpRoute == nil {
+						// 해당 Cluster에 해당 서비스가 존재하지 않는경우 생성하지 않음
+						return
+					}
+					mutex.Lock()
+					vsHttpRoutes = append(vsHttpRoutes, vsHttpRoute)
+					mutex.Unlock()
+				}(i, locCluster, &mutex)
+
 			}
+			wg.Wait()
 			// default 경로생성
 			if len(vsHttpRoutes) == 0 {
 				vsHttpRoute, err := createVsHttpRoute(ovsHttpRoute, -1, nil, ns)
@@ -394,8 +437,9 @@ func createVsHttpRoutes(ovsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination
 		}
 
 	}
-
+	// fmt.Println("!!!!!!!!!!!!!!!!!!DDDDDDDDDDD!!!!!!!!!!!!!!!!!!!!!!!")
 	setWeight(vsHttpRoutes, exactRegion, exactZone, ns)
+	// fmt.Println("!!!!!!!!!!!!!!!!!!EEEEEEEEEEE!!!!!!!!!!!!!!!!!!!!!!!")
 	omcplog.V(4).Info("func createVsHttpRoutes Ended")
 
 	return vsHttpRoutes, nil
@@ -472,112 +516,122 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 	clusterWeight := make(map[string]float64)
 	var clusterWeightSum float64 = 0
 
+	ocList, err := cm.Crd_client.OpenMCPCluster("openmcp").List(v1.ListOptions{})
+
+	if err != nil {
+		omcplog.V(0).Info(err)
+	}
+
+	var mutex sync.Mutex
+	var wg sync.WaitGroup
+	wg.Add(len(vsHttpRoutes))
+
 	for _, vsHttpRoute := range vsHttpRoutes {
+		go func(vsHttpRoute *networkingv1alpha3.HTTPRouteDestination, mutex *sync.Mutex) {
+			defer wg.Done()
+			svcDomain := vsHttpRoute.Destination.Host
+			svcDomainSplit := strings.Split(svcDomain, ".")
 
-		svcDomain := vsHttpRoute.Destination.Host
-		svcDomainSplit := strings.Split(svcDomain, ".")
+			svcName := svcDomainSplit[0]
+			svcNS := ns
 
-		svcName := svcDomainSplit[0]
-		svcNS := ns
-
-		if len(svcDomainSplit) >= 2 {
-			svcNS = svcDomainSplit[1]
-		}
-
-		clusterName := vsHttpRoute.Destination.Subset
-		if clusterName != "" && cm.Cluster_genClients[clusterName] != nil {
-
-			nodeList := &corev1.NodeList{}
-
-			err := cm.Cluster_genClients[clusterName].List(context.TODO(), nodeList, "default")
-			if err != nil && errors.IsNotFound(err) {
-				return
+			if len(svcDomainSplit) >= 2 {
+				svcNS = svcDomainSplit[1]
 			}
 
-			svc := &corev1.Service{}
-			err = cm.Cluster_genClients[clusterName].Get(context.TODO(), svc, svcNS, svcName)
-			if err != nil && errors.IsNotFound(err) {
-				fmt.Println("!!!! [Score Calcuation] Cluster: ", clusterName, " is Not Exist Svc : '", svcName, "(", svcNS, ")'")
-				break
-			}
+			clusterName := vsHttpRoute.Destination.Subset
+			if clusterName != "" && cm.Cluster_genClients[clusterName] != nil {
 
-			podList := &corev1.PodList{}
-			listOption := &client.ListOptions{
-				LabelSelector: labels.SelectorFromSet(
-					svc.Spec.Selector,
-				),
-			}
-			err = cm.Cluster_genClients[clusterName].List(context.TODO(), podList, svcNS, listOption)
-			if err != nil && errors.IsNotFound(err) {
-				fmt.Println("!!!! [Score Calcuation] Cluster: ", clusterName, " is Not Exist Pod about Svc: '", svcName, "(", svcNS, ")', LabelSelector: '", svc.Spec.Selector, "'")
-				break
-			}
+				nodeList := &corev1.NodeList{}
 
-			var cluster_X_TotalWeight float64 = 0
+				err := cm.Cluster_genClients[clusterName].List(context.TODO(), nodeList, "default")
+				if err != nil && errors.IsNotFound(err) {
+					return
+				}
 
-			//podNodeMatchFind := false
-			for _, pod := range podList.Items {
-			Loop1:
-				for _, node := range nodeList.Items {
-					// if _, ok := node.Labels["node-role.kubernetes.io/master"]; ok {
-					// 	continue
-					// }
-					if pod.Spec.NodeName == node.Name {
-						//podNodeMatchFind = true
-						ocList, err := cm.Crd_client.OpenMCPCluster("openmcp").List(v1.ListOptions{})
+				svc := &corev1.Service{}
+				err = cm.Cluster_genClients[clusterName].Get(context.TODO(), svc, svcNS, svcName)
+				if err != nil && errors.IsNotFound(err) {
+					fmt.Println("!!!! [Score Calcuation] Cluster: ", clusterName, " is Not Exist Svc : '", svcName, "(", svcNS, ")'")
+					return
+				}
 
-						if err != nil {
-							omcplog.V(0).Info(err)
-						}
+				podList := &corev1.PodList{}
+				listOption := &client.ListOptions{
+					LabelSelector: labels.SelectorFromSet(
+						svc.Spec.Selector,
+					),
+				}
+				err = cm.Cluster_genClients[clusterName].List(context.TODO(), podList, svcNS, listOption)
+				if err != nil && errors.IsNotFound(err) {
+					fmt.Println("!!!! [Score Calcuation] Cluster: ", clusterName, " is Not Exist Pod about Svc: '", svcName, "(", svcNS, ")', LabelSelector: '", svc.Spec.Selector, "'")
+					return
+				}
 
-						for _, oc := range ocList.Items {
-							if oc.Name == clusterName {
-								toRegion := oc.Spec.NodeInfo.Region
-								toZone := oc.Spec.NodeInfo.Zone
+				var cluster_X_TotalWeight float64 = 0
 
-								//toRegion := node.Labels["topology.kubernetes.io/region"]
-								//toZone := node.Labels["topology.kubernetes.io/zone"]
+				//podNodeMatchFind := false
+				for _, pod := range podList.Items {
+				Loop1:
+					for _, node := range nodeList.Items {
+						// if _, ok := node.Labels["node-role.kubernetes.io/master"]; ok {
+						// 	continue
+						// }
+						if pod.Spec.NodeName == node.Name {
+							//podNodeMatchFind = true
 
-								regionZoneInfo := protobuf.RegionZoneInfo{
-									FromRegion:    fromRegion,
-									FromZone:      fromZone,
-									ToRegion:      toRegion,
-									ToZone:        toZone,
-									ToClusterName: clusterName,
-									ToNamespace:   svcNS,
-									ToPodName:     pod.Name,
+							for _, oc := range ocList.Items {
+								if oc.Name == clusterName {
+									toRegion := oc.Spec.NodeInfo.Region
+									toZone := oc.Spec.NodeInfo.Zone
+
+									//toRegion := node.Labels["topology.kubernetes.io/region"]
+									//toZone := node.Labels["topology.kubernetes.io/zone"]
+
+									regionZoneInfo := protobuf.RegionZoneInfo{
+										FromRegion:    fromRegion,
+										FromZone:      fromZone,
+										ToRegion:      toRegion,
+										ToZone:        toZone,
+										ToClusterName: clusterName,
+										ToNamespace:   svcNS,
+										ToPodName:     pod.Name,
+									}
+									grpcResponse, gRPC_err := grpcClient.SendRegionZoneInfo(context.TODO(), &regionZoneInfo)
+									if gRPC_err != nil {
+										omcplog.V(0).Info(gRPC_err)
+										return
+									}
+
+									cluster_X_TotalWeight = cluster_X_TotalWeight + float64(grpcResponse.Weight)
+
+									fmt.Println("*** [Score Calcuation]", fromRegion, "/", fromZone, " -> ", toRegion, "/", toZone, "(", clusterName, "/", svcNS, "/", pod.Name, "): ", grpcResponse.Weight)
+									break Loop1
 								}
-								grpcResponse, gRPC_err := grpcClient.SendRegionZoneInfo(context.TODO(), &regionZoneInfo)
-								if gRPC_err != nil {
-									omcplog.V(0).Info(gRPC_err)
-									continue
-								}
-
-								cluster_X_TotalWeight = cluster_X_TotalWeight + float64(grpcResponse.Weight)
-
-								fmt.Println("*** [Score Calcuation]", fromRegion, "/", fromZone, " -> ", toRegion, "/", toZone, "(", clusterName, "/", svcNS, "/", pod.Name, "): ", grpcResponse.Weight)
-								break Loop1
 							}
 						}
 					}
+					// if podNodeMatchFind {
+					// 	break
+					// }
+
 				}
-				// if podNodeMatchFind {
-				// 	break
-				// }
+				if cluster_X_TotalWeight != 0 {
+					cluster_X_AVG := cluster_X_TotalWeight / float64(len(podList.Items))
+					mutex.Lock()
+					clusterWeight[clusterName] = cluster_X_AVG
+					clusterWeightSum += cluster_X_AVG
+					mutex.Unlock()
+
+					fmt.Println("*** ==> Cluster Score AVG:", cluster_X_AVG)
+					//fmt.Println("----------------------------------")
+				}
 
 			}
-			if cluster_X_TotalWeight != 0 {
-				cluster_X_AVG := cluster_X_TotalWeight / float64(len(podList.Items))
+		}(vsHttpRoute, &mutex)
 
-				clusterWeight[clusterName] = cluster_X_AVG
-				clusterWeightSum += cluster_X_AVG
-
-				fmt.Println("*** ==> Cluster Score AVG:", cluster_X_AVG)
-				//fmt.Println("----------------------------------")
-			}
-
-		}
 	}
+	wg.Wait()
 	var totalWeight int32 = 0
 	var orgClusterPrimeNumbers []ClusterPrimeNumber
 
@@ -589,11 +643,15 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 		if clusterName == "" {
 			return
 		}
-		omcplog.V(4).Info("clusterName: ", clusterName)
-		orgWeight := clusterWeight[clusterName] / clusterWeightSum * 100
-		omcplog.V(4).Info("clusterWeight[clusterName]: ", clusterWeight[clusterName])
-		omcplog.V(4).Info("clusterWeightSum: ", clusterWeightSum)
-		omcplog.V(4).Info("orgWeight: ", orgWeight)
+		omcplog.V(0).Info("clusterName: ", clusterName)
+		var orgWeight float64 = 0
+		if clusterWeightSum != 0 {
+			orgWeight = clusterWeight[clusterName] / clusterWeightSum * 100
+		}
+
+		omcplog.V(0).Info("clusterWeight[clusterName]: ", clusterWeight[clusterName])
+		omcplog.V(0).Info("clusterWeightSum: ", clusterWeightSum)
+		omcplog.V(0).Info("orgWeight: ", orgWeight)
 		var primeNumber float64 = orgWeight - float64(int(orgWeight))
 
 		orgClusterPrimeNumbers = append(orgClusterPrimeNumbers, ClusterPrimeNumber{clusterName, primeNumber, 0})
@@ -609,6 +667,16 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 	if totalWeight != 100 {
 		vsHttpRoutes[0].Weight += 100 - totalWeight
 	}
+
+	omcplog.V(4).Info("Start Weight Calculation")
+	// for _, vsHttpRoute := range vsHttpRoutes {
+
+	// 	fmt.Println("!!!!!!!!!!!!!!!!!")
+	// 	fmt.Println("!!!!", vsHttpRoute.Weight, "!!!!!!")
+	// 	fmt.Println("!!!!!!!!!!!!!!!!!")
+	// 	fmt.Println("!!!!!!!!!!!!!!!!!")
+	// 	fmt.Println("!!!!!!!!!!!!!!!!!")
+	// }
 
 	// omcplog.V(4).Info("totalWeight : ", totalWeight)
 

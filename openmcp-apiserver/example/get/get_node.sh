@@ -7,10 +7,9 @@ PORT="8080"
 URLPATH="api/v1/nodes"
 CLUSTER="openmcp"
 
-echo -n | openssl s_client -connect $IP:$PORT | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt
+#echo -n | openssl s_client -connect $IP:$PORT | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt
 
 TOKEN_JSON=`curl -XPOST \
-        --cacert server.crt \
         --insecure \
         -H "Content-type: application/json" \
         --data "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}" \
@@ -19,5 +18,5 @@ TOKEN_JSON=`curl -XPOST \
 TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
-curl -X GET --cacert server.crt -H "Authorization: Bearer $TOKEN" https://$IP:$PORT/$URLPATH?clustername=$CLUSTER
-rm server.crt
+curl -X GET --insecure -H "Authorization: Bearer $TOKEN" https://$IP:$PORT/$URLPATH?clustername=$CLUSTER
+#rm server.crt

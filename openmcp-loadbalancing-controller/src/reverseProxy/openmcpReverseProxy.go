@@ -18,7 +18,7 @@ import (
 )
 
 //var GeoDB, GeoErr = geoip2.Open("/root/GeoLite2-City.mmdb")
-var GeoDB, GeoErr = geoip2.Open("/root/dbip-city-lite-2021-07.mmdb")
+var GeoDB, GeoErr = geoip2.Open("/root/dbip-city-lite-2021-12.mmdb")
 
 func ExtractIP(target string) (string, error) {
 	omcplog.V(4).Info("Function Called ExtractIP")
@@ -43,6 +43,7 @@ func ReverseProxy(myClusterManager *clusterManager.ClusterManager) {
 	//origin, _ := url.Parse("http://10.0.6.147")
 
 	director := func(req *http.Request) {
+
 		req.Header.Add("X-Forwarded-Host", req.Host)
 		req.Header.Add("X-Origin-Host", origin.Host)
 		req.URL.Scheme = "http"

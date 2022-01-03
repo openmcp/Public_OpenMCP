@@ -3,7 +3,6 @@ package customMetrics
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
 	"fmt"
 	"net/http"
 	"openmcp/openmcp/openmcp-metric-collector/member/src/storage"
@@ -20,7 +19,7 @@ var prev_networktxusage = make(map[string]int)
 var diff_networkrxusage = make(map[string]int)
 var diff_networktxusage = make(map[string]int)
 
-func AddToDeployCustomMetricServer(data *storage.Collection, token string, host string, cluster_client *kubernetes.Clientset) {
+func AddToDeployCustomMetricServer(data *storage.Collection, token string, host string, cluster_client *kubernetes.Clientset, client *http.Client) {
 	fmt.Println("AddToDeployCustomMetricServer Called")
 	podList := make([]storage.PodMetricsPoint, 0)
 	for i := 0; i < len(data.Metricsbatchs); i++ {
@@ -113,11 +112,6 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 				fmt.Println("Fail : Cannot load podList")
 			}
 
-			tr := &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			}
-			client := &http.Client{Transport: tr}
-
 			if check_exist > 0 {
 				namespace := replicaset.Namespace
 				name := replicaset.Name[:strings.LastIndexAny(replicaset.Name, "-")]
@@ -146,15 +140,12 @@ func AddToDeployCustomMetricServer(data *storage.Collection, token string, host 
 	}
 }
 
-func AddToPodCustomMetricServer(data *storage.Collection, token string, host string) {
+func AddToPodCustomMetricServer(data *storage.Collection, token string, host string, client *http.Client) {
 	fmt.Println("AddToPodCustomMetricServer Called")
 	for i := 0; i < len(data.Metricsbatchs); i++ {
 		podList := data.Metricsbatchs[i].Pods
 		if podList != nil {
-			tr := &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			}
-			client := &http.Client{Transport: tr}
+
 			for _, value := range podList {
 				if value.Name != "" {
 					namespace := value.Namespace
@@ -179,6 +170,7 @@ func AddToPodCustomMetricServer(data *storage.Collection, token string, host str
 					fmt.Println("Fail : Cannot load resources")
 				}
 			}
+
 		} else {
 			fmt.Println("Fail : Cannot load Pod list")
 		}
@@ -199,6 +191,7 @@ func PostData(host string, token string, client *http.Client, resourceNamespace 
 
 	if err != nil {
 		fmt.Println("Fail NewRequest - ", err)
+		return
 	}
 
 	req.Header.Add("Content-Type", "application/json")
@@ -210,5 +203,5 @@ func PostData(host string, token string, client *http.Client, resourceNamespace 
 	} else {
 		defer resp.Body.Close()
 	}
-
+	fmt.Println("PostData End")
 }

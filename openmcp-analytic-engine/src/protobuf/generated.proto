@@ -50,6 +50,7 @@ message ResponseCPADeploy {
     string PodState = 4;
     string Action = 5;
     string TargetCluster = 6;
+    repeated string RestCluster = 7;
 }
 
 message HASInfo {

@@ -427,11 +427,12 @@ metadata:
     kiali.io/api-spec: https://kiali.io/api
     kiali.io/api-type: rest
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
   - name: http
     protocol: TCP
     port: 20001
+    nodePort: 30350
   - name: http-metrics
     protocol: TCP
     port: 9090

@@ -198,6 +198,7 @@ func (r *reconciler) createSecret(req reconcile.Request, cm *clusterManager.Clus
 		}
 
 	}
+	instance.Status.CheckSubResource = true
 	instance.Status.ClusterMaps = cluster_map
 	instance.Status.LastSpec = instance.Spec
 	err := r.live.Status().Update(context.TODO(), instance)

@@ -16,6 +16,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"math"
 	"openmcp/openmcp/apis"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 	"openmcp/openmcp/omcplog"
@@ -150,6 +151,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		lastspec := newDeployment.Status.LastSpec
 		temp := newDeployment.Spec.Replicas
 
+		if r.scheduler.Live == nil {
+			omcplog.V(0).Info("sched.Live NIL")
+		}
 		// unjoin join 요청된경우에는 클러스터맵이 있음
 		if newDeployment.Status.ClusterMaps != nil {
 			count := 0
@@ -167,21 +171,32 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			}
 			//allreschedcheck := false
 			//두조건이 같다면 전체 리스케줄링 따라서 아닌경우에만 처리해주면 됨
-			if int32(count) != temp {
+			if int32(count) != temp && (lastspec.Replicas < newDeployment.Spec.Replicas) {
 				//allreschedcheck = true
 				extra_replicas := temp - int32(count)
-				newDeployment.Spec.Replicas = extra_replicas
+				if r.scheduler.SchdPolicy == "RR" {
+					newDeployment.Spec.Replicas = newDeployment.Spec.Replicas
+				} else {
+					newDeployment.Spec.Replicas = extra_replicas
+				}
+
+				omcplog.V(5).Infof("  extra_replicas =>", extra_replicas)
 				omcplog.V(5).Infof("  ClusterJoin Resource Get => [Name] : %v, [Namespace]  : %v", newDeployment.Name, newDeployment.Namespace)
 				cluster_replicas_map, _ := r.scheduler.Scheduling(newDeployment, false, clusters)
-				for key, val := range cluster_replicas_map {
-					_, exists := cluster_replicas_map[key]
-					if !exists {
-						chagnedp[key] = 1
-					} else {
-						chagnedp[key] += val
+				if r.scheduler.SchdPolicy != "RR" {
+					for key, val := range cluster_replicas_map {
+						_, exists := cluster_replicas_map[key]
+						if !exists {
+							chagnedp[key] = 1
+						} else {
+							chagnedp[key] += val
+						}
 					}
+
+					newDeployment.Status.ClusterMaps = chagnedp
+				} else {
+					newDeployment.Status.ClusterMaps = cluster_replicas_map
 				}
-				newDeployment.Status.ClusterMaps = chagnedp
 				newDeployment.Status.Replicas = temp
 				newDeployment.Status.SchedulingNeed = false
 				newDeployment.Status.SchedulingComplete = true
@@ -203,13 +218,35 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		//ex 래플리카 8 에서 7로 변경될경우 수행 기존보다 현재가 더작은경우  수행
 		if lastspec.Replicas != 0 && lastspec.Replicas > newDeployment.Spec.Replicas {
 			decre := lastspec.Replicas - newDeployment.Spec.Replicas
-			omcplog.V(0).Infof("decre 만큼 삭제 수행", decre)
+			omcplog.V(0).Infof("replica 감소량 =", decre)
 			for i := 0; i < int(decre); i++ {
 
 				reasecluster := r.scheduler.EraseScheduling(newDeployment, lastspec.Replicas-newDeployment.Spec.Replicas, r.scheduler.ClusterInfos, newDeployment.Status.ClusterMaps)
+				//RR일경우 erase를 할 수없음
+				if reasecluster == "RR" {
+					omcplog.V(2).Info("=> D RR ..")
+					cluster_replicas_map, _ := r.scheduler.Scheduling(newDeployment, false, clusters)
+					if !(len(cluster_replicas_map) == 0) {
+						omcplog.V(2).Info("=> Scheduling Result : ", cluster_replicas_map)
+					}
+					newDeployment.Status.ClusterMaps = cluster_replicas_map
+					newDeployment.Status.Replicas = newDeployment.Status.Replicas
+					newDeployment.Status.SchedulingNeed = false
+					newDeployment.Status.SchedulingComplete = true
+					//		omcplog.V(5).Infof("cluster map =", cluster_replicas_map)
+
+					err := r.live.Status().Update(context.TODO(), newDeployment)
+					if err != nil {
+						omcplog.V(0).Infof("Failed to update instance status, %v", err)
+						return reconcile.Result{}, err
+					}
+					return reconcile.Result{}, nil
+
+				}
 				if reasecluster == "" {
 					omcplog.V(2).Info("error")
 				}
+
 				omcplog.V(2).Info("=> reasecluster : ", newDeployment.Status.ClusterMaps)
 				newDeployment.Status.ClusterMaps[reasecluster] -= 1
 			}
@@ -232,9 +269,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			IsExist = true
 			//남은 개수만큼  분리
 			//omcplog.V(5).Infof("남은개수만큼 지정", lastspec.Replicas, newDeployment.Spec.Replicas)
-			newDeployment.Spec.Replicas = newDeployment.Spec.Replicas - lastspec.Replicas
+			if r.scheduler.SchdPolicy != "RR" {
+				newDeployment.Spec.Replicas = newDeployment.Spec.Replicas - lastspec.Replicas
+			}
 		}
-
 		omcplog.V(5).Infof("  Resource Get => [Name] : %v, [Namespace]  : %v", newDeployment.Name, newDeployment.Namespace)
 		cluster_replicas_map, _ := r.scheduler.Scheduling(newDeployment, false, clusters)
 
@@ -273,30 +311,39 @@ func RRScheduling(cm *clusterManager.ClusterManager, replicas int32) map[string]
 	namespace := "kube-federation-system"
 	cluster_len := len(cm.Cluster_list.Items)
 	for i, cluster := range cm.Cluster_list.Items {
-		except := false
+		if remain_rep == 0 {
+			break
+		}
+		// except := false
 		joined_cluster := &fedv1b1.KubeFedCluster{}
 		err := cm.Host_client.Get(context.TODO(), joined_cluster, namespace, cluster.Name)
 		if err != nil {
 			return nil
 		}
-		for k, v := range joined_cluster.Labels {
-			if k == "openmcp" && v == "true" {
-				omcplog.V(0).Info("Scheduling Except Cluster !! Include OpenMCP Label : ", k, v)
-				except = true
-				break
-			}
-		}
-		if except {
-			continue
-		}
+		// for k, v := range joined_cluster.Labels {
+		// 	if k == "openmcp" && v == "true" {
+		// 		omcplog.V(0).Info("Scheduling Except Cluster !! Include OpenMCP Label : ", k, v)
+		// 		except = true
+		// 		break
+		// 	}
+		// }
+		// if except {
+		// 	continue
+		// }
 
 		if i == cluster_len-1 {
 			rep = int(remain_rep)
 		} else {
-			rep = int(replicas) / cluster_len
+			// rep = int(math.Ceil(float64(replicas) / cluster_len))
+			reqd := math.Ceil((float64(remain_rep) / float64(cluster_len-i)))
+			rep = int(reqd)
 		}
+
 		remain_rep = remain_rep - int32(rep)
 		cluster_replicas_map[cluster.Name] = int32(rep)
+		omcplog.V(0).Info("cluster.Name : ", cluster.Name)
+		omcplog.V(0).Info("remain_rep : ", remain_rep)
+		omcplog.V(0).Info("cluster_replicas_map : ", cluster_replicas_map)
 
 	}
 	keys := make([]string, 0)
@@ -305,10 +352,10 @@ func RRScheduling(cm *clusterManager.ClusterManager, replicas int32) map[string]
 	}
 	sort.Strings(keys)
 
-	omcplog.V(0).Info("Scheduling Result: ")
 	for _, k := range keys {
 		v := cluster_replicas_map[k]
 		omcplog.V(0).Info("  ", k, ": ", v)
 	}
+	omcplog.V(0).Info("Scheduling Result: ", cluster_replicas_map)
 	return cluster_replicas_map
 }

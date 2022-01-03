@@ -300,6 +300,7 @@ func (r *reconciler) createIngress(req reconcile.Request, cm *clusterManager.Clu
 			}
 		}
 	}
+	instance.Status.CheckSubResource = true
 	instance.Status.ClusterMaps = cluster_map
 	instance.Status.LastSpec = instance.Spec
 	instance.Status.ChangeNeed = false

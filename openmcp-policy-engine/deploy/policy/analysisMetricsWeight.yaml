@@ -11,10 +11,10 @@ spec:
       policies:
         - type: CPU
           value:
-            - "0.2"
+            - "1"
         - type: Memory
           value:
-            - "0.2"
+            - "0.5"
         - type: FS
           value:
             - "0.2"

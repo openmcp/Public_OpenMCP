@@ -210,6 +210,7 @@ func (r *reconciler) createConfigMap(req reconcile.Request, cm *clusterManager.C
 			}
 		}
 	}
+	instance.Status.CheckSubResource = true
 	instance.Status.ClusterMaps = cluster_map
 	instance.Status.LastSpec = instance.Spec
 	omcplog.V(3).Info("Update Status")

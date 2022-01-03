@@ -12,4 +12,3 @@ spec:
     nodePort: REPLACE_PORT
   type: LoadBalancer
   externalTrafficPolicy: Local
-

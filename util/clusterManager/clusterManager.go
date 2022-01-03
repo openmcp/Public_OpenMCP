@@ -3,9 +3,10 @@ package clusterManager
 import (
 	"context"
 	"fmt"
-	"k8s.io/client-go/util/flowcontrol"
 	clientV1alpha1 "openmcp/openmcp/clientset/v1alpha1"
 	"openmcp/openmcp/omcplog"
+
+	"k8s.io/client-go/util/flowcontrol"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -160,12 +161,8 @@ func GetNodeList(clientSet *kubernetes.Clientset) (*corev1.NodeList, error) {
 
 	nodeList := &corev1.NodeList{}
 	nodeList, err := clientSet.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		fmt.Println("Error retrieving list of federated clusters: %+v", err)
-	}
 
 	if err != nil {
-		fmt.Println("Error retrieving list of Node: %+v", err)
 		return nodeList, err
 	}
 	if len(nodeList.Items) == 0 {

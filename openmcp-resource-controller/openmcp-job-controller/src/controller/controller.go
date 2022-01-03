@@ -203,6 +203,7 @@ func (r *reconciler) createJob(req reconcile.Request, cm *clusterManager.Cluster
 		}
 
 	}
+	instance.Status.CheckSubResource = true
 	instance.Status.ClusterMaps = cluster_map
 	instance.Status.LastSpec = instance.Spec
 	err := r.live.Status().Update(context.TODO(), instance)

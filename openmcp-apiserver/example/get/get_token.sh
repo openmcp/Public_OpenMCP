@@ -7,10 +7,9 @@ PORT="8080"
 URLPATH="token"
 
 
-echo -n | openssl s_client -connect $IP:$PORT | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt
+#echo -n | openssl s_client -connect $IP:$PORT | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > server.crt
 
 TOKEN_JSON=`curl -XPOST \
-        --cacert server.crt \
         --insecure \
         -H "Content-type: application/json" \
         --data "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}" \
@@ -20,4 +19,4 @@ TOKEN=`echo $TOKEN_JSON | jq .token`
 TOKEN=`echo "$TOKEN" | tr -d '"'`
 
 echo $TOKEN
-rm server.crt
+#rm server.crt
