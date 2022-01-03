@@ -14,6 +14,7 @@ limitations under the License.
 package controller // import "admiralty.io/multicluster-controller/examples/openmcpdeployment/pkg/controller/openmcpdeployment"
 
 import (
+<<<<<<< HEAD
 	"context"
 	"fmt"
 	"openmcp/openmcp/apis"
@@ -23,17 +24,28 @@ import (
 	"openmcp/openmcp/util/clusterManager"
 	"reflect"
 	"strconv"
+=======
+>>>>>>> db35fa5fed2b7de661da9de3b62f758387f8ecdf
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"admiralty.io/multicluster-controller/pkg/reference"
+	"context"
+	"fmt"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"openmcp/openmcp/apis"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
+	"openmcp/openmcp/omcplog"
+	"openmcp/openmcp/util/clusterManager"
+	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strconv"
 )
 
 var cm *clusterManager.ClusterManager

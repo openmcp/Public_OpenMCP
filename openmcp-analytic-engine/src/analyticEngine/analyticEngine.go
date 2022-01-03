@@ -99,6 +99,7 @@ func (ae *AnalyticEngineStruct) CalcResourceScore(cm *clusterManager.ClusterMana
 			wg.Add(len(cm.Cluster_list.Items))
 
 			for _, cluster := range cm.Cluster_list.Items {
+<<<<<<< HEAD
 				go func(cluster fedv1b1.KubeFedCluster) {
 					defer wg.Done()
 
@@ -162,6 +163,64 @@ func (ae *AnalyticEngineStruct) CalcResourceScore(cm *clusterManager.ClusterMana
 
 			wg.Wait()
 			time.Sleep(2 * time.Second)
+=======
+				if cm.Cluster_genClients[cluster.Name] != nil {
+					/*
+						Update {
+							ae.ClusterResourceUsage
+							ae.ResourceScore
+						}
+					*/
+					err = ae.UpdateScore(cluster.Name, cm)
+					if err != nil {
+						omcplog.V(0).Info(err)
+					}
+					/*
+						Update {
+							ae.ClusterPodResourceScore
+							ae.GeoScore
+						}
+					*/
+					err = ae.UpdateClusterPodScore(cluster.Name, cm)
+					if err != nil {
+						omcplog.V(0).Info(err)
+					}
+					/*
+						Update {
+							ae.ClusterSVCResourceScore
+							ae.GeoScore
+						}
+					*/
+					// err = ae.UpdateClusterSVCScore(cluster.Name, cm)
+					// if err != nil {
+					// 	omcplog.V(0).Info(err)
+					// }
+
+					/*
+						Update {
+							ae.ClusterGeo
+						}
+					*/
+					// err = ae.updateClusterGeo(cluster, cm)
+					// if err != nil {
+					// 	omcplog.V(0).Info(err)
+					// }
+
+					// Update Network Data from InfluxDB
+					/*
+						Update {
+							ae.NetworkInfos
+						}
+					*/
+					ae.UpdateNetworkData(cluster, cm)
+
+					time.Sleep(7 * time.Second)
+				} else {
+					omcplog.V(0).Info("err!! : ", cluster.Name, " cluster client has 'nil'")
+				}
+
+			}
+>>>>>>> db35fa5fed2b7de661da9de3b62f758387f8ecdf
 		}
 
 	}
@@ -292,6 +351,7 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 
 	if len(result) > 0 {
 		for _, ser := range result[0].Series {
+<<<<<<< HEAD
 			if cm.Cluster_genClients[clusterName] != nil {
 				nodeCapacity := &corev1.Node{}
 				if clusterGenClient, ok := cm.Cluster_genClients[ser.Tags["cluster"]]; ok {
@@ -303,6 +363,17 @@ func (ae *AnalyticEngineStruct) UpdateScore(clusterName string, cm *clusterManag
 					} else {
 						omcplog.V(2).Info("[CPU Capacity] ", ser.Tags["cluster"], "/", ser.Tags["node"], "/", nodeCapacity.Status.Capacity.Cpu().Value())
 					}
+=======
+			nodeCapacity := &corev1.Node{}
+			err := cm.Cluster_genClients[ser.Tags["cluster"]].Get(context.TODO(), nodeCapacity, "", ser.Tags["node"])
+
+			if err != nil {
+				omcplog.V(0).Info("nodelist err!  : ", err)
+				continue
+			} else {
+				omcplog.V(2).Info("[CPU Capacity] ", ser.Tags["cluster"], "/", ser.Tags["node"], "/", nodeCapacity.Status.Capacity.Cpu().Value())
+			}
+>>>>>>> db35fa5fed2b7de661da9de3b62f758387f8ecdf
 
 					totalCpuCore = totalCpuCore + nodeCapacity.Status.Capacity.Cpu().Value()
 
@@ -1237,10 +1308,18 @@ func (ae *AnalyticEngineStruct) AnalyzeCPADeployment(cDeploy *protobuf.CPADeploy
 		return "", "", 1
 	}
 
+<<<<<<< HEAD
 	/*
 		//cpu
+=======
+		//cpu,memory
+
+>>>>>>> db35fa5fed2b7de661da9de3b62f758387f8ecdf
 		cpuUsage = cputotal / num
+		memUsage = memtotal / num
+
 		fmt.Println("[", cDeploy.Name, "] CPU 사용률 ", cpuUsage/float64(cpuRequestInt64)*100, "%")
+		fmt.Println("[", cDeploy.Name, "] MEM 사용률 ", memUsage/float64(memRequestInt64)*100, "%")
 
 		if cpuUsage/float64(cpuRequestInt64)*100 > 80 {
 			if ae.ClusterResourceUsage[cluster]["cpu"] < 80 {
@@ -1249,27 +1328,19 @@ func (ae *AnalyticEngineStruct) AnalyzeCPADeployment(cDeploy *protobuf.CPADeploy
 			} else {
 				fmt.Println("CPU Warning! -> Can't Scale-out (No Capacity)")
 			}
-		} else if cpuUsage/float64(cpuRequestInt64)*100 < 0.1 {
-			fmt.Println("CPU Warning! -> Scale-in")
-			return cluster, "Warning-cpu", "Scale-in"
-		}
-
-		//memory
-		memUsage = memtotal / num
-		fmt.Println("[", cDeploy.Name, "] MEM 사용률 ", memUsage/float64(memRequestInt64)*100, "%")
-
-		if memUsage/float64(memRequestInt64)*100 > 80 {
+		} else if memUsage/float64(memRequestInt64)*100 > 80 {
 			if ae.ClusterResourceUsage[cluster]["memory"] < 80 {
 				fmt.Println("Memory Warning! -> Scale-out")
 				return cluster, "Warning-memory", "Scale-out"
 			} else {
 				fmt.Println("Memory Warning! -> Can't Scale-out (No Capacity)")
 			}
-		} else if memUsage/float64(memRequestInt64)*100 < 1 {
-			fmt.Println("Memory Warning! -> Scale-in")
-			return cluster, "Warning-memory", "Scale-in"
+		} else if cpuUsage/float64(cpuRequestInt64)*100 < 0.1 && memUsage/float64(memRequestInt64)*100 < 1 {
+			fmt.Println("CPU/Memory Warning! -> Scale-in")
+			return cluster, "Warning-cpu/memory", "Scale-in"
 		}
 
+<<<<<<< HEAD
 
 			//network
 			netLatency := 0  //influxdb
@@ -1284,11 +1355,66 @@ func (ae *AnalyticEngineStruct) AnalyzeCPADeployment(cDeploy *protobuf.CPADeploy
 						minScore = s
 						resultCluster = clustername
 					}
+=======
+		/*
+			//cpu
+			cpuUsage = cputotal / num
+			fmt.Println("[", cDeploy.Name, "] CPU 사용률 ", cpuUsage/float64(cpuRequestInt64)*100, "%")
+
+			if cpuUsage/float64(cpuRequestInt64)*100 > 80 {
+				if ae.ClusterResourceUsage[cluster]["cpu"] < 80 {
+					fmt.Println("CPU Warning! -> Scale-out")
+					return cluster, "Warning-cpu", "Scale-out"
+				} else {
+					fmt.Println("CPU Warning! -> Can't Scale-out (No Capacity)")
 				}
-				fmt.Println("Network Warning! -> Scale-out")
-				return resultCluster, "Warning-network", "scale-out"
+			} else if cpuUsage/float64(cpuRequestInt64)*100 < 0.1 {
+				fmt.Println("CPU Warning! -> Scale-in")
+				return cluster, "Warning-cpu", "Scale-in"
 			}
+
+			//memory
+			memUsage = memtotal / num
+			fmt.Println("[", cDeploy.Name, "] MEM 사용률 ", memUsage/float64(memRequestInt64)*100, "%")
+
+			if memUsage/float64(memRequestInt64)*100 > 80 {
+				if ae.ClusterResourceUsage[cluster]["memory"] < 80 {
+					fmt.Println("Memory Warning! -> Scale-out")
+					return cluster, "Warning-memory", "Scale-out"
+				} else {
+					fmt.Println("Memory Warning! -> Can't Scale-out (No Capacity)")
+>>>>>>> db35fa5fed2b7de661da9de3b62f758387f8ecdf
+				}
+			} else if memUsage/float64(memRequestInt64)*100 < 1 {
+				fmt.Println("Memory Warning! -> Scale-in")
+				return cluster, "Warning-memory", "Scale-in"
+			}
+<<<<<<< HEAD
 	*/
+=======
+
+
+				//network
+				netLatency := 0  //influxdb
+
+				if netLatency > 1000 {
+					var minScore float64
+					minScore = 1000000
+					resultCluster := ""
+					for _, clustername := range cDeploy.Clusters {
+						s := ae.ResourceScore[clustername]
+						if s < minScore {
+							minScore = s
+							resultCluster = clustername
+						}
+					}
+					fmt.Println("Network Warning! -> Scale-out")
+					return resultCluster, "Warning-network", "scale-out"
+				}
+		*/
+
+	}
+>>>>>>> db35fa5fed2b7de661da9de3b62f758387f8ecdf
 
 	return "", "", 0
 
