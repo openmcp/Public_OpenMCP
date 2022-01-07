@@ -14,6 +14,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+
+	v1 "k8s.io/api/core/v1"
 )
 
 func DeleteSubResourceAll(clusterName string, cm *clusterManager.ClusterManager) error {
@@ -24,6 +26,11 @@ func DeleteSubResourceAll(clusterName string, cm *clusterManager.ClusterManager)
 	_ = deleteSubResourceJob(clusterName, cm)
 	_ = deleteSubResourceSecret(clusterName, cm)
 	_ = deleteSubResourceNamespace(clusterName, cm)
+
+	_ = deleteSubResourcePV(clusterName, cm)
+	_ = deleteSubResourcePVC(clusterName, cm)
+	_ = deleteSubResourceStatefulSet(clusterName, cm)
+	_ = deleteSubResourceDaemonSet(clusterName, cm)
 
 	return nil
 }
@@ -71,12 +78,12 @@ func deleteSubResourceDeployment(clusterName string, cm *clusterManager.ClusterM
 				changed_odep.Status.SchedulingNeed = true
 				changed_odep.Status.SchedulingComplete = false
 				changed_odep.Status.CheckSubResource = true
-				omcplog.V(2).Info("[Delete Resource] ReSchduling And CheckSubResource = true")
+				omcplog.V(2).Info("[Delete Resource] ReScheduling And CheckSubResource = true")
 				_, err6 := cm.Crd_client.OpenMCPDeployment(changed_odep.Namespace).UpdateStatus(changed_odep)
 				if err6 != nil {
 					omcplog.V(0).Info(err6)
 				}
-				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPDeployment Stauts Changed")
+				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPDeployment Status Changed")
 
 			} else {
 				return err3
@@ -136,12 +143,12 @@ func deleteSubResourceService(clusterName string, cm *clusterManager.ClusterMana
 				// changed_osvc.Status.ClusterMaps[clusterName] -= 1
 				changed_osvc.Status.ClusterMaps = syncResource.SyncResource(cm)
 				changed_osvc.Status.CheckSubResource = true
-				omcplog.V(2).Info("[Delete Resource] ReSchduling And CheckSubResource = true")
+				omcplog.V(2).Info("[Delete Resource] ReScheduling And CheckSubResource = true")
 				_, err6 := cm.Crd_client.OpenMCPService(changed_osvc.Namespace).UpdateStatus(changed_osvc)
 				if err6 != nil {
 					omcplog.V(0).Info(err6)
 				}
-				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPService Stauts Changed")
+				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPService Status Changed")
 
 			} else {
 				return err3
@@ -195,12 +202,12 @@ func deleteSubResourceIngress(clusterName string, cm *clusterManager.ClusterMana
 				changed_oing.Status.ClusterMaps = syncResource.SyncResource(cm)
 				changed_oing.Status.CheckSubResource = true
 
-				omcplog.V(2).Info("[Delete Resource] ReSchduling And CheckSubResource = true")
+				omcplog.V(2).Info("[Delete Resource] ReScheduling And CheckSubResource = true")
 				_, err6 := cm.Crd_client.OpenMCPIngress(changed_oing.Namespace).UpdateStatus(changed_oing)
 				if err6 != nil {
 					omcplog.V(0).Info(err6)
 				}
-				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPIngress Stauts Changed")
+				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPIngress Status Changed")
 
 			} else {
 				return err3
@@ -254,12 +261,12 @@ func deleteSubResourceConfigMap(clusterName string, cm *clusterManager.ClusterMa
 				changed_oConfigmap.Status.ClusterMaps = syncResource.SyncResource(cm)
 				changed_oConfigmap.Status.CheckSubResource = true
 
-				omcplog.V(2).Info("[Delete Resource] ReSchduling And CheckSubResource = true")
+				omcplog.V(2).Info("[Delete Resource] ReScheduling And CheckSubResource = true")
 				_, err6 := cm.Crd_client.OpenMCPConfigMap(changed_oConfigmap.Namespace).UpdateStatus(changed_oConfigmap)
 				if err6 != nil {
 					omcplog.V(0).Info(err6)
 				}
-				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPConfigMap Stauts Changed")
+				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPConfigMap Status Changed")
 
 			} else {
 				return err3
@@ -313,12 +320,12 @@ func deleteSubResourceJob(clusterName string, cm *clusterManager.ClusterManager)
 				changed_oJob.Status.ClusterMaps = syncResource.SyncResource(cm)
 				changed_oJob.Status.CheckSubResource = true
 
-				omcplog.V(2).Info("[Delete Resource] ReSchduling And CheckSubResource = true")
+				omcplog.V(2).Info("[Delete Resource] ReScheduling And CheckSubResource = true")
 				_, err6 := cm.Crd_client.OpenMCPJob(changed_oJob.Namespace).UpdateStatus(changed_oJob)
 				if err6 != nil {
 					omcplog.V(0).Info(err6)
 				}
-				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPJob Stauts Changed")
+				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPJob Status Changed")
 
 			} else {
 				return err3
@@ -372,12 +379,12 @@ func deleteSubResourceNamespace(clusterName string, cm *clusterManager.ClusterMa
 				changed_ons.Status.ClusterMaps = syncResource.SyncResource(cm)
 				changed_ons.Status.CheckSubResource = true
 
-				omcplog.V(2).Info("[Delete Resource] ReSchduling And CheckSubResource = true")
+				omcplog.V(2).Info("[Delete Resource] ReScheduling And CheckSubResource = true")
 				_, err6 := cm.Crd_client.OpenMCPNamespace(changed_ons.Namespace).UpdateStatus(changed_ons)
 				if err6 != nil {
 					omcplog.V(0).Info(err6)
 				}
-				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPNamespace Stauts Changed")
+				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPNamespace Status Changed")
 
 			} else {
 				return err3
@@ -431,12 +438,252 @@ func deleteSubResourceSecret(clusterName string, cm *clusterManager.ClusterManag
 				changed_osec.Status.ClusterMaps = syncResource.SyncResource(cm)
 				changed_osec.Status.CheckSubResource = true
 
-				omcplog.V(2).Info("[Delete Resource] ReSchduling And CheckSubResource = true")
+				omcplog.V(2).Info("[Delete Resource] ReScheduling And CheckSubResource = true")
 				_, err6 := cm.Crd_client.OpenMCPSecret(changed_osec.Namespace).UpdateStatus(changed_osec)
 				if err6 != nil {
 					omcplog.V(0).Info(err6)
 				}
-				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPSecret Stauts Changed")
+				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPSecret Status Changed")
+
+			} else {
+				return err3
+			}
+		}
+
+	}
+	return nil
+}
+
+func deleteSubResourcePV(clusterName string, cm *clusterManager.ClusterManager) error {
+	//omcplog.V(2).Info("[Delete Resource]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Delete Resource] PV Resource by OpenMCP")
+	opvList, err := cm.Crd_client.OpenMCPPersistentVolume(corev1.NamespaceAll).List(metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, opv := range opvList.Items {
+
+		if _, ok := cm.Cluster_genClients[clusterName]; ok {
+
+			omcplog.V(2).Info("[Delete Resource] Try Find PV '" + opv.Name + "' in Cluster")
+			pv := &v1.PersistentVolume{}
+			err3 := cm.Cluster_genClients[clusterName].Get(context.TODO(), pv, opv.Namespace, opv.Name)
+			if err3 != nil && errors.IsNotFound(err3) {
+				omcplog.V(2).Info("[Delete Resource] is Not Found PV. Continue Next PV")
+
+			} else if err3 == nil {
+
+				omcplog.V(2).Info("[Delete Resource] Found PV '" + opv.Name + "' in Cluster. Update CheckSubResource = false")
+				opv.Status.CheckSubResource = false
+				_, err2 := cm.Crd_client.OpenMCPPersistentVolume(opv.Namespace).UpdateStatus(&opv)
+				if err2 != nil {
+					fmt.Println(err2)
+					return err2
+				}
+				omcplog.V(2).Info("[Delete Resource] '" + opv.Name + "' in Cluster Delete Start")
+
+				err4 := cm.Cluster_genClients[clusterName].Delete(context.TODO(), pv, opv.Namespace, opv.Name)
+				if err4 != nil {
+					return err4
+				}
+				omcplog.V(2).Info("[Delete Resource] Deleted PV '" + opv.Name + "' in Cluster")
+
+				changed_opv, err5 := cm.Crd_client.OpenMCPPersistentVolume(opv.Namespace).Get(opv.Name, metav1.GetOptions{})
+				if err5 != nil {
+					omcplog.V(0).Info("[Delete Resource] Error: ", err5)
+				}
+
+				// changed_opv.Status.ClusterMaps[clusterName] -= 1
+				changed_opv.Status.ClusterMaps = syncResource.SyncResource(cm)
+				changed_opv.Status.CheckSubResource = true
+
+				omcplog.V(2).Info("[Delete Resource] ReScheduling And CheckSubResource = true")
+				_, err6 := cm.Crd_client.OpenMCPPersistentVolume(changed_opv.Namespace).UpdateStatus(changed_opv)
+				if err6 != nil {
+					omcplog.V(0).Info(err6)
+				}
+				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPPersistentVolume Status Changed")
+
+			} else {
+				return err3
+			}
+		}
+
+	}
+	return nil
+}
+
+func deleteSubResourcePVC(clusterName string, cm *clusterManager.ClusterManager) error {
+	//omcplog.V(2).Info("[Delete Resource]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Delete Resource] PVC Resource by OpenMCP")
+	opvcList, err := cm.Crd_client.OpenMCPPersistentVolumeClaim(corev1.NamespaceAll).List(metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, opvc := range opvcList.Items {
+
+		if _, ok := cm.Cluster_genClients[clusterName]; ok {
+
+			omcplog.V(2).Info("[Delete Resource] Try Find PVC '" + opvc.Name + "' in Cluster")
+			pvc := &v1.PersistentVolumeClaim{}
+			err3 := cm.Cluster_genClients[clusterName].Get(context.TODO(), pvc, opvc.Namespace, opvc.Name)
+			if err3 != nil && errors.IsNotFound(err3) {
+				omcplog.V(2).Info("[Delete Resource] is Not Found PVC. Continue Next PVC")
+
+			} else if err3 == nil {
+
+				omcplog.V(2).Info("[Delete Resource] Found PV '" + opvc.Name + "' in Cluster. Update CheckSubResource = false")
+				opvc.Status.CheckSubResource = false
+				_, err2 := cm.Crd_client.OpenMCPPersistentVolumeClaim(opvc.Namespace).UpdateStatus(&opvc)
+				if err2 != nil {
+					fmt.Println(err2)
+					return err2
+				}
+				omcplog.V(2).Info("[Delete Resource] '" + opvc.Name + "' in Cluster Delete Start")
+
+				err4 := cm.Cluster_genClients[clusterName].Delete(context.TODO(), pvc, opvc.Namespace, opvc.Name)
+				if err4 != nil {
+					return err4
+				}
+				omcplog.V(2).Info("[Delete Resource] Deleted PVC '" + opvc.Name + "' in Cluster")
+
+				changed_opvc, err5 := cm.Crd_client.OpenMCPPersistentVolumeClaim(opvc.Namespace).Get(opvc.Name, metav1.GetOptions{})
+				if err5 != nil {
+					omcplog.V(0).Info("[Delete Resource] Error: ", err5)
+				}
+
+				// changed_opvc.Status.ClusterMaps[clusterName] -= 1
+				changed_opvc.Status.ClusterMaps = syncResource.SyncResource(cm)
+				changed_opvc.Status.CheckSubResource = true
+
+				omcplog.V(2).Info("[Delete Resource] ReScheduling And CheckSubResource = true")
+				_, err6 := cm.Crd_client.OpenMCPPersistentVolumeClaim(changed_opvc.Namespace).UpdateStatus(changed_opvc)
+				if err6 != nil {
+					omcplog.V(0).Info(err6)
+				}
+				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPPersistentVolumeClaim Status Changed")
+
+			} else {
+				return err3
+			}
+		}
+
+	}
+	return nil
+}
+
+func deleteSubResourceStatefulSet(clusterName string, cm *clusterManager.ClusterManager) error {
+	//omcplog.V(2).Info("[Delete Resource]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Delete Resource] Statefulset Resource by OpenMCP")
+	ossList, err := cm.Crd_client.OpenMCPStatefulSet(corev1.NamespaceAll).List(metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, oss := range ossList.Items {
+
+		if _, ok := cm.Cluster_genClients[clusterName]; ok {
+
+			omcplog.V(2).Info("[Delete Resource] Try Find StatefulSet '" + oss.Name + "' in Cluster")
+			ss := &appsv1.StatefulSet{}
+			err3 := cm.Cluster_genClients[clusterName].Get(context.TODO(), ss, oss.Namespace, oss.Name)
+			if err3 != nil && errors.IsNotFound(err3) {
+				omcplog.V(2).Info("[Delete Resource] is Not Found StatefulSet. Continue Next StatefulSet")
+
+			} else if err3 == nil {
+
+				omcplog.V(2).Info("[Delete Resource] Found StatefulSet '" + oss.Name + "' in Cluster. Update CheckSubResource = false")
+				oss.Status.CheckSubResource = false
+				_, err2 := cm.Crd_client.OpenMCPStatefulSet(oss.Namespace).UpdateStatus(&oss)
+				if err2 != nil {
+					fmt.Println(err2)
+					return err2
+				}
+				omcplog.V(2).Info("[Delete Resource] '" + oss.Name + "' in Cluster Delete Start")
+
+				err4 := cm.Cluster_genClients[clusterName].Delete(context.TODO(), ss, oss.Namespace, oss.Name)
+				if err4 != nil {
+					return err4
+				}
+				omcplog.V(2).Info("[Delete Resource] Deleted StatefulSet '" + oss.Name + "' in Cluster")
+
+				changed_oss, err5 := cm.Crd_client.OpenMCPStatefulSet(oss.Namespace).Get(oss.Name, metav1.GetOptions{})
+				if err5 != nil {
+					omcplog.V(0).Info("[Delete Resource] Error: ", err5)
+				}
+
+				// changed_oss.Status.ClusterMaps[clusterName] -= 1
+				changed_oss.Status.ClusterMaps = syncResource.SyncResource(cm)
+				changed_oss.Status.CheckSubResource = true
+
+				omcplog.V(2).Info("[Delete Resource] ReScheduling And CheckSubResource = true")
+				_, err6 := cm.Crd_client.OpenMCPStatefulSet(changed_oss.Namespace).UpdateStatus(changed_oss)
+				if err6 != nil {
+					omcplog.V(0).Info(err6)
+				}
+				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPStatefulSet Status Changed")
+
+			} else {
+				return err3
+			}
+		}
+
+	}
+	return nil
+}
+
+func deleteSubResourceDaemonSet(clusterName string, cm *clusterManager.ClusterManager) error {
+	//omcplog.V(2).Info("[Delete Resource]'" + clusterName + "' Start")
+	//omcplog.V(2).Info("[Delete Resource] DaemonSet Resource by OpenMCP")
+	odsList, err := cm.Crd_client.OpenMCPDaemonSet(corev1.NamespaceAll).List(metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, ods := range odsList.Items {
+
+		if _, ok := cm.Cluster_genClients[clusterName]; ok {
+
+			omcplog.V(2).Info("[Delete Resource] Try Find DaemonSet '" + ods.Name + "' in Cluster")
+			ds := &appsv1.DaemonSet{}
+			err3 := cm.Cluster_genClients[clusterName].Get(context.TODO(), ds, ods.Namespace, ods.Name)
+			if err3 != nil && errors.IsNotFound(err3) {
+				omcplog.V(2).Info("[Delete Resource] is Not Found DaemonSet. Continue Next DaemonSet")
+
+			} else if err3 == nil {
+
+				omcplog.V(2).Info("[Delete Resource] Found DaemonSet '" + ods.Name + "' in Cluster. Update CheckSubResource = false")
+				ods.Status.CheckSubResource = false
+				_, err2 := cm.Crd_client.OpenMCPDaemonSet(ods.Namespace).UpdateStatus(&ods)
+				if err2 != nil {
+					fmt.Println(err2)
+					return err2
+				}
+				omcplog.V(2).Info("[Delete Resource] '" + ods.Name + "' in Cluster Delete Start")
+
+				err4 := cm.Cluster_genClients[clusterName].Delete(context.TODO(), ds, ods.Namespace, ods.Name)
+				if err4 != nil {
+					return err4
+				}
+				omcplog.V(2).Info("[Delete Resource] Deleted DaemonSet '" + ods.Name + "' in Cluster")
+
+				changed_ods, err5 := cm.Crd_client.OpenMCPDaemonSet(ods.Namespace).Get(ods.Name, metav1.GetOptions{})
+				if err5 != nil {
+					omcplog.V(0).Info("[Delete Resource] Error: ", err5)
+				}
+
+				// changed_ods.Status.ClusterMaps[clusterName] -= 1
+				changed_ods.Status.ClusterMaps = syncResource.SyncResource(cm)
+				changed_ods.Status.CheckSubResource = true
+
+				omcplog.V(2).Info("[Delete Resource] ReScheduling And CheckSubResource = true")
+				_, err6 := cm.Crd_client.OpenMCPDaemonSet(changed_ods.Namespace).UpdateStatus(changed_ods)
+				if err6 != nil {
+					omcplog.V(0).Info(err6)
+				}
+				omcplog.V(2).Info("[Delete Resource] Done. OpenMCPDaemonSet Status Changed")
 
 			} else {
 				return err3
