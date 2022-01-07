@@ -1,0 +1,93 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: odoo
+  name: db-postgres
+  annotations:
+    k8s.kuboard.cn/workload: db-postgres
+    deployment.kubernetes.io/revision: '1'
+    k8s.eip.work/displayName: db-postgres
+    k8s.eip.work/ingress: 'false'
+    k8s.eip.work/service: ClusterIP
+    k8s.eip.work/workload: db-postgres
+    k8s.kuboard.cn/ingress: 'false'
+    k8s.kuboard.cn/service: ClusterIP
+  labels:
+    k8s.eip.work/layer: db
+    k8s.eip.work/name: db-postgres
+spec:
+  selector:
+    matchLabels:
+      k8s.eip.work/layer: db
+      k8s.eip.work/name: db-postgres
+  revisionHistoryLimit: 10
+  template:
+    metadata:
+      labels:
+        k8s.eip.work/layer: db
+        k8s.eip.work/name: db-postgres
+    spec:
+      securityContext:
+        seLinuxOptions: {}
+      imagePullSecrets:
+        - name: dockerhub
+      restartPolicy: Always
+      initContainers: []
+      containers:
+        - image: 'postgres:10'
+          imagePullPolicy: Always
+          name: postgres-odoo
+          volumeMounts: []
+          resources:
+            limits:
+            requests:
+          env:
+            - name: POSTGRES_DB
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: ketilinux
+            - name: POSTGRES_USER
+              value: keti
+          lifecycle: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      volumes: []
+      dnsPolicy: ClusterFirst
+      dnsConfig: {}
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+  progressDeadlineSeconds: 600
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  replicas: 1
+ 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: odoo
+  name: db-postgres
+  annotations:
+    k8s.kuboard.cn/workload: db-postgres
+    k8s.eip.work/displayName: db-postgres
+    k8s.eip.work/workload: db-postgres
+  labels:
+    k8s.eip.work/layer: db
+    k8s.eip.work/name: db-postgres
+spec:
+  selector:
+    k8s.eip.work/layer: db
+    k8s.eip.work/name: db-postgres
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+      name: fp6ksw
+      nodePort: 0
+  sessionAffinity: None
+

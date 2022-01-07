@@ -1,0 +1,10 @@
+QTextEdit {
+    font-family : MS Sans Serif;
+    background-color : #FFFFFF;
+    border: 1px solid gray;
+    border-radius: 8px;
+    padding: 1px 18px 1px 3px;
+    min-width: 10em;
+    /*max-width: 20em;*/
+    font-weight: bold;
+}

@@ -92,8 +92,6 @@ kind: OpenMCPService
 metadata:
   name: iot-gateway-svc
 spec:
-  labelselector:
-    component: iot-gateway-svc
   template:
     spec:
       type: LoadBalancer
@@ -107,6 +105,8 @@ spec:
       - port: 80
         targetPort: 7070
         name: sysbench
+      selector:
+        component: iot-gateway-svc
 ---
 apiVersion: openmcp.k8s.io/v1alpha1
 kind: OpenMCPServiceDNSRecord

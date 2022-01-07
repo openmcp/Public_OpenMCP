@@ -24,8 +24,6 @@ metadata:
   labels:
     app: productpage
 spec:
-  labelselector:
-    app: productpage
   template:
     spec:
       # LoadBalancer Only for Openmcp DNS
@@ -71,8 +69,6 @@ metadata:
   labels:
     app: details
 spec:
-  labelselector:
-    app: details
   template:
     spec:
       ports:
@@ -114,8 +110,6 @@ metadata:
   labels:
     app: reviews
 spec:
-  labelselector:
-    app: reviews
   template:
     spec:
       ports:
@@ -157,8 +151,6 @@ metadata:
   labels:
     app: ratings
 spec:
-  labelselector:
-    app: ratings
   template:
     spec:
       ports:

@@ -1,0 +1,18 @@
+QPushButton {
+    font-family : MS Sans Serif;
+    border: 1px solid #098599;
+    border-radius: 6px;
+    background-color: #055b6a;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 0.67, stop: 0 #0c85c7, stop: 1 #055b6a);
+    color: white;
+    font-size: 12pt;
+    font-weight: bold;
+}
+QPushButton:pressed {
+    border: 1px solid #333333;
+    background-color: #222222;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 0.67, stop: 0 #444444, stop: 1 #222222);
+    color: white;
+    font-size: 12pt;
+    font-weight: bold;
+}

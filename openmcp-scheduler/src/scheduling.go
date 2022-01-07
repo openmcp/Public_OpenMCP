@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"openmcp/openmcp/apis/cluster/v1alpha1"
 	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
+	"sync"
 
 	//clusterv1alpha1 "openmcp/openmcp/apis/cluster/v1alpha1"
 	"openmcp/openmcp/omcplog"
@@ -38,6 +39,7 @@ type OpenMCPScheduler struct {
 	Selectpolicy    string
 	Live            *client.Client
 	SchdPolicy      string
+	Mutex           *sync.Mutex
 }
 
 func NewScheduler(cm *clusterManager.ClusterManager, grpcClient protobuf.RequestAnalysisClient) *OpenMCPScheduler {
@@ -48,6 +50,7 @@ func NewScheduler(cm *clusterManager.ClusterManager, grpcClient protobuf.Request
 	sched.ClusterManager = cm
 	sched.GRPC_Client = grpcClient
 	sched.PostDeployments = list.New()
+	sched.Mutex = new(sync.Mutex)
 	if !sched.IsNetwork {
 		go sched.LocalNetworkAnalysis()
 		go sched.Postschduling()
@@ -67,6 +70,7 @@ func NewScheduler(cm *clusterManager.ClusterManager, grpcClient protobuf.Request
 **/
 func (sched *OpenMCPScheduler) SchedulingPolicyMonitoring() {
 	for {
+
 		openmcpPolicyInstance, perr := sched.ClusterManager.Crd_client.OpenMCPPolicy("openmcp").Get("scheduling-policy", metav1.GetOptions{})
 		if perr == nil {
 			policies := openmcpPolicyInstance.Spec.Template.Spec.Policies
@@ -75,17 +79,22 @@ func (sched *OpenMCPScheduler) SchedulingPolicyMonitoring() {
 					sched.SchdPolicy = policy.Value[0]
 				}
 			}
+
 		}
+
+		time.Sleep(3 * time.Second)
 	}
 }
 
 func (sched *OpenMCPScheduler) PostsMonitoring() {
-	sched.SetupResources()
 
+	sched.Mutex.Lock()
+	sched.SetupResources()
+	sched.Mutex.Unlock()
 	postlist := sched.PostDeployments
 	osvc_list := &resourcev1alpha1.OpenMCPDeploymentList{}
 	if sched.Live == nil {
-		omcplog.V(0).Info("sched.Live NIL")
+		omcplog.V(5).Info("sched.Live NIL")
 		return
 	}
 	openmcpPolicyInstance, perr := sched.ClusterManager.Crd_client.OpenMCPPolicy("openmcp").Get("post-schduling", metav1.GetOptions{})
@@ -120,8 +129,9 @@ func (sched *OpenMCPScheduler) PostsMonitoring() {
 }
 
 func (sched *OpenMCPScheduler) Postschduling() {
-	omcplog.V(4).Info("postschduling start")
+	omcplog.V(5).Info("postschduling start")
 	for {
+
 		sched.PostsMonitoring()
 		time.Sleep(3 * time.Second)
 		//newDeployment := &resourcev1alpha1.OpenMCPDeployment{}
@@ -149,12 +159,13 @@ func (sched *OpenMCPScheduler) Postschduling() {
 			}
 
 			postdeployment := firstdeploy.NewDeployment
-			omcplog.V(4).Info("RemainReplica", firstdeploy.RemainReplica)
+			omcplog.V(4).Info("Post Scheduling RemainReplica", firstdeploy.RemainReplica)
 			firstdeploy.NewDeployment.Status.Replicas = firstdeploy.RemainReplica
 			exist := postdeployment.Status.ClusterMaps
 			backup := map[string]int32{}
 			backup = exist
 			cluster_replicas_map, _ := sched.Scheduling(postdeployment, true, postdeployment.Spec.Clusters)
+
 			replicacount := 0
 			chagnedp := map[string]int32{}
 			for key, val := range exist {
@@ -198,8 +209,8 @@ func (sched *OpenMCPScheduler) Postschduling() {
 				if firstdeploy.RemainReplica <= 0 {
 					postlist.Remove(postlist.Front())
 				}
-				omcplog.V(3).Infof(" MAPP =>: %v", chagnedp)
-				omcplog.V(0).Infof("Remain count : %v exist count : %v", firstdeploy.RemainReplica, replicacount)
+				omcplog.V(4).Infof("Cluster MAP : %v", chagnedp)
+				omcplog.V(4).Infof("Remain count : %v exist count : %v", firstdeploy.RemainReplica, replicacount)
 			}
 
 		} else {
@@ -220,6 +231,7 @@ func (sched *OpenMCPScheduler) RRScheduling(clusters map[string]*ketiresource.Cl
 	cluster_count := 0
 	queue_cluster := make(map[int]string)
 	for clusterName, cluster := range clusters {
+		omcplog.V(5).Infof("RRScheduling: clusterName:", clusterName)
 		if remain_rep == 0 {
 			break
 		}
@@ -239,18 +251,20 @@ func (sched *OpenMCPScheduler) RRScheduling(clusters map[string]*ketiresource.Cl
 			}
 		}
 	}
-
-	omcplog.V(5).Infof(" filteredCluster =>: %v", filteredCluster)
 	if len(filteredCluster) == 0 {
-		omcplog.V(2).Infof("no filter")
+		omcplog.V(5).Infof("error :RRScheduling cluster_count =0")
 	}
 	for _, s := range queue_cluster {
 		cluster_replicas_map[s] = 0
 	}
 	for i := 0; i < int(replicas); i++ {
+		if cluster_count == 0 {
+			omcplog.V(1).Info(cluster_count)
+			break
+		}
 		index := i % cluster_count
-		omcplog.V(2).Info("index=", int(index))
-		omcplog.V(2).Info("queue_cluster[index]=", queue_cluster[index])
+		//omcplog.V(2).Info("index=", int(index))
+		//omcplog.V(2).Info("queue_cluster[index]=", queue_cluster[index])
 		cluster_replicas_map[queue_cluster[index]] = cluster_replicas_map[queue_cluster[index]] + 1
 	}
 
@@ -277,7 +291,9 @@ func (sched *OpenMCPScheduler) Scheduling(dep *resourcev1alpha1.OpenMCPDeploymen
 
 	if len(sched.ClusterInfos) == 0 {
 		omcplog.V(0).Infof("sched.ClusterInfos loading ...")
+		sched.Mutex.Lock()
 		sched.SetupResources()
+		sched.Mutex.Unlock()
 		sched.IsResource = true
 	}
 	// RR 정책일경우 처리
@@ -400,7 +416,7 @@ func (sched *OpenMCPScheduler) ScheduleOne(newPod *ketiresource.Pod, replicas in
 			// b, _ := strconv.Atoi(s)
 			// b = b + 1
 			// post.NewDeployment.SetResourceVersion(string(b))
-			omcplog.V(0).Infof("Posting Resource Get => [Name] : %v, [Namespace]  : %v [replicas] : %v", post.NewDeployment.Name, post.NewDeployment.Namespace, post.RemainReplica)
+			omcplog.V(4).Infof("Posting Resource Get => [Name] : %v, [Namespace]  : %v [replicas] : %v", post.NewDeployment.Name, post.NewDeployment.Namespace, post.RemainReplica)
 			sched.PostDeployments.PushBack(post)
 			//omcplog.V(0).Info("postpods len ="+string(len(sched.PostPods))+"Replicas=", postpod.RemainReplica)
 
@@ -409,11 +425,11 @@ func (sched *OpenMCPScheduler) ScheduleOne(newPod *ketiresource.Pod, replicas in
 		return "", fmt.Errorf("There is no cluster")
 	}
 	elapsedTime := time.Since(startTime)
-	omcplog.V(3).Infof("    => filter Time [%v]", elapsedTime)
-	omcplog.V(4).Infof("    => FilteredResultMap [%v]", filterdResult)
+	omcplog.V(2).Infof("    => filter Time [%v]", elapsedTime)
+	omcplog.V(2).Infof("    => FilteredResultMap [%v]", filterdResult)
 	selectedCluster := sched.Framework.RunScorePluginsOnClusters(newPod, filteredCluster, sched.ClusterInfos, replicas)
-	omcplog.V(4).Infof("    => selectedCluster [%v]", selectedCluster)
-	omcplog.V(3).Infof("    => scoring Time [%v]", time.Since(startTime))
+	omcplog.V(2).Infof("    => selectedCluster [%v]", selectedCluster)
+	omcplog.V(2).Infof("    => scoring Time [%v]", time.Since(startTime))
 	return selectedCluster, nil
 }
 
@@ -629,6 +645,7 @@ func (sched *OpenMCPScheduler) SetupResources() error {
 		}
 
 		// Setup Cluster
+
 		sched.ClusterInfos[clusterName] = &ketiresource.Cluster{
 			ClusterName:         clusterName,
 			Nodes:               allNodes,

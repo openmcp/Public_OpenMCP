@@ -32,7 +32,7 @@ spec:
       ports:
         - name: http
           port: 80
-  labelselector:
-    app: nginx
+      selector:
+        app: nginx
 ' https://$IP:$PORT/$URL?clustername=$CLUSTER
 rm server.crt

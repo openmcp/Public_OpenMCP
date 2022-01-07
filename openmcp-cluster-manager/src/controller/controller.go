@@ -123,10 +123,16 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	}
 
 	//조건 추가 - STATUS 비교
-	if clusterInstance.Spec.JoinStatus == "JOIN" {
+	if clusterInstance.Spec.JoinStatus == "JOIN" && clusterInstance.Spec.JoinStatusTime.IsZero() {
+		clusterInstance.Spec.JoinStatusTime = time.Now()
+		clusterInstance.Spec.UnJoinStatusTime = time.Time{}
+		err = r.live.Update(context.TODO(), clusterInstance)
 		omcplog.V(2).Info(clusterInstance.Name + " [ JOIN ]")
 
-	} else if clusterInstance.Spec.JoinStatus == "UNJOIN" {
+	} else if clusterInstance.Spec.JoinStatus == "UNJOIN" && clusterInstance.Spec.UnJoinStatusTime.IsZero() {
+		clusterInstance.Spec.JoinStatusTime = time.Time{}
+		clusterInstance.Spec.UnJoinStatusTime = time.Now()
+		err = r.live.Update(context.TODO(), clusterInstance)
 		omcplog.V(2).Info(clusterInstance.Name + " [ UNJOIN ]")
 
 	} else if clusterInstance.Spec.JoinStatus == "JOINING" && metallbrangeCheck == "true" {
@@ -376,7 +382,11 @@ func InstallInitModule(directory []string, clustername string, ipaddressfrom str
 					}
 
 					if filepath.Ext(f.Name()) == ".yaml" || filepath.Ext(f.Name()) == ".yml" {
-						if strings.Contains(dirname, "metric-collector/operator") {
+						if strings.Contains(dirname, "samples/addons") {
+							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/kiali.yaml --context " + clustername)
+							util.CmdExec2("/usr/local/bin/kubectl apply -f " + dirname + "/prometheus.yaml --context " + clustername)
+
+						} else if strings.Contains(dirname, "metric-collector/operator") {
 							if netLoc == "external" {
 								util.CmdExec2("cp " + dirname + "/operator_ex.yaml " + dirname + "/operator_" + clustername + ".yaml")
 								util.CmdExec2("sed -i 's|REPLACE_CLUSTER_NAME|\"" + clustername + "\"|g' " + dirname + "/operator_" + clustername + ".yaml")

@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"time"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -20,6 +22,8 @@ type OpenMCPClusterSpec struct {
 	ClusterPlatformType    string       `json:"clusterPlatformType" protobuf:"bytes,1,opt,name=clusterplatformtype"`
 	ClusterNetworkLocation string       `json:"clusterNetworkLocation" protobuf:"bytes,2,opt,name=clusternetworklocation"`
 	JoinStatus             string       `json:"joinStatus" protobuf:"bytes,3,opt,name=joinstatus"`
+	JoinStatusTime         time.Time    `json:"joinStatusTime" protobuf:"bytes,3,opt,name=joinstatustime"`
+	UnJoinStatusTime       time.Time    `json:"unJoinStatusTime" protobuf:"bytes,3,opt,name=unjoinstatustime"`
 	NodeInfo               NodeInfo     `json:"nodeInfo" protobuf:"bytes,4,opt,name=nodeinfo"`
 	MetalLBRange           MetalLBRange `json:"metalLBRange" protobuf:"bytes,5,opt,name=metallbrange"`
 	KubeconfigInfo         []byte       `json:"kubeconfigInfo,omitempty" protobuf:"bytes,6,opt,name=kubeconfiginfo"`

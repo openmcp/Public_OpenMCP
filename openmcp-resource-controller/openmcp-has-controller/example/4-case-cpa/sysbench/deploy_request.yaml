@@ -6,8 +6,6 @@ metadata:
   labels:
     app: test-has-pod
 spec:
-  labelselector:
-    app: test-has-pod
   template:
     spec:
       type: LoadBalancer

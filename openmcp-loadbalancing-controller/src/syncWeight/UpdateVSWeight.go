@@ -1,7 +1,6 @@
 package syncWeight
 
 import (
-	"fmt"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 	"time"
@@ -18,11 +17,11 @@ func SyncVSWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 	for {
 		select {
 		case <-quit:
-			omcplog.V(2).Info("SyncWeight Quit")
+			omcplog.V(3).Info("SyncWeight Quit")
 			quitok <- true
 			return
 		default:
-			fmt.Println("SyncWeight Called")
+			omcplog.V(3).Info("SyncWeight Called")
 
 			//vsList, err := cm.Crd_istio_client.VirtualService(corev1.NamespaceAll).List(metav1.ListOptions{})
 

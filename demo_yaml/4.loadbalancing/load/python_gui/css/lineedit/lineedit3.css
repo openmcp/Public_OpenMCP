@@ -1,0 +1,16 @@
+QLineEdit {
+    background-color: white;
+    border-style: inset;
+    border-width: 5px;
+    border-radius: 10px;
+    border-color: black;
+    font: bold 10px;
+    height: 40%;
+    width: 100%;
+    padding: 10px;
+}
+
+QLineEdit:hover {
+    background-color: rgb(211, 206, 206);
+    border-style: inset;
+}

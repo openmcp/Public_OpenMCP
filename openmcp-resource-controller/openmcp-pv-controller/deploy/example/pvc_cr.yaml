@@ -2,10 +2,10 @@ apiVersion: openmcp.k8s.io/v1alpha1
 kind: OpenMCPPersistentVolumeClaim
 metadata:
   name: opvc-test
-  namespace: ria
+  #namespace: ria
 spec:
-  clusters:
-  - cluster01
+  #clusters:
+  #- cluster01
   labels:
     app: opv-test
   template:

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: odoo-server 
+  namespace: odoo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: odoo-server
+  template:
+    metadata:
+      labels:
+        name: odoo-server 
+    spec:
+      containers:
+      - name: odoo-server 
+        image: odoo
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        env:
+        - name: DB_PORT_5432_TCP_ADDR
+          value: "localhost"
+        - name: DB_PORT_5432_TCP_PORT
+          value: "5432"
+        - name: DB_ENV_POSTGRES_USER
+          value: "odoo"
+        - name: DB_ENV_POSTGRES_PASSWORD
+          value: "1234"
+        ports:
+        - containerPort: 8069

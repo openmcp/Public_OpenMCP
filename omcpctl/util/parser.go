@@ -17,7 +17,7 @@ var (
 )
 
 var (
-	OpenMCPAPIServer = "10.0.3.20:31635" // Initialized by reading config file from root.go
+	OpenMCPAPIServer = "openmcp-apiserver.openmcp.default-domain.svc.openmcp.example.org:8080" // Initialized by reading config file from root.go
 
 	ResourceMap = map[string]string{
 
@@ -173,7 +173,7 @@ var (
 		"openmcpsecret":  "openmcpsecrets",
 		"openmcpsecrets": "openmcpsecrets",
 
-		"ode":           "openmcpdnsendpoints",
+		"ode":                 "openmcpdnsendpoints",
 		"openmcpdnsendpoint":  "openmcpdnsendpoints",
 		"openmcpdnsendpoints": "openmcpdnsendpoints",
 	}
@@ -227,7 +227,7 @@ var (
 		"openmcppolicys":           "/apis/openmcp.k8s.io/v1alpha1",
 		"openmcpconfigmaps":        "/apis/openmcp.k8s.io/v1alpha1",
 		"openmcpsecrets":           "/apis/openmcp.k8s.io/v1alpha1",
-		"openmcpdnsendpoints":		"/apis/openmcp.k8s.io/v1alpha1",
+		"openmcpdnsendpoints":      "/apis/openmcp.k8s.io/v1alpha1",
 	}
 
 	KindMap = map[string]string{
@@ -280,7 +280,7 @@ var (
 		"OpenMCPPolicy":           "openmcppolicys",
 		"OpenMCPConfigMap":        "openmcpconfigmaps",
 		"OpenMCPSecret":           "openmcpsecrets",
-		"OpenMCPDNSEndpoint":	   "openmcpdnsendpoints",
+		"OpenMCPDNSEndpoint":      "openmcpdnsendpoints",
 	}
 
 	noNamespaceResources = []string{"storageclasses", "customresourcedefinitions", "apiservices", "clusterroles", "clusterrolebindings", "namespaces", "nodes", "persistentvolumes"}
@@ -304,7 +304,7 @@ type MetaInfo struct {
 }
 
 func CreateLinkParser(metainfo *MetaInfo) string {
-	LINK := "http://" + OpenMCPAPIServer + apiGroup[KindMap[metainfo.Kind]] + "/namespaces/"
+	LINK := "https://" + OpenMCPAPIServer + apiGroup[KindMap[metainfo.Kind]] + "/namespaces/"
 
 	if metainfo.Metadata.Namespace == "" {
 		LINK += "default"
@@ -322,7 +322,7 @@ func CreateLinkParser(metainfo *MetaInfo) string {
 	return LINK
 }
 func ApplyLinkParser(metainfo *MetaInfo) string {
-	LINK := "http://" + OpenMCPAPIServer + apiGroup[KindMap[metainfo.Kind]] + "/namespaces/"
+	LINK := "https://" + OpenMCPAPIServer + apiGroup[KindMap[metainfo.Kind]] + "/namespaces/"
 
 	if metainfo.Metadata.Namespace == "" {
 		LINK += "default"
@@ -341,7 +341,7 @@ func ApplyLinkParser(metainfo *MetaInfo) string {
 	return LINK
 }
 func GetLinkParser(resourceKind, resourceName, resourceNamespace, clusterContext string) string {
-	LINK := "http://" + OpenMCPAPIServer
+	LINK := "https://" + OpenMCPAPIServer
 	LINK += apiGroup[ResourceMap[resourceKind]]
 
 	if contains(noNamespaceResources, ResourceMap[resourceKind]) {
@@ -373,7 +373,7 @@ func GetLinkParser(resourceKind, resourceName, resourceNamespace, clusterContext
 	return LINK
 }
 func LogLinkParser(resourceKind, resourceName, clusterContext string) string {
-	LINK := "http://" + OpenMCPAPIServer
+	LINK := "https://" + OpenMCPAPIServer
 	LINK += apiGroup[ResourceMap[resourceKind]]
 
 	LINK += "/namespaces"
@@ -394,7 +394,7 @@ func LogLinkParser(resourceKind, resourceName, clusterContext string) string {
 	return LINK
 }
 func ExecLinkParser(resourceName string, clusterContext string) string {
-	LINK := "http://" + OpenMCPAPIServer
+	LINK := "https://" + OpenMCPAPIServer
 	//LINK += "/omcpexec"
 	LINK += apiGroup[ResourceMap["pods"]]
 
@@ -456,7 +456,7 @@ func DeleteLinkParser(metainfo *MetaInfo, metainfoKindType string) string {
 		kindtype = ResourceMap[metainfo.Kind]
 	}
 
-	LINK := "http://" + OpenMCPAPIServer + apiGroup[kindtype] + "/namespaces/"
+	LINK := "https://" + OpenMCPAPIServer + apiGroup[kindtype] + "/namespaces/"
 
 	if metainfo.Metadata.Namespace == "" {
 		LINK += "default"

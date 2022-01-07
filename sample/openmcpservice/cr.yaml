@@ -10,5 +10,5 @@ spec:
       ports:
       - name: http
         port: 80
-  labelselector:
-    app: openmcp-nginx
+      selector:
+        app: openmcp-nginx

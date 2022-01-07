@@ -85,7 +85,7 @@ func (h *HttpManager) ApiHandler(w http.ResponseWriter, r *http.Request) {
 		APISERVER := ""
 		TOKEN := ""
 		clusterName := clusterNames[0]
-	RESTART:
+		//RESTART:
 		if clusterName == "openmcp" {
 			APISERVER = h.ClusterManager.Host_config.Host
 			TOKEN = h.ClusterManager.Host_config.BearerToken
@@ -134,12 +134,13 @@ func (h *HttpManager) ApiHandler(w http.ResponseWriter, r *http.Request) {
 			// handle err
 			omcplog.V(0).Info(err)
 			h.ClusterManager = clusterManager.NewClusterManager()
-			goto RESTART
+			return
+			//goto RESTART
 		}
 		defer resp.Body.Close()
 
 		if resp.Status >= "400" {
-			omcplog.V(0).Info("resp.Status:", resp.Status)
+			omcplog.V(0).Info("clusterName:", clusterName, " / resp.Status:", resp.Status)
 			return
 
 		}

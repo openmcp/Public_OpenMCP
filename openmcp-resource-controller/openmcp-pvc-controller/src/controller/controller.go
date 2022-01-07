@@ -14,22 +14,24 @@ limitations under the License.
 package openmcppvc
 
 import (
-	"admiralty.io/multicluster-controller/pkg/reference"
 	"context"
 	"fmt"
-	v1 "k8s.io/api/core/v1"
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 	"strconv"
 
+	"admiralty.io/multicluster-controller/pkg/reference"
+	v1 "k8s.io/api/core/v1"
+
 	"k8s.io/apimachinery/pkg/api/errors"
+
+	"openmcp/openmcp/apis"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
-	"openmcp/openmcp/apis"
-	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -166,21 +168,42 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		pvc := r.setPVCResourceStruct(req, opvc_instance)
 		cluster_map := make(map[string]int32)
 
-		for _, clustername := range opvc_instance.Spec.Clusters {
-			foundpvc := &v1.PersistentVolumeClaim{}
-			cluster_client := cm.Cluster_genClients[clustername]
+		if len(opvc_instance.Spec.Clusters) != 0 {
+			for _, clustername := range opvc_instance.Spec.Clusters {
+				foundpvc := &v1.PersistentVolumeClaim{}
+				cluster_client := cm.Cluster_genClients[clustername]
 
-			err = cluster_client.Get(context.TODO(), foundpvc, opvc_instance.Namespace, opvc_instance.Name)
-			if err != nil && errors.IsNotFound(err) {
-				//create
-				command := "create"
-				_, err_sync := r.sendSync(pvc, command, clustername)
-				cluster_map[clustername] = 1
-				if err_sync != nil {
-					return reconcile.Result{}, err_sync
+				err = cluster_client.Get(context.TODO(), foundpvc, opvc_instance.Namespace, opvc_instance.Name)
+				if err != nil && errors.IsNotFound(err) {
+					//create
+					command := "create"
+					_, err_sync := r.sendSync(pvc, command, clustername)
+					cluster_map[clustername] = 1
+					if err_sync != nil {
+						return reconcile.Result{}, err_sync
+					}
+
+					fmt.Println("Success to Create PVC in ", clustername)
 				}
+			}
+		} else {
+			for _, cluster := range cm.Cluster_list.Items {
+				clustername := cluster.Name
+				foundpvc := &v1.PersistentVolumeClaim{}
+				cluster_client := cm.Cluster_genClients[clustername]
 
-				fmt.Println("Success to Create PVC in ", clustername)
+				err = cluster_client.Get(context.TODO(), foundpvc, opvc_instance.Namespace, opvc_instance.Name)
+				if err != nil && errors.IsNotFound(err) {
+					//create
+					command := "create"
+					_, err_sync := r.sendSync(pvc, command, clustername)
+					cluster_map[clustername] = 1
+					if err_sync != nil {
+						return reconcile.Result{}, err_sync
+					}
+
+					fmt.Println("Success to Create PVC in ", clustername)
+				}
 			}
 		}
 

@@ -46,7 +46,7 @@ func (pl *CheckNeededResources) Filter(newPod *ketiresource.Pod, clusterInfo *ke
 			return true
 		}
 	}
-	omcplog.V(4).Info("CheckNeededResources False ")
+	omcplog.V(3).Info("CheckNeededResources False ")
 	elapsedTime := time.Since(startTime)
 	omcplog.V(3).Infof("CheckNeededResources Time [%v]", elapsedTime)
 	return false

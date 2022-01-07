@@ -1,0 +1,16 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPService
+metadata:
+  name: datacore-ui
+  namespace: smartcity
+  labels:
+    app: datacore-ui
+spec:
+  template:
+    spec:
+      ports:
+        - name: "80"
+          port: 80
+          targetPort: 8080
+      selector:
+        app: datacore-ui

@@ -14,23 +14,25 @@ limitations under the License.
 package openmcppv
 
 import (
-	"admiralty.io/multicluster-controller/pkg/reference"
 	"context"
 	"fmt"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 	"strconv"
 
+	"admiralty.io/multicluster-controller/pkg/reference"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+
 	"k8s.io/apimachinery/pkg/api/errors"
+
+	"openmcp/openmcp/apis"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
-	"openmcp/openmcp/apis"
-	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -172,27 +174,52 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 		pv := r.setPVResourceStruct(req, opv_instance)
 		cluster_map := make(map[string]int32)
+		if len(opv_instance.Spec.Clusters) != 0 {
+			for _, clustername := range opv_instance.Spec.Clusters {
+				type ObjectKey = types.NamespacedName
+				foundpv := &v1.PersistentVolume{}
 
-		for _, clustername := range opv_instance.Spec.Clusters {
-			type ObjectKey = types.NamespacedName
-			foundpv := &v1.PersistentVolume{}
+				cluster_client := cm.Cluster_genClients[clustername]
+				err = cluster_client.Get(context.TODO(), foundpv, opv_instance.Namespace, opv_instance.Name)
 
-			cluster_client := cm.Cluster_genClients[clustername]
-			err = cluster_client.Get(context.TODO(), foundpv, opv_instance.Namespace, opv_instance.Name)
+				//cluster_client := r.ghosts[clustername]
+				//err = cluster_client.Get(context.TODO(), ObjectKey{Namespace: opv_instance.Namespace, Name: opv_instance.Name}, foundpv)
 
-			//cluster_client := r.ghosts[clustername]
-			//err = cluster_client.Get(context.TODO(), ObjectKey{Namespace: opv_instance.Namespace, Name: opv_instance.Name}, foundpv)
+				if err != nil && errors.IsNotFound(err) {
+					//create
+					command := "create"
+					_, err_sync := r.sendSync(pv, command, clustername)
+					cluster_map[clustername] = 1
+					if err_sync != nil {
+						return reconcile.Result{}, err_sync
+					}
 
-			if err != nil && errors.IsNotFound(err) {
-				//create
-				command := "create"
-				_, err_sync := r.sendSync(pv, command, clustername)
-				cluster_map[clustername] = 1
-				if err_sync != nil {
-					return reconcile.Result{}, err_sync
+					fmt.Println("Success to Create PV in ", clustername)
 				}
+			}
+		} else {
+			for _, cluster := range cm.Cluster_list.Items {
+				clustername := cluster.Name
+				type ObjectKey = types.NamespacedName
+				foundpv := &v1.PersistentVolume{}
 
-				fmt.Println("Success to Create PV in ", clustername)
+				cluster_client := cm.Cluster_genClients[clustername]
+				err = cluster_client.Get(context.TODO(), foundpv, opv_instance.Namespace, opv_instance.Name)
+
+				//cluster_client := r.ghosts[clustername]
+				//err = cluster_client.Get(context.TODO(), ObjectKey{Namespace: opv_instance.Namespace, Name: opv_instance.Name}, foundpv)
+
+				if err != nil && errors.IsNotFound(err) {
+					//create
+					command := "create"
+					_, err_sync := r.sendSync(pv, command, clustername)
+					cluster_map[clustername] = 1
+					if err_sync != nil {
+						return reconcile.Result{}, err_sync
+					}
+
+					fmt.Println("Success to Create PV in ", clustername)
+				}
 			}
 		}
 

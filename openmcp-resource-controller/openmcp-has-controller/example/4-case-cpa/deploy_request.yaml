@@ -6,8 +6,6 @@ metadata:
   labels:
     app: php-apache
 spec:
-  labelselector:
-    app: php-apache
   template:
     spec:
       ports:

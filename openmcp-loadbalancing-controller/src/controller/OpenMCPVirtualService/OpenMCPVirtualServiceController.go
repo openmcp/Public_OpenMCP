@@ -115,8 +115,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	err := r.live.Get(context.TODO(), req.NamespacedName, ovs)
 	if err != nil && errors.IsNotFound(err) {
 
-		omcplog.V(2).Info("[Delete Detect]")
-		omcplog.V(2).Info("Delete VirtualService")
+		omcplog.V(4).Info("[Delete Detect]")
+		omcplog.V(4).Info("Delete VirtualService")
 		obj := &v1alpha3.VirtualService{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      req.Name,
@@ -195,7 +195,7 @@ func getLocClusters() []LocCluster {
 	ocList, err := cm.Crd_client.OpenMCPCluster("openmcp").List(v1.ListOptions{})
 
 	if err != nil {
-		fmt.Println("OpenMCPClusterList err : ", err)
+		omcplog.V(0).Info("OpenMCPClusterList err : ", err)
 	}
 
 	for _, oc := range ocList.Items {
@@ -479,7 +479,7 @@ func createVsHttpRoute(ovsHttpRoute *networkingv1alpha3.HTTPRouteDestination, i 
 				svc.Spec.Selector,
 			),
 		}
-		omcplog.V(2).Info("Find Service '", svcName, "'in '", locCluster.clusterName, "'")
+		omcplog.V(4).Info("Find Service '", svcName, "'in '", locCluster.clusterName, "'")
 		podList := &corev1.PodList{}
 		err = cm.Cluster_genClients[locCluster.clusterName].List(context.TODO(), podList, svcNS, listOption)
 		if len(podList.Items) == 0 {
@@ -552,7 +552,7 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 				svc := &corev1.Service{}
 				err = cm.Cluster_genClients[clusterName].Get(context.TODO(), svc, svcNS, svcName)
 				if err != nil && errors.IsNotFound(err) {
-					fmt.Println("!!!! [Score Calcuation] Cluster: ", clusterName, " is Not Exist Svc : '", svcName, "(", svcNS, ")'")
+					omcplog.V(0).Info("!!!! [Score Calcuation] Cluster: ", clusterName, " is Not Exist Svc : '", svcName, "(", svcNS, ")'")
 					return
 				}
 
@@ -564,7 +564,7 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 				}
 				err = cm.Cluster_genClients[clusterName].List(context.TODO(), podList, svcNS, listOption)
 				if err != nil && errors.IsNotFound(err) {
-					fmt.Println("!!!! [Score Calcuation] Cluster: ", clusterName, " is Not Exist Pod about Svc: '", svcName, "(", svcNS, ")', LabelSelector: '", svc.Spec.Selector, "'")
+					omcplog.V(0).Info("!!!! [Score Calcuation] Cluster: ", clusterName, " is Not Exist Pod about Svc: '", svcName, "(", svcNS, ")', LabelSelector: '", svc.Spec.Selector, "'")
 					return
 				}
 
@@ -605,7 +605,7 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 
 									cluster_X_TotalWeight = cluster_X_TotalWeight + float64(grpcResponse.Weight)
 
-									fmt.Println("*** [Score Calcuation]", fromRegion, "/", fromZone, " -> ", toRegion, "/", toZone, "(", clusterName, "/", svcNS, "/", pod.Name, "): ", grpcResponse.Weight)
+									omcplog.V(3).Info("*** [Score Calcuation]", fromRegion, "/", fromZone, " -> ", toRegion, "/", toZone, "(", clusterName, "/", svcNS, "/", pod.Name, "): ", grpcResponse.Weight)
 									break Loop1
 								}
 							}
@@ -623,7 +623,7 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 					clusterWeightSum += cluster_X_AVG
 					mutex.Unlock()
 
-					fmt.Println("*** ==> Cluster Score AVG:", cluster_X_AVG)
+					omcplog.V(3).Info("*** ==> Cluster Score AVG:", cluster_X_AVG)
 					//fmt.Println("----------------------------------")
 				}
 
@@ -643,22 +643,22 @@ func setWeight(vsHttpRoutes []*networkingv1alpha3.HTTPRouteDestination, fromRegi
 		if clusterName == "" {
 			return
 		}
-		omcplog.V(0).Info("clusterName: ", clusterName)
+		omcplog.V(3).Info("clusterName: ", clusterName)
 		var orgWeight float64 = 0
 		if clusterWeightSum != 0 {
 			orgWeight = clusterWeight[clusterName] / clusterWeightSum * 100
 		}
 
-		omcplog.V(0).Info("clusterWeight[clusterName]: ", clusterWeight[clusterName])
-		omcplog.V(0).Info("clusterWeightSum: ", clusterWeightSum)
-		omcplog.V(0).Info("orgWeight: ", orgWeight)
+		omcplog.V(3).Info("clusterWeight[clusterName]: ", clusterWeight[clusterName])
+		omcplog.V(3).Info("clusterWeightSum: ", clusterWeightSum)
+		omcplog.V(3).Info("orgWeight: ", orgWeight)
 		var primeNumber float64 = orgWeight - float64(int(orgWeight))
 
 		orgClusterPrimeNumbers = append(orgClusterPrimeNumbers, ClusterPrimeNumber{clusterName, primeNumber, 0})
 
 		weight := int32(math.Floor(orgWeight))
 		vsHttpRoute.Weight = weight
-		omcplog.V(0).Info("vsHttpRoute.Weight : ", weight)
+		omcplog.V(3).Info("vsHttpRoute.Weight : ", weight)
 
 		totalWeight += weight
 

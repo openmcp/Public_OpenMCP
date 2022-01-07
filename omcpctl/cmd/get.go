@@ -19,15 +19,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/ghodss/yaml"
-	"github.com/spf13/cobra"
 	"io/ioutil"
 	"openmcp/openmcp/omcpctl/apiServerMethod"
 	"openmcp/openmcp/omcpctl/resource"
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"strings"
-)
 
+	"github.com/ghodss/yaml"
+	"github.com/spf13/cobra"
+)
 
 // getCmd represents the get command
 var getCmd = &cobra.Command{
@@ -65,21 +65,20 @@ omcpctl get ohas <OHASNAME> -o yaml`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			fmt.Println("Run 'omcpctl get --help' to view all commands")
-		}else {
+		} else {
 			getResource(args)
 		}
 	},
 }
 
-
-func getMetaInfo(body []byte) (cobrautil.MetaInfo, error){
+func getMetaInfo(body []byte) (cobrautil.MetaInfo, error) {
 	var metainfo cobrautil.MetaInfo
 	err := yaml.Unmarshal(body, &metainfo)
 	return metainfo, err
 }
 
 func getResource(args []string) {
-	if len(args) == 0 && cobrautil.Option_file == ""{
+	if len(args) == 0 && cobrautil.Option_file == "" {
 		fmt.Println("error: Required resource not specified.")
 		return
 	}
@@ -97,11 +96,11 @@ func getResource(args []string) {
 
 	c := cobrautil.GetKubeConfig("/root/.kube/config")
 	for _, kubecontext := range c.Contexts {
-		if cobrautil.Option_allcluster{
+		if cobrautil.Option_allcluster {
 
-		} else if cobrautil.Option_context != "" && cobrautil.Option_context != kubecontext.Name{
+		} else if cobrautil.Option_context != "" && cobrautil.Option_context != kubecontext.Name {
 			continue
-		} else if cobrautil.Option_context == "" && c.CurrentContext != kubecontext.Name{
+		} else if cobrautil.Option_context == "" && c.CurrentContext != kubecontext.Name {
 			continue
 		}
 		clusterContext := kubecontext.Context.Cluster
@@ -146,15 +145,11 @@ func getResource(args []string) {
 			}
 		}
 
-
-
 	}
-
-
 
 }
 
-func getCore(resourceKind, resourceName, resourceNamespace, clusterContext string) error{
+func getCore(resourceKind, resourceName, resourceNamespace, clusterContext string) error {
 	LINK := cobrautil.GetLinkParser(resourceKind, resourceName, resourceNamespace, clusterContext)
 	//fmt.Println(LINK)
 	fmt.Println()
@@ -165,7 +160,7 @@ func getCore(resourceKind, resourceName, resourceNamespace, clusterContext strin
 		return err
 	}
 
-	if cobrautil.Option_filetype == "yaml"{
+	if cobrautil.Option_filetype == "yaml" {
 		var prettyYaml map[string]interface{}
 
 		err = yaml.Unmarshal(body, &prettyYaml)
@@ -198,168 +193,168 @@ func getCore(resourceKind, resourceName, resourceNamespace, clusterContext strin
 			return cobrautil.NewError("")
 		}
 
-
 		//fmt.Println("metainfo.Kind : ",  metainfo.Kind)
-		//fmt.Println("Cluster : ", clusterContext)
+		fmt.Println("Cluster : ", clusterContext)
+		fmt.Println("metainfo.Kind : ", metainfo.Kind)
 
-		if  metainfo.Kind == "CronJob"{
+		if metainfo.Kind == "CronJob" {
 			resource.PrintCronJob(body)
-		} else if  metainfo.Kind == "CronJobList" {
+		} else if metainfo.Kind == "CronJobList" {
 			resource.PrintCronJobList(body)
-		} else if  metainfo.Kind == "DaemonSet"{
+		} else if metainfo.Kind == "DaemonSet" {
 			resource.PrintDaemonSet(body)
-		} else if  metainfo.Kind == "DaemonSetList"{
+		} else if metainfo.Kind == "DaemonSetList" {
 			resource.PrintDaemonSetList(body)
-		} else if  metainfo.Kind == "Deployment"{
+		} else if metainfo.Kind == "Deployment" {
 			resource.PrintDeployment(body)
-		} else if  metainfo.Kind == "DeploymentList" {
+		} else if metainfo.Kind == "DeploymentList" {
 			resource.PrintDeploymentList(body)
-		} else if  metainfo.Kind == "Job"{
+		} else if metainfo.Kind == "Job" {
 			resource.PrintJob(body)
-		} else if  metainfo.Kind == "JobList"{
+		} else if metainfo.Kind == "JobList" {
 			resource.PrintJobList(body)
-		} else if  metainfo.Kind == "Pod"{
+		} else if metainfo.Kind == "Pod" {
 			resource.PrintPod(body)
-		} else if  metainfo.Kind == "PodList"{
+		} else if metainfo.Kind == "PodList" {
 			resource.PrintPodList(body)
-		} else if  metainfo.Kind == "ReplicaSet"{
+		} else if metainfo.Kind == "ReplicaSet" {
 			resource.PrintReplicaSet(body)
-		} else if  metainfo.Kind == "ReplicaSetList"{
+		} else if metainfo.Kind == "ReplicaSetList" {
 			resource.PrintReplicaSetList(body)
-		} else if  metainfo.Kind == "ReplicaController"{
+		} else if metainfo.Kind == "ReplicaController" {
 			resource.PrintReplicationController(body)
-		} else if  metainfo.Kind == "ReplicaControllerList"{
+		} else if metainfo.Kind == "ReplicaControllerList" {
 			resource.PrintReplicationControllerList(body)
-		} else if  metainfo.Kind == "StatefulSet"{
+		} else if metainfo.Kind == "StatefulSet" {
 			resource.PrintStatefulSet(body)
-		} else if  metainfo.Kind == "StatefulSetList"{
+		} else if metainfo.Kind == "StatefulSetList" {
 			resource.PrintStatefulSetList(body)
-		} else if  metainfo.Kind == "Endpoints"{
+		} else if metainfo.Kind == "Endpoints" {
 			resource.PrintEndpoints(body)
-		} else if  metainfo.Kind == "EndpointsList"{
+		} else if metainfo.Kind == "EndpointsList" {
 			resource.PrintEndpointsList(body)
-		} else if  metainfo.Kind == "Ingress"{
+		} else if metainfo.Kind == "Ingress" {
 			resource.PrintIngress(body)
-		} else if  metainfo.Kind == "IngressList"{
+		} else if metainfo.Kind == "IngressList" {
 			resource.PrintIngressList(body)
-		} else if  metainfo.Kind == "Service"{
+		} else if metainfo.Kind == "Service" {
 			resource.PrintService(body)
-		} else if  metainfo.Kind == "ServiceList"{
+		} else if metainfo.Kind == "ServiceList" {
 			resource.PrintServiceList(body)
-		} else if  metainfo.Kind == "ConfigMap"{
+		} else if metainfo.Kind == "ConfigMap" {
 			resource.PrintConfigMap(body)
-		} else if  metainfo.Kind == "ConfigMapList"{
+		} else if metainfo.Kind == "ConfigMapList" {
 			resource.PrintConfigMapList(body)
-		} else if  metainfo.Kind == "Secret"{
+		} else if metainfo.Kind == "Secret" {
 			resource.PrintSecret(body)
-		} else if  metainfo.Kind == "SecretList"{
+		} else if metainfo.Kind == "SecretList" {
 			resource.PrintSecretList(body)
-		} else if  metainfo.Kind == "PersistentVolumeClaim"{
+		} else if metainfo.Kind == "PersistentVolumeClaim" {
 			resource.PrintPersistentVolumeClaim(body)
-		} else if  metainfo.Kind == "PersistentVolumeClaimList"{
+		} else if metainfo.Kind == "PersistentVolumeClaimList" {
 			resource.PrintPersistentVolumeClaimList(body)
-		} else if  metainfo.Kind == "StorageClass"{
+		} else if metainfo.Kind == "StorageClass" {
 			resource.PrintStorageClass(body)
-		} else if  metainfo.Kind == "StorageClassList"{
+		} else if metainfo.Kind == "StorageClassList" {
 			resource.PrintStorageClassList(body)
-		} else if  metainfo.Kind == "CustomResourceDefinition"{
+		} else if metainfo.Kind == "CustomResourceDefinition" {
 			resource.PrintCustomResourceDefinition(body)
-		} else if  metainfo.Kind == "CustomResourceDefinitionList"{
+		} else if metainfo.Kind == "CustomResourceDefinitionList" {
 			resource.PrintCustomResourceDefinitionList(body)
-		} else if  metainfo.Kind == "Event"{
+		} else if metainfo.Kind == "Event" {
 			resource.PrintEvent(body)
-		} else if  metainfo.Kind == "EventList"{
+		} else if metainfo.Kind == "EventList" {
 			resource.PrintEventList(body)
-		} else if  metainfo.Kind == "HorizontalPodAutoscaler"{
+		} else if metainfo.Kind == "HorizontalPodAutoscaler" {
 			resource.PrintHorizontalPodAutoscaler(body)
-		} else if  metainfo.Kind == "HorizontalPodAutoscalerList"{
+		} else if metainfo.Kind == "HorizontalPodAutoscalerList" {
 			resource.PrintHorizontalPodAutoscalerList(body)
-		} else if  metainfo.Kind == "VerticalPodAutoscaler"{
+		} else if metainfo.Kind == "VerticalPodAutoscaler" {
 			resource.PrintVerticalPodAutoscaler(body)
-		} else if  metainfo.Kind == "VerticalPodAutoscalerList"{
+		} else if metainfo.Kind == "VerticalPodAutoscalerList" {
 			resource.PrintVerticalPodAutoscalerList(body)
-		} else if  metainfo.Kind == "PodDisruptionBudget"{
+		} else if metainfo.Kind == "PodDisruptionBudget" {
 			resource.PrintPodDisruptionBudget(body)
-		} else if  metainfo.Kind == "PodDisruptionBudgetList"{
+		} else if metainfo.Kind == "PodDisruptionBudgetList" {
 			resource.PrintPodDisruptionBudgetList(body)
-		} else if  metainfo.Kind == "APIService"{
+		} else if metainfo.Kind == "APIService" {
 			resource.PrintAPIService(body)
-		} else if  metainfo.Kind == "APIServiceList"{
+		} else if metainfo.Kind == "APIServiceList" {
 			resource.PrintAPIServiceList(body)
-		} else if  metainfo.Kind == "ClusterRole"{
+		} else if metainfo.Kind == "ClusterRole" {
 			resource.PrintClusterRole(body)
-		} else if  metainfo.Kind == "ClusterRoleList"{
+		} else if metainfo.Kind == "ClusterRoleList" {
 			resource.PrintClusterRoleList(body)
-		} else if  metainfo.Kind == "ClusterRoleBinding"{
+		} else if metainfo.Kind == "ClusterRoleBinding" {
 			resource.PrintClusterRoleBinding(body)
-		} else if  metainfo.Kind == "ClusterRoleBindingList"{
+		} else if metainfo.Kind == "ClusterRoleBindingList" {
 			resource.PrintClusterRoleBindingList(body)
-		} else if  metainfo.Kind == "Namespace"{
+		} else if metainfo.Kind == "Namespace" {
 			resource.PrintNamespace(body)
-		} else if  metainfo.Kind == "NamespaceList"{
+		} else if metainfo.Kind == "NamespaceList" {
 			resource.PrintNamespaceList(body)
-		} else if  metainfo.Kind == "Node"{
+		} else if metainfo.Kind == "Node" {
 			resource.PrintNode(body)
-		} else if  metainfo.Kind == "NodeList"{
+		} else if metainfo.Kind == "NodeList" {
 			resource.PrintNodeList(body)
-		} else if  metainfo.Kind == "PersistentVolume"{
+		} else if metainfo.Kind == "PersistentVolume" {
 			resource.PrintPersistentVolume(body)
-		} else if  metainfo.Kind == "PersistentVolumeList"{
+		} else if metainfo.Kind == "PersistentVolumeList" {
 			resource.PrintPersistentVolumeList(body)
-		} else if  metainfo.Kind == "ResourceQuota"{
+		} else if metainfo.Kind == "ResourceQuota" {
 			resource.PrintResourceQuota(body)
-		} else if  metainfo.Kind == "ResourceQuotaList"{
+		} else if metainfo.Kind == "ResourceQuotaList" {
 			resource.PrintResourceQuotaList(body)
-		} else if  metainfo.Kind == "Role"{
+		} else if metainfo.Kind == "Role" {
 			resource.PrintRole(body)
-		} else if  metainfo.Kind == "RoleList"{
+		} else if metainfo.Kind == "RoleList" {
 			resource.PrintRoleList(body)
-		} else if  metainfo.Kind == "RoleBinding"{
+		} else if metainfo.Kind == "RoleBinding" {
 			resource.PrintRoleBinding(body)
-		} else if  metainfo.Kind == "RoleBindingList"{
+		} else if metainfo.Kind == "RoleBindingList" {
 			resource.PrintRoleBindingList(body)
-		} else if  metainfo.Kind == "ServiceAccount"{
+		} else if metainfo.Kind == "ServiceAccount" {
 			resource.PrintServiceAccount(body)
-		} else if  metainfo.Kind == "ServiceAccountList"{
+		} else if metainfo.Kind == "ServiceAccountList" {
 			resource.PrintServiceAccountList(body)
-		} else if  metainfo.Kind == "KubeFedCluster"{
+		} else if metainfo.Kind == "KubeFedCluster" {
 			resource.PrintKubeFedCluster(body)
-		} else if  metainfo.Kind == "KubeFedClusterList"{
+		} else if metainfo.Kind == "KubeFedClusterList" {
 			resource.PrintKubeFedClusterList(body)
-		} else if  metainfo.Kind == "OpenMCPDeployment"{
+		} else if metainfo.Kind == "OpenMCPDeployment" {
 			resource.PrintOpenMCPDeployment(body)
-		} else if  metainfo.Kind == "OpenMCPDeploymentList"{
+		} else if metainfo.Kind == "OpenMCPDeploymentList" {
 			resource.PrintOpenMCPDeploymentList(body)
-		} else if  metainfo.Kind == "OpenMCPService"{
+		} else if metainfo.Kind == "OpenMCPService" {
 			resource.PrintOpenMCPService(body)
-		} else if  metainfo.Kind == "OpenMCPServiceList"{
+		} else if metainfo.Kind == "OpenMCPServiceList" {
 			resource.PrintOpenMCPServiceList(body)
-		} else if  metainfo.Kind == "OpenMCPIngress"{
+		} else if metainfo.Kind == "OpenMCPIngress" {
 			resource.PrintOpenMCPIngress(body)
-		} else if  metainfo.Kind == "OpenMCPIngressList"{
+		} else if metainfo.Kind == "OpenMCPIngressList" {
 			resource.PrintOpenMCPIngressList(body)
-		} else if  metainfo.Kind == "OpenMCPHybridAutoScaler"{
+		} else if metainfo.Kind == "OpenMCPHybridAutoScaler" {
 			resource.PrintOpenMCPHybridAutoScaler(body)
-		} else if  metainfo.Kind == "OpenMCPHybridAutoScalerList"{
+		} else if metainfo.Kind == "OpenMCPHybridAutoScalerList" {
 			resource.PrintOpenMCPHybridAutoScalerList(body)
-		} else if  metainfo.Kind == "OpenMCPPolicy"{
+		} else if metainfo.Kind == "OpenMCPPolicy" {
 			resource.PrintOpenMCPPolicy(body)
-		} else if  metainfo.Kind == "OpenMCPPolicyList"{
+		} else if metainfo.Kind == "OpenMCPPolicyList" {
 			resource.PrintOpenMCPPolicyList(body)
-		} else if  metainfo.Kind == "OpenMCPConfigMap"{
+		} else if metainfo.Kind == "OpenMCPConfigMap" {
 			resource.PrintOpenMCPConfigMap(body)
-		} else if  metainfo.Kind == "OpenMCPConfigMapList"{
+		} else if metainfo.Kind == "OpenMCPConfigMapList" {
 			resource.PrintOpenMCPConfigMapList(body)
-		} else if  metainfo.Kind == "OpenMCPSecret"{
+		} else if metainfo.Kind == "OpenMCPSecret" {
 			resource.PrintOpenMCPSecret(body)
-		} else if  metainfo.Kind == "OpenMCPSecretList"{
+		} else if metainfo.Kind == "OpenMCPSecretList" {
 			resource.PrintOpenMCPSecretList(body)
-		} else if  metainfo.Kind == "OpenMCPDNSEndpoint"{
+		} else if metainfo.Kind == "OpenMCPDNSEndpoint" {
 			resource.PrintOpenMCPDNSEndpoint(body)
-		} else if  metainfo.Kind == "OpenMCPDNSEndpointList"{
+		} else if metainfo.Kind == "OpenMCPDNSEndpointList" {
 			resource.PrintOpenMCPDNSEndpointList(body)
 		} else {
-			fmt.Println("error: the server doesn't have a resource type \""+resourceKind+"\"")
+			fmt.Println("error: the server doesn't have a resource type \"" + resourceKind + "\"")
 			return cobrautil.NewError("")
 		}
 
@@ -380,11 +375,11 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// setCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	getCmd.Flags().StringVarP(&cobrautil.Option_filetype, "option","o", "", "input a option")
-	getCmd.Flags().StringVarP(&cobrautil.Option_context, "context","c","", "input a option")
-	getCmd.Flags().StringVarP(&cobrautil.Option_namespace, "namespace","n", "", "input a option")
-	getCmd.Flags().StringVarP(&cobrautil.Option_file, "file","f", "", "input a option")
-	getCmd.Flags().BoolVarP(&cobrautil.Option_allnamespace,"all-namespaces", "A", false, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
-	getCmd.Flags().BoolVarP(&cobrautil.Option_allcluster,"all-clusters", "C", false, "If present, list the requested object(s) across all clusters.")
+	getCmd.Flags().StringVarP(&cobrautil.Option_filetype, "option", "o", "", "input a option")
+	getCmd.Flags().StringVarP(&cobrautil.Option_context, "context", "c", "", "input a option")
+	getCmd.Flags().StringVarP(&cobrautil.Option_namespace, "namespace", "n", "", "input a option")
+	getCmd.Flags().StringVarP(&cobrautil.Option_file, "file", "f", "", "input a option")
+	getCmd.Flags().BoolVarP(&cobrautil.Option_allnamespace, "all-namespaces", "A", false, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
+	getCmd.Flags().BoolVarP(&cobrautil.Option_allcluster, "all-clusters", "C", false, "If present, list the requested object(s) across all clusters.")
 
 }

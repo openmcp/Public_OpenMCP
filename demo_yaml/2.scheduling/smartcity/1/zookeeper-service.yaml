@@ -1,0 +1,17 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPService
+metadata:
+  name: zookeeper
+  #namespace: smartcity
+  namespace: default
+  labels:
+    app: zookeeper
+spec:
+  template:
+    spec:
+      ports:
+        - name: "2181"
+          port: 2181
+          targetPort: 2181
+      selector:
+        app: zookeeper

@@ -1,3 +1,10 @@
+/*
+log 1레벨 결과
+2레벨 필터 & 스코어 결과 추가
+3레벨 필터 & 스코어 연산 과정 추가
+4레벨 연산과정에 대한 모든 로깅
+5레벨 디버깅관련 모든 로깅
+*/
 package predicates
 
 import (
@@ -20,7 +27,7 @@ func (pl *ClusterJoninCheck) Filter(newPod *ketiresource.Pod, clusterInfo *ketir
 	startTime := time.Now()
 	clusterList := clusterInfo.ClusterList
 	if clusterList == nil {
-		omcplog.V(4).Infof("That instance did not get information from crd cluster.")
+		omcplog.V(5).Infof("That instance did not get information from crd cluster.")
 	}
 	// joinCluster := make(map[string]bool)
 	for _, cluster := range clusterList.Items {

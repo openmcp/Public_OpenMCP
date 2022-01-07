@@ -31,11 +31,10 @@ import (
 )
 
 var live *cluster.Cluster
+var cm = clusterManager.NewClusterManager()
 
 func main() {
 	logLevel.KetiLogInit()
-
-	cm := clusterManager.NewClusterManager()
 
 	host_ctx := "openmcp"
 	namespace := "openmcp"

@@ -307,28 +307,32 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 			// }
 			found := &appsv1.Deployment{}
-			cluster_client := cm.Cluster_genClients[cluster_name]
-			err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+			if _, ok := cm.Cluster_genClients[cluster_name]; ok {
+				cluster_client := cm.Cluster_genClients[cluster_name]
+				err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 
-			if err != nil && errors.IsNotFound(err) {
-				// Delete Deployment Detected
-				omcplog.V(2).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
-				dep := r.deploymentForOpenMCPDeployment(req, instance, replica, cluster_name)
+				if err != nil && errors.IsNotFound(err) {
+					// Delete Deployment Detected
+					omcplog.V(2).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
+					dep := r.deploymentForOpenMCPDeployment(req, instance, replica, cluster_name)
 
-				command := "create"
-				omcplog.V(3).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
-				sync_req_name, err = r.sendSync(dep, command, cluster_name)
+					command := "create"
+					omcplog.V(3).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+command+", Replicas :", replica, " / ", instance.Status.Replicas, ")")
+					sync_req_name, err = r.sendSync(dep, command, cluster_name)
 
-				if err != nil {
-					return reconcile.Result{}, err
+					if err != nil {
+						return reconcile.Result{}, err
+					}
+
+					omcplog.V(2).Info("Notify Service Controller")
+					r.NotifyService(instance.Spec.Labels, instance.Namespace)
+
+					omcplog.V(2).Info("Notify HybridAutoScaler Controller")
+					r.NotifyHAS(instance.Name, instance.Namespace)
+
 				}
-
-				omcplog.V(2).Info("Notify Service Controller")
-				r.NotifyService(instance.Spec.Labels, instance.Namespace)
-
-				omcplog.V(2).Info("Notify HybridAutoScaler Controller")
-				r.NotifyHAS(instance.Name, instance.Namespace)
-
+			} else {
+				omcplog.V(0).Info("err GenClients", cluster_name)
 			}
 
 		}
@@ -407,7 +411,7 @@ func (r *reconciler) NotifyService(label_map map[string]string, namespace string
 	omcplog.V(2).Info("[OpenMCP Deployment] Find Target Service")
 	r.live.List(context.TODO(), osvc_list, listOptions)
 	for _, osvc := range osvc_list.Items {
-		for k, v := range osvc.Spec.LabelSelector {
+		for k, v := range osvc.Spec.Template.Spec.Selector {
 			omcplog.V(4).Info("[OpenMCP Deployment] Find Target Label : ", k, " / ", v)
 			if label_map[k] == v {
 				omcplog.V(2).Info("[OpenMCP Deployment] Notify Service Controller [", osvc.Name, "]")

@@ -4,8 +4,6 @@ metadata:
   name: iot-gateway-svc
   namespace: openmcp
 spec:
-  labelselector:
-    component: iot-gateway-svc
   template:
     spec:
       type: LoadBalancer
@@ -19,4 +17,5 @@ spec:
       - port: 80
         targetPort: 7070
         name: sysbench
-
+      selector:
+        component: iot-gateway-svc

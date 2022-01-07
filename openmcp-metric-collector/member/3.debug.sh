@@ -1,6 +1,6 @@
 #/bin/bash
 NS=openmcp
-CLUSTER=cluster01
+CLUSTER=cluster07
 NAME=$(kubectl get pod -n $NS --context $CLUSTER | grep -E 'cluster-metric-collector' | awk '{print $1}')
 
 #echo "Exec Into '"$NAME"'"

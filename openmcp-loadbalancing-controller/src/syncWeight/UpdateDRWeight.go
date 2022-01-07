@@ -3,7 +3,6 @@ package syncWeight
 import (
 	//"fmt"
 
-	"fmt"
 	"os"
 
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -69,7 +68,7 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 			NodeList = map[string]nodeInfo{}
 
 			if err != nil {
-				fmt.Println("OpenMCPClusterList err : ", err)
+				omcplog.V(0).Info("OpenMCPClusterList err : ", err)
 			}
 			for _, oc := range ocList.Items {
 				clustername := oc.Name
@@ -132,7 +131,7 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 			osvcList, err_osvc := cm.Crd_client.OpenMCPService(corev1.NamespaceAll).List(v1.ListOptions{})
 
 			if err_osvc == nil {
-				//fmt.Println("osvcList : ", osvcList)
+				omcplog.V(2).Info("osvcList : ", osvcList)
 			} else {
 				omcplog.V(2).Info(err_osvc)
 			}
@@ -146,6 +145,9 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 					cluster_client := cm.Cluster_genClients[mcluster.Name]
 
 					if cm.Cluster_genClients[mcluster.Name] != nil {
+
+						omcplog.V(2).Info("***********",osvc.Name," selector :", osvc.Spec.Template.Spec.Selector)
+
 						listOption := &client.ListOptions{
 							LabelSelector: labels.SelectorFromSet(
 								osvc.Spec.Template.Spec.Selector,
@@ -174,7 +176,8 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 						omcplog.V(0).Info("err!! : ", mcluster.Name, " cluster client has 'nil'")
 					}
 				}
-				fmt.Println("target_node_list : ", target_node_list)
+
+				omcplog.V(2).Info("[",osvc.Name,"] target_node_list : ", target_node_list)
 				if len(target_node_list) > 0 {
 					tmp_rz := map[string][]DRWeight{}
 					for rz, _ := range node_list_all { //from
@@ -388,7 +391,7 @@ func analyzeScore(podname string, namespace string, from string, to string, grpc
 	tmp_result := 0
 
 	if err_grpc != nil {
-		omcplog.V(2).Info(err_grpc)
+		omcplog.V(2).Info("[ ",podname," err ] ",err_grpc)
 	} else {
 		tmp_result = int(result.Weight)
 	}

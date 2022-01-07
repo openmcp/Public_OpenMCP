@@ -37,7 +37,7 @@ spec:
             - name: GRPC_PORT
               value: "3212"
             - name: CLUSTER_NAME
-              value: "cluster6"
+              value: "cluster06"
             - name: OPERATOR_NAME
               value: "openmcp-metric-collector"
       tolerations:

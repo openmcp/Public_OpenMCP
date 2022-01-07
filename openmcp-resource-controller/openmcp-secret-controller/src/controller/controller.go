@@ -132,22 +132,24 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				continue
 			}
 			found := &corev1.Secret{}
-			cluster_client := cm.Cluster_genClients[cluster_name]
-			err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+			if _, ok := cm.Cluster_genClients[cluster_name]; ok {
+				cluster_client := cm.Cluster_genClients[cluster_name]
+				err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 
-			if err != nil && errors.IsNotFound(err) {
-				// Delete Service Detected
-				omcplog.V(2).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
-				sec := r.secretForOpenMCPSecret(req, instance)
+				if err != nil && errors.IsNotFound(err) {
+					// Delete Service Detected
+					omcplog.V(2).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
+					sec := r.secretForOpenMCPSecret(req, instance)
 
-				command := "create"
-				omcplog.V(3).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+command+", Replicas :", replica, ")")
-				_, err = r.sendSync(sec, command, cluster_name)
+					command := "create"
+					omcplog.V(3).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+command+", Replicas :", replica, ")")
+					_, err = r.sendSync(sec, command, cluster_name)
 
-				if err != nil {
-					return reconcile.Result{}, err
+					if err != nil {
+						return reconcile.Result{}, err
+					}
+
 				}
-
 			}
 
 		}

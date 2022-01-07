@@ -37,34 +37,31 @@ func (pl *PodFitsResources) Filter(newPod *ketiresource.Pod, clusterInfo *ketire
 		node_result := true
 		// check if node has enough Memory
 		if node.AllocatableResource.Memory <= newPod.RequestedResource.Memory {
-			omcplog.V(3).Infof("node memory [%v]", node.AllocatableResource.Memory)
+			omcplog.V(5).Infof("node memory [%v]", node.AllocatableResource.Memory)
 			node_result = false
 		}
 		// check if node has enough EphemeralStorage
 		if node.AllocatableResource.EphemeralStorage <= newPod.RequestedResource.EphemeralStorage {
-			omcplog.V(3).Infof("EphemeralStorage [%v]", node.AllocatableResource.EphemeralStorage)
+			omcplog.V(5).Infof("EphemeralStorage [%v]", node.AllocatableResource.EphemeralStorage)
 			node_result = false
 		}
 		if node.AllocatableResource.MilliCPU <= newPod.RequestedResource.MilliCPU {
-			omcplog.V(3).Infof("MilliCPU [%v]", node.AllocatableResource.MilliCPU)
+			omcplog.V(5).Infof("MilliCPU [%v]", node.AllocatableResource.MilliCPU)
 			node_result = false
 		}
 		if node_result == true {
 			node.AllocatableResource.EphemeralStorage -= newPod.RequestedResource.EphemeralStorage
-			// omcplog.V(5).Info("EphemeralStorage = ", node.cAllocatableResource.EphemeralStorage)
 			node.AllocatableResource.MilliCPU -= newPod.RequestedResource.MilliCPU
-			// omcplog.V(5).Info("MilliCPU = ", node.AllocatableResource.MilliCPU)
+
 			node.AllocatableResource.Memory -= newPod.RequestedResource.Memory
-			//omcplog.V(5).Info("RequestedResource = ", newPod.RequestedResource.MilliCPU)
-			//omcplog.V(5).Info("MilliCPU = ", node.AllocatableResource.MilliCPU)
-			//omcplog.V(3).Info("pod fits resource true ")
+			omcplog.V(4).Info("pod fits resource true ")
 			elapsedTime := time.Since(startTime)
 			omcplog.V(3).Infof("pod fits resource Time [%v]", elapsedTime)
 			return true
 
 		}
 	}
-	omcplog.V(3).Info("pod fits resource false  ")
+	omcplog.V(4).Info("pod fits resource false  ")
 	elapsedTime := time.Since(startTime)
 	omcplog.V(3).Infof("pod fits resource Time [%v]", elapsedTime)
 	return false

@@ -178,24 +178,28 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			// 	r.updateService(req, cm, instance)
 			// }
 			found := &corev1.Service{}
-			cluster_client := cm.Cluster_genClients[cluster_name]
-			err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+			if _, ok := cm.Cluster_genClients[cluster_name]; ok {
+				cluster_client := cm.Cluster_genClients[cluster_name]
+				err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
 
-			if err != nil && errors.IsNotFound(err) {
-				// Delete Service Detected
-				omcplog.V(2).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
-				svc := r.serviceForOpenMCPService(req, instance, cluster_name)
+				if err != nil && errors.IsNotFound(err) {
+					// Delete Service Detected
+					omcplog.V(2).Info("Cluster '"+cluster_name+"' ReDeployed => ", replica)
+					svc := r.serviceForOpenMCPService(req, instance, cluster_name)
 
-				command := "create"
-				omcplog.V(3).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+command+", Replicas :", replica, ")")
-				sync_req_name, err = r.sendSync(svc, command, cluster_name)
+					command := "create"
+					omcplog.V(3).Info("SyncResource Create (ClusterName : "+cluster_name+", Command : "+command+", Replicas :", replica, ")")
+					sync_req_name, err = r.sendSync(svc, command, cluster_name)
 
-				r.IngressNotify(instance.Name, instance.Namespace)
+					r.IngressNotify(instance.Name, instance.Namespace)
 
-				if err != nil {
-					return reconcile.Result{}, err
+					if err != nil {
+						return reconcile.Result{}, err
+					}
+
+				} else {
+					omcplog.V(0).Info("err GenClients", cluster_name)
 				}
-
 			}
 
 		}
@@ -221,7 +225,7 @@ func (r *reconciler) serviceForOpenMCPService(req reconcile.Request, m *resource
 	}
 
 	deepcopy.Copy(&svc.Spec, &m.Spec.Template.Spec)
-	deepcopy.Copy(&svc.Spec.Selector, &m.Spec.LabelSelector)
+	// deepcopy.Copy(&svc.Spec.Selector, &m.Spec.LabelSelector)
 
 	r.ApplyClusterLabel(svc, clusterName)
 
@@ -343,7 +347,7 @@ func (r *reconciler) createService(req reconcile.Request, cm *clusterManager.Clu
 		cluster_map[cluster.Name] = 0
 	}
 
-	label_include_cluster_list := r.getClusterIncludeLabel(instance.Spec.LabelSelector, instance.Namespace)
+	label_include_cluster_list := r.getClusterIncludeLabel(instance.Spec.Template.Labels, instance.Namespace)
 	//clusterList := cm.Cluster_list
 
 	//for _, cluster := range clusterList.Items {
@@ -406,7 +410,7 @@ func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.Clu
 	// 		return err
 	// 	}
 	// }
-	label_include_cluster_list := r.getClusterIncludeLabel(instance.Spec.LabelSelector, instance.Namespace)
+	label_include_cluster_list := r.getClusterIncludeLabel(instance.Spec.Template.Labels, instance.Namespace)
 
 	for _, cluster := range cm.Cluster_list.Items {
 		cluster_client := cm.Cluster_genClients[cluster.Name]

@@ -220,8 +220,8 @@ func (r *reconciler) namespaceForOpenMCPNamespace(req reconcile.Request, m *reso
 	newLabel := m.Labels
 	if newLabel == nil {
 		newLabel = make(map[string]string)
+		newLabel["istio-injection"] = "disabled"
 	}
-	newLabel["istio-injection"] = "enabled"
 
 	dep := &corev1.Namespace{
 		TypeMeta: metav1.TypeMeta{
@@ -390,8 +390,8 @@ func CheckClusterNamespaceStatus(myClusterManager *clusterManager.ClusterManager
 							newLabel := ons.Labels
 							if newLabel == nil {
 								newLabel = make(map[string]string)
+								newLabel["istio-injection"] = "disabled"
 							}
-							newLabel["istio-injection"] = "enabled"
 
 							CreateNSInstance := &corev1.Namespace{
 								TypeMeta: metav1.TypeMeta{
@@ -464,8 +464,8 @@ func CreateNSFromONS(ons resourcev1alpha1.OpenMCPNamespace) *corev1.Namespace {
 	newLabel := ons.Labels
 	if newLabel == nil {
 		newLabel = make(map[string]string)
+		newLabel["istio-injection"] = "disabled"
 	}
-	newLabel["istio-injection"] = "enabled"
 
 	ns := &corev1.Namespace{
 		TypeMeta: metav1.TypeMeta{

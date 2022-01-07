@@ -1,0 +1,27 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPPolicy
+metadata:
+  name: lb-scoring-weight
+  namespace: openmcp
+spec:
+  template:
+    spec:
+      targetController:
+        kind: OpenMCPLoadbalancingController
+      policies:
+        - type: GeoRate
+          value:
+            - "0.3"
+        - type: Period
+          value:
+            - "5.0"
+        - type: RegionZoneMatchedScore
+          value:
+            - "200"
+        - type: OnlyRegionMatchedScore
+          value:
+            - "100"
+        - type: NoRegionZoneMatchedScore
+          value:
+            - "0"
+  policyStatus: Enabled

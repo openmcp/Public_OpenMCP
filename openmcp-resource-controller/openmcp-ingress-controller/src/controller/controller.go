@@ -180,21 +180,24 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			}
 			cluster_name := k
 			found := &extv1b1.Ingress{}
-			cluster_client := cm.Cluster_genClients[cluster_name]
-			err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
-			if err != nil && errors.IsNotFound(err) {
-				// Delete Ingress Detected
-				omcplog.V(3).Info("Cluster '" + cluster_name + "' ReDeployed")
-				_, ing := r.ingressForOpenMCPIngress(req, instance)
+			if _, ok := cm.Cluster_genClients[cluster_name]; ok {
+				cluster_client := cm.Cluster_genClients[cluster_name]
+				err = cluster_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+				if err != nil && errors.IsNotFound(err) {
+					// Delete Ingress Detected
+					omcplog.V(3).Info("Cluster '" + cluster_name + "' ReDeployed")
+					_, ing := r.ingressForOpenMCPIngress(req, instance)
 
-				command := "create"
-				_, err = r.sendSync(ing, command, cluster_name)
+					command := "create"
+					_, err = r.sendSync(ing, command, cluster_name)
 
-				if err != nil {
-					return reconcile.Result{}, err
+					if err != nil {
+						return reconcile.Result{}, err
+					}
+
 				}
-
 			}
+
 		}
 	}
 

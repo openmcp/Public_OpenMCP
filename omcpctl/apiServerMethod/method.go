@@ -1,19 +1,20 @@
 package apiServerMethod
 
 import (
+	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/ghodss/yaml"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
 	cobrautil "openmcp/openmcp/omcpctl/util"
 	"os"
-	"strings"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/ghodss/yaml"
 )
 
 var APP_KEY = "openmcp-apiserver"
@@ -27,20 +28,20 @@ func saveTokenToFile(token string) {
 	defer f.Close()
 
 	err = f.Truncate(0)
-	_, err = fmt.Fprintln(f, "token: " + token)
+	_, err = fmt.Fprintln(f, "token: "+token)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
-func getTokenWithFile() (string, error){
+func getTokenWithFile() (string, error) {
 	// token file
 	filename := "/var/lib/omcpctl/token"
 
 	// If Token File is not Exist
 	// Then Get New Token
 	_, err := os.Stat(filename)
-	if os.IsNotExist(err){
-		fmt.Println(filename+ " file is not")
+	if os.IsNotExist(err) {
+		fmt.Println(filename + " file is not")
 		return "", cobrautil.NewError("File not exist")
 	}
 
@@ -78,12 +79,11 @@ func getTokenWithFile() (string, error){
 	// exp is a value that indicates the validity period of the token
 	exp := time.Duration(claims["exp"].(float64)) * time.Nanosecond
 
-	exp_sec := int(exp.Seconds()*1000000000)
+	exp_sec := int(exp.Hours() * 1)
 	cur_sec := int(time.Now().Unix())
 
-
 	// If the expiration time is 300 seconds before, a new token is issued.
-	if exp_sec - cur_sec < 300 {
+	if exp_sec-cur_sec < 300 {
 		return "", cobrautil.NewError("Token is expired")
 	}
 
@@ -103,21 +103,35 @@ func getToken() (string, error) {
 	}
 	client := &http.Client{Transport: tr}
 
-	LINK := "http://"+cobrautil.OpenMCPAPIServer+"/token"
+	LINK := "https://" + cobrautil.OpenMCPAPIServer + "/token"
+	// fmt.Println(LINK)
+	// data := url.Values{}
+	// data.Set("username", "openmcp")
+	// data.Set("password", "keti")
+	type Payload struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	data := Payload{
+		// fill struct
+		Username: "openmcp",
+		Password: "keti",
+	}
+	payloadBytes, err := json.Marshal(data)
+	if err != nil {
+		// handle err
+	}
+	reqbody := bytes.NewReader(payloadBytes)
 
-	data := url.Values{}
-	data.Set("username", "openmcp")
-	data.Set("password", "keti")
-
-
-	req, err := http.NewRequest("POST", os.ExpandEnv(LINK), strings.NewReader(data.Encode()))
+	// req, err := http.NewRequest("POST", os.ExpandEnv(LINK), strings.NewReader(data.Encode()))
+	req, err := http.NewRequest("POST", os.ExpandEnv(LINK), reqbody)
 	if err != nil {
 		// handle err
 		log.Fatalln(err)
 		return "", err
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
+	//req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -139,14 +153,13 @@ func getToken() (string, error) {
 		return "", err
 	}
 
-	if _, ok := prettyYaml["token"]; !ok{
+	if _, ok := prettyYaml["token"]; !ok {
 		return "", cobrautil.NewError("Cannot Get Token")
 	}
+	// fmt.Println(" prettyYaml['token']:", prettyYaml["token"])
 
 	saveTokenToFile(prettyYaml["token"])
 	return prettyYaml["token"], nil
-
-
 
 }
 func GetAPIServer(LINK string) ([]byte, error) {
@@ -166,7 +179,7 @@ func GetAPIServer(LINK string) ([]byte, error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	req.Header.Set("Authorization","Bearer "+ TOKEN)
+	req.Header.Set("Authorization", "Bearer "+TOKEN)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -201,7 +214,7 @@ func DeleteAPIServer(LINK string, body io.Reader) ([]byte, error) {
 	}
 
 	req.Header.Set("Content-Type", "application/yaml")
-	req.Header.Set("Authorization", "Bearer "+ TOKEN)
+	req.Header.Set("Authorization", "Bearer "+TOKEN)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -226,7 +239,6 @@ func PostAPIServer(LINK string, body io.Reader) ([]byte, error) {
 	}
 	client := &http.Client{Transport: tr}
 
-
 	req, err := http.NewRequest("POST", os.ExpandEnv(LINK), body)
 	if err != nil {
 		return nil, err
@@ -238,7 +250,7 @@ func PostAPIServer(LINK string, body io.Reader) ([]byte, error) {
 	}
 
 	req.Header.Set("Content-Type", "application/yaml")
-	req.Header.Set("Authorization", "Bearer " + TOKEN)
+	req.Header.Set("Authorization", "Bearer "+TOKEN)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -260,7 +272,6 @@ func PutAPIServer(LINK string, body io.Reader) ([]byte, error) {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: tr}
-
 
 	req, err := http.NewRequest("PUT", os.ExpandEnv(LINK), body)
 	if err != nil {

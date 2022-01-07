@@ -223,8 +223,7 @@ type OpenMCPServiceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	LabelSelector map[string]string `json:"labelselector" protobuf:"bytes,1,opt,name=labelselector"`
-	Template      corev1.Service    `json:"template" protobuf:"bytes,2,opt,name=template"`
+	Template corev1.Service `json:"template" protobuf:"bytes,2,opt,name=template"`
 }
 
 // OpenMCPServiceStatus defines the observed state of OpenMCPService

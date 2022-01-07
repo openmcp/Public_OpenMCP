@@ -202,7 +202,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				newDeployment.Status.SchedulingComplete = true
 				//		omcplog.V(5).Infof("cluster map =", cluster_replicas_map)
 				if !(len(cluster_replicas_map) == 0) {
-					omcplog.V(2).Info("=> ClusterJoin Scheduling Result : ", chagnedp)
+					omcplog.V(0).Info("=> ClusterJoin Scheduling Result : ", chagnedp)
 				}
 				err := r.live.Status().Update(context.TODO(), newDeployment)
 				if err != nil {
@@ -218,16 +218,16 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		//ex 래플리카 8 에서 7로 변경될경우 수행 기존보다 현재가 더작은경우  수행
 		if lastspec.Replicas != 0 && lastspec.Replicas > newDeployment.Spec.Replicas {
 			decre := lastspec.Replicas - newDeployment.Spec.Replicas
-			omcplog.V(0).Infof("replica 감소량 =", decre)
+			omcplog.V(5).Infof("replica 감소량 =", decre)
 			for i := 0; i < int(decre); i++ {
 
 				reasecluster := r.scheduler.EraseScheduling(newDeployment, lastspec.Replicas-newDeployment.Spec.Replicas, r.scheduler.ClusterInfos, newDeployment.Status.ClusterMaps)
 				//RR일경우 erase를 할 수없음
 				if reasecluster == "RR" {
-					omcplog.V(2).Info("=> D RR ..")
+					omcplog.V(5).Info("=> D RR ..")
 					cluster_replicas_map, _ := r.scheduler.Scheduling(newDeployment, false, clusters)
 					if !(len(cluster_replicas_map) == 0) {
-						omcplog.V(2).Info("=> Scheduling Result : ", cluster_replicas_map)
+						omcplog.V(0).Info("=> Scheduling Result : ", cluster_replicas_map)
 					}
 					newDeployment.Status.ClusterMaps = cluster_replicas_map
 					newDeployment.Status.Replicas = newDeployment.Status.Replicas
@@ -244,10 +244,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 				}
 				if reasecluster == "" {
-					omcplog.V(2).Info("error")
+					omcplog.V(5).Info("error")
 				}
 
-				omcplog.V(2).Info("=> reasecluster : ", newDeployment.Status.ClusterMaps)
+				omcplog.V(5).Info("=> reasecluster : ", newDeployment.Status.ClusterMaps)
 				newDeployment.Status.ClusterMaps[reasecluster] -= 1
 			}
 			newDeployment.Status.Replicas = newDeployment.Spec.Replicas
@@ -256,7 +256,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 			if !(len(newDeployment.Status.ClusterMaps) == 0) {
 
-				omcplog.V(2).Info("=> Scheduling Result : ", newDeployment.Status.ClusterMaps)
+				omcplog.V(0).Info("=> Scheduling Result : ", newDeployment.Status.ClusterMaps)
 			}
 			err := r.live.Status().Update(context.TODO(), newDeployment)
 			if err != nil {
@@ -290,7 +290,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		newDeployment.Status.SchedulingComplete = true
 		//		omcplog.V(5).Infof("cluster map =", cluster_replicas_map)
 		if !(len(cluster_replicas_map) == 0) {
-			omcplog.V(2).Info("=> Scheduling Result : ", cluster_replicas_map)
+			omcplog.V(0).Info("=> Scheduling Result : ", cluster_replicas_map)
 		}
 		err := r.live.Status().Update(context.TODO(), newDeployment)
 		if err != nil {
@@ -341,9 +341,9 @@ func RRScheduling(cm *clusterManager.ClusterManager, replicas int32) map[string]
 
 		remain_rep = remain_rep - int32(rep)
 		cluster_replicas_map[cluster.Name] = int32(rep)
-		omcplog.V(0).Info("cluster.Name : ", cluster.Name)
-		omcplog.V(0).Info("remain_rep : ", remain_rep)
-		omcplog.V(0).Info("cluster_replicas_map : ", cluster_replicas_map)
+		omcplog.V(4).Info("cluster.Name : ", cluster.Name)
+		omcplog.V(4).Info("remain_rep : ", remain_rep)
+		omcplog.V(4).Info("cluster_replicas_map : ", cluster_replicas_map)
 
 	}
 	keys := make([]string, 0)
