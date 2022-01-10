@@ -24,6 +24,11 @@ type ExampleV1Alpha1Interface interface {
 	OpenMCPVirtualService(namespace string) VirtualServiceInterface
 	VirtualService(namespace string) VirtualServiceInterface
 	DestinationRule(namespace string) DestinationRuleInterface
+
+	OpenMCPPersistentVolume(namespace string) OpenMCPPersistentVolumeInterface
+	OpenMCPPersistentVolumeClaim(namespace string) OpenMCPPersistentVolumeClaimInterface
+	OpenMCPStatefulSet(namespace string) OpenMCPStatefulSetInterface
+	OpenMCPDaemonSet(namespace string) OpenMCPDaemonSetInterface
 }
 
 type ExampleV1Alpha1Client struct {
@@ -154,6 +159,31 @@ func (c *ExampleV1Alpha1Client) VirtualService(namespace string) VirtualServiceI
 }
 func (c *ExampleV1Alpha1Client) DestinationRule(namespace string) DestinationRuleInterface {
 	return &DestinationRuleClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+
+func (c *ExampleV1Alpha1Client) OpenMCPPersistentVolume(namespace string) OpenMCPPersistentVolumeInterface {
+	return &OpenMCPPersistentVolumeClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPPersistentVolumeClaim(namespace string) OpenMCPPersistentVolumeClaimInterface {
+	return &OpenMCPPersistentVolumeClaimClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPStatefulSet(namespace string) OpenMCPStatefulSetInterface {
+	return &OpenMCPStatefulSetClient{
+		restClient: c.restClient,
+		ns:         namespace,
+	}
+}
+func (c *ExampleV1Alpha1Client) OpenMCPDaemonSet(namespace string) OpenMCPDaemonSetInterface {
+	return &OpenMCPDaemonSetClient{
 		restClient: c.restClient,
 		ns:         namespace,
 	}
