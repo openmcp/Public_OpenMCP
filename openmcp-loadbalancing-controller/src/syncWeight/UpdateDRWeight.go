@@ -144,9 +144,9 @@ func SyncDRWeight(myClusterManager *clusterManager.ClusterManager, quit, quitok 
 					tmp_pod_list := []string{}
 					cluster_client := cm.Cluster_genClients[mcluster.Name]
 
-					if cm.Cluster_genClients[mcluster.Name] != nil {
+					//omcplog.V(2).Info("***********",osvc.Name," selector :", osvc.Spec.Template.Spec.Selector)
 
-						omcplog.V(2).Info("***********",osvc.Name," selector :", osvc.Spec.Template.Spec.Selector)
+					if cm.Cluster_genClients[mcluster.Name] != nil && len(osvc.Spec.Template.Spec.Selector) != 0 {
 
 						listOption := &client.ListOptions{
 							LabelSelector: labels.SelectorFromSet(
