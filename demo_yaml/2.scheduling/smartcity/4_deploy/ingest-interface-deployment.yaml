@@ -1,0 +1,40 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: ingest-interface
+  #namespace: smartcity
+spec:
+  replicas: 1
+  clusters:
+  - cluster05
+  - cluster10
+  - cluster12
+  - cluster17
+  labels:
+    app: ingest-interface
+  template:
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+            - name: regcred
+          containers:
+            - env:
+                - name: DATASOURCE_SECONDARY_URL
+                  value: jdbc:postgresql://postgis:5432/smart_city
+                - name: DATASOURCE_URL
+                  value: jdbc:postgresql://postgis:5432/smart_city
+                - name: KAFKA_URL
+                  value: broker:29092
+                - name: SECURITY_USEYN
+                  value: "N"
+                - name: SPRING_PROFILES_ACTIVE
+                  value: local
+              image: ketidevit2/ingest-interface:0.0.1
+              imagePullPolicy: Always
+              name: ingest-interface
+              ports:
+                - containerPort: 8081
+                - containerPort: 443
+              resources: {}
+          restartPolicy: Always

@@ -1,0 +1,17 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPPersistentVolume
+metadata:
+  name: post-pv-claim1
+spec:
+  template:
+    spec:
+      capacity:
+        storage: 2Gi
+      storageClassName: postgis
+      accessModes:
+      - ReadWriteMany
+      persistentVolumeReclaimPolicy: Retain
+      nfs:
+        path: /k8s_smartcity/openmcp/dbdata
+        server: "115.94.141.62"
+        readOnly: false

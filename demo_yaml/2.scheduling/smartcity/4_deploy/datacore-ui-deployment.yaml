@@ -1,0 +1,37 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: datacore-ui
+  #namespace: smartcity
+spec:
+  replicas: 1
+  clusters:
+  - cluster05
+  - cluster10
+  - cluster12
+  - cluster17
+  labels:
+    app: datacore-ui
+  template:
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+            - name: regcred
+          containers:
+            - env:
+                - name: DATAMANAGER_URL
+                  value: http://data-manager:8080
+                - name: DATASOURCE_SECONDARY_URL
+                  value: jdbc:postgresql://postgis:5432/smart_city
+                - name: DATASOURCE_URL
+                  value: jdbc:postgresql://postgis:5432/smart_city
+                - name: INGESTINTERFACE_URL
+                  value: http://ingest-interface:8081
+              image: ketidevit2/datacore-ui:0.0.1
+              imagePullPolicy: Always
+              name: datacore-ui
+              ports:
+                - containerPort: 8080
+              resources: {}
+          restartPolicy: Always

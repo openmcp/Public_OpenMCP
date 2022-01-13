@@ -5,9 +5,9 @@ metadata:
   namespace: wordpress
 spec:
   clusters:
-    - cluster01
+    - cluster03
     - cluster09
-    - cluster13
+    - cluster14
   template:
     spec:
       storageClassName: wp

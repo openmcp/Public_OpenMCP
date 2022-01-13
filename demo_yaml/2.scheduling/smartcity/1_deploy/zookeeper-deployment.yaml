@@ -1,0 +1,45 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: zookeeper
+  #namespace: smartcity
+  namespace: default
+spec:
+  replicas: 1
+  clusters:
+  - cluster05
+  - cluster10
+  - cluster12
+  - cluster17
+  labels:
+    app: zookeeper
+  template:
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+            - name: regcred
+          containers:
+            - env:
+                - name: ZOOKEEPER_CLIENT_PORT
+                  value: "2181"
+                - name: ZOOKEEPER_TICK_TIME
+                  value: "2000"
+              image: confluentinc/cp-zookeeper:6.0.0
+              name: zookeeper
+              ports:
+                - containerPort: 2181
+              #resources:
+              #  requests:
+              #    memory: 1Gi
+              #    cpu: 1
+              #    ephemeral-storage: 1Gi
+              volumeMounts:
+                - mountPath: /tmp
+                  name: zookeeper-tmpfs0
+          hostname: zookeeper
+          restartPolicy: Always
+          volumes:
+            - emptyDir:
+                medium: Memory
+              name: zookeeper-tmpfs0

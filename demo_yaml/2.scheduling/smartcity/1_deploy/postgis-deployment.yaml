@@ -1,0 +1,52 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: postgis
+  #namespace: smartcity
+  namespace: default
+spec:
+  replicas: 1
+  clusters:
+  - cluster05
+  - cluster10
+  - cluster12
+  - cluster17
+  labels:
+    app: postgis
+  template:
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+            - name: regcred
+          containers:
+            - env:
+                - name: POSTGRES_DBNAME
+                  value: smart_city
+                - name: POSTGRES_PASS
+                  value: postgres
+                - name: POSTGRES_USER
+                  value: postgres
+              image: kartoza/postgis:11.0-2.5
+              name: postgis4
+              ports:
+                - containerPort: 5432
+              #resources:
+              #  requests:
+              #    memory: 1Gi
+              #    cpu: 1
+              #    ephemeral-storage: 1Gi
+              volumeMounts:
+                - mountPath: /docker-entrypoint-initdb.d/setup-db.sql
+                  name: postgis-claim0
+                  subPath: core-setup-db.sql
+                #- mountPath: /var/lib/postgresql/11
+                #  name: postgis-claim1
+          restartPolicy: Always
+          volumes:
+            - name: postgis-claim0
+              persistentVolumeClaim:
+                claimName: post-pvc-claim0
+            #- name: postgis-claim1
+            #  persistentVolumeClaim:
+            #    claimName: post-pvc-claim1

@@ -6,9 +6,9 @@ metadata:
     type: local
 spec:
   clusters:
-    - cluster01
+    - cluster03
     - cluster09
-    - cluster13
+    - cluster14
   labels:
     type: local
   template:
