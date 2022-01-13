@@ -18,7 +18,7 @@ spec:
         - name: regcred
       containers:
         - name: openmcp-apiserver
-          image: ketidevit/openmcp-apiserver:v0.0.1
+          image: ketidevit2/openmcp-apiserver:v0.0.1
           command:
           - openmcp-apiserver
           imagePullPolicy: Always

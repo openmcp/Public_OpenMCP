@@ -1,0 +1,17 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPPersistentVolumeClaim
+metadata:
+  name: wordpress-volumeclaim
+  namespace: wordpress
+spec:
+  clusters:
+    - cluster01
+    - cluster02
+    - cluster03
+  template:
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 5Gi

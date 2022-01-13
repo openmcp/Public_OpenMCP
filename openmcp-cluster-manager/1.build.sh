@@ -1,5 +1,5 @@
 #!/bin/bash
-docker_id="ketidevit"
+docker_id="ketidevit2"
 controller_name="openmcp-cluster-manager"
 
 export GO111MODULE=on

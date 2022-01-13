@@ -19,7 +19,7 @@ spec:
       containers:
         - name: openmcp-job-controller
           # Replace this with the built image name
-          image: ketidevit/openmcp-job-controller:v0.0.1
+          image: ketidevit2/openmcp-job-controller:v0.0.1
           command:
           - openmcp-job-controller
           imagePullPolicy: Always

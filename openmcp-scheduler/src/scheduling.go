@@ -1,3 +1,11 @@
+/*
+log 1레벨 :	결과
+2레벨     : 필터 & 스코어 결과 추가
+3레벨     : 필터 & 스코어 연산 과정 추가
+4레벨     : 연산과정에 대한 모든 로깅
+5레벨     : 디버깅관련 모든 로깅
+*/
+
 package openmcpscheduler
 
 import (
@@ -231,7 +239,7 @@ func (sched *OpenMCPScheduler) RRScheduling(clusters map[string]*ketiresource.Cl
 	cluster_count := 0
 	queue_cluster := make(map[int]string)
 	for clusterName, cluster := range clusters {
-		omcplog.V(5).Infof("RRScheduling: clusterName:", clusterName)
+		omcplog.V(5).Infof("RRScheduling:", clusterName)
 		if remain_rep == 0 {
 			break
 		}

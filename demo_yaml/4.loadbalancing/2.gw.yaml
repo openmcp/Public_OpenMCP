@@ -12,5 +12,5 @@ spec:
       name: http
       protocol: HTTP
     hosts:
-    #- "*"
-    - "keti.productpage.openmcp.in"
+    - "*"
+    #- "keti.productpage.openmcp.in"

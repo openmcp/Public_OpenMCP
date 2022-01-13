@@ -23,11 +23,10 @@ kubectl create ns istio-system
 echo "Input Your Docker ID(No Pull Limit Plan)"
 docker login
 
-kubectl create secret generic "regcred" \
+kubectl create secret generic REPLACE_DOCKERSECRETNAME \
     --from-file=.dockerconfigjson=/root/.docker/config.json \
     --type=kubernetes.io/dockerconfigjson \
     --namespace=openmcp
-
 
 echo "--- deploy crds"
 kubectl create -f ../../crds/.
@@ -190,6 +189,8 @@ kubectl apply --context=$CTX -f \
 # Expose services in openmcp
 kubectl --context=$CTX apply -n istio-system -f \
     samples/multicluster/expose-services.yaml
+
+kubectl apply -f patch_istio_configmap.yaml
 
 #istio 인증서 복사
 rm -r ../../member/istio/certs

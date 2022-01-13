@@ -28,7 +28,6 @@ kubectl create secret generic "regcred" \
     --type=kubernetes.io/dockerconfigjson \
     --namespace=openmcp
 
-
 echo "--- deploy crds"
 kubectl create -f ../../crds/.
 echo "--- openmcp-cluster-manager"
@@ -190,6 +189,8 @@ kubectl apply --context=$CTX -f \
 # Expose services in openmcp
 kubectl --context=$CTX apply -n istio-system -f \
     samples/multicluster/expose-services.yaml
+
+kubectl apply -f patch_istio_configmap.yaml
 
 #istio 인증서 복사
 rm -r ../../member/istio/certs

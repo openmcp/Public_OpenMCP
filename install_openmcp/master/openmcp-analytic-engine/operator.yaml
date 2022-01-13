@@ -19,7 +19,7 @@ spec:
       containers:
         - name: openmcp-analytic-engine
           # Replace this with the built image name
-          image: ketidevit/openmcp-analytic-engine:v0.0.1
+          image: ketidevit2/openmcp-analytic-engine:v0.0.1
           command:
           - openmcp-analytic-engine
           imagePullPolicy: Always

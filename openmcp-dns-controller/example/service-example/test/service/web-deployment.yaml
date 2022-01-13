@@ -40,7 +40,7 @@ spec:
                   value: http://data-manager:8080/datamodels
                 - name: TZ
                   value: Asia/Seoul
-              image: ketidevit/smartcity-web:0.0.2
+              image: ketidevit2/smartcity-web:0.0.2
               imagePullPolicy: Always
               name: smartcityweb
               ports:

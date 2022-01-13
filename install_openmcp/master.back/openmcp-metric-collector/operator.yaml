@@ -19,7 +19,7 @@ spec:
       containers:
         - name: openmcp-metric-collector
           # Replace this with the built image name
-          image: ketidevit/openmcp-metric-collector:v0.0.1
+          image: ketidevit2/openmcp-metric-collector:v0.0.1
           command:
           - openmcp-metric-collector
           imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY

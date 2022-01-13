@@ -21,6 +21,7 @@ import (
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
+	"os"
 	"reflect"
 	"strconv"
 
@@ -496,7 +497,14 @@ func (r *reconciler) deploymentForOpenMCPDeployment(req reconcile.Request, m *re
 	if dep.Spec.Selector == nil {
 		dep.Spec.Selector = &metav1.LabelSelector{}
 	}
-
+	dockerSecretName := os.Getenv("dockerSecretName")
+	lor := corev1.LocalObjectReference{
+		Name: dockerSecretName,
+	}
+	if len(dep.Spec.Template.Spec.ImagePullSecrets) == 0 {
+		dep.Spec.Template.Spec.ImagePullSecrets = []corev1.LocalObjectReference{}
+	}
+	dep.Spec.Template.Spec.ImagePullSecrets = append(dep.Spec.Template.Spec.ImagePullSecrets, lor)
 	dep.Spec.Selector.MatchLabels = m.Spec.Labels
 	dep.Spec.Template.ObjectMeta.Labels = m.Spec.Labels
 	dep.Spec.Replicas = &replica

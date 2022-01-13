@@ -19,7 +19,7 @@ spec:
       containers:
         - name: openmcp-ingress-controller
           # Replace this with the built image name
-          image: ketidevit/openmcp-ingress-controller:v0.0.1
+          image: ketidevit2/openmcp-ingress-controller:v0.0.1
           command:
           - openmcp-ingress-controller
           imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY

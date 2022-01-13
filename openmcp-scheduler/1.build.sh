@@ -1,5 +1,5 @@
 #!/bin/bash
-docker_id="ketidevit"
+docker_id="ketidevit2"
 image_name="openmcp-scheduler"
 
 export GO111MODULE=on

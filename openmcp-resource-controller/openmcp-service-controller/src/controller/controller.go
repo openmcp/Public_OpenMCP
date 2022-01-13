@@ -347,7 +347,7 @@ func (r *reconciler) createService(req reconcile.Request, cm *clusterManager.Clu
 		cluster_map[cluster.Name] = 0
 	}
 
-	label_include_cluster_list := r.getClusterIncludeLabel(instance.Spec.Template.Labels, instance.Namespace)
+	label_include_cluster_list := r.getClusterIncludeLabel(instance.Spec.Template.Spec.Selector, instance.Namespace)
 	//clusterList := cm.Cluster_list
 
 	//for _, cluster := range clusterList.Items {
@@ -410,7 +410,7 @@ func (r *reconciler) updateService(req reconcile.Request, cm *clusterManager.Clu
 	// 		return err
 	// 	}
 	// }
-	label_include_cluster_list := r.getClusterIncludeLabel(instance.Spec.Template.Labels, instance.Namespace)
+	label_include_cluster_list := r.getClusterIncludeLabel(instance.Spec.Template.Spec.Selector, instance.Namespace)
 
 	for _, cluster := range cm.Cluster_list.Items {
 		cluster_client := cm.Cluster_genClients[cluster.Name]

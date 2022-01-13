@@ -19,11 +19,13 @@ spec:
       containers:
         - name: openmcp-sync-controller
           # Replace this with the built image name
-          image: ketidevit/openmcp-sync-controller:v0.0.1
+          image: ketidevit2/openmcp-sync-controller:v0.0.1
           command:
           - openmcp-sync-controller
           imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
           env:
+            - name: dockerSecretName
+              value: REPLACE_DOCKERSECRETNAME
             - name: WATCH_NAMESPACE
               #value: ""
               valueFrom:

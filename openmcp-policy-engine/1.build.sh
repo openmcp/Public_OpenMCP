@@ -1,5 +1,5 @@
 #!/bin/bash
-docker_id="ketidevit"
+docker_id="ketidevit2"
 controller_name="openmcp-policy-engine"
 
 export GO111MODULE=on

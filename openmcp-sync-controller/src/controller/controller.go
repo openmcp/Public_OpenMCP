@@ -14,12 +14,18 @@ limitations under the License.
 package sync // import "admiralty.io/multicluster-controller/examples/serviceDNS/pkg/controller/serviceDNS"
 
 import (
-	"admiralty.io/multicluster-controller/pkg/cluster"
-	"admiralty.io/multicluster-controller/pkg/controller"
-	"admiralty.io/multicluster-controller/pkg/reconcile"
 	"context"
 	"encoding/json"
 	"fmt"
+	"openmcp/openmcp/apis"
+	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
+	"openmcp/openmcp/omcplog"
+	"openmcp/openmcp/util/clusterManager"
+	"os"
+
+	"admiralty.io/multicluster-controller/pkg/cluster"
+	"admiralty.io/multicluster-controller/pkg/controller"
+	"admiralty.io/multicluster-controller/pkg/reconcile"
 	vpav1beta2 "github.com/kubernetes/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	appsv1 "k8s.io/api/apps/v1"
 	hpav2beta2 "k8s.io/api/autoscaling/v2beta2"
@@ -29,10 +35,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"openmcp/openmcp/apis"
-	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
-	"openmcp/openmcp/omcplog"
-	"openmcp/openmcp/util/clusterManager"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -533,24 +535,90 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			err = clusterClient.Create(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Created Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+
+				sec := &corev1.Secret{}
+				dockerSecretName := os.Getenv("dockerSecretName")
+				err2 := cm.Host_client.Get(context.TODO(), sec, "openmcp", dockerSecretName)
+				if err2 != nil && errors.IsNotFound(err2) {
+					omcplog.V(0).Info("[Error] DockerHub-Secret Not Exist in '(ns)openmcp'")
+				} else if err2 != nil {
+					omcplog.V(0).Info("[Error] Get Secret '" + dockerSecretName + "', in NS(openmcp)")
+				} else {
+					sec.ResourceVersion = ""
+					sec.Namespace = obj.GetName()
+					err3 := clusterClient.Create(context.TODO(), sec)
+					if err3 != nil && errors.IsAlreadyExists(err3) {
+						err4 := clusterClient.Update(context.TODO(), sec)
+						if err4 != nil {
+							omcplog.V(0).Info("[Error] Cannot Apply DockerHub-Secret : ", err4)
+						} else {
+							omcplog.V(2).Info("Updated Resource 'Secret', Name : '" + dockerSecretName + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+						}
+
+					} else if err3 != nil {
+						omcplog.V(0).Info("[Error] Cannot Create DockerHub-Secret : ", err3)
+					} else {
+						omcplog.V(2).Info("Created Resource 'Secret', Name : '" + dockerSecretName + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+					}
+				}
+
 				if !errors.IsNotFound(err) {
 					return reconcile.Result{}, err // err
 				}
 			} else {
 				omcplog.V(0).Info("[Error] Cannot Create Namespace : ", err)
 			}
+
 		} else if command == "delete" {
 			err = clusterClient.Delete(context.TODO(), subInstance, subInstance.Namespace, subInstance.Name)
 			if err == nil {
 				omcplog.V(2).Info("Deleted Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+
 			} else {
 				omcplog.V(0).Info("[Error] Cannot Delete Namespace : ", err)
+				if obj.GetName() == "default" {
+					sec := &corev1.Secret{}
+					dockerSecretName := os.Getenv("dockerSecretName")
+					err2 := clusterClient.Delete(context.TODO(), sec, "default", dockerSecretName)
+					if err2 != nil {
+						omcplog.V(0).Info("[Error] Delete Secret '"+dockerSecretName+"', in cluster '", clusterName, "'", err2)
+					} else {
+
+					}
+				}
 			}
 		} else if command == "update" {
 
 			err = clusterClient.Update(context.TODO(), subInstance)
 			if err == nil {
 				omcplog.V(2).Info("Updated Resource '" + obj.GetKind() + "', Name : '" + obj.GetName() + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+
+				sec := &corev1.Secret{}
+				dockerSecretName := os.Getenv("dockerSecretName")
+				err2 := cm.Host_client.Get(context.TODO(), sec, "openmcp", dockerSecretName)
+				if err2 != nil && errors.IsNotFound(err2) {
+					omcplog.V(0).Info("[Error] DockerHub-Secret Not Exist in '(ns)openmcp'")
+				} else if err2 != nil {
+					omcplog.V(0).Info("[Error] Get Secret '" + dockerSecretName + "', in NS(openmcp)")
+				} else {
+					sec.ResourceVersion = ""
+					sec.Namespace = obj.GetName()
+					err3 := clusterClient.Create(context.TODO(), sec)
+					if err3 != nil && errors.IsAlreadyExists(err3) {
+						err4 := clusterClient.Update(context.TODO(), sec)
+						if err4 != nil {
+							omcplog.V(0).Info("[Error] Cannot Apply DockerHub-Secret : ", err4)
+						} else {
+							omcplog.V(2).Info("Updated Resource 'Secret', Name : '" + dockerSecretName + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+						}
+
+					} else if err3 != nil {
+						omcplog.V(0).Info("[Error] Cannot Create DockerHub-Secret : ", err3)
+					} else {
+						omcplog.V(2).Info("Created Resource 'Secret', Name : '" + dockerSecretName + "',  Namespace : '" + obj.GetNamespace() + "', in Cluster'" + clusterName + "'")
+					}
+				}
+
 			} else {
 				omcplog.V(0).Info("[Error] Cannot Update Namespace : ", err)
 			}

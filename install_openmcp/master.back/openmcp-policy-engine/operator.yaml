@@ -19,7 +19,7 @@ spec:
       containers:
         - name: openmcp-policy-engine
           # Replace this with the built image name
-          image: ketidevit/openmcp-policy-engine:v0.0.1
+          image: ketidevit2/openmcp-policy-engine:v0.0.1
           command:
           - openmcp-policy-engine
           imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY

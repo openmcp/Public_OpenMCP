@@ -2,11 +2,11 @@ apiVersion: openmcp.k8s.io/v1alpha1
 kind: OpenMCPDeployment
 metadata:
   name: user-tool
-  namespace: smartcity
+  #namespace: smartcity
 spec:
   replicas: 1
   clusters:
-  - cluster11
+  - cluster12
   labels:
     app: user-tool
     affinity: "yes"
@@ -26,7 +26,7 @@ spec:
                   value: http://data-service-broker:8082
                 - name: SECURITY_ENABLED
                   value: "false"
-              image: ketidevit/datacore-usertool:0.0.1
+              image: ketidevit2/datacore-usertool:0.0.1
               imagePullPolicy: Always
               name: user-tool
               ports:

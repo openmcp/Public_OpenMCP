@@ -18,7 +18,7 @@ spec:
         - name: regcred
       containers:
         - name: openmcp-dns-controller
-          image: ketidevit/openmcp-dns-controller:v0.0.1
+          image: ketidevit2/openmcp-dns-controller:v0.0.1
           command:
           - openmcp-dns-controller
           imagePullPolicy: Always

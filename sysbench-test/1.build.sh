@@ -1,6 +1,6 @@
 #!/bin/bash
 #docker_registry_ip="10.0.3.20:5005"
-docker_id="ketidevit"
+docker_id="ketidevit2"
 controller_name="sysbench-test"
 
 export GO111MODULE=on

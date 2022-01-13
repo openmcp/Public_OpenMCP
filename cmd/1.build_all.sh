@@ -87,5 +87,9 @@ cd ../openmcp-sync-controller
 ./1.build.sh
 cd $cur
 
+cd ../sysbench-test
+./1.build.sh
+cd $cur
+
 
 

@@ -18,11 +18,13 @@ spec:
         - name: regcred
       containers:
         - name: openmcp-deployment-controller
-          image: ketidevit/openmcp-deployment-controller:v0.0.1
+          image: ketidevit2/openmcp-deployment-controller:v0.0.1
           command:
           - openmcp-deployment-controller
           imagePullPolicy: Always
           env:
+            - name: dockerSecretName
+              value: regcred
             - name: WATCH_NAMESPACE
               #value: ""
               valueFrom:

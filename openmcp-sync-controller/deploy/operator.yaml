@@ -18,11 +18,13 @@ spec:
         - name: regcred
       containers:
         - name: openmcp-sync-controller
-          image: ketidevit/openmcp-sync-controller:v0.0.1
+          image: ketidevit2/openmcp-sync-controller:v0.0.1
           command:
           - openmcp-sync-controller
           imagePullPolicy: Always
           env:
+            - name: dockerSecretName
+              value: "regcred"
             - name: WATCH_NAMESPACE
               #value: ""
               valueFrom:

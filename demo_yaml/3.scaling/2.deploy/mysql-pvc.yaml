@@ -1,0 +1,18 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPPersistentVolumeClaim
+metadata:
+  name: mysql-volumeclaim
+  namespace: wordpress
+spec:
+  clusters:
+    - cluster01
+    - cluster09
+    - cluster13
+  template:
+    spec:
+      storageClassName: mysql
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 5Gi
