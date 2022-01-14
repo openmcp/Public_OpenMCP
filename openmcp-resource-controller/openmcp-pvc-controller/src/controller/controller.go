@@ -116,14 +116,13 @@ var syncIndex = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	i += 1
-	fmt.Println("********* [", i, "] *********")
-	omcplog.V(3).Info("Namespace : ", req.Namespace, " | Name : ", req.Name, " | Context : ", req.Context)
+	omcplog.V(2).Info("********* [", i, "] *********")
+	omcplog.V(2).Info("Namespace : ", req.Namespace, " | Name : ", req.Name, " | Context : ", req.Context)
 
 	opvc_instance := &resourcev1alpha1.OpenMCPPersistentVolumeClaim{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, opvc_instance)
 
 	if err != nil && errors.IsNotFound(err) {
-		omcplog.V(3).Info("Delete PersistentVolumeClaim")
 
 		for _, cluster := range cm.Cluster_list.Items {
 			pvc := &v1.PersistentVolumeClaim{}
@@ -146,10 +145,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				_, err_sync := r.sendSync(pvcinstance, command, cluster.Name)
 
 				if err_sync != nil {
-					omcplog.V(3).Info("err_sync : ", err_sync)
+					omcplog.V(0).Info("err_sync : ", err_sync)
 					return reconcile.Result{}, err_sync
 				} else {
-					omcplog.V(3).Info("Success to Delete PVC in ", cluster.Name)
+					omcplog.V(2).Info("Success to Delete PVC in " + cluster.Name)
 				}
 			}
 		}
@@ -157,7 +156,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		return reconcile.Result{}, nil
 
 	} else if err != nil {
-		omcplog.V(3).Info(err)
+		omcplog.V(0).Info(err)
 		return reconcile.Result{}, err
 	}
 
@@ -166,30 +165,53 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		pvc := r.setPVCResourceStruct(req, opvc_instance)
 		cluster_map := make(map[string]int32)
 
-		for _, clustername := range opvc_instance.Spec.Clusters {
-			foundpvc := &v1.PersistentVolumeClaim{}
-			cluster_client := cm.Cluster_genClients[clustername]
+		if len(opvc_instance.Spec.Clusters) == 0 {
+			omcplog.V(2).Info("Deploy PVC Resource On All Clusters ...")
 
-			err = cluster_client.Get(context.TODO(), foundpvc, opvc_instance.Namespace, opvc_instance.Name)
-			if err != nil && errors.IsNotFound(err) {
-				//create
-				command := "create"
-				_, err_sync := r.sendSync(pvc, command, clustername)
-				cluster_map[clustername] = 1
-				if err_sync != nil {
-					return reconcile.Result{}, err_sync
+			for _, cluster := range cm.Cluster_list.Items {
+				foundpvc := &v1.PersistentVolumeClaim{}
+				cluster_client := cm.Cluster_genClients[cluster.Name]
+
+				err = cluster_client.Get(context.TODO(), foundpvc, opvc_instance.Namespace, opvc_instance.Name)
+				if err != nil && errors.IsNotFound(err) {
+					//create
+					command := "create"
+					_, err_sync := r.sendSync(pvc, command, cluster.Name)
+					cluster_map[cluster.Name] = 1
+					if err_sync != nil {
+						return reconcile.Result{}, err_sync
+					}
+
+					omcplog.V(2).Info("Success to Create PVC in " + cluster.Name)
 				}
+			}
+		} else {
+			omcplog.V(2).Info("Deploy PVC Resource On Specified Clusters ...")
 
-				fmt.Println("Success to Create PVC in ", clustername)
+			for _, clustername := range opvc_instance.Spec.Clusters {
+				foundpvc := &v1.PersistentVolumeClaim{}
+				cluster_client := cm.Cluster_genClients[clustername]
+
+				err = cluster_client.Get(context.TODO(), foundpvc, opvc_instance.Namespace, opvc_instance.Name)
+				if err != nil && errors.IsNotFound(err) {
+					//create
+					command := "create"
+					_, err_sync := r.sendSync(pvc, command, clustername)
+					cluster_map[clustername] = 1
+					if err_sync != nil {
+						return reconcile.Result{}, err_sync
+					}
+
+					omcplog.V(2).Info("Success to Create PVC in " + clustername)
+				}
 			}
 		}
-
 		opvc_instance.Status.ClusterMaps = cluster_map
 		opvc_instance.Status.LastSpec = opvc_instance.Spec
 
 		err_status_update := r.live.Status().Update(context.TODO(), opvc_instance)
 		if err_status_update != nil {
-			fmt.Println("Failed to update instance status", err_status_update)
+			omcplog.V(0).Info("Failed to update instance status", err_status_update)
 			return reconcile.Result{}, err_status_update
 		}
 

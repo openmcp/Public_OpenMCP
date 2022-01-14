@@ -19,7 +19,7 @@ spec:
       containers:
         - name: openmcp-pvc-controller
           # Replace this with the built image name
-          image: ketidevit/openmcp-pvc-controller:v0.0.1
+          image: ketidevit2/openmcp-pvc-controller:v0.0.1
           command:
           - openmcp-pvc-controller
           imagePullPolicy: Always
