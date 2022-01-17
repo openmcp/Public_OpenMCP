@@ -115,14 +115,13 @@ var syncIndex = 0
 
 func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) {
 	i += 1
-	fmt.Println("********* [", i, "] *********")
-	omcplog.V(3).Info("Namespace : ", req.Namespace, " | Name : ", req.Name, " | Context : ", req.Context)
+	omcplog.V(2).Info("********* [", i, "] *********")
+	omcplog.V(2).Info("Namespace : ", req.Namespace, " | Name : ", req.Name, " | Context : ", req.Context)
 
 	oss_instance := &resourcev1alpha1.OpenMCPStatefulSet{}
 	err := r.live.Get(context.TODO(), req.NamespacedName, oss_instance)
 
 	if err != nil && errors.IsNotFound(err) {
-		omcplog.V(3).Info("Delete StatefulSet")
 
 		for _, cluster := range cm.Cluster_list.Items {
 			ss := &appsv1.StatefulSet{}
@@ -145,10 +144,10 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				_, err_sync := r.sendSync(ossinstance, command, cluster.Name)
 
 				if err_sync != nil {
-					omcplog.V(3).Info("err_sync : ", err_sync)
+					omcplog.V(0).Info("err_sync : ", err_sync)
 					return reconcile.Result{}, err_sync
 				} else {
-					omcplog.V(3).Info("Success to Delete StatefulSet in ", cluster.Name)
+					omcplog.V(2).Info("Success to Delete StatefulSet in " + cluster.Name)
 				}
 			}
 		}
@@ -156,7 +155,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		return reconcile.Result{}, nil
 
 	} else if err != nil {
-		omcplog.V(3).Info(err)
+		omcplog.V(0).Info(err)
 		return reconcile.Result{}, err
 	}
 
@@ -165,30 +164,54 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		ss := r.setSSResourceStruct(req, oss_instance)
 		cluster_map := make(map[string]int32)
 
-		for _, clustername := range oss_instance.Spec.Clusters {
-			foundss := &appsv1.StatefulSet{}
-			cluster_client := cm.Cluster_genClients[clustername]
+		if len(oss_instance.Spec.Clusters) == 0 {
+			omcplog.V(2).Info("Deploy StatefulSet Resource On All Clusters ...")
 
-			err = cluster_client.Get(context.TODO(), foundss, oss_instance.Namespace, oss_instance.Name)
-			if err != nil && errors.IsNotFound(err) {
-				//create
-				command := "create"
-				_, err_sync := r.sendSync(ss, command, clustername)
-				cluster_map[clustername] = 1
-				if err_sync != nil {
-					return reconcile.Result{}, err_sync
+			for _, cluster := range cm.Cluster_list.Items {
+				foundss := &appsv1.StatefulSet{}
+				cluster_client := cm.Cluster_genClients[cluster.Name]
+
+				err = cluster_client.Get(context.TODO(), foundss, oss_instance.Namespace, oss_instance.Name)
+				if err != nil && errors.IsNotFound(err) {
+					//create
+					command := "create"
+					_, err_sync := r.sendSync(ss, command, cluster.Name)
+					cluster_map[cluster.Name] = 1
+					if err_sync != nil {
+						return reconcile.Result{}, err_sync
+					}
+
+					omcplog.V(2).Info("Success to Create StatefulSet in " + cluster.Name)
 				}
+			}
 
-				fmt.Println("Success to Create StatefulSet in ", clustername)
+		} else {
+			omcplog.V(2).Info("Deploy StatefulSet Resource On Specified Clusters ...")
+
+			for _, clustername := range oss_instance.Spec.Clusters {
+				foundss := &appsv1.StatefulSet{}
+				cluster_client := cm.Cluster_genClients[clustername]
+
+				err = cluster_client.Get(context.TODO(), foundss, oss_instance.Namespace, oss_instance.Name)
+				if err != nil && errors.IsNotFound(err) {
+					//create
+					command := "create"
+					_, err_sync := r.sendSync(ss, command, clustername)
+					cluster_map[clustername] = 1
+					if err_sync != nil {
+						return reconcile.Result{}, err_sync
+					}
+
+					omcplog.V(2).Info("Success to Create StatefulSet in " + clustername)
+				}
 			}
 		}
-
 		oss_instance.Status.ClusterMaps = cluster_map
 		oss_instance.Status.LastSpec = oss_instance.Spec
 
 		err_status_update := r.live.Status().Update(context.TODO(), oss_instance)
 		if err_status_update != nil {
-			fmt.Println("Failed to update instance status", err_status_update)
+			omcplog.V(0).Info("Failed to update instance status", err_status_update)
 			return reconcile.Result{}, err_status_update
 		}
 
