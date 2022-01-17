@@ -570,15 +570,15 @@ func (ae *AnalyticEngineStruct) UpdateClusterPodScore(clusterName string, cm *cl
 
 								if clusterName == "cluster04" || clusterName == "cluster09" || clusterName == "cluster17" {
 									if strings.Contains(pod.Name, "productpage") {
-										omcplog.V(0).Info("clusterName:", clusterName)
-										omcplog.V(0).Info("nodeName:", nodeName)
-										omcplog.V(0).Info("nodeCpuCapacity[clusterName][nodeName]:", nodeCpuCapacity[clusterName][nodeName])
-										omcplog.V(0).Info("podCpuUsage:", podCpuUsage)
-										omcplog.V(0).Info("podCpuIdle:", podCpuIdle)
-										omcplog.V(0).Info("nodeMemCapacity[clusterName][nodeName]:", nodeMemCapacity[clusterName][nodeName])
-										omcplog.V(0).Info("podMemUsage:", podMemUsage)
-										omcplog.V(0).Info("podMemIdle:", podMemIdle)
-										omcplog.V(0).Info("score:", score)
+										omcplog.V(2).Info("clusterName:", clusterName)
+										omcplog.V(2).Info("nodeName:", nodeName)
+										omcplog.V(2).Info("nodeCpuCapacity[clusterName][nodeName]:", nodeCpuCapacity[clusterName][nodeName])
+										omcplog.V(2).Info("podCpuUsage:", podCpuUsage)
+										omcplog.V(2).Info("podCpuIdle:", podCpuIdle)
+										omcplog.V(2).Info("nodeMemCapacity[clusterName][nodeName]:", nodeMemCapacity[clusterName][nodeName])
+										omcplog.V(2).Info("podMemUsage:", podMemUsage)
+										omcplog.V(2).Info("podMemIdle:", podMemIdle)
+										omcplog.V(2).Info("score:", score)
 									}
 
 								}
@@ -599,8 +599,8 @@ func (ae *AnalyticEngineStruct) UpdateClusterPodScore(clusterName string, cm *cl
 			}
 			ae.ClusterPodResourceScore[clusterName] = ClusterPodResourceScore[clusterName]
 
-			fmt.Println("ae.GeoScore:", ae.GeoScore)
-			fmt.Println("["+clusterName+"] ae.ClusterPodResourceScore:", ae.ClusterPodResourceScore[clusterName])
+			omcplog.V(2).Info("ae.GeoScore:", ae.GeoScore)
+			omcplog.V(2).Info("["+clusterName+"] ae.ClusterPodResourceScore:", ae.ClusterPodResourceScore[clusterName])
 		}
 
 	}
@@ -1146,7 +1146,7 @@ func (ae *AnalyticEngineStruct) SendCPAAnalysis(ctx context.Context, deploy *pro
 
 		deployList.ResponseCPADeploy = append(deployList.ResponseCPADeploy, tmp_deployList.ResponseCPADeploy...)
 	}
-	fmt.Println("*** deployList : ", deployList)
+	omcplog.V(4).Info("*** deployList : ", deployList)
 	return &deployList, nil
 }
 
@@ -1167,8 +1167,8 @@ func (ae *AnalyticEngineStruct) AnalyzeCPADeployment(cDeploy *protobuf.CPADeploy
 	cpuRequestInt64 := cDeploy.CpuRequest
 	memRequestInt64 := cDeploy.MemRequest
 
-	fmt.Println("Start Analysis ...")
-	fmt.Println("podNum : ", strconv.FormatInt(int64(cDeploy.ReplicasNum), 10))
+	omcplog.V(3).Info("Start Analysis ...")
+	omcplog.V(3).Info("podNum : ", strconv.FormatInt(int64(cDeploy.ReplicasNum), 10))
 	result := ae.Influx.GetCPAMetricsData(cluster, cDeploy.Namespace, cDeploy.Name, strconv.FormatInt(int64(cDeploy.ReplicasNum), 10))
 
 	var cpuUsage float64
@@ -1196,7 +1196,7 @@ func (ae *AnalyticEngineStruct) AnalyzeCPADeployment(cDeploy *protobuf.CPADeploy
 			memtotal += memFloat64
 		}
 	} else {
-		fmt.Println("Empty")
+		omcplog.V(1).Info("Empty")
 	}
 
 	num := float64(cDeploy.ReplicasNum)
@@ -1205,31 +1205,32 @@ func (ae *AnalyticEngineStruct) AnalyzeCPADeployment(cDeploy *protobuf.CPADeploy
 
 	cpuUsage = cputotal / num
 	memUsage = memtotal / num
-	fmt.Println("***", cluster, "***")
-	fmt.Println("========================================================")
-	fmt.Println("[", cDeploy.Name, "] CPU 사용률 ", cpuUsage/float64(cpuRequestInt64)*100, "%")
-	fmt.Println("[", cDeploy.Name, "] MEM 사용률 ", memUsage/float64(memRequestInt64)*100, "%")
-	fmt.Println("--------------------------------------------------------")
-	fmt.Println("ClusterResourceUsage[CPU] : ", ae.ClusterResourceUsage[cluster]["cpu"])
-	fmt.Println("ClusterResourceUsage[MEM] : ", ae.ClusterResourceUsage[cluster]["memory"])
-	fmt.Println("========================================================")
+	omcplog.V(1).Info("*** ", cluster, " ***")
+	omcplog.V(1).Info("========================================================")
+	omcplog.V(1).Info("[", cDeploy.Name, "] CPU 사용률 ", cpuUsage/float64(cpuRequestInt64)*100, "%")
+	omcplog.V(1).Info("[", cDeploy.Name, "] MEM 사용률 ", memUsage/float64(memRequestInt64)*100, "%")
+	omcplog.V(2).Info("--------------------------------------------------------")
+	omcplog.V(2).Info("ClusterResourceUsage[CPU] : ", ae.ClusterResourceUsage[cluster]["cpu"])
+	omcplog.V(2).Info("ClusterResourceUsage[MEM] : ", ae.ClusterResourceUsage[cluster]["memory"])
+	omcplog.V(1).Info("========================================================")
+	omcplog.V(1).Info("")
 
 	if cpuUsage/float64(cpuRequestInt64)*100 > 60 {
 		if ae.ClusterResourceUsage[cluster]["cpu"] < 80 {
-			fmt.Println("CPU Warning! -> Scale-out")
+			omcplog.V(1).Info("CPU Warning! -> Scale-out")
 			return "Warning-cpu", "Scale-out", 0
 		} else {
-			fmt.Println("CPU Warning! -> Can't Scale-out (No Capacity)")
+			omcplog.V(1).Info("CPU Warning! -> Can't Scale-out (No Capacity)")
 		}
 	} else if memUsage/float64(memRequestInt64)*100 > 60 {
 		if ae.ClusterResourceUsage[cluster]["memory"] < 80 {
-			fmt.Println("Memory Warning! -> Scale-out")
+			omcplog.V(1).Info("Memory Warning! -> Scale-out")
 			return "Warning-memory", "Scale-out", 0
 		} else {
-			fmt.Println("Memory Warning! -> Can't Scale-out (No Capacity)")
+			omcplog.V(1).Info("Memory Warning! -> Can't Scale-out (No Capacity)")
 		}
 	} else if cpuUsage/float64(cpuRequestInt64)*100 < 1 && memUsage/float64(memRequestInt64)*100 < 1 {
-		fmt.Println("CPU/Memory Warning! -> Scale-in")
+		omcplog.V(1).Info("CPU/Memory Warning! -> Scale-in")
 		return "Warning-cpu/memory", "Scale-in", 0
 	}
 

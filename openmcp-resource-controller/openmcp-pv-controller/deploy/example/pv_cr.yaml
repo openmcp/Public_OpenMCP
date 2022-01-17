@@ -3,8 +3,8 @@ kind: OpenMCPPersistentVolume
 metadata:
   name: opv-test
 spec:
-  #clusters:
-  #- cluster01
+  clusters:
+  - cluster01
   labels:
     app: opv-test
   template:

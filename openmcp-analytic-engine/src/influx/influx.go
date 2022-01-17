@@ -1,7 +1,6 @@
 package influx
 
 import (
-	"fmt"
 	"openmcp/openmcp/omcplog"
 	"time"
 
@@ -42,8 +41,8 @@ func (in *Influx) GetCPAMetricsData(cluster string, namespace string, depname st
 	if err == nil && response.Error() == nil {
 		return response.Results
 	} else {
-		fmt.Println(err)
-		fmt.Println(response.Error())
+		omcplog.V(0).Info(err)
+		omcplog.V(0).Info(response.Error())
 	}
 
 	return nil
@@ -51,7 +50,7 @@ func (in *Influx) GetCPAMetricsData(cluster string, namespace string, depname st
 func (in *Influx) GetClusterPodsData(clusterName, podName string) ([]client.Result, error) {
 	omcplog.V(4).Info("Func GetClusterPodsData Called")
 
-	//fmt.Println("SELECT CPUUsageNanoCores, MemoryUsageBytes  FROM Pods WHERE cluster = '" + clusterName + "' AND pod = '" + podName + "' ORDER BY DESC LIMIT 1")
+	//omcplog.V(4).Info("SELECT CPUUsageNanoCores, MemoryUsageBytes  FROM Pods WHERE cluster = '" + clusterName + "' AND pod = '" + podName + "' ORDER BY DESC LIMIT 1")
 	q := client.NewQuery("SELECT CPUUsageNanoCores, MemoryUsageBytes, node FROM Pods WHERE cluster = '"+clusterName+"' AND pod = '"+podName+"' ORDER BY DESC LIMIT 1", "Metrics", "")
 
 	response, err := in.inClient.Query(q)
@@ -60,8 +59,8 @@ func (in *Influx) GetClusterPodsData(clusterName, podName string) ([]client.Resu
 		return response.Results, nil
 	} else {
 		return nil, err
-		// fmt.Println(err)
-		// fmt.Println(response.Error())
+		// omcplog.V(0).Info(err)
+		// omcplog.V(0).Info(response.Error())
 	}
 
 }
@@ -75,8 +74,8 @@ func (in *Influx) GetClusterMetricsData(clusterName string) ([]client.Result, er
 		return response.Results, nil
 	} else {
 		return nil, err
-		// fmt.Println(err)
-		// fmt.Println(response.Error())
+		// omcplog.V(0).Info(err)
+		// omcplog.V(0).Info(response.Error())
 	}
 
 }
@@ -165,7 +164,7 @@ func (in *Influx) InsertClusterStatus(clusterName, time_t string, cpuScore, memS
 	}
 	t, err := time.Parse(time.RFC3339, time_t)
 	if err != nil {
-		fmt.Println("err!", err)
+		omcplog.V(0).Info("err!", err)
 	}
 	pt, err := client.NewPoint(
 		"ClusterStatus",
@@ -175,7 +174,7 @@ func (in *Influx) InsertClusterStatus(clusterName, time_t string, cpuScore, memS
 	)
 
 	if err != nil {
-		fmt.Println("err!", err)
+		omcplog.V(0).Info("err!", err)
 	}
 
 	bp.AddPoint(pt)
