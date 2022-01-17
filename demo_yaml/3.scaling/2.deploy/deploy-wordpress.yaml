@@ -9,16 +9,16 @@ spec:
   replicas: 6
   clusters:
     - cluster03
-    - cluster09
-    - cluster14
+    - cluster01
+    - cluster02
   labels:
     app: wordpress
   template:
     spec:
       template:
         spec:
-          imagePullSecrets:
-            - name: regcred
+#          imagePullSecrets:
+#            - name: regcred
           containers:
             - image: wordpress
               name: wordpress

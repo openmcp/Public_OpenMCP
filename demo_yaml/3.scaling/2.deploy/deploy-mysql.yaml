@@ -6,7 +6,9 @@ metadata:
 spec:
   replicas: 1
   clusters:
-    - cluster09
+    - cluster02
+#    - cluster01
+#   - cluster03
   labels:
     app: mysql
   template:
