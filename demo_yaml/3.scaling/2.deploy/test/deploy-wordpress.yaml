@@ -6,11 +6,9 @@ metadata:
   labels:
     app: wordpress
 spec:
-  replicas: 6
+  replicas: 3
   clusters:
-  - cluster01
-  - cluster02
-  - cluster03
+  - cluster09
   labels:
     app: wordpress
   template:
