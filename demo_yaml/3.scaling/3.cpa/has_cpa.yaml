@@ -9,6 +9,6 @@ spec:
     cpaTemplate:
       scaleTargetRef:
         kind: OpenMCPDeployment
-        name: wordpress
+        name: wordpress-cpa
       minReplicas: 1
       maxReplicas: 7

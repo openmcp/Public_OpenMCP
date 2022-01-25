@@ -21,8 +21,6 @@ import (
 	"reflect"
 	"strconv"
 
-	"k8s.io/apimachinery/pkg/types"
-
 	"github.com/getlantern/deepcopy"
 
 	"openmcp/openmcp/util/clusterManager"
@@ -378,16 +376,19 @@ func (r *reconciler) updateIngress(req reconcile.Request, cm *clusterManager.Clu
 			omcplog.V(3).Info("*!!! All Svc Exsit !!!*")
 			omcplog.V(3).Info("***********************")
 
+			cluster_ing := &extv1b1.Ingress{}
+			deepcopy.Copy(cluster_ing, &ing)
+
 			cluster_map[cluster.Name] = 1
 			for i, rule := range ing.Spec.Rules {
-				ing.Spec.Rules[i].Host = cluster.Name + "." + rule.Host
+				cluster_ing.Spec.Rules[i].Host = cluster.Name + "." + rule.Host
 			}
 
 			if ing_get_err == nil { // find Ingress
 
 				omcplog.V(3).Info("Cluster '" + cluster.Name + "' Updated")
 				command := "update"
-				_, err := r.sendSync(ing, command, cluster.Name)
+				_, err := r.sendSync(cluster_ing, command, cluster.Name)
 				if err != nil {
 					return err
 				}
@@ -395,7 +396,7 @@ func (r *reconciler) updateIngress(req reconcile.Request, cm *clusterManager.Clu
 
 				omcplog.V(3).Info("Cluster '" + cluster.Name + "' Created")
 				command := "create"
-				_, err := r.sendSync(ing, command, cluster.Name)
+				_, err := r.sendSync(cluster_ing, command, cluster.Name)
 				if err != nil {
 					return err
 				}
@@ -439,36 +440,34 @@ func (r *reconciler) ingressForOpenMCPIngress(req reconcile.Request, m *resource
 	}
 	deepcopy.Copy(&host_ing.Spec, &m.Spec.Template.Spec)
 
-	host_ing.Namespace = m.Namespace
+	// for i, _ := range host_ing.Spec.Rules {
+	// 	for j, _ := range host_ing.Spec.Rules[i].HTTP.Paths {
+	// 		host_ing.Spec.Rules[i].HTTP.Paths[j].Backend.ServiceName = "headless-to-loadbalancer-service"
+	// 		host_ing.Spec.Rules[i].HTTP.Paths[j].Backend.ServicePort.IntVal = 80
+	// 	}
+	// }
 
-	for i, _ := range host_ing.Spec.Rules {
-		for j, _ := range host_ing.Spec.Rules[i].HTTP.Paths {
-			host_ing.Spec.Rules[i].HTTP.Paths[j].Backend.ServiceName = "openmcp-loadbalancing-controller"
-			host_ing.Spec.Rules[i].HTTP.Paths[j].Backend.ServicePort.IntVal = 80
-		}
-	}
+	// if m.Spec.IngressForClientFrom == "external" {
+	externalIP := os.Getenv("LB_EXTERNAL_IP")
+	lbIngress := corev1.LoadBalancerIngress{IP: externalIP}
 
-	if m.Spec.IngressForClientFrom == "external" {
-		externalIP := os.Getenv("LB_EXTERNAL_IP")
-		lbIngress := corev1.LoadBalancerIngress{IP: externalIP}
+	lbIngs := []corev1.LoadBalancerIngress{}
+	lbIngs = append(lbIngs, lbIngress)
+	host_ing.Status.LoadBalancer.Ingress = lbIngs
 
-		lbIngs := []corev1.LoadBalancerIngress{}
-		lbIngs = append(lbIngs, lbIngress)
-		host_ing.Status.LoadBalancer.Ingress = lbIngs
-
-	} else if m.Spec.IngressForClientFrom == "internal" {
-		foundService := &corev1.Service{}
-		nsn := types.NamespacedName{
-			Namespace: "openmcp",
-			Name:      "openmcp-loadbalancing-controller",
-		}
-		err := r.live.Get(context.TODO(), nsn, foundService)
-		if err != nil && errors.IsNotFound(err) {
-			omcplog.V(0).Info("LoadBalancing-controller Service Not Found")
-		} else {
-			host_ing.Status.LoadBalancer = foundService.Status.LoadBalancer
-		}
-	}
+	// } else if m.Spec.IngressForClientFrom == "internal" {
+	// 	foundService := &corev1.Service{}
+	// 	nsn := types.NamespacedName{
+	// 		Namespace: "openmcp",
+	// 		Name:      "openmcp-loadbalancing-controller",
+	// 	}
+	// 	err := r.live.Get(context.TODO(), nsn, foundService)
+	// 	if err != nil && errors.IsNotFound(err) {
+	// 		omcplog.V(0).Info("LoadBalancing-controller Service Not Found")
+	// 	} else {
+	// 		host_ing.Status.LoadBalancer = foundService.Status.LoadBalancer
+	// 	}
+	// }
 
 	reference.SetMulticlusterControllerReference(host_ing, reference.NewMulticlusterOwnerReference(m, m.GroupVersionKind(), req.Context))
 

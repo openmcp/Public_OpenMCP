@@ -1,0 +1,46 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: ingest
+  #namespace: smartcity
+spec:
+  replicas: 1
+  clusters:
+  #- cluster05
+  - cluster10
+  #- cluster12
+  #- cluster17
+  labels:
+    app: ingest
+  template:
+    spec:
+      template:
+        spec:
+          hostAliases:
+          - ip: 27.101.215.194
+            hostnames:
+            - "apis.data.go.kr"
+          imagePullSecrets:
+            - name: regcred
+          containers:
+            - env:
+                - name: AGENT_CONF
+                  value: ./conf
+                - name: AGENT_FILE
+                  value: ./conf/agent1st.conf
+                - name: AGENT_NAME
+                  value: agent1st
+                - name: DATACORE_URL
+                  value: http://ingest-interface:8081/entityOperations/upsert
+                - name: SCHEMA_URL
+                  value: http://data-manager:8080/datamodels
+                - name: TZ
+                  value: Asia/Seoul
+              image: ketidevit2/smartcity-daemon:0.0.1
+              imagePullPolicy: Always
+              name: smartcityingest
+              ports:
+                - containerPort: 8888
+              resources: {}
+          hostname: smartcityingest
+          restartPolicy: Always

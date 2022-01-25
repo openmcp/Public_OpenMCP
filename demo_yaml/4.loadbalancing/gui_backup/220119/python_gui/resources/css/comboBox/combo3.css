@@ -1,0 +1,109 @@
+QComboBox {
+    font-family : MS Sans Serif;
+    background-color : #dbdbdb;
+    /*border: 1px solid gray;*/
+    border-radius: 8px;
+    padding: 1px 18px 1px 3px;
+    /* min-width: 25em; */
+    max-width: 20em;
+    font-weight: bold;
+}
+
+QComboBox:editable {
+            background: white;
+}
+
+QComboBox:!editable, QComboBox::drop-down:editable {
+            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+            stop: 0 #E1E1E1, stop: 0.4 #DDDDDD,
+            stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);
+}
+
+
+QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+            stop: 0 #D3D3D3, stop: 0.4 #D8D8D8,
+            stop: 0.5 #DDDDDD, stop: 1.0 #E1E1E1);
+}
+
+QComboBox:on { /* shift the text when the popup opens */
+            padding-top: 3px;
+            padding-left: 4px;
+
+}
+
+QComboBox::drop-down {
+            subcontrol-origin: padding;
+            subcontrol-position: top right;
+            width: 30px;
+
+            /* border-left-width: 1px;*/
+            /* border-left-color: darkgray;*/
+            border-left-style: solid;
+            /*border-top-right-radius: 3px; */
+            /*border-bottom-right-radius: 3px;*/
+}
+
+QComboBox::down-arrow {
+            border: 0px;
+            background-repeat: no-repeat;
+            background-position: center center;
+            /* background-image-width: 50px; */
+            /* border-image: url(resources/downarrow.png); */
+            /* height:50px; */
+            width:100px;
+            image: url(resources/image/downarrow.png);
+}
+QComboBox::select{
+    margin:40px;
+    background-color: rgba(255,0,0,0.3);
+    /* color:#fff; */
+    text-shadow:0 1px 0 rgba(0,0,0,0.4);
+}
+
+QComboBox::down-arrow:on {
+            top: 1px;
+            left: 1px;
+}
+
+QComboBox QAbstractItemView::item {
+        min-height: 25px;
+        min-width: 20px;
+}
+
+/* ListView 설정 */
+QListView::item {
+        color: black;
+        background-color: #dbdbdb
+}
+QListView::item:selected {
+        color: black;
+        background-color: lightgray
+}
+QScrollBar:vertical {
+    border: 1px solid #999999;
+    background:white;
+    width:10px;
+    margin: 0px 0px 0px 0px;
+}
+
+/* Scroll Bar 설정 */
+QScrollBar::handle:vertical {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+    stop: 0 rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130), stop:1 rgb(32, 47, 130));
+    min-height: 0px;
+}
+QScrollBar::add-line:vertical {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+    stop: 0 rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));
+    height: 0px;
+    subcontrol-position: bottom;
+    subcontrol-origin: margin;
+}
+QScrollBar::sub-line:vertical {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));
+    height: 0 px;
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+}

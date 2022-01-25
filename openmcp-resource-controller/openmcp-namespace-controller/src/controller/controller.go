@@ -303,11 +303,48 @@ func (r *reconciler) createNamespace(req reconcile.Request, cm *clusterManager.C
 	instance.Status.ClusterMaps = cluster_map
 	instance.Status.LastSpec = instance.Spec
 	err := r.live.Status().Update(context.TODO(), instance)
-	return err
+	if err != nil {
+
+		return err
+	}
+	// svc := &corev1.Service{
+	// 	ObjectMeta: metav1.ObjectMeta{
+	// 		Name:      "headless-to-loadbalancer-service",
+	// 		Namespace: instance.Namespace,
+	// 	},
+	// 	Spec: corev1.ServiceSpec{
+	// 		Type:         "ExternalName",
+	// 		ExternalName: "openmcp-loadbalancing-controller.openmcp.svc.cluster.local",
+	// 		Ports: []corev1.ServicePort{
+	// 			{
+	// 				Port: 80,
+	// 			},
+	// 		},
+	// 	},
+	// }
+
+	// found := &corev1.Service{}
+
+	// err2 := cm.Host_client.Get(context.TODO(), found, instance.Namespace, instance.Name)
+
+	// if err2 != nil && errors.IsNotFound(err2) {
+	// 	omcplog.V(3).Info("Serivce(headless-to-loadbanacer-service) for LB in Namespace '" + instance.Namespace + "' Deployed")
+	// 	err3 := cm.Host_client.Create(context.TODO(), svc)
+	// 	if err3 != nil && errors.IsAlreadyExists(err3) {
+	// 		return nil
+	// 	} else if err3 != nil {
+	// 		return err3
+	// 	}
+	// }
+
+	return nil
 }
 
 func (r *reconciler) DeleteNamespace(cm *clusterManager.ClusterManager, name string, namespace string) error {
 	//omcplog.V(4).Info("DeleteNamespace Function Called")
+
+	//finalizers := make([]corev1.FinalizerName,0)
+	//finalizers = append(finalizers, "foregroundDeletion")
 
 	dep := &corev1.Namespace{
 		TypeMeta: metav1.TypeMeta{
@@ -316,9 +353,12 @@ func (r *reconciler) DeleteNamespace(cm *clusterManager.ClusterManager, name str
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
-			//Namespace: namespace,
 		},
+		/*Spec: corev1.NamespaceSpec{
+			Finalizers: finalizers,
+		},*/
 	}
+
 	err := cm.Host_client.Delete(context.TODO(), dep, dep.Namespace, dep.Name)
 	if err != nil && errors.IsNotFound(err) {
 		omcplog.V(4).Info(err)

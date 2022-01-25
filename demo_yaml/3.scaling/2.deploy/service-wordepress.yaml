@@ -1,10 +1,10 @@
 apiVersion: openmcp.k8s.io/v1alpha1
 kind: OpenMCPService
 metadata:
-  name: wordpress
+  name: wordpress-cpa
   namespace: wordpress
   labels:
-    app: wordpress
+    app: wordpress-cpa
 spec:
   template:
     spec:
@@ -21,4 +21,4 @@ spec:
           targetPort: 8080
 #          nodePort: 31185
       selector:
-        app: wordpress
+        app: wordpress-cpa

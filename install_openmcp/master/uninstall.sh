@@ -50,6 +50,10 @@ echo "--- sync-controller"
 kubectl delete -f openmcp-sync-controller/.
 echo "--- metallb"
 kubectl delete -f metallb/.
+
+echo "--- nginx-ingressgateway"
+kubectl delete -f nginx-ingress-controller/.
+
 echo "--- istio"
 rm -r istio/certs/
 rm istio/openmcp.yaml

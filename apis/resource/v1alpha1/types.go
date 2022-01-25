@@ -179,8 +179,8 @@ type OpenMCPIngressSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	IngressForClientFrom string          `json:"ingressForClientFrom" protobuf:"bytes,1,opt,name=ingressForClientFrom"`
-	Template             extv1b1.Ingress `json:"template" protobuf:"bytes,3,opt,name=template"`
+	// IngressForClientFrom string          `json:"ingressForClientFrom" protobuf:"bytes,1,opt,name=ingressForClientFrom"`
+	Template extv1b1.Ingress `json:"template" protobuf:"bytes,3,opt,name=template"`
 }
 
 // OpenMCPIngressStatus defines the observed state of OpenMCPIngress

@@ -19,6 +19,7 @@ mv server.crt /home/nfs/pv/api-server/cert
 kubectl create ns openmcp
 kubectl create ns metallb-system
 kubectl create ns istio-system
+# kubectl create ns nginx-ingress
 
 echo "Input Your Docker ID(No Pull Limit Plan)"
 docker login
@@ -84,7 +85,9 @@ echo "--- metallb"
 kubectl create -f metallb/.
 echo "--- configmap"
 kubectl apply -f configmap/coredns/.
-echo "--- ingress gateway"
+# echo "--- ingress gateway"
+# kubectl create -f nginx-ingress-controller
+
 kubectl create ns istio-system --context openmcp
 # istio 클러스터간 접근을 위한 인증서 만들기
 cd istio

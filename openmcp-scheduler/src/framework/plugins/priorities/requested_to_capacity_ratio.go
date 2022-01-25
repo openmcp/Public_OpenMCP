@@ -1,5 +1,6 @@
 package priorities
 
+//기존 쿠버네티스의 노드 레벨 RequestedToCapacityRatioPriority을 클러스터 레벨로 확장
 import (
 	"openmcp/openmcp/omcplog"
 	ketiresource "openmcp/openmcp/openmcp-scheduler/src/resourceinfo"
@@ -52,7 +53,7 @@ func (pl *RequestedToCapacityRatio) PreScore(pod *ketiresource.Pod, clusterInfo 
 		requested = node.RequestedResource.EphemeralStorage + pod.RequestedResource.EphemeralStorage
 		nodeScore += RunRequestedToCapacityRatioScorerFunction(node.CapacityResource.EphemeralStorage, requested)
 
-		node.NodeScore = nodeScore
+		node.NodeScore = nodeScore * weight
 		clusterScore += nodeScore
 	}
 	if !check {
@@ -66,9 +67,7 @@ func (pl *RequestedToCapacityRatio) PreScore(pod *ketiresource.Pod, clusterInfo 
 			pl.betweenScore = 5
 		}
 		pl.prescoring[clusterInfo.ClusterName] = clusterScore - pl.betweenScore
-
 		// omcplog.V(0).Infof("2["+clusterInfo.ClusterName+"]노드"+pl.Name()+" 노드차이 =", pl.betweenScore)
-
 	}
 	return clusterScore
 }

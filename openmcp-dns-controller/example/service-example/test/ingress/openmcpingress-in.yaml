@@ -4,7 +4,7 @@ metadata:
   name: web-ingress-in
   namespace: openmcp
 spec:
-  ingressForClientFrom: internal
+  # ingressForClientFrom: internal
   template:
     spec:
       rules:

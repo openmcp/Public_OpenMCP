@@ -12,6 +12,12 @@ import (
 	"openmcp/openmcp/util/clusterManager"
 )
 
+const (
+	defMaxNice    int = 100
+	defMinNice    int = 0
+	defniceweight int = 10
+)
+
 type openmcpFramework struct {
 	filterPlugins     []OpenmcpFilterPlugin
 	scorePlugins      []OpenmcpScorePlugin
@@ -23,6 +29,14 @@ type openmcpFramework struct {
 	betweenScores     int64
 	preselectedName   string
 	preClusterName    string
+	Clusters_nice     map[string]OpenmcpNiceScore
+	NiceScore         int
+	NiceMax           int
+	NiceMin           int
+}
+
+func (f *openmcpFramework) Set_NiceVaule(minScore int64, maxScore int64, selectcluster string) {
+
 }
 
 // The appearance of the blank identifier in this construct indicates
@@ -54,7 +68,6 @@ func NewFramework(grpcClient protobuf.RequestAnalysisClient) OpenmcpFramework {
 			&priorities.RequestedToCapacityRatio{},
 			&priorities.BalancedNetworkAllocation{},
 			&priorities.QosPriority{},
-			&priorities.LeastRequested{},
 		},
 		prefilterPlugins: []OpenmcpPreFilterPlugin{
 			&predicates.PodFitsResources{},
@@ -117,7 +130,26 @@ func (f *openmcpFramework) EraseFilterPluginsOnClusters(pod *ketiresource.Pod, c
 	return pr
 }
 
+// func PrintFilterResult(datas map[string]bool) {
+// 	for clustername, scores := range datas {
+// 		omcplog.V(2).Infof("[%v] Filters {", clustername
+// 			omcplog.V(2).Infof("    %v = %v", scores[i].Name, scores[i].Score)
+// 	}
+// 	omcplog.V(2).Info("}")
+
+// }
+
+func PrintFilterResult(datas map[string]OpenmcpPluginFilterList) {
+	for clustername, filters := range datas {
+		omcplog.V(2).Infof("[%v] Filters {", clustername)
+		for i := 0; i < len(filters); i++ {
+			omcplog.V(2).Infof("    %v = %v", filters[i].Name, filters[i].Filter)
+		}
+		omcplog.V(2).Info("}")
+	}
+}
 func (f *openmcpFramework) RunFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, cm *clusterManager.ClusterManager) OpenmcpClusterFilteredStatus {
+	Filters := make(map[string]OpenmcpPluginFilterList)
 	result := make(map[string]bool)
 	if clusters == nil {
 		return nil
@@ -128,6 +160,7 @@ func (f *openmcpFramework) RunFilterPluginsOnClusters(pod *ketiresource.Pod, clu
 		result[cluster.ClusterName] = true
 		for _, pl := range f.prefilterPlugins {
 			pl.PreFilter(pod, cluster)
+
 		}
 		if cluster.PreFilter == false || cluster.PreFilterTwoStep == false {
 			result[cluster.ClusterName] = false
@@ -136,12 +169,18 @@ func (f *openmcpFramework) RunFilterPluginsOnClusters(pod *ketiresource.Pod, clu
 		for _, pl := range f.filterPlugins {
 			isFiltered := pl.Filter(pod, cluster, cm)
 			result[cluster.ClusterName] = result[cluster.ClusterName] && isFiltered
+			filterindex := OpenmcpPluginFilter{
+				Name:   pl.Name(),
+				Filter: isFiltered,
+			}
+			Filters[cluster.ClusterName] = append(Filters[cluster.ClusterName], filterindex)
 			if !result[cluster.ClusterName] {
 				break
 			}
 		}
 	}
-	//	omcplog.V(0).Info("Filter Info=>", result)
+	PrintFilterResult(Filters)
+	//omcplog.V(0).Info("Filter Info=>", result)
 	return result
 }
 func eraserCluster(scoreResult OpenmcpPluginToClusterScores) string {
@@ -162,7 +201,7 @@ func eraserCluster(scoreResult OpenmcpPluginToClusterScores) string {
 	//omcplog.V(0).Info("selected clustet ==", selectedCluster)
 	return selectedCluster
 }
-func selectCluster(scoreResult OpenmcpPluginToClusterScores) string {
+func (f *openmcpFramework) selectCluster(scoreResult OpenmcpPluginToClusterScores) string {
 	var selectedCluster string
 	var maxScore int64
 	for clusterName, scoreList := range scoreResult {
@@ -177,18 +216,95 @@ func selectCluster(scoreResult OpenmcpPluginToClusterScores) string {
 		if clusterScore > maxScore {
 			selectedCluster = clusterName
 			maxScore = clusterScore
+			f.NiceMax = int(maxScore)
+			if maxScore == 0 {
+				f.NiceMin = 1
+			} else {
+				f.NiceMin = int(maxScore / int64(defniceweight))
+			}
+			if f.NiceMin == 0 {
+				f.NiceMin = 1
+			}
 		}
+	}
+	//Nice값 계산
+	for cluster, _ := range scoreResult {
+		temp := f.Clusters_nice[cluster]
+		temp.NiceValue = temp.CluersterScore / defniceweight
+		if selectedCluster == cluster {
+			omcplog.V(2).Infof("[%v] NiceScore Update %v(-%v)", cluster, temp.NiceScore, f.NiceMin)
+			temp.NiceScore = temp.NiceScore - f.NiceMin
+			if temp.NiceScore < 0 {
+				temp.NiceScore = 0
+			}
+			omcplog.V(2)
+		} else {
+			omcplog.V(2).Infof("[%v] NiceScore Update %v(+%v)", cluster, temp.NiceScore, temp.NiceValue)
+			temp.NiceScore = temp.NiceScore + temp.NiceValue
+		}
+		f.Clusters_nice[cluster] = temp
+
 	}
 	//omcplog.V(0).Info("selected clustet ==", selectedCluster)
 	return selectedCluster
 }
+func PrintScoreResult(datas map[string]OpenmcpPluginScoreList) {
+	for clustername, scores := range datas {
+		omcplog.V(2).Infof("[%v] Scores {", clustername)
+		for i := 0; i < len(scores); i++ {
+			omcplog.V(2).Infof("    %v = %v", scores[i].Name, scores[i].Score)
+		}
+		omcplog.V(2).Info("}")
+
+	}
+
+}
+
+/*
+**brief Nice값을 Score에 추가해주는 함수
+
+ */
+func (f *openmcpFramework) NiceScoreCul(Scorelist *map[string]OpenmcpPluginScoreList, clstername string) {
+
+	transScore := OpenmcpPluginScore{
+		Name:  "Nice",
+		Score: int64(f.Clusters_nice[clstername].NiceScore),
+	}
+	(*Scorelist)[clstername] = append((*Scorelist)[clstername], transScore)
+}
 
 // func (f *openmcpFramework) RunScorePluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, replicas int32) OpenmcpPluginToClusterScores {
 func (f *openmcpFramework) RunScorePluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, allclusters map[string]*ketiresource.Cluster, replicas int32) string {
+	// nice 값 계산전 기전에 클러스터가 있는지 없는지 다시 확인
+	// 나이스 추가
+	if f.NiceMax == 0 {
+		f.NiceMax = defMaxNice
+		f.NiceMin = defMinNice
+	}
+	omcplog.V(2).Infof("kcp test start")
+	if f.Clusters_nice == nil {
+		f.Clusters_nice = make(map[string]OpenmcpNiceScore)
+	}
+	for clustername, _ := range clusters {
+		_, exist := f.Clusters_nice[clustername]
+		if exist {
+			if f.Clusters_nice[clustername].NiceScore > f.NiceMax {
+				str_nice := f.Clusters_nice[clustername]
+				str_nice.NiceScore = 5
+				f.Clusters_nice[clustername] = str_nice
+			}
+			continue
+		} else {
+			str_nice := OpenmcpNiceScore{}
+			str_nice.NiceScore = f.NiceMax / 4
+			f.Clusters_nice[clustername] = str_nice
+		}
+	}
 	if !f.IspreScore {
 		f.preScore = 0
 		preresult := make(map[string]OpenmcpPluginScoreList)
 		for _, cluster := range clusters {
+			perClusterScore := 0
 			preresult[cluster.ClusterName] = make([]OpenmcpPluginScore, 0)
 			for _, pl := range f.scorePlugins {
 				scoring := pl.PreScore(pod, cluster, false)
@@ -197,13 +313,20 @@ func (f *openmcpFramework) RunScorePluginsOnClusters(pod *ketiresource.Pod, clus
 					Score: scoring,
 				}
 				f.preScore += scoring
+				perClusterScore += int(scoring)
 				preresult[cluster.ClusterName] = append(preresult[cluster.ClusterName], transScore)
 			}
-
+			// Nice 값 추가 //prescore는 한번만 수행하기 때문에(디플로이먼트당)이때 계산
+			temp := f.Clusters_nice[cluster.ClusterName]
+			temp.CluersterScore = perClusterScore
+			f.Clusters_nice[cluster.ClusterName] = temp
+			perClusterScore = 0
+			f.NiceScoreCul(&preresult, cluster.ClusterName)
 		}
-		f.IspreScore = true
 
-		pr := selectCluster(preresult)
+		f.IspreScore = true
+		PrintScoreResult(preresult)
+		pr := f.selectCluster(preresult)
 		f.preselectedName = pr
 		f.preClusterName = pr
 
@@ -229,10 +352,10 @@ func (f *openmcpFramework) RunScorePluginsOnClusters(pod *ketiresource.Pod, clus
 			// Update the result of this cluster
 			result[cluster.ClusterName] = append(result[cluster.ClusterName], plScore)
 		}
+		f.NiceScoreCul(&result, cluster.ClusterName)
 	}
-
-	omcplog.V(5).Info("RunScorePluginsOnClusters result array ", result)
-	pr := selectCluster(result)
+	PrintScoreResult(result)
+	pr := f.selectCluster(result)
 	omcplog.V(5).Info("RunScorePluginsOnClusters pr ", pr)
 	//	omcplog.V(0).Info("Score Info=>", result)
 	f.preClusterName = pr

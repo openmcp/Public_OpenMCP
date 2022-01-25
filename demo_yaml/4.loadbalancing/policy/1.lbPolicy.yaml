@@ -11,7 +11,7 @@ spec:
       policies:
         - type: GeoRate
           value:
-            - "1"
+            - "0.3"
         - type: Period
           value:
             - "5.0"

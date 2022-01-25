@@ -1,3 +1,7 @@
+//QoSPriority : 기존 kubelet은 QoS 을 제공함 (Best-Effort/Burstable/Guaranteed)
+//제공되는 QoS 를 기반으로 “Best-Effort < Burstable < Guaranteed” 우선순위를 부여하여
+//총 우선순위 값이 큰 클러스터를 선호함
+
 package priorities
 
 import (
@@ -14,9 +18,11 @@ type QosPriority struct {
 }
 
 const (
-	minScore int64 = 0
-	midScore int64 = (minScore + maxScore) / 2
-	maxScore int64 = 10
+	minScore     int64 = 1
+	midScore     int64 = (minScore + maxScore) / 2
+	maxScore     int64 = 3
+	maxRTCRScore int64 = 10
+	weight       int64 = 3
 )
 
 func (pl *QosPriority) Name() string {
@@ -24,6 +30,7 @@ func (pl *QosPriority) Name() string {
 }
 func (pl *QosPriority) PreScore(pod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, check bool) int64 {
 	var clusterScore int64
+
 	for _, node := range clusterInfo.Nodes {
 		var nodeScore int64
 		for _, pod := range node.Pods {

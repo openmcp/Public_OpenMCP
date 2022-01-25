@@ -113,6 +113,7 @@ IOP=$(cat <<EOF
 $IOP
           serviceAnnotations:
             metallb.universe.tf/address-pool: default2
+            metallb.universe.tf/allow-shared-ip: public
           service:
             ports:
               - name: status-port

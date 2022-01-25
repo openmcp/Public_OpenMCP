@@ -1,0 +1,52 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPDeployment
+metadata:
+  name: web
+  #namespace: smartcity
+spec:
+  clusters:
+  #- cluster05
+  - cluster10
+  #- cluster12
+  #- cluster17
+  replicas: 1
+  labels:
+    app: web
+  template:
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+            - name: regcred
+          containers:
+            - env:
+                - name: AUTH_EXTERNAL
+                  value: http://203.253.128.181:30084
+                - name: AUTH_INTERNAL
+                  value: http://10.0.0.237:30000
+                - name: AUTH_YN
+                  value: "N"
+                - name: DAEMON_URL
+                  value: http://ingest:8888
+                - name: DATACORE_URL
+                  value: http://ingest-interface:8081/entityOperations/upsert
+                - name: DATASOURCE_ID
+                  value: postgres
+                - name: DATASOURCE_PW
+                  value: pine1234
+                - name: DATASOURCE_URL
+                  value: jdbc:postgresql://postgres:5430/postgres
+                - name: REDIRECT_URL
+                  value: http://203.253.128.181:9208
+                - name: SCHEMA_URL
+                  value: http://data-manager:8080/datamodels
+                - name: TZ
+                  value: Asia/Seoul
+              image: ketidevit2/smartcity-web:0.0.1
+              imagePullPolicy: Always
+              name: smartcityweb
+              ports:
+                - containerPort: 8080
+              resources: {}
+          hostname: smartcityweb
+          restartPolicy: Always

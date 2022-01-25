@@ -1,0 +1,24 @@
+apiVersion:  openmcp.k8s.io/v1alpha1
+kind: OpenMCPIngress
+metadata:
+  name: productpage-ingress
+  namespace: bookinfo
+spec:
+  # ingressForClientFrom: internal
+  template:
+    spec:
+      rules:
+      - host: keti.productpage.openmcp.in
+        http:
+          paths:
+          - backend:
+              serviceName: productpage
+              servicePort: 9080
+---
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPIngressDNSRecord
+metadata:
+  name: productpage-ingress
+  namespace: bookinfo
+spec:
+  recordTTL: 300

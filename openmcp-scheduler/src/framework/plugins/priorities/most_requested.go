@@ -22,7 +22,7 @@ func (pl *MostRequested) PreScore(pod *ketiresource.Pod, clusterInfo *ketiresour
 		nodeScore += mostRequestedScore(pod.RequestedResource.Memory, node.AllocatableResource.Memory)
 		nodeScore += mostRequestedScore(pod.RequestedResource.EphemeralStorage, node.AllocatableResource.EphemeralStorage)
 
-		node.NodeScore = nodeScore
+		node.NodeScore = nodeScore * weight
 		clusterScore += nodeScore
 	}
 	if !check {
@@ -65,3 +65,4 @@ func mostRequestedScore(requested, allocable int64) int64 {
 	}
 	return (requested * int64(100)) / allocable
 }
+	

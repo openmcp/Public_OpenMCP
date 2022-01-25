@@ -1,0 +1,16 @@
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPService
+metadata:
+  name: rest-proxy
+  #namespace: smartcity
+  labels:
+    app: rest-proxy
+spec:
+  template:
+    spec:
+      ports:
+        - name: "8082"
+          port: 8082
+          targetPort: 8082
+      selector:
+        app: rest-proxy

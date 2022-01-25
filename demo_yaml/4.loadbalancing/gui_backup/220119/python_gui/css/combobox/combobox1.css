@@ -1,0 +1,54 @@
+QComboBox {
+    background-color: whitesmoke;
+    font: 14px;
+    max-height: 20px;
+    border: 1px;
+    border-style : solid;
+    border-color: black;
+    border-radius: 5px;
+    padding: 1px 0px 1px 3px; /* This (useless) line resolves a bug with the font color */
+}
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    background-color: lightgrey;
+    width: 15px;
+    border-color: black;
+    border-radius: 5px;
+}
+
+QComboBox::down-arrow {
+    image: url(assets/arrow.png);
+    width: 9px;
+}
+
+QComboBox:on {
+    color: black;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+QConboBox:lineEdit{
+    color: black;
+}
+/* QComboBox:on::hover {
+    color: black;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+} */
+
+QComboBox::down-arrow:on { /* shift the arrow when popup is open */
+    top: 1px;
+    left: 1px;
+}
+/* QComboBox::down-arrow {
+    image: url(:/assets/arrow.png);
+    width: 14px;
+    height: 14px;
+} */
+/* QComboBox::down-arrow { width: 15px; 
+    background: transparent; 
+    padding: 0px 0px 0px 0px; 
+    image: url(/assets/arrow.png); }
+      QComboBox::down-arrow:on { image: url(/assets/arrow.png); 
+     } */

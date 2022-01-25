@@ -1,14 +1,14 @@
 apiVersion: openmcp.k8s.io/v1alpha1
 kind: OpenMCPDeployment
 metadata:
-  name: mysql
+  name: mysql-cpa
   namespace: wordpress
 spec:
   replicas: 1
   clusters:
-    - cluster09
+  - cluster02
   labels:
-    app: mysql
+    app: mysql-cpa
   template:
     spec:
       template:

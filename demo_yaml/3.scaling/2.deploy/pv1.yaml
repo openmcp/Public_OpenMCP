@@ -6,9 +6,9 @@ metadata:
     type: local
 spec:
   clusters:
-    - cluster03
-    - cluster09
-    - cluster14
+  - cluster01
+  - cluster02
+  - cluster03
   labels:
     type: local
   template:
@@ -20,6 +20,6 @@ spec:
         - ReadWriteOnce
       nfs:
         path: /wordpress/data001/pv001
-        #server: "10.0.3.12"
+        #server: "211.45.109.210"
         server: "115.94.141.62"
         readOnly: false

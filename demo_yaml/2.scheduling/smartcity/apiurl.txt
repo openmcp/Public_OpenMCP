@@ -1,0 +1,8 @@
+# 1. agent Setting Click
+# 2. agentWeatherObserved Click
+# 3. WeatherObserved Click
+# 4. WeatherObserved_001 Click
+# 5. url_addr => http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?dataType=json&numOfRows=1000
+# 6. key_value => xu2gHkHh5PrWLXUSnk%2BqICJc2%2FwsENQLJnapmbP0S52Jg7FxIFohMk3FfhI5mkp5Dz7ir%2FuocdMHrnGEP9ZBQ%3D%3D
+# 7. save click
+

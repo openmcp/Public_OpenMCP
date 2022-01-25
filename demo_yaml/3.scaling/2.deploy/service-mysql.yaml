@@ -1,10 +1,10 @@
 apiVersion: openmcp.k8s.io/v1alpha1
 kind: OpenMCPService
 metadata:
-  name: mysql
+  name: mysql-cpa
   namespace: wordpress
   labels:
-    app: mysql
+    app: mysql-cpa
 spec:
   template:
     spec:
@@ -12,5 +12,5 @@ spec:
       ports:
       - port: 3306
       selector:
-        app: mysql
+        app: mysql-cpa
 

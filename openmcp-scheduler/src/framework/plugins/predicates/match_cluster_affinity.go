@@ -67,7 +67,7 @@ func (pl *MatchClusterAffinity) PreFilter(newPod *ketiresource.Pod, clusterInfo 
 			return true
 		}
 	}
-	omcplog.V(4).Info("MatchClusterAffinity false ")
+	omcplog.V(4).Info("MatchClusterAffinity : false")
 	elapsedTime := time.Since(startTime)
 	omcplog.V(3).Infof("MatchClusterAffinity Time [%v]", elapsedTime)
 	return false
@@ -76,13 +76,13 @@ func (pl *MatchClusterAffinity) PreFilter(newPod *ketiresource.Pod, clusterInfo 
 func (pl *MatchClusterAffinity) Filter(newPod *ketiresource.Pod, clusterInfo *ketiresource.Cluster, cm *clusterManager.ClusterManager) bool {
 
 	if len(newPod.Affinity) == 0 {
-		omcplog.V(3).Info("MatchClusterAffinity true ")
+		omcplog.V(3).Info("MatchClusterAffinity : true ")
 		return true
 	}
 	if clusterInfo.PreFilterTwoStep == true {
-		omcplog.V(3).Info("MatchClusterAffinity true ")
+		omcplog.V(3).Info("MatchClusterAffinity : true ")
 		return true
 	}
-	omcplog.V(4).Info("MatchClusterAffinity false ")
+	omcplog.V(4).Info("MatchClusterAffinity : false ")
 	return false
 }

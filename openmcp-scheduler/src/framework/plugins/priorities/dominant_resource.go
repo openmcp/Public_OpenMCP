@@ -1,5 +1,6 @@
 package priorities
 
+//dominantShare(=‘우선자원량/전체자원량’)이 작은 클러스터를 선호함
 import (
 	"math"
 	"openmcp/openmcp/omcplog"
@@ -37,7 +38,7 @@ func (pl *DominantResource) PreScore(pod *ketiresource.Pod, clusterInfo *ketires
 		dominantShareArr = append(dominantShareArr, dominantShare)
 		nodeScore := int64(math.Round((1/getMinDominantShare(dominantShareArr))*math.MaxFloat64) * float64(maxScore))
 
-		node.NodeScore = nodeScore
+		node.NodeScore = nodeScore * weight
 		clusterScore += nodeScore
 	}
 

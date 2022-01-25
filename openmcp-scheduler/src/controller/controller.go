@@ -142,7 +142,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	IsExist := false
 	clusters := newDeployment.Spec.Clusters
 	if err != nil && errors.IsNotFound(err) {
-		omcplog.V(0).Info("Not Found::", newDeployment.GetName)
+		omcplog.V(5).Info("Not Found::", newDeployment.GetName)
 		return reconcile.Result{}, nil
 	}
 
@@ -150,6 +150,9 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 	if newDeployment.Status.SchedulingNeed == true && newDeployment.Status.SchedulingComplete == false {
 		lastspec := newDeployment.Status.LastSpec
 		temp := newDeployment.Spec.Replicas
+		omcplog.V(0).Info("################## Scheduling Start #####################")
+		omcplog.V(0).Infof("Start Deployment : %v", newDeployment.Name)
+		omcplog.V(0).Infof("Namespace : %v", newDeployment.Namespace)
 
 		if r.scheduler.Live == nil {
 			omcplog.V(0).Info("sched.Live NIL")
@@ -181,7 +184,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				}
 
 				omcplog.V(5).Infof("  extra_replicas =>", extra_replicas)
-				omcplog.V(5).Infof("  ClusterJoin Resource Get => [Name] : %v, [Namespace]  : %v", newDeployment.Name, newDeployment.Namespace)
+				//omcplog.V(0).Infof("  ClusterJoin Resource Get => [Name] : %v, [Namespace]  : %v", newDeployment.Name, newDeployment.Namespace)
 				cluster_replicas_map, _ := r.scheduler.Scheduling(newDeployment, false, clusters)
 				if r.scheduler.SchdPolicy != "RR" {
 					for key, val := range cluster_replicas_map {
@@ -202,11 +205,11 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				newDeployment.Status.SchedulingComplete = true
 				//		omcplog.V(5).Infof("cluster map =", cluster_replicas_map)
 				if !(len(cluster_replicas_map) == 0) {
-					omcplog.V(0).Info("=> ClusterJoin Scheduling Result : ", chagnedp)
+					omcplog.V(0).Info("ClusterJoin Scheduling Result : ", chagnedp)
 				}
 				err := r.live.Status().Update(context.TODO(), newDeployment)
 				if err != nil {
-					omcplog.V(0).Infof(" ClusterJoin Failed to update instance status, %v", err)
+					omcplog.V(0).Infof("ClusterJoin Failed to update instance status, %v", err)
 					return reconcile.Result{}, err
 				}
 				return reconcile.Result{}, nil
@@ -227,7 +230,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 					omcplog.V(5).Info("=> D RR ..")
 					cluster_replicas_map, _ := r.scheduler.Scheduling(newDeployment, false, clusters)
 					if !(len(cluster_replicas_map) == 0) {
-						omcplog.V(0).Info("=> Scheduling Result : ", cluster_replicas_map)
+						omcplog.V(0).Info("Scheduling Result :", cluster_replicas_map)
 					}
 					newDeployment.Status.ClusterMaps = cluster_replicas_map
 					newDeployment.Status.Replicas = newDeployment.Status.Replicas
@@ -256,7 +259,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 
 			if !(len(newDeployment.Status.ClusterMaps) == 0) {
 
-				omcplog.V(0).Info("=> Scheduling Result : ", newDeployment.Status.ClusterMaps)
+				omcplog.V(0).Info("Scheduling Result : ", newDeployment.Status.ClusterMaps)
 			}
 			err := r.live.Status().Update(context.TODO(), newDeployment)
 			if err != nil {
@@ -273,7 +276,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				newDeployment.Spec.Replicas = newDeployment.Spec.Replicas - lastspec.Replicas
 			}
 		}
-		omcplog.V(5).Infof("  Resource Get => [Name] : %v, [Namespace]  : %v", newDeployment.Name, newDeployment.Namespace)
+		// omcplog.V(0).Infof("  Resource Get => [Name] : %v, [Namespace]  : %v", newDeployment.Name, newDeployment.Namespace)
 		cluster_replicas_map, _ := r.scheduler.Scheduling(newDeployment, false, clusters)
 
 		if IsExist {
@@ -281,7 +284,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 			//omcplog.V(5).Infof("리소스 변경 기존보다 커짐")
 			for clustername, cnt := range newDeployment.Status.ClusterMaps {
 				cluster_replicas_map[clustername] = cluster_replicas_map[clustername] + cnt
-				omcplog.V(5).Infof("  clustermap =", cluster_replicas_map)
+				omcplog.V(5).Infof("clustermap =", cluster_replicas_map)
 			}
 		}
 		newDeployment.Status.ClusterMaps = cluster_replicas_map
@@ -290,7 +293,7 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 		newDeployment.Status.SchedulingComplete = true
 		//		omcplog.V(5).Infof("cluster map =", cluster_replicas_map)
 		if !(len(cluster_replicas_map) == 0) {
-			omcplog.V(0).Info("=> Scheduling Result : ", cluster_replicas_map)
+			omcplog.V(0).Infof("Scheduling Result : %v", cluster_replicas_map)
 		}
 		err := r.live.Status().Update(context.TODO(), newDeployment)
 		if err != nil {

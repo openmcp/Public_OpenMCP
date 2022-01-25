@@ -1,0 +1,24 @@
+apiVersion:  openmcp.k8s.io/v1alpha1
+kind: OpenMCPIngress
+metadata:
+  name: wordpress-ingress
+  namespace: wordpress
+spec:
+  # ingressForClientFrom: internal
+  template:
+    spec:
+      rules:
+      - host: keti.wordpress.openmcp.in
+        http:
+          paths:
+          - backend:
+              serviceName: wordpress-cpa
+              servicePort: 80
+---
+apiVersion: openmcp.k8s.io/v1alpha1
+kind: OpenMCPIngressDNSRecord
+metadata:
+  name: wordpress-ingress
+  namespace: wordpress
+spec:
+  recordTTL: 300

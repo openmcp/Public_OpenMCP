@@ -272,13 +272,16 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
+  annotations:
+    metallb.universe.tf/address-pool: default2
+    metallb.universe.tf/allow-shared-ip: public
   name: ingress-nginx
   namespace: ingress-nginx
   labels:
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: ingress-nginx
 spec:
-  externalTrafficPolicy: Local
+  externalTrafficPolicy: Cluster
   type: LoadBalancer
   selector:
     app.kubernetes.io/name: ingress-nginx
@@ -286,9 +289,11 @@ spec:
   ports:
     - name: http
       port: 80
+      nodePort: 32580
       targetPort: http
     - name: https
       port: 443
+      nodePort: 32543
       targetPort: https
 
 ---

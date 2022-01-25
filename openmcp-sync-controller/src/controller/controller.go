@@ -36,6 +36,8 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var cm *clusterManager.ClusterManager
@@ -544,7 +546,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				} else if err2 != nil {
 					omcplog.V(0).Info("[Error] Get Secret '" + dockerSecretName + "', in NS(openmcp)")
 				} else {
-					sec.ResourceVersion = ""
+					sec.ObjectMeta = metav1.ObjectMeta{}
+					sec.Name = dockerSecretName
 					sec.Namespace = obj.GetName()
 					err3 := clusterClient.Create(context.TODO(), sec)
 					if err3 != nil && errors.IsAlreadyExists(err3) {
@@ -601,7 +604,8 @@ func (r *reconciler) Reconcile(req reconcile.Request) (reconcile.Result, error) 
 				} else if err2 != nil {
 					omcplog.V(0).Info("[Error] Get Secret '" + dockerSecretName + "', in NS(openmcp)")
 				} else {
-					sec.ResourceVersion = ""
+					sec.ObjectMeta = metav1.ObjectMeta{}
+					sec.Name = dockerSecretName
 					sec.Namespace = obj.GetName()
 					err3 := clusterClient.Create(context.TODO(), sec)
 					if err3 != nil && errors.IsAlreadyExists(err3) {

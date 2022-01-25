@@ -28,7 +28,7 @@ master:
     InfluxDB:
       NodePort: 30003
     LoadBalancingController:
-      external: 115.94.141.62
+      external: 115.94.141.62 #무조건 80포트 사용해야함.( Routing 규칙 필요시 외부포트80)
       NodePort: 30004
 externalServer:
   ServerIP:

@@ -1,0 +1,27 @@
+QPushButton {
+    background-color: blue;
+    border-style: dashed;
+    border-width: 5px;
+    border-radius: 10px;
+    border-color: navy;
+    font: bold 14px;
+    min-width: 10%;
+    min-height: 10%;
+    width: fit-content;
+    padding: 10px;
+    /* background-image: url(assets/button2.png); */
+    /* border-image: url(assets/button1.png);
+    background-repeat: no-repeat; */
+    /* qproperty-icon: url(assets/button1.png) */
+}
+
+QPushButton:hover {
+    background-color: rgba(0, 0, 255, 0.699);
+    border-style: inset;
+}
+
+QPushButton:hover::pressed {
+    background-color: rgba(0, 0, 255, 0.452);
+    border-style: inset;
+}
+

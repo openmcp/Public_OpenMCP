@@ -1,3 +1,4 @@
+//네트워크 사용량이 적은 클러스터 선호함
 package priorities
 
 import (
@@ -52,7 +53,7 @@ func (pl *BalancedNetworkAllocation) PreScore(pod *ketiresource.Pod, clusterInfo
 		if pl.betweenScore <= 0 {
 			pl.betweenScore = 5
 		}
-		pl.prescoring[clusterInfo.ClusterName] = clusterScore - pl.betweenScore
+		pl.prescoring[clusterInfo.ClusterName] = (clusterScore - pl.betweenScore) * weight
 
 	}
 	return clusterScore

@@ -20,6 +20,28 @@ type OpenmcpPluginScore struct {
 	Score int64
 }
 
+// OpenmcpClusterScore is a struct with plugin name and score
+/**
+*@param NiceScore 해당 클러스터의 현재 Nice 값
+*@param CluersterScore 해당 클러스터의 Score 알고리즘의 점수의 합산
+*@param NiceValue 해당 클러스터가 선택이되거나 되지않을때 증감소하는 나이스값\
+ex) NiceScore +=NiceValue NiceScore -=NiceValue
+**/
+type OpenmcpNiceScore struct {
+	NiceScore      int
+	CluersterScore int
+	NiceValue      int
+}
+
+// OpenmcpClusterScoreList declares a list of plugins and their scores.
+type OpenmcpPluginFilterList []OpenmcpPluginFilter
+
+// OpenmcpClusterScore is a struct with plugin name and score
+type OpenmcpPluginFilter struct {
+	Name   string
+	Filter bool
+}
+
 // OpenmcpPluginToClusterScores declare map from cluster name to its OpenmcpClusterScoreList
 type OpenmcpPluginToClusterScores map[string]OpenmcpPluginScoreList
 
@@ -31,6 +53,7 @@ type OpenmcpFramework interface {
 	// It returns a map that stores for each filtering plugin name the corresponding
 	RunFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, cm *clusterManager.ClusterManager) OpenmcpClusterFilteredStatus
 	EraseFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, request map[string]int32) string
+
 	// RunScorePluginsOnClusters runs the set of configured scoring plugins.
 	// It returns a map that stores for each
 	RunPostFilterPluginsOnClusters(pod *ketiresource.Pod, clusters map[string]*ketiresource.Cluster, postpods *list.List) OpenmcpClusterPostFilteredStatus
