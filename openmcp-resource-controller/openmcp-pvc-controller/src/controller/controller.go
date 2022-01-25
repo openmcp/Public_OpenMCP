@@ -14,24 +14,22 @@ limitations under the License.
 package openmcppvc
 
 import (
+	"admiralty.io/multicluster-controller/pkg/reference"
 	"context"
 	"fmt"
+	v1 "k8s.io/api/core/v1"
 	syncv1alpha1 "openmcp/openmcp/apis/sync/v1alpha1"
 	"openmcp/openmcp/omcplog"
 	"openmcp/openmcp/util/clusterManager"
 	"strconv"
 
-	"admiralty.io/multicluster-controller/pkg/reference"
-	v1 "k8s.io/api/core/v1"
-
 	"k8s.io/apimachinery/pkg/api/errors"
-
-	"openmcp/openmcp/apis"
-	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 
 	"admiralty.io/multicluster-controller/pkg/cluster"
 	"admiralty.io/multicluster-controller/pkg/controller"
 	"admiralty.io/multicluster-controller/pkg/reconcile"
+	"openmcp/openmcp/apis"
+	resourcev1alpha1 "openmcp/openmcp/apis/resource/v1alpha1"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
