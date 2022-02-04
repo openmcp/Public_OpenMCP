@@ -93,11 +93,14 @@ cp -r member.back member
 if [ $OMCP_INSTALL_TYPE == "learning" ]; then
   rm master/openmcp-cluster-manager/operator.yaml
   rm master/influxdb/deployment.yaml
+  rm master/openmcp-apiserver/operator.yaml
   mv master/openmcp-cluster-manager/operator-learningmcp.yaml master/openmcp-cluster-manager/operator.yaml
   mv master/influxdb/deployment-learningmcp.yaml master/influxdb/deployment.yaml
+  mv master/openmcp-apiserver/operator-learningmcp.yaml master/openmcp-apiserver/operator.yaml
 else
   rm master/openmcp-cluster-manager/operator-learningmcp.yaml
   rm master/influxdb/deployment-learningmcp.yaml
+  rm master/openmcp-apiserver/operator-learningmcp.yaml
 fi
 
 # Init Memeber Dir NFS Setting
@@ -166,6 +169,7 @@ sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-s
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-daemonset-controller/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-pv-controller/operator.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/openmcp-pvc-controller/operator.yaml
+sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' master/influxdb/deployment.yaml
 
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' member/metric-collector/operator/operator_in.yaml
 sed -i 's|REPLACE_DOCKERSECRETNAME|'\"$DOCKER_SECRET_NAME\"'|g' member/metric-collector/operator/operator_ex.yaml

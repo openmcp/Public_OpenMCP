@@ -25,5 +25,5 @@ data:
     .:53 {
       errors
       cache 30
-      forward . REPLACE_PDNSIP
+      forward . 10.0.3.12:53
     }

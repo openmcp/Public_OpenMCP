@@ -13,6 +13,8 @@ spec:
       labels:
         app: influxdb
     spec:
+      imagePullSecrets:
+      - name: REPLACE_DOCKERSECRETNAME
       containers:
       - name: influxdb
         image: docker.io/influxdb:1.6.4

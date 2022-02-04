@@ -15,14 +15,14 @@ spec:
     spec:
       serviceAccountName: openmcp-pv-controller
       imagePullSecrets:
-        - name: REPLACE_DOCKERSECRETNAME
+        - name: "regcred"
       containers:
         - name: openmcp-pv-controller
           # Replace this with the built image name
           image: ketidevit2/openmcp-pv-controller:v0.0.1
           command:
           - openmcp-pv-controller
-          imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
+          imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
               #value: ""

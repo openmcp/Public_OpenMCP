@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmcp-apiserver
+  namespace: openmcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: openmcp-apiserver
+  template:
+    metadata:
+      labels:
+        name: openmcp-apiserver
+    spec:
+      serviceAccountName: openmcp-apiserver-sa
+      imagePullSecrets:
+        - name: REPLACE_DOCKERSECRETNAME
+      containers:
+        - name: openmcp-apiserver
+          # Replace this with the built image name
+          image: ketidevit2/openmcp-apiserver:v0.0.1
+          command:
+          - openmcp-apiserver
+          imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
+          volumeMounts:
+          - mountPath: "/tmp/cert"
+            name: cert
+          env:
+            - name: WATCH_NAMESPACE
+              #value: ""
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: API_APP_KEY
+              value: REPLACE_API_KEY
+            - name: API_USER_NAME
+              value: REPLACE_API_USER_NAME
+            - name: API_USER_PW
+              value: REPLACE_API_USER_PW
+            - name: INFLUX_IP
+              value: REPLACE_INFLUXDBIP
+            - name: INFLUX_PORT
+              value: REPLACE_INFLUXDBPORT
+            - name: INFLUX_USERNAME
+              value: "root"
+            - name: INFLUX_PASSWORD
+              value: "root"
+            - name: OPERATOR_NAME
+              value: "openmcp-apiserver"
+          ports:
+          - containerPort: 8080
+            name: http
+      volumes:
+      - name: cert
+        hostPath:
+          path: /cert
+      tolerations:
+        - key: node.kubernetes.io/not-ready
+          effect: NoExecute
+          tolerationSeconds: 0
+        - key: node.kubernetes.io/unreachable
+          effect: NoExecute
+          tolerationSeconds: 0

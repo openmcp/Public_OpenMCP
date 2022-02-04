@@ -15,14 +15,14 @@ spec:
     spec:
       serviceAccountName: openmcp-daemonset-controller
       imagePullSecrets:
-        - name: REPLACE_DOCKERSECRETNAME
+        - name: "regcred"
       containers:
         - name: openmcp-daemonset-controller
           # Replace this with the built image name
           image: ketidevit2/openmcp-daemonset-controller:v0.0.1
           command:
           - openmcp-daemonset-controller
-          imagePullPolicy: REPLACE_DOCKERIMAGEPULLPOLICY
+          imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
               #value: ""
