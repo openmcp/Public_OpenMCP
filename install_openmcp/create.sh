@@ -103,43 +103,43 @@ fi
 # Init Memeber Dir NFS Setting
 INIT_MEMBER_DIR=`pwd`/member
 
-mkdir -p /home/nfs
-mkdir -p /root/.aws
+sudo mkdir -p /home/nfs
+sudo mkdir -p $HOME/.aws
 
-chmod 777 /home/nfs
-chmod 777 /root/.aws
+sudo chmod 777 /home/nfs
+sudo chmod 777 $HOME/.aws
 
-NFS_OK=$(grep -r '/root/.kube' /etc/exports)
+NFS_OK=$(grep -r "$HOME/.kube" /etc/exports)
 if [ "" = "$NFS_OK" ]; then
-  echo "Not found NFS Setting. Add Export '/root/.kube' in /etc/exports"
-  echo "/root/.kube *(rw,no_root_squash,sync,no_subtree_check)" >> /etc/exports
+  echo "Not found NFS Setting. Add Export '$HOME/.kube' in /etc/exports"
+  echo "$HOME/.kube *(rw,no_root_squash,sync,no_subtree_check)" | sudo tee -a /etc/exports
 fi
 
 NFS_OK2=$(grep -r $INIT_MEMBER_DIR /etc/exports)
 if [ "" = "$NFS_OK2" ]; then
   echo "Not found NFS Setting. Add Export '$INIT_MEMBER_DIR' in /etc/exports"
-  echo "$INIT_MEMBER_DIR *(rw,no_root_squash,sync,no_subtree_check)" >> /etc/exports
+  echo "$INIT_MEMBER_DIR *(rw,no_root_squash,sync,no_subtree_check)" | sudo tee -a /etc/exports
 fi
 
 NFS_OK3=$(grep -r '/home/nfs' /etc/exports)
 if [ "" = "$NFS_OK3" ]; then
   echo "Not found NFS Setting. Add Export '/home/nfs' in /etc/exports"
-  echo "/home/nfs *(rw,no_root_squash,sync,no_subtree_check)" >> /etc/exports
+  echo "/home/nfs *(rw,no_root_squash,sync,no_subtree_check)" | sudo tee -a /etc/exports
 fi
 
-NFS_OK4=$(grep -r '/root/.aws' /etc/exports)
+NFS_OK4=$(grep -r "$HOME/.aws" /etc/exports)
 if [ "" = "$NFS_OK4" ]; then
-  echo "Not found NFS Setting. Add Export '/root/.aws' in /etc/exports"
-  echo "/root/.aws *(rw,no_root_squash,sync,no_subtree_check)" >> /etc/exports
+  echo "Not found NFS Setting. Add Export '$HOME/.aws' in /etc/exports"
+  echo "$HOME/.aws *(rw,no_root_squash,sync,no_subtree_check)" | sudo tee -a /etc/exports
 fi
 
-exportfs -a
+sudo exportfs -a
 
 # Init /etc/resolv.conf
 DNS_OK=$(grep -r "nameserver ${PDNS_IP}" /etc/resolv.conf)
 if [ "" = "$DNS_OK" ]; then
   echo "Not found External DNS Server. Add 'nameserver ${PDNS_IP}' in /etc/resolv.conf"
-  sed -i "1s/^/nameserver ${PDNS_IP}\n /" /etc/resolv.conf
+  sudo sed -i "1s/^/nameserver ${PDNS_IP}\n /" /etc/resolv.conf
 fi
 
 

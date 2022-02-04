@@ -1,0 +1,14 @@
+apiVersion:  openmcp.k8s.io/v1alpha1
+kind: OpenMCPIngress
+metadata:
+  name: openmcp-ingress-example
+spec:
+  template:
+    spec:
+      rules:
+      - host: openmcp.ingress.test.org
+        http:
+          paths:
+          - backend:
+              serviceName: openmcp-service-example
+              servicePort: 80

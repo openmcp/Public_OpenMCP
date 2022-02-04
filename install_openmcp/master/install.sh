@@ -25,7 +25,7 @@ echo "Input Your Docker ID(No Pull Limit Plan)"
 docker login
 
 kubectl create secret generic "regcred" \
-    --from-file=.dockerconfigjson=/root/.docker/config.json \
+    --from-file=.dockerconfigjson=$HOME/.docker/config.json \
     --type=kubernetes.io/dockerconfigjson \
     --namespace=openmcp
 
@@ -109,7 +109,7 @@ kubectl create secret generic cacerts -n istio-system \
 popd
 
 chmod 755 bin/istioctl
-cp bin/istioctl /usr/local/bin
+sudo cp bin/istioctl /usr/local/bin
 chmod 755 samples/multicluster/gen-eastwest-gateway.sh
 
 # istio-system 네임 스페이스가 이미 생성 된 경우 여기에 클러스터의 네트워크를 설정해야합니다
