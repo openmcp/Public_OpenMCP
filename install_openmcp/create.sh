@@ -103,6 +103,12 @@ fi
 # Init Memeber Dir NFS Setting
 INIT_MEMBER_DIR=`pwd`/member
 
+mkdir -p /home/nfs
+mkdir -p /root/.aws
+
+chmod 777 /home/nfs
+chmod 777 /root/.aws
+
 NFS_OK=$(grep -r '/root/.kube' /etc/exports)
 if [ "" = "$NFS_OK" ]; then
   echo "Not found NFS Setting. Add Export '/root/.kube' in /etc/exports"
