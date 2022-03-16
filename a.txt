@@ -1,0 +1,780 @@
+apiVersion: v1
+items:
+- apiVersion: networking.istio.io/v1beta1
+  kind: VirtualService
+  metadata:
+    annotations:
+      multicluster.admiralty.io/controller-reference: '{"apiVersion":"openmcp.k8s.io/v1alpha1","kind":"OpenMCPVirtualService","name":"bookinfo","uid":"20b89375-205c-46c4-a3f6-93e5d96fc411","controller":true,"blockOwnerDeletion":true,"clusterName":"openmcp","namespace":"bookinfo"}'
+    creationTimestamp: "2022-02-11T03:30:22Z"
+    generation: 555
+    name: bookinfo
+    namespace: bookinfo
+    resourceVersion: "42809226"
+    selfLink: /apis/networking.istio.io/v1beta1/namespaces/bookinfo/virtualservices/bookinfo
+    uid: e5bb8916-42de-4854-82d5-be256084daeb
+  spec:
+    gateways:
+    - istio-ingress-gateway
+    hosts:
+    - keti.productpage.openmcp.in
+    http:
+    - match:
+      - headers:
+          client-region:
+            exact: default
+          client-zone:
+            exact: default
+        uri:
+          exact: /productpage
+      - headers:
+          client-region:
+            exact: default
+          client-zone:
+            exact: default
+        uri:
+          prefix: /static
+      - headers:
+          client-region:
+            exact: default
+          client-zone:
+            exact: default
+        uri:
+          exact: /login
+      - headers:
+          client-region:
+            exact: default
+          client-zone:
+            exact: default
+        uri:
+          exact: /logout
+      - headers:
+          client-region:
+            exact: default
+          client-zone:
+            exact: default
+        uri:
+          prefix: /api/v1/products
+      route:
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+    - match:
+      - headers:
+          client-region:
+            exact: FR
+          client-zone:
+            exact: Ile-de-France
+        uri:
+          exact: /productpage
+      - headers:
+          client-region:
+            exact: FR
+          client-zone:
+            exact: Ile-de-France
+        uri:
+          prefix: /static
+      - headers:
+          client-region:
+            exact: FR
+          client-zone:
+            exact: Ile-de-France
+        uri:
+          exact: /login
+      - headers:
+          client-region:
+            exact: FR
+          client-zone:
+            exact: Ile-de-France
+        uri:
+          exact: /logout
+      - headers:
+          client-region:
+            exact: FR
+          client-zone:
+            exact: Ile-de-France
+        uri:
+          prefix: /api/v1/products
+      route:
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster09
+        weight: 35
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster17
+        weight: 32
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster11
+        weight: 33
+    - match:
+      - headers:
+          client-region:
+            exact: "NO"
+          client-zone:
+            exact: Oslo
+        uri:
+          exact: /productpage
+      - headers:
+          client-region:
+            exact: "NO"
+          client-zone:
+            exact: Oslo
+        uri:
+          prefix: /static
+      - headers:
+          client-region:
+            exact: "NO"
+          client-zone:
+            exact: Oslo
+        uri:
+          exact: /login
+      - headers:
+          client-region:
+            exact: "NO"
+          client-zone:
+            exact: Oslo
+        uri:
+          exact: /logout
+      - headers:
+          client-region:
+            exact: "NO"
+          client-zone:
+            exact: Oslo
+        uri:
+          prefix: /api/v1/products
+      route:
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster09
+        weight: 35
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster17
+        weight: 32
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster11
+        weight: 33
+    - match:
+      - headers:
+          client-region:
+            exact: DE
+          client-zone:
+            exact: Hesse
+        uri:
+          exact: /productpage
+      - headers:
+          client-region:
+            exact: DE
+          client-zone:
+            exact: Hesse
+        uri:
+          prefix: /static
+      - headers:
+          client-region:
+            exact: DE
+          client-zone:
+            exact: Hesse
+        uri:
+          exact: /login
+      - headers:
+          client-region:
+            exact: DE
+          client-zone:
+            exact: Hesse
+        uri:
+          exact: /logout
+      - headers:
+          client-region:
+            exact: DE
+          client-zone:
+            exact: Hesse
+        uri:
+          prefix: /api/v1/products
+      route:
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster09
+        weight: 35
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster17
+        weight: 32
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster11
+        weight: 33
+    - match:
+      - headers:
+          client-region:
+            exact: US
+          client-zone:
+            exact: Virginia
+        uri:
+          exact: /productpage
+      - headers:
+          client-region:
+            exact: US
+          client-zone:
+            exact: Virginia
+        uri:
+          prefix: /static
+      - headers:
+          client-region:
+            exact: US
+          client-zone:
+            exact: Virginia
+        uri:
+          exact: /login
+      - headers:
+          client-region:
+            exact: US
+          client-zone:
+            exact: Virginia
+        uri:
+          exact: /logout
+      - headers:
+          client-region:
+            exact: US
+          client-zone:
+            exact: Virginia
+        uri:
+          prefix: /api/v1/products
+      route:
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster09
+        weight: 30
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster17
+        weight: 41
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster11
+        weight: 29
+    - match:
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Daejeon
+        uri:
+          exact: /productpage
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Daejeon
+        uri:
+          prefix: /static
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Daejeon
+        uri:
+          exact: /login
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Daejeon
+        uri:
+          exact: /logout
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Daejeon
+        uri:
+          prefix: /api/v1/products
+      route:
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster09
+        weight: 35
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster17
+        weight: 32
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster11
+        weight: 33
+    - match:
+      - headers:
+          client-region:
+            exact: TH
+          client-zone:
+            exact: Bangkok
+        uri:
+          exact: /productpage
+      - headers:
+          client-region:
+            exact: TH
+          client-zone:
+            exact: Bangkok
+        uri:
+          prefix: /static
+      - headers:
+          client-region:
+            exact: TH
+          client-zone:
+            exact: Bangkok
+        uri:
+          exact: /login
+      - headers:
+          client-region:
+            exact: TH
+          client-zone:
+            exact: Bangkok
+        uri:
+          exact: /logout
+      - headers:
+          client-region:
+            exact: TH
+          client-zone:
+            exact: Bangkok
+        uri:
+          prefix: /api/v1/products
+      route:
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster09
+        weight: 35
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster17
+        weight: 32
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster11
+        weight: 33
+    - match:
+      - headers:
+          client-region:
+            exact: US
+          client-zone:
+            exact: California
+        uri:
+          exact: /productpage
+      - headers:
+          client-region:
+            exact: US
+          client-zone:
+            exact: California
+        uri:
+          prefix: /static
+      - headers:
+          client-region:
+            exact: US
+          client-zone:
+            exact: California
+        uri:
+          exact: /login
+      - headers:
+          client-region:
+            exact: US
+          client-zone:
+            exact: California
+        uri:
+          exact: /logout
+      - headers:
+          client-region:
+            exact: US
+          client-zone:
+            exact: California
+        uri:
+          prefix: /api/v1/products
+      route:
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster09
+        weight: 27
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster17
+        weight: 48
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster11
+        weight: 25
+    - match:
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Busan
+        uri:
+          exact: /productpage
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Busan
+        uri:
+          prefix: /static
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Busan
+        uri:
+          exact: /login
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Busan
+        uri:
+          exact: /logout
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Busan
+        uri:
+          prefix: /api/v1/products
+      route:
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster09
+        weight: 35
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster17
+        weight: 32
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster11
+        weight: 33
+    - match:
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Gyeonggi-do
+        uri:
+          exact: /productpage
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Gyeonggi-do
+        uri:
+          prefix: /static
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Gyeonggi-do
+        uri:
+          exact: /login
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Gyeonggi-do
+        uri:
+          exact: /logout
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Gyeonggi-do
+        uri:
+          prefix: /api/v1/products
+      route:
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster09
+        weight: 35
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster17
+        weight: 32
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster11
+        weight: 33
+    - match:
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Seoul
+        uri:
+          exact: /productpage
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Seoul
+        uri:
+          prefix: /static
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Seoul
+        uri:
+          exact: /login
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Seoul
+        uri:
+          exact: /logout
+      - headers:
+          client-region:
+            exact: KR
+          client-zone:
+            exact: Seoul
+        uri:
+          prefix: /api/v1/products
+      route:
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster09
+        weight: 35
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster17
+        weight: 32
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster11
+        weight: 33
+    - match:
+      - headers:
+          client-region:
+            exact: JP
+          client-zone:
+            exact: Tokyo
+        uri:
+          exact: /productpage
+      - headers:
+          client-region:
+            exact: JP
+          client-zone:
+            exact: Tokyo
+        uri:
+          prefix: /static
+      - headers:
+          client-region:
+            exact: JP
+          client-zone:
+            exact: Tokyo
+        uri:
+          exact: /login
+      - headers:
+          client-region:
+            exact: JP
+          client-zone:
+            exact: Tokyo
+        uri:
+          exact: /logout
+      - headers:
+          client-region:
+            exact: JP
+          client-zone:
+            exact: Tokyo
+        uri:
+          prefix: /api/v1/products
+      route:
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster09
+        weight: 50
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster11
+        weight: 25
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster17
+        weight: 25
+    - match:
+      - headers:
+          client-region:
+            exact: AU
+          client-zone:
+            exact: New-South-Wales
+        uri:
+          exact: /productpage
+      - headers:
+          client-region:
+            exact: AU
+          client-zone:
+            exact: New-South-Wales
+        uri:
+          prefix: /static
+      - headers:
+          client-region:
+            exact: AU
+          client-zone:
+            exact: New-South-Wales
+        uri:
+          exact: /login
+      - headers:
+          client-region:
+            exact: AU
+          client-zone:
+            exact: New-South-Wales
+        uri:
+          exact: /logout
+      - headers:
+          client-region:
+            exact: AU
+          client-zone:
+            exact: New-South-Wales
+        uri:
+          prefix: /api/v1/products
+      route:
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster09
+        weight: 26
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster17
+        weight: 25
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster11
+        weight: 49
+    - match:
+      - headers:
+          client-region:
+            exact: GB
+          client-zone:
+            exact: England
+        uri:
+          exact: /productpage
+      - headers:
+          client-region:
+            exact: GB
+          client-zone:
+            exact: England
+        uri:
+          prefix: /static
+      - headers:
+          client-region:
+            exact: GB
+          client-zone:
+            exact: England
+        uri:
+          exact: /login
+      - headers:
+          client-region:
+            exact: GB
+          client-zone:
+            exact: England
+        uri:
+          exact: /logout
+      - headers:
+          client-region:
+            exact: GB
+          client-zone:
+            exact: England
+        uri:
+          prefix: /api/v1/products
+      route:
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster09
+        weight: 34
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster17
+        weight: 33
+      - destination:
+          host: productpage
+          port:
+            number: 9080
+          subset: cluster11
+        weight: 33
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""

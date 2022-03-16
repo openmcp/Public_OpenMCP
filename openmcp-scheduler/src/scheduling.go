@@ -319,11 +319,11 @@ func (sched *OpenMCPScheduler) Complite_Scheduing(selectcluster string) {
 				for rName, rQuant := range container.Resources.Requests {
 					switch rName {
 					case corev1.ResourceCPU:
-						pod_request.MilliCPU = rQuant.MilliValue()
+						pod_request.MilliCPU = (rQuant.MilliValue() - (rQuant.MilliValue() / 8))
 					case corev1.ResourceMemory:
-						pod_request.Memory = rQuant.Value()
+						pod_request.Memory = rQuant.Value() - (rQuant.Value() / 8)
 					case corev1.ResourceEphemeralStorage:
-						pod_request.EphemeralStorage = rQuant.Value()
+						pod_request.EphemeralStorage = rQuant.Value() - (rQuant.Value() / 8)
 					default:
 						// Casting from ResourceName to stirng because rName is ResourceName type
 						resourceName := fmt.Sprintf("%s", rName)
@@ -364,11 +364,11 @@ func (sched *OpenMCPScheduler) Complite_Scheduing(selectcluster string) {
 			for rName, rQuant := range node.Status.Capacity {
 				switch rName {
 				case corev1.ResourceCPU:
-					node_capacity.MilliCPU = rQuant.MilliValue()
+					node_capacity.MilliCPU = (rQuant.MilliValue() - (rQuant.MilliValue() / 8))
 				case corev1.ResourceMemory:
-					node_capacity.Memory = rQuant.Value()
+					node_capacity.Memory = rQuant.Value() - (rQuant.Value() / 8)
 				case corev1.ResourceEphemeralStorage:
-					node_capacity.EphemeralStorage = rQuant.Value()
+					node_capacity.EphemeralStorage = rQuant.Value() - (rQuant.Value() / 8)
 				default:
 					// Casting from ResourceName to stirng because rName is ResourceName type
 					resourceName := fmt.Sprintf("%s", rName)
@@ -587,7 +587,7 @@ func (sched *OpenMCPScheduler) ScheduleOne(newPod *ketiresource.Pod, replicas in
 	omcplog.V(2).Infof("     Existing_cluster [%v]", *sched.origin_clusternames)
 	omcplog.V(2).Infof("     FilteredResultMap [%v]", PrintFilterString(filteredCluster))
 	selectedCluster := sched.Framework.RunScorePluginsOnClusters(newPod, filteredCluster, sched.ClusterInfos, replicas)
-	
+
 	omcplog.V(2).Infof("     SelectedCluster [%v]", selectedCluster)
 	omcplog.V(2).Infof("     Scoring Time [%v]", time.Since(startTime))
 
@@ -667,6 +667,7 @@ func newPodFromOpenMCPDeployment(dep *resourcev1alpha1.OpenMCPDeployment) *ketir
 				res.Memory = rQuant.Value()
 			case corev1.ResourceEphemeralStorage:
 				res.EphemeralStorage = rQuant.Value()
+
 			default:
 				// Casting from ResourceName to stirng because rName is ResourceName type
 				resourceName := fmt.Sprintf("%s", rName)
@@ -711,7 +712,7 @@ func (sched *OpenMCPScheduler) SetupResources() error {
 				for rName, rQuant := range container.Resources.Requests {
 					switch rName {
 					case corev1.ResourceCPU:
-						pod_request.MilliCPU = rQuant.MilliValue()
+						pod_request.MilliCPU = rQuant.MilliValue() - (rQuant.MilliValue() / 8)
 					case corev1.ResourceMemory:
 						pod_request.Memory = rQuant.Value()
 					case corev1.ResourceEphemeralStorage:
@@ -756,7 +757,7 @@ func (sched *OpenMCPScheduler) SetupResources() error {
 			for rName, rQuant := range node.Status.Capacity {
 				switch rName {
 				case corev1.ResourceCPU:
-					node_capacity.MilliCPU = rQuant.MilliValue()
+					node_capacity.MilliCPU = rQuant.MilliValue() - (rQuant.MilliValue() / 8)
 				case corev1.ResourceMemory:
 					node_capacity.Memory = rQuant.Value()
 				case corev1.ResourceEphemeralStorage:
