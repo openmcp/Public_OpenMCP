@@ -265,7 +265,7 @@ func CreateCloudClusterResource(c_name string, c_type string, config []byte, c_l
 
 	if err != nil {
 		omcplog.V(4).Info("Fail to create openmcpcluster resource")
-		// fmt.Println(err)
+		fmt.Println("test")
 	} else {
 		omcplog.V(4).Info("Success to create openmcpcluster resource")
 	}
