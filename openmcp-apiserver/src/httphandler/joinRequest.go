@@ -53,12 +53,12 @@ func JoinCloudHandler(w http.ResponseWriter, r *http.Request) {
 	c_type := r.Form.Get("clustertype")
 	c_loc := r.Form.Get("clusterlocation")
 
-	fmt.Println(c_name, " / ", c_type, " / ", c_loc)
+	// fmt.Println(c_name, " / ", c_type, " / ", c_loc)
 
 	c_file, _, err := r.FormFile("file")
 
 	if err != nil {
-		fmt.Println(err)
+		// fmt.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("INVALID_FILE"))
 		return
@@ -148,7 +148,7 @@ func CreateClusterResource(name string, serverIP string, config []byte, nodeinfo
 
 	if err != nil {
 		omcplog.V(4).Info("Fail to create openmcpcluster resource'", name, "'")
-		fmt.Println(err)
+		// fmt.Println(err)
 	} else {
 		omcplog.V(4).Info("Success to create openmcpcluster resource '", name, "'")
 	}
@@ -265,7 +265,7 @@ func CreateCloudClusterResource(c_name string, c_type string, config []byte, c_l
 
 	if err != nil {
 		omcplog.V(4).Info("Fail to create openmcpcluster resource")
-		fmt.Println(err)
+		// fmt.Println(err)
 	} else {
 		omcplog.V(4).Info("Success to create openmcpcluster resource")
 	}
